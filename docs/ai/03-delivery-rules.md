@@ -48,6 +48,7 @@ Scope debe mapear al módulo: `ingestion`, `triage`, `reviewer`, `observability`
 | Capa | Tecnología |
 |------|-----------|
 | Framework | .NET 8 / ASP.NET Core |
+| Frontend | Blazor Server |
 | Tests | xUnit, Playwright (E2E) |
 | Resiliencia | Polly |
 | Observabilidad | OpenTelemetry (.NET SDK) |

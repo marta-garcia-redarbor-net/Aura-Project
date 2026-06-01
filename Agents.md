@@ -60,6 +60,9 @@ Detalles de responsabilidades por capa → [`docs/ai/02-architecture-map.md`](./
 - [`skills/aura-backlog-slicer/SKILL.md`](./skills/aura-backlog-slicer/SKILL.md) — partir historias y tareas grandes en slices atómicos, guiables y verificables.
 - [`skills/aura-clean-arch-guard/SKILL.md`](./skills/aura-clean-arch-guard/SKILL.md) — validar límites de Clean Architecture y ubicar responsabilidades antes de implementar.
 - [`skills/aura-plugin-design/SKILL.md`](./skills/aura-plugin-design/SKILL.md) — diseñar adaptadores externos intercambiables por capacidad del dominio.
+- [`skills/aura-blazor-ui-slice/SKILL.md`](./skills/aura-blazor-ui-slice/SKILL.md) — definir slices visuales en Blazor Server alineados con `Aura.Api` y Playwright.
+- [`skills/aura-triage-rules/SKILL.md`](./skills/aura-triage-rules/SKILL.md) — diseñar reglas de triáje explícitas, trazables y con aprendizaje controlado por el usuario.
+- [`skills/aura-review-evidence/SKILL.md`](./skills/aura-review-evidence/SKILL.md) — diseñar el reviewer con evidencia verificable, precedencia de reglas y política de comentarios en PR.
 
 ---
 

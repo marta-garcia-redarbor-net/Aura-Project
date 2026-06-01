@@ -2,6 +2,8 @@
 
 Aura construye su interfaz **en paralelo al backend**. No existe backend invisible. Cada slice de funcionalidad tiene representación visual demostrable.
 
+**Decisión actual:** el frontend de Aura se construye con **Blazor Server** dentro del ecosistema .NET.
+
 ---
 
 ## Por qué
@@ -47,8 +49,20 @@ No se cierra ninguna historia sin su contraparte visible.
 
 ---
 
-## Herramientas sugeridas
+## Stack frontend decidido
 
-- **Frontend**: Blazor Server o Razor Pages (dentro del ecosistema .NET) o SPA separada si el equipo lo prefiere.
+| Tema | Decisión |
+|------|----------|
+| Framework UI | **Blazor Server** |
+| Objetivo | Acelerar dashboard interno y slices visibles sin abrir una SPA separada antes de tiempo |
+| Integración | Misma solución .NET, componentes UI y consumo de `Aura.Api` |
+| Tiempo real | SignalR cuando el slice requiera refresco en vivo |
+| Límite | Sin lógica de negocio en componentes; sólo presentación, estado de vista y navegación |
+
+---
+
+## Herramientas de UI
+
+- **Frontend**: Blazor Server.
 - **Tiempo real**: SignalR para actualizaciones en vivo de ingestión y estado de foco.
 - **Componentes**: Atomic Design; componentes de presentación sin lógica de dominio.

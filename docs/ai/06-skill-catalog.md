@@ -45,15 +45,19 @@ Ninguna skill está implementada aún; este documento es el backlog de creación
 
 ---
 
-### 3. `aura-ui-progress-slice`
+### 3. `aura-ui-progress-slice` / `aura-blazor-ui-slice`
+
+**Estado:** Implementada como [`skills/aura-blazor-ui-slice/SKILL.md`](../../skills/aura-blazor-ui-slice/SKILL.md)
 
 | Campo | Detalle |
 |-------|---------|
 | Trigger | "UI incremental", "agregar pantalla", "slice visual", "frontend del feature" |
-| Propósito | Definir el componente o pantalla mínima que acompaña un slice de backend, respetando la estrategia de UI incremental. |
+| Propósito | Definir el componente o pantalla mínima en **Blazor Server** que acompaña un slice de backend, respetando la estrategia de UI incremental. |
 | Cuándo usar | Cuando se completa un caso de uso que produce datos visibles para el usuario. |
 | Cuándo NO usar | Para tareas internas de infraestructura sin impacto directo en pantalla (ej. circuit breaker). |
 | Prioridad | **Alta** — es parte del DoD en Aura. |
+
+**Nota:** el catálogo original la proponía como skill genérica de progreso visual; con Blazor Server ya decidido, se implementó en forma específica para ese stack.
 
 ---
 
@@ -73,10 +77,12 @@ Ninguna skill está implementada aún; este documento es el backlog de creación
 
 ### 5. `aura-triage-rules`
 
+**Estado:** Implementada en [`skills/aura-triage-rules/SKILL.md`](../../skills/aura-triage-rules/SKILL.md)
+
 | Campo | Detalle |
 |-------|---------|
 | Trigger | "reglas de triáje", "motor de interrupciones", "focus state", "priority scoring", "triage rules" |
-| Propósito | Documentar y aplicar las reglas de dominio del sistema de triáje: estados de foco, criterios de interrupción y scoring de prioridad. |
+| Propósito | Documentar y aplicar las reglas de dominio del sistema de triáje: estados de foco, criterios de interrupción, scoring de prioridad y aprendizaje explícito basado en feedback y preferencias. |
 | Cuándo usar | Al implementar o modificar lógica del `FocusStateMachine`, `InterruptionPolicyEngine` o `PriorityScoringService`. |
 | Cuándo NO usar | Para cambios en la capa de presentación del triáje sin lógica de dominio nueva. |
 | Prioridad | **Alta** — el triáje es el corazón diferenciador de Aura. |
@@ -85,10 +91,12 @@ Ninguna skill está implementada aún; este documento es el backlog de creación
 
 ### 6. `aura-review-evidence`
 
+**Estado:** Implementada en [`skills/aura-review-evidence/SKILL.md`](../../skills/aura-review-evidence/SKILL.md)
+
 | Campo | Detalle |
 |-------|---------|
 | Trigger | "review evidence", "modelo de evidencia", "reviewer pipeline", "revisión técnica" |
-| Propósito | Guiar la construcción o modificación del pipeline de revisión: SonarQube + Dependabot + OWASP/MITRE + validación semántica. |
+| Propósito | Guiar la construcción o modificación del pipeline de revisión: SonarQube + Dependabot + OWASP/MITRE + validación semántica + resolución de reglas y comentarios en PR. |
 | Cuándo usar | Al implementar cualquier paso del pipeline del Reviewer o al agregar un nuevo proveedor de análisis. |
 | Cuándo NO usar | Para cambios en la UI del reviewer sin modificación del pipeline. |
 | Prioridad | **Media** — el Reviewer es fase 2-3 del proyecto. |
