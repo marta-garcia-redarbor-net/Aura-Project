@@ -14,6 +14,31 @@ Toda tarea se considera terminada sólo cuando cumple estas condiciones.
 - [ ] Conventional Commit usado; mensaje describe el "qué" y el "por qué".
 - [ ] Sin secretos ni credenciales en código o logs.
 - [ ] PR o commit incluye evidencia de que el flujo funciona (test output o trace).
+- [ ] Toda entrega tiene trazabilidad suficiente del cambio, aunque no exista issue de GitHub.
+
+---
+
+## Trazabilidad obligatoria, issue opcional
+
+En Aura la **trazabilidad es obligatoria**, pero el **issue de GitHub es opcional**.
+
+Una PR, commit o entrega debe incluir al menos **una** de estas fuentes de contexto:
+
+- [ ] Issue de GitHub
+- [ ] Artefacto SDD / OpenSpec (`proposal`, `spec`, `design`, `tasks`)
+- [ ] Descripción clara en el cuerpo de la PR indicando intención, alcance, verificación y fuera de alcance
+
+### Reglas
+
+- No se exige `Closes #N` para abrir una PR.
+- No se exige label `status:approved` para considerar válida una entrega.
+- Si no hay issue, la PR debe explicar claramente:
+  - qué problema resuelve
+  - qué entra en scope
+  - qué queda fuera
+  - cómo se verificó
+- En PRs encadenadas, cada PR debe indicar su posición en la cadena y el slice siguiente/anterior.
+- La ausencia de issue **no** exime de evidencia técnica ni de contexto revisable.
 
 ---
 
