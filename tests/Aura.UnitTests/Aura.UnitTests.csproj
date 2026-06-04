@@ -9,7 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
@@ -21,6 +24,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Aura.Application\Aura.Application.csproj" />
     <ProjectReference Include="..\..\src\Aura.Domain\Aura.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Aura.Infrastructure\Aura.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Aura.Workers\Aura.Workers.csproj" />
   </ItemGroup>
 
 </Project>
