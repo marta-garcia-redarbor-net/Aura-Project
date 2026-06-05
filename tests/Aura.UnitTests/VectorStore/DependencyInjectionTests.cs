@@ -1,5 +1,6 @@
 using Aura.Application.Ports;
 using Aura.Application.Services;
+using Aura.Infrastructure.Embedding;
 using Aura.Infrastructure.Persistence;
 using Aura.Infrastructure.VectorStore;
 using Microsoft.Extensions.Configuration;
@@ -7,12 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Qdrant.Client;
+using VectorStoreDI = Aura.Infrastructure.VectorStore.DependencyInjection;
 
 namespace Aura.UnitTests.VectorStore;
 
 public class DependencyInjectionTests
 {
-    private static IServiceCollection CreateServicesWithQdrant()
+    private static (IServiceCollection Services, IConfiguration Config) CreateServicesWithQdrant()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -20,23 +22,23 @@ public class DependencyInjectionTests
                 ["Qdrant:Host"] = "test-host",
                 ["Qdrant:GrpcPort"] = "6334",
                 ["Qdrant:VectorSize"] = "768",
-                ["Qdrant:AzureOpenAiEndpoint"] = "https://test.openai.azure.com/",
-                ["Qdrant:AzureOpenAiApiKey"] = "test-key",
-                ["Qdrant:AzureOpenAiDeployment"] = "text-embedding-ada-002",
-                ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:"
+                ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
+                ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
+                ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
+                ["EmbeddingProvider:ApiKey"] = "test-key"
             })
             .Build();
 
         var services = new ServiceCollection();
         services.AddQdrantSemanticIndex(config);
 
-        return services;
+        return (services, config);
     }
 
     [Fact]
     public void AddQdrantSemanticIndex_RegistersQdrantOptions()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
         var provider = services.BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<QdrantOptions>>();
@@ -49,7 +51,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_RegistersQdrantClient_AsSingleton()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(QdrantClient));
@@ -61,7 +63,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_ResolvesQdrantClient_WithConfiguredHost()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
         using var provider = services.BuildServiceProvider();
 
         var client = provider.GetRequiredService<QdrantClient>();
@@ -72,7 +74,8 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_ResolvesSemanticIndexWriter()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, config) = CreateServicesWithQdrant();
+        services.AddMeaiEmbeddingProvider(config);
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -85,7 +88,8 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_ResolvesSemanticContextRetriever()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, config) = CreateServicesWithQdrant();
+        services.AddMeaiEmbeddingProvider(config);
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -98,7 +102,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_RegistersSemanticIndexWriter_AsScoped()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(ISemanticIndexWriter));
@@ -110,7 +114,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddQdrantSemanticIndex_RegistersSemanticContextRetriever_AsScoped()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(ISemanticContextRetriever));
@@ -125,7 +129,7 @@ public class DependencyInjectionTests
         var config = new ConfigurationBuilder().Build();
 
         Assert.Throws<ArgumentNullException>(() =>
-            DependencyInjection.AddQdrantSemanticIndex(null!, config));
+            VectorStoreDI.AddQdrantSemanticIndex(null!, config));
     }
 
     [Fact]
@@ -137,12 +141,12 @@ public class DependencyInjectionTests
             services.AddQdrantSemanticIndex(null!));
     }
 
-    // ── New: Corrective patch DI registrations ──────────────────────
+    // ── Corrective patch DI registrations ──────────────────────
 
     [Fact]
     public void AddQdrantSemanticIndex_ResolvesSemanticChunkExtractor()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
         using var provider = services.BuildServiceProvider();
 
         var extractor = provider.GetRequiredService<ISemanticChunkExtractor>();
@@ -152,21 +156,9 @@ public class DependencyInjectionTests
     }
 
     [Fact]
-    public void AddQdrantSemanticIndex_ResolvesEmbeddingProvider()
-    {
-        var services = CreateServicesWithQdrant();
-        using var provider = services.BuildServiceProvider();
-
-        var embedder = provider.GetRequiredService<IEmbeddingProvider>();
-
-        Assert.NotNull(embedder);
-        Assert.IsType<AzureOpenAiEmbeddingProvider>(embedder);
-    }
-
-    [Fact]
     public void AddQdrantSemanticIndex_ResolvesSemanticOutboxRepository()
     {
-        var services = CreateServicesWithQdrant();
+        var (services, _) = CreateServicesWithQdrant();
         using var provider = services.BuildServiceProvider();
 
         var repo = provider.GetRequiredService<ISemanticOutboxRepository>();

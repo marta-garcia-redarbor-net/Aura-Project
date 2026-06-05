@@ -88,6 +88,32 @@ public class SemanticIndexArchitectureTests
     }
 
     [Fact]
+    public void Domain_ShouldNotReference_MicrosoftExtensionsAI()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Domain.SemanticIndex.ValueObjects.SemanticChunk).Assembly)
+            .ShouldNot()
+            .HaveDependencyOn("Microsoft.Extensions.AI")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"Domain references Microsoft.Extensions.AI: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
+    public void Application_ShouldNotReference_MicrosoftExtensionsAI()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Application.Ports.ISemanticIndexWriter).Assembly)
+            .ShouldNot()
+            .HaveDependencyOn("Microsoft.Extensions.AI")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"Application references Microsoft.Extensions.AI: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
     public void Application_Ports_ShouldBeInterfaces()
     {
         var result = Types

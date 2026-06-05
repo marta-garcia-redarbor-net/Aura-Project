@@ -202,18 +202,22 @@ public sealed class QdrantAdapterIntegrationTests
     /// </summary>
     private sealed class DeterministicEmbeddingProvider : IEmbeddingProvider
     {
-        public Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, CancellationToken ct)
+        public Task<IReadOnlyList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+            IReadOnlyList<string> texts, CancellationToken ct)
         {
-            // Use a stable hash (not string.GetHashCode which is randomized)
-            var hash = StableHash(text);
-            var embedding = new float[]
+            var results = texts.Select(text =>
             {
-                (hash & 0xFF) / 255f,
-                ((hash >> 8) & 0xFF) / 255f,
-                ((hash >> 16) & 0xFF) / 255f,
-                ((hash >> 24) & 0xFF) / 255f
-            };
-            return Task.FromResult<ReadOnlyMemory<float>>(embedding);
+                var hash = StableHash(text);
+                var embedding = new float[]
+                {
+                    (hash & 0xFF) / 255f,
+                    ((hash >> 8) & 0xFF) / 255f,
+                    ((hash >> 16) & 0xFF) / 255f,
+                    ((hash >> 24) & 0xFF) / 255f
+                };
+                return (ReadOnlyMemory<float>)embedding;
+            }).ToList();
+            return Task.FromResult<IReadOnlyList<ReadOnlyMemory<float>>>(results);
         }
 
         private static uint StableHash(string input)

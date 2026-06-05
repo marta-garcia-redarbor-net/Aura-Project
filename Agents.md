@@ -55,24 +55,13 @@ Detalles de responsabilidades por capa → [`docs/ai/02-architecture-map.md`](./
 | Atomización de tareas | [`docs/ai/05-task-atomization.md`](./docs/ai/05-task-atomization.md) |
 | Catálogo de skills | [`docs/ai/06-skill-catalog.md`](./docs/ai/06-skill-catalog.md) |
 
-### Skills de proyecto activas
-
-- [`skills/aura-backlog-slicer/SKILL.md`](./skills/aura-backlog-slicer/SKILL.md) — partir historias y tareas grandes en slices atómicos, guiables y verificables.
-- [`skills/aura-clean-arch-guard/SKILL.md`](./skills/aura-clean-arch-guard/SKILL.md) — validar límites de Clean Architecture y ubicar responsabilidades antes de implementar.
-- [`skills/aura-plugin-design/SKILL.md`](./skills/aura-plugin-design/SKILL.md) — diseñar adaptadores externos intercambiables por capacidad del dominio.
-- [`skills/aura-blazor-ui-slice/SKILL.md`](./skills/aura-blazor-ui-slice/SKILL.md) — definir slices visuales en Blazor Server alineados con `Aura.Api` y Playwright.
-- [`skills/aura-triage-rules/SKILL.md`](./skills/aura-triage-rules/SKILL.md) — diseñar reglas de triáje explícitas, trazables y con aprendizaje controlado por el usuario.
-- [`skills/aura-review-evidence/SKILL.md`](./skills/aura-review-evidence/SKILL.md) — diseñar el reviewer con evidencia verificable, precedencia de reglas y política de comentarios en PR.
+Skills activas y rutas exactas para delegación → [`.atl/skill-registry.md`](./.atl/skill-registry.md)
 
 ---
 
 ## Flujos principales
 
-**Flujo 1 — Ingestión → Triáje:** Conector captura evento → normaliza a modelo canónico → calcula prioridad → decide: resumen, interrupción o cola diferida.
-
-**Flujo 2 — PR → Revisión inteligente:** GitHub PR ingresa → Reviewer consulta SonarQube + Dependabot + reglas seguridad → valida trazabilidad con User Story → emite decisión con evidencia.
-
-**Flujo 3 — Observabilidad transversal:** Cada paso emite spans/métricas → se correlaciona costo, latencia y errores → dashboard detecta cuellos de botella y costo operativo.
+Resumen operativo y flujos end-to-end → [`docs/ai/00-overview.md`](./docs/ai/00-overview.md)
 
 ---
 
