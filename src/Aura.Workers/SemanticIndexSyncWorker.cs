@@ -1,5 +1,6 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Aura.Domain.SemanticIndex.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -66,6 +67,10 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
     /// <summary>
     /// Processes a single batch of pending outbox entries.
     /// Creates a DI scope per batch to safely resolve scoped services (ISemanticIndexWriter).
+    ///
+    /// Accumulates semantic chunks across all entries before embedding, so the embedding
+    /// provider receives a single batch call (spec: "Syncing new evidence in batches").
+    /// Individual entries are still marked processed/failed independently.
     /// Exposed for unit testing — the TDD cycle exercises this directly.
     /// </summary>
     public async Task ProcessBatchAsync(CancellationToken ct)
@@ -78,29 +83,92 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
 
         _logger.LogDebug("Processing {Count} outbox entries", entries.Count);
 
+        // Phase 1: Extract chunks per entry, tracking association.
+        // Entries where extraction fails are marked immediately and excluded from embedding.
+        var extractionResults = new List<(SemanticOutboxEntry Entry, IReadOnlyList<SemanticChunk> Chunks)>();
+
         foreach (var entry in entries)
         {
             try
             {
                 var chunks = await _extractor.ExtractAsync(
                     entry.CanonicalSourceId, entry.Content, entry.Collection, ct);
+                extractionResults.Add((entry, chunks));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to extract chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})",
+                    entry.Id, entry.CanonicalSourceId);
+                entry.MarkFailed(ex.Message);
+                await _outbox.UpdateAsync(entry, ct);
+            }
+        }
 
-                if (chunks.Count > 0)
+        // Phase 2: Accumulate all chunks across entries into a single embedding call.
+        var allChunks = extractionResults
+            .SelectMany(r => r.Chunks)
+            .ToList();
+
+        IReadOnlyList<ReadOnlyMemory<float>>? allEmbeddings = null;
+
+        if (allChunks.Count > 0)
+        {
+            try
+            {
+                var allTexts = allChunks.Select(c => c.Content).ToList();
+                allEmbeddings = await _embedder.GenerateEmbeddingsAsync(allTexts, ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Batch embedding failed for {ChunkCount} accumulated chunks", allChunks.Count);
+
+                // All entries with chunks fail when embedding fails.
+                foreach (var (entry, chunks) in extractionResults)
                 {
-                    // Generate embeddings and create enriched chunks.
-                    // Embedding ownership lives HERE — the writer only persists.
-                    var enriched = new List<EmbeddedSemanticChunk>(chunks.Count);
-                    foreach (var chunk in chunks)
+                    if (chunks.Count > 0)
                     {
-                        var embedding = await _embedder.GenerateEmbeddingAsync(chunk.Content, ct);
-                        enriched.Add(new EmbeddedSemanticChunk
-                        {
-                            Chunk = chunk,
-                            Embedding = embedding
-                        });
+                        entry.MarkFailed(ex.Message);
+                    }
+                    else
+                    {
+                        entry.MarkProcessed();
                     }
 
+                    await _outbox.UpdateAsync(entry, ct);
+                }
+
+                return;
+            }
+        }
+
+        // Phase 3: Distribute embeddings back to entries and write.
+        var offset = 0;
+
+        foreach (var (entry, chunks) in extractionResults)
+        {
+            try
+            {
+                if (chunks.Count > 0 && allEmbeddings is not null)
+                {
+                    var enriched = chunks
+                        .Select((chunk, i) => new EmbeddedSemanticChunk
+                        {
+                            Chunk = chunk,
+                            Embedding = allEmbeddings[offset + i]
+                        })
+                        .ToList();
+
                     await writer.WriteAsync(enriched, ct);
+                    offset += chunks.Count;
                 }
 
                 entry.MarkProcessed();
@@ -114,9 +182,10 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogWarning(ex,
-                    "Failed to process outbox entry {EntryId} for canonical source {CanonicalSourceId}",
+                    "Failed to write enriched chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})",
                     entry.Id, entry.CanonicalSourceId);
                 entry.MarkFailed(ex.Message);
+                offset += chunks.Count;
             }
 
             await _outbox.UpdateAsync(entry, ct);

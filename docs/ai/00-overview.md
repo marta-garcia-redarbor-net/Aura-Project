@@ -4,17 +4,6 @@ Aura reduce la carga mental del equipo de ingeniería ingiriendo señales de mú
 
 ---
 
-## Capacidades principales
-
-| Capacidad | Descripción |
-|-----------|-------------|
-| Ingestión multi-fuente | Microsoft Graph (Teams, Outlook, Calendar) + GitHub PRs, normalizados a modelo canónico. |
-| Triáje cognitivo | Morning Summary a las 09:00 AM + motor de interrupciones por estado de foco. |
-| The Reviewer | Análisis estático (SonarQube), supply chain (Dependabot), seguridad (OWASP/MITRE) y validación semántica contra User Story. |
-| Observabilidad | OpenTelemetry, dashboard de tokens/costo IA y latencia por plugin. |
-
----
-
 ## Flujos end-to-end
 
 ### Ingestión → Triáje

@@ -1,0 +1,66 @@
+schema: spec-driven
+
+context: |
+  Stack: .NET 9 / ASP.NET Core minimal API + Worker Service; solution docs still reference .NET 8 and planned Blazor Server UI.
+  Architecture: Clean Architecture + Ports & Adapters across Domain, Application, Infrastructure, Api, and Workers.
+  Testing: xUnit runner with Unit, Integration, and Architecture test projects; E2E project exists but Playwright is not configured.
+  Quality: SDK analyzers + .editorconfig, coverlet collector, and dotnet format are available; warnings are not yet treated as errors.
+  Delivery: TDD-first is an explicit project principle and tests/telemetry are expected in the same change.
+
+strict_tdd: true
+
+testing:
+  detected: 2026-06-02
+  runner:
+    command: dotnet test Aura.sln
+    framework: xUnit + Microsoft.NET.Test.Sdk
+  layers:
+    unit:
+      available: true
+      tool: xUnit (`tests/Aura.UnitTests`)
+    integration:
+      available: true
+      tool: xUnit (`tests/Aura.IntegrationTests`)
+    e2e:
+      available: false
+      tool: scaffold only (`tests/Aura.E2E` without Playwright package/tooling)
+    architecture:
+      available: true
+      tool: xUnit scaffold (`tests/Aura.ArchitectureTests`; no NetArchTest/ArchUnitNET package detected)
+  coverage:
+    available: true
+    command: dotnet test Aura.sln --collect:"XPlat Code Coverage"
+  quality:
+    linter:
+      available: true
+      command: dotnet build Aura.sln
+    type_checker:
+      available: true
+      command: dotnet build Aura.sln
+    formatter:
+      available: true
+      command: dotnet format Aura.sln
+
+rules:
+  proposal:
+    - Respect Clean Architecture boundaries from docs/ai/02-architecture-map.md.
+    - Call out any doc-vs-code mismatch before proposing large changes.
+  specs:
+    - Use Given/When/Then scenarios.
+    - Use RFC 2119 keywords (MUST, SHOULD, MAY) for requirements.
+  design:
+    - Keep provider SDK types inside Infrastructure.
+    - Name ports by domain capability, not provider brand.
+  tasks:
+    - Keep tasks completable in one session.
+    - Include tests and telemetry in the same slice.
+  apply:
+    - Follow existing .NET solution and layer naming.
+    tdd: true
+    test_command: dotnet test Aura.sln
+  verify:
+    test_command: dotnet test Aura.sln --collect:"XPlat Code Coverage"
+    build_command: dotnet build Aura.sln
+    coverage_threshold: 80
+  archive:
+    - Warn before merging deltas that assume Playwright, StyleCop, Polly, OpenTelemetry, or Qdrant are already implemented.

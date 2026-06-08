@@ -7,7 +7,18 @@ namespace Aura.Application.Ports;
 public interface IEmbeddingProvider
 {
     /// <summary>
-    /// Generates a vector embedding for the given text input.
+    /// Generates vector embeddings for a batch of text inputs.
     /// </summary>
-    Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, CancellationToken ct);
+    Task<IReadOnlyList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IReadOnlyList<string> texts, CancellationToken ct);
+
+    /// <summary>
+    /// Generates a single vector embedding. Default implementation delegates to the batch method.
+    /// Retained for backward compatibility with existing consumers (e.g. SemanticIndexSyncWorker V1).
+    /// </summary>
+    async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, CancellationToken ct)
+    {
+        var results = await GenerateEmbeddingsAsync(new[] { text }, ct);
+        return results[0];
+    }
 }

@@ -17,8 +17,7 @@ public static class DependencyInjection
     /// <summary>
     /// Registers Qdrant-backed semantic index services and supporting infrastructure.
     /// Binds <see cref="QdrantOptions"/> from the "Qdrant" configuration section.
-    /// Also registers <see cref="ISemanticChunkExtractor"/>, <see cref="IEmbeddingProvider"/>,
-    /// and <see cref="ISemanticOutboxRepository"/>.
+    /// Also registers <see cref="ISemanticChunkExtractor"/> and <see cref="ISemanticOutboxRepository"/>.
     /// </summary>
     public static IServiceCollection AddQdrantSemanticIndex(
         this IServiceCollection services,
@@ -43,23 +42,6 @@ public static class DependencyInjection
 
         // Chunk extractor — Application-layer service (no external SDK dependency)
         services.AddSingleton<ISemanticChunkExtractor, BasicSemanticChunkExtractor>();
-
-        // Embedding provider — Azure OpenAI V1 (minimal implementation, see provider TODOs)
-        services.AddSingleton<IEmbeddingProvider>(sp =>
-        {
-            var qdrantOptions = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(qdrantOptions.AzureOpenAiEndpoint ?? "https://not-configured.openai.azure.com/")
-            };
-            if (!string.IsNullOrEmpty(qdrantOptions.AzureOpenAiApiKey))
-                httpClient.DefaultRequestHeaders.Add("api-key", qdrantOptions.AzureOpenAiApiKey);
-
-            return new AzureOpenAiEmbeddingProvider(
-                httpClient,
-                qdrantOptions.AzureOpenAiDeployment ?? "text-embedding-ada-002",
-                qdrantOptions.AzureOpenAiApiVersion ?? "2024-02-01");
-        });
 
         // Outbox repository — SQLite for V1
         services.AddSingleton<ISemanticOutboxRepository>(sp =>

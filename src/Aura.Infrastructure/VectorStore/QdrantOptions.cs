@@ -28,20 +28,6 @@ public sealed class QdrantOptions
     /// <summary>Embedding vector dimension. Must match the embedding provider output.</summary>
     public int VectorSize { get; set; } = 1536;
 
-    // ── Azure OpenAI embedding configuration (V1 — minimal) ─────────
-
-    /// <summary>Azure OpenAI endpoint (e.g., "https://my-resource.openai.azure.com/").</summary>
-    public string? AzureOpenAiEndpoint { get; set; }
-
-    /// <summary>Azure OpenAI API key.</summary>
-    public string? AzureOpenAiApiKey { get; set; }
-
-    /// <summary>Azure OpenAI deployment name for embeddings.</summary>
-    public string? AzureOpenAiDeployment { get; set; }
-
-    /// <summary>Azure OpenAI API version.</summary>
-    public string? AzureOpenAiApiVersion { get; set; }
-
     /// <summary>
     /// Maps a domain collection type to the configured Qdrant collection name.
     /// </summary>

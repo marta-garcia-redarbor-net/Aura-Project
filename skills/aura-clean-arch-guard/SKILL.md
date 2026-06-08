@@ -55,5 +55,5 @@ Devolver:
 
 - `docs/ai/02-architecture-map.md`
 - `docs/ai/03-delivery-rules.md`
-- `Agents.md`
+- `AGENTS.md`
 - `docs/ai/06-skill-catalog.md`
