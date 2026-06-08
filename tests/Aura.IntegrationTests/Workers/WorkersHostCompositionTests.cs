@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 using Aura.Application.Ports;
 using Aura.Infrastructure.Embedding;
 using Aura.Infrastructure.VectorStore;
@@ -5,12 +6,25 @@ using Aura.Workers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+=======
+using Aura.Application;
+using Aura.Application.Ports;
+using Aura.Infrastructure;
+using Aura.Infrastructure.Adapters.Embedding;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+>>>>>>> Stashed changes
 
 namespace Aura.IntegrationTests.Workers;
 
 /// <summary>
+<<<<<<< Updated upstream
 /// Proves that the Workers host composes correctly using the same DI extension methods
 /// as <c>Program.cs</c>. Resolves critical services from a manually-built ServiceCollection
+=======
+/// Proves that the Workers host composes correctly using the unified DI extension methods.
+/// Resolves critical services from a manually-built ServiceCollection
+>>>>>>> Stashed changes
 /// to verify composition without needing external infrastructure (Qdrant, OpenAI).
 /// </summary>
 public class WorkersHostCompositionTests
@@ -36,8 +50,13 @@ public class WorkersHostCompositionTests
         services.AddLogging();
 
         // Mirror the exact extension method calls from Workers/Program.cs
+<<<<<<< Updated upstream
         services.AddQdrantSemanticIndex(config);
         services.AddMeaiEmbeddingProvider(config);
+=======
+        services.AddAuraApplication();
+        services.AddAuraInfrastructure(config);
+>>>>>>> Stashed changes
 
         return services.BuildServiceProvider();
     }

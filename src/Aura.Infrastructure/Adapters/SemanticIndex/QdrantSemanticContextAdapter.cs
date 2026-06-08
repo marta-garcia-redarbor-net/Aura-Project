@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
-namespace Aura.Infrastructure.VectorStore;
+namespace Aura.Infrastructure.Adapters.SemanticIndex;
 
 /// <summary>
 /// Qdrant implementation of <see cref="ISemanticContextRetriever"/>.

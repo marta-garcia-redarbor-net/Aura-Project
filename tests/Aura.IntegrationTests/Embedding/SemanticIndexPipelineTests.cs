@@ -2,7 +2,11 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.SemanticIndex.Enums;
 using Aura.Domain.SemanticIndex.ValueObjects;
+<<<<<<< Updated upstream
 using Aura.Infrastructure.VectorStore;
+=======
+using Aura.Infrastructure.Adapters.SemanticIndex;
+>>>>>>> Stashed changes
 using Aura.IntegrationTests.VectorStore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
