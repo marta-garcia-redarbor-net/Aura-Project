@@ -1,25 +1,19 @@
+using Aura.Application;
 using Aura.Application.Ports;
+using Aura.Application.Services;
 using Aura.Infrastructure.Adapters.Embedding;
 using Aura.Infrastructure.Adapters.SemanticIndex;
-using Aura.Application.Services;
-using Aura.Infrastructure.Embedding;
-using Aura.Infrastructure.Persistence;
-using Aura.Infrastructure.VectorStore;
+using Aura.Infrastructure.Adapters.SemanticOutbox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Qdrant.Client;
-using VectorStoreDI = Aura.Infrastructure.VectorStore.DependencyInjection;
 
 namespace Aura.UnitTests.VectorStore;
 
 public class DependencyInjectionTests
 {
-<<<<<<< Updated upstream
-    private static (IServiceCollection Services, IConfiguration Config) CreateServicesWithQdrant()
-=======
-    private static (IServiceCollection Services, IConfiguration Config) CreateServicesWithSemanticIndex()
->>>>>>> Stashed changes
+    private static (IServiceCollection Services, IConfiguration Config) CreateServicesWithConfig()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -43,11 +37,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_RegistersQdrantOptions()
     {
-<<<<<<< Updated upstream
-        var (services, _) = CreateServicesWithQdrant();
-=======
-        var (services, _) = CreateServicesWithSemanticIndex();
->>>>>>> Stashed changes
+        var (services, _) = CreateServicesWithConfig();
         var provider = services.BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<QdrantOptions>>();
@@ -60,11 +50,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_RegistersQdrantClient_AsSingleton()
     {
-<<<<<<< Updated upstream
-        var (services, _) = CreateServicesWithQdrant();
-=======
-        var (services, _) = CreateServicesWithSemanticIndex();
->>>>>>> Stashed changes
+        var (services, _) = CreateServicesWithConfig();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(QdrantClient));
@@ -76,11 +62,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_ResolvesQdrantClient_WithConfiguredHost()
     {
-<<<<<<< Updated upstream
-        var (services, _) = CreateServicesWithQdrant();
-=======
-        var (services, _) = CreateServicesWithSemanticIndex();
->>>>>>> Stashed changes
+        var (services, _) = CreateServicesWithConfig();
         using var provider = services.BuildServiceProvider();
 
         var client = provider.GetRequiredService<QdrantClient>();
@@ -91,13 +73,8 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_ResolvesSemanticIndexWriter()
     {
-<<<<<<< Updated upstream
-        var (services, config) = CreateServicesWithQdrant();
-        services.AddMeaiEmbeddingProvider(config);
-=======
-        var (services, config) = CreateServicesWithSemanticIndex();
+        var (services, config) = CreateServicesWithConfig();
         services.AddEmbeddingAdapter(config);
->>>>>>> Stashed changes
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -110,13 +87,8 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_ResolvesSemanticContextRetriever()
     {
-<<<<<<< Updated upstream
-        var (services, config) = CreateServicesWithQdrant();
-        services.AddMeaiEmbeddingProvider(config);
-=======
-        var (services, config) = CreateServicesWithSemanticIndex();
+        var (services, config) = CreateServicesWithConfig();
         services.AddEmbeddingAdapter(config);
->>>>>>> Stashed changes
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -129,11 +101,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_RegistersSemanticIndexWriter_AsScoped()
     {
-<<<<<<< Updated upstream
-        var (services, _) = CreateServicesWithQdrant();
-=======
-        var (services, _) = CreateServicesWithSemanticIndex();
->>>>>>> Stashed changes
+        var (services, _) = CreateServicesWithConfig();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(ISemanticIndexWriter));
@@ -145,11 +113,7 @@ public class DependencyInjectionTests
     [Fact]
     public void AddSemanticIndexAdapter_RegistersSemanticContextRetriever_AsScoped()
     {
-<<<<<<< Updated upstream
-        var (services, _) = CreateServicesWithQdrant();
-=======
-        var (services, _) = CreateServicesWithSemanticIndex();
->>>>>>> Stashed changes
+        var (services, _) = CreateServicesWithConfig();
 
         var descriptor = services.FirstOrDefault(
             d => d.ServiceType == typeof(ISemanticContextRetriever));
@@ -164,11 +128,7 @@ public class DependencyInjectionTests
         var config = new ConfigurationBuilder().Build();
 
         Assert.Throws<ArgumentNullException>(() =>
-<<<<<<< Updated upstream
-            VectorStoreDI.AddQdrantSemanticIndex(null!, config));
-=======
             Aura.Infrastructure.Adapters.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter(null!, config));
->>>>>>> Stashed changes
     }
 
     [Fact]
@@ -177,16 +137,16 @@ public class DependencyInjectionTests
         var services = new ServiceCollection();
 
         Assert.Throws<ArgumentNullException>(() =>
-<<<<<<< Updated upstream
-            services.AddQdrantSemanticIndex(null!));
+            services.AddSemanticIndexAdapter(null!));
     }
 
-    // ── Corrective patch DI registrations ──────────────────────
+    // ── Cross-adapter DI composition ──────────────────────────────────
 
     [Fact]
-    public void AddQdrantSemanticIndex_ResolvesSemanticChunkExtractor()
+    public void AddAuraApplication_ResolvesSemanticChunkExtractor()
     {
-        var (services, _) = CreateServicesWithQdrant();
+        var services = new ServiceCollection();
+        services.AddAuraApplication();
         using var provider = services.BuildServiceProvider();
 
         var extractor = provider.GetRequiredService<ISemanticChunkExtractor>();
@@ -196,17 +156,22 @@ public class DependencyInjectionTests
     }
 
     [Fact]
-    public void AddQdrantSemanticIndex_ResolvesSemanticOutboxRepository()
+    public void AddSemanticOutboxAdapter_ResolvesSemanticOutboxRepository()
     {
-        var (services, _) = CreateServicesWithQdrant();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddSemanticOutboxAdapter(config);
         using var provider = services.BuildServiceProvider();
 
         var repo = provider.GetRequiredService<ISemanticOutboxRepository>();
 
         Assert.NotNull(repo);
         Assert.IsType<SqliteSemanticOutboxRepository>(repo);
-=======
-            services.AddSemanticIndexAdapter(null!));
->>>>>>> Stashed changes
     }
 }

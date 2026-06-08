@@ -1,5 +1,5 @@
 using Aura.Application.Ports;
-using Aura.Infrastructure.Embedding;
+using Aura.Infrastructure.Adapters.Embedding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,10 +18,10 @@ public class EmbeddingDependencyInjectionTests
             .Build();
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_RegistersIEmbeddingProvider()
+    public void AddEmbeddingAdapter_RegistersIEmbeddingProvider()
     {
         var services = new ServiceCollection();
-        services.AddMeaiEmbeddingProvider(CreateConfig());
+        services.AddEmbeddingAdapter(CreateConfig());
 
         var descriptor = services.LastOrDefault(d => d.ServiceType == typeof(IEmbeddingProvider));
         Assert.NotNull(descriptor);
@@ -29,13 +29,13 @@ public class EmbeddingDependencyInjectionTests
     }
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_OverridesExistingRegistration()
+    public void AddEmbeddingAdapter_OverridesExistingRegistration()
     {
         var services = new ServiceCollection();
-        // Simulate old registration from AddQdrantSemanticIndex
+        // Simulate old registration that should be overridden
         services.AddSingleton<IEmbeddingProvider>(_ =>
             throw new InvalidOperationException("Old provider should be overridden"));
-        services.AddMeaiEmbeddingProvider(CreateConfig());
+        services.AddEmbeddingAdapter(CreateConfig());
 
         // MEAI registration should be the LAST one — .NET DI resolves the last registration
         var descriptors = services
@@ -48,24 +48,24 @@ public class EmbeddingDependencyInjectionTests
     }
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_NullServices_ThrowsArgumentNull()
+    public void AddEmbeddingAdapter_NullServices_ThrowsArgumentNull()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            DependencyInjection.AddMeaiEmbeddingProvider(null!, CreateConfig()));
+            DependencyInjection.AddEmbeddingAdapter(null!, CreateConfig()));
     }
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_NullConfiguration_ThrowsArgumentNull()
+    public void AddEmbeddingAdapter_NullConfiguration_ThrowsArgumentNull()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection().AddMeaiEmbeddingProvider(null!));
+            new ServiceCollection().AddEmbeddingAdapter(null!));
     }
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_ResolvesFullPipeline()
+    public void AddEmbeddingAdapter_ResolvesFullPipeline()
     {
         var services = new ServiceCollection();
-        services.AddMeaiEmbeddingProvider(CreateConfig());
+        services.AddEmbeddingAdapter(CreateConfig());
         using var provider = services.BuildServiceProvider();
 
         var embedder = provider.GetRequiredService<IEmbeddingProvider>();
@@ -75,7 +75,7 @@ public class EmbeddingDependencyInjectionTests
     }
 
     [Fact]
-    public void AddMeaiEmbeddingProvider_ResolvesFullPipeline_WithCustomConfig()
+    public void AddEmbeddingAdapter_ResolvesFullPipeline_WithCustomConfig()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -89,7 +89,7 @@ public class EmbeddingDependencyInjectionTests
             .Build();
 
         var services = new ServiceCollection();
-        services.AddMeaiEmbeddingProvider(config);
+        services.AddEmbeddingAdapter(config);
         using var provider = services.BuildServiceProvider();
 
         var embedder = provider.GetRequiredService<IEmbeddingProvider>();
