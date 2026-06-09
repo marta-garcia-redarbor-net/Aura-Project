@@ -4,6 +4,8 @@ using Aura.Infrastructure;
 using Aura.Infrastructure.Adapters.Embedding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace Aura.IntegrationTests.Workers;
 
@@ -14,6 +16,14 @@ namespace Aura.IntegrationTests.Workers;
 /// </summary>
 public class WorkersHostCompositionTests
 {
+    private sealed class FakeHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = Environments.Development;
+        public string ApplicationName { get; set; } = "Aura.Workers.Tests";
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+    }
+
     private static ServiceProvider BuildWorkerServiceProvider()
     {
         var config = new ConfigurationBuilder()
@@ -36,7 +46,7 @@ public class WorkersHostCompositionTests
 
         // Mirror the exact extension method calls from Workers/Program.cs
         services.AddAuraApplication();
-        services.AddAuraInfrastructure(config);
+        services.AddAuraInfrastructure(config, new FakeHostEnvironment());
 
         return services.BuildServiceProvider();
     }
