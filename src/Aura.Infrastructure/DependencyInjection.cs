@@ -1,6 +1,7 @@
 using Aura.Infrastructure.Adapters.Embedding;
 using Aura.Infrastructure.Adapters.SemanticIndex;
 using Aura.Infrastructure.Adapters.SemanticOutbox;
+using Aura.Infrastructure.Health;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
     /// <summary>
     /// Registers all infrastructure adapter services with the DI container.
     /// Calls internal adapter DI methods for Embedding, SemanticIndex, and SemanticOutbox.
+    /// Also registers the Qdrant health check.
     /// </summary>
     public static IServiceCollection AddAuraInfrastructure(
         this IServiceCollection services,
@@ -26,6 +28,9 @@ public static class DependencyInjection
         services.AddEmbeddingAdapter(configuration);
         services.AddSemanticIndexAdapter(configuration);
         services.AddSemanticOutboxAdapter(configuration);
+
+        services.AddHealthChecks()
+            .AddCheck<QdrantHealthCheck>("qdrant");
 
         return services;
     }
