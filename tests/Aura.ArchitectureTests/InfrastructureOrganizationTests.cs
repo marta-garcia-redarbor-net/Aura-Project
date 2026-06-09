@@ -25,8 +25,8 @@ public class InfrastructureOrganizationTests
             .ToList();
 
         // Allowed locations: root-level files (DependencyInjection.cs, GlobalUsings.cs, etc.)
-        // and files under Adapters/ or Shared/
-        var allowedPrefixes = new[] { "Adapters" + Path.DirectorySeparatorChar, "Shared" + Path.DirectorySeparatorChar };
+        // and files under Adapters/, Shared/, or Health/
+        var allowedPrefixes = new[] { "Adapters" + Path.DirectorySeparatorChar, "Shared" + Path.DirectorySeparatorChar, "Health" + Path.DirectorySeparatorChar };
 
         // Act: find files that are NOT root-level AND NOT under allowed prefixes
         var misplaced = allSourceFiles

@@ -24,11 +24,15 @@ logs/
 # Local secrets and environment overrides
 .env
 .env.*
+!.env.example
 secrets.json
 
 # Playwright and browser artifacts
 playwright-report/
 test-results/
+
+# Qdrant local storage
+qdrant_storage/
 
 # AI / local tooling indexes
 .atl/

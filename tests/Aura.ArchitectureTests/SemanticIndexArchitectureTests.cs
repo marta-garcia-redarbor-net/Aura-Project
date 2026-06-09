@@ -130,6 +130,52 @@ public class SemanticIndexArchitectureTests
             $"Application Ports with 'I' prefix should be interfaces: {FormatFailingTypes(result)}");
     }
 
+    [Fact]
+    public void HealthCheckTypes_MustResideInInfrastructure()
+    {
+        var infraAssembly = typeof(Aura.Infrastructure.DependencyInjection).Assembly;
+
+        var healthCheckTypes = infraAssembly.GetTypes()
+            .Where(t => t.GetInterfaces().Any(i => i.FullName == "Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck"))
+            .ToList();
+
+        Assert.NotEmpty(healthCheckTypes);
+
+        var misplaced = healthCheckTypes
+            .Where(t => t.Namespace is null || !t.Namespace.StartsWith(InfrastructureNamespace))
+            .Select(t => t.FullName)
+            .ToList();
+
+        Assert.True(misplaced.Count == 0,
+            $"Health check types outside Infrastructure: {string.Join(", ", misplaced)}");
+    }
+
+    [Fact]
+    public void Domain_ShouldNotReference_HealthChecks()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Domain.SemanticIndex.ValueObjects.SemanticChunk).Assembly)
+            .ShouldNot()
+            .HaveDependencyOn("Microsoft.Extensions.Diagnostics.HealthChecks")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"Domain references HealthChecks: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
+    public void Application_ShouldNotReference_HealthChecks()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Application.Ports.ISemanticIndexWriter).Assembly)
+            .ShouldNot()
+            .HaveDependencyOn("Microsoft.Extensions.Diagnostics.HealthChecks")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"Application references HealthChecks: {FormatFailingTypes(result)}");
+    }
+
     private static string FormatFailingTypes(TestResult result)
     {
         if (result.FailingTypes == null || !result.FailingTypes.Any())
