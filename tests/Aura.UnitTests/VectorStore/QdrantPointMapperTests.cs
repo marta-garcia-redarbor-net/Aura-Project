@@ -1,6 +1,6 @@
 using Aura.Domain.SemanticIndex.Enums;
 using Aura.Domain.SemanticIndex.ValueObjects;
-using Aura.Infrastructure.VectorStore;
+using Aura.Infrastructure.Adapters.SemanticIndex;
 
 namespace Aura.UnitTests.VectorStore;
 

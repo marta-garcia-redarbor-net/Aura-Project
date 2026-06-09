@@ -1,6 +1,6 @@
 using Aura.Domain.SemanticIndex.Enums;
 
-namespace Aura.Infrastructure.VectorStore;
+namespace Aura.Infrastructure.Adapters.SemanticIndex;
 
 /// <summary>
 /// Configuration POCO for Qdrant vector store connection and collection mapping.

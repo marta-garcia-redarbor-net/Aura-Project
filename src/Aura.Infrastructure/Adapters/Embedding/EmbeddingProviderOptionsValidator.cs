@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace Aura.Infrastructure.Embedding;
+namespace Aura.Infrastructure.Adapters.Embedding;
 
 /// <summary>
 /// Fail-fast validation for <see cref="EmbeddingProviderOptions"/>.

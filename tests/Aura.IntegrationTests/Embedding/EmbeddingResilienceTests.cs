@@ -1,6 +1,6 @@
 using System.Net;
 using Aura.Application.Ports;
-using Aura.Infrastructure.Embedding;
+using Aura.Infrastructure.Adapters.Embedding;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -139,7 +139,7 @@ public class EmbeddingResilienceTests
             .Build();
 
         var services = new ServiceCollection();
-        services.AddMeaiEmbeddingProvider(config);
+        services.AddEmbeddingAdapter(config);
 
         // Replace the MEAI generator with our fake
         var descriptor = services.FirstOrDefault(d =>

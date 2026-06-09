@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Aura.Infrastructure.Embedding;
+using Aura.Infrastructure.Adapters.Embedding;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 using NSubstitute;

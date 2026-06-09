@@ -7,21 +7,21 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using Polly.Registry;
 
-namespace Aura.Infrastructure.Embedding;
+namespace Aura.Infrastructure.Adapters.Embedding;
 
 /// <summary>
 /// DI registration for the MEAI-based embedding provider adapter.
 /// Wires the MEAI pipeline with OpenTelemetry, Polly resilience (via shared builder),
 /// options validation, and the <see cref="IEmbeddingProvider"/> adapter.
 /// </summary>
-public static class DependencyInjection
+internal static class DependencyInjection
 {
     /// <summary>
     /// Registers MEAI-backed embedding services.
     /// Binds <see cref="EmbeddingProviderOptions"/> from the "EmbeddingProvider" configuration section.
     /// Establishes the Polly resilience pipeline via <see cref="EmbeddingResiliencePolicyBuilder"/>.
     /// </summary>
-    public static IServiceCollection AddMeaiEmbeddingProvider(
+    internal static IServiceCollection AddEmbeddingAdapter(
         this IServiceCollection services,
         IConfiguration configuration)
     {

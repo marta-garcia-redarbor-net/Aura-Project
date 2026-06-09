@@ -1,4 +1,4 @@
-using Aura.Infrastructure.Embedding;
+using Aura.Infrastructure.Adapters.Embedding;
 using Microsoft.Extensions.Options;
 
 namespace Aura.UnitTests.Infrastructure;

@@ -6,13 +6,13 @@ using Polly.Registry;
 using Polly.Retry;
 using Polly.Timeout;
 
-namespace Aura.Infrastructure.Embedding;
+namespace Aura.Infrastructure.Adapters.Embedding;
 
 /// <summary>
 /// Polly resilience pipeline factory for embedding provider operations.
 /// Centralizes retry and timeout strategies for OpenAI/MEAI calls.
 /// </summary>
-public static class EmbeddingResiliencePolicyBuilder
+internal static class EmbeddingResiliencePolicyBuilder
 {
     /// <summary>
     /// Key for the resilience pipeline in the Polly registry.
@@ -23,12 +23,6 @@ public static class EmbeddingResiliencePolicyBuilder
     /// Registers the embedding provider resilience pipeline with the DI container.
     /// Applies exponential backoff retry (transient HTTP 429/503/timeout) + timeout.
     /// </summary>
-    /// <remarks>
-    /// Strategy:
-    /// - Retry on 429 (TooManyRequests), 503 (ServiceUnavailable), timeout
-    /// - Exponential backoff: base 1s, randomized jitter
-    /// - Max retries and timeout read from <see cref="EmbeddingProviderOptions"/>
-    /// </remarks>
     public static void AddEmbeddingResiliencePolicy(
         this IServiceCollection services,
         EmbeddingProviderOptions options)
