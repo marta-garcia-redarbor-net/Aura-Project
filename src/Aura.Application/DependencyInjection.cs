@@ -1,3 +1,5 @@
+using Aura.Application.Kernel;
+using Aura.Application.Kernel.Plugins;
 using Aura.Application.Ports;
 using Aura.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +13,7 @@ namespace Aura.Application;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers Application-layer services (chunk extractor, etc.) with the DI container.
+    /// Registers Application-layer services (chunk extractor, kernel pipeline, etc.) with the DI container.
     /// </summary>
     public static IServiceCollection AddAuraApplication(this IServiceCollection services)
     {
@@ -19,6 +21,17 @@ public static class DependencyInjection
 
         services.AddSingleton<ISemanticChunkExtractor, BasicSemanticChunkExtractor>();
 
+        AddKernel(services);
+
         return services;
+    }
+
+    /// <summary>
+    /// Registers kernel pipeline components. Isolated to reduce merge risk with parallel changes.
+    /// </summary>
+    private static void AddKernel(IServiceCollection services)
+    {
+        services.AddSingleton<IPlugin, HelloPlugin>();
+        services.AddSingleton<IPluginRegistry, PluginRegistry>();
     }
 }
