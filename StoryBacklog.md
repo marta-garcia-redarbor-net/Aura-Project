@@ -26,19 +26,19 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** solución compilable con capas limpias y tests separados.
 
-- [ ] **W1-H1-T1** Crear la solution `Aura.sln`.  
+- [x] **W1-H1-T1** Crear la solution `Aura.sln`.  
   **DoD:** archivo de solución creado y visible en repo.  
   **Riesgo:** arrancar sin una convención estructural común.
-- [ ] **W1-H1-T2** Crear proyectos `Aura.Api`, `Aura.Application`, `Aura.Domain`, `Aura.Infrastructure`, `Aura.Workers`.  
+- [x] **W1-H1-T2** Crear proyectos `Aura.Api`, `Aura.Application`, `Aura.Domain`, `Aura.Infrastructure`, `Aura.Workers`.  
   **DoD:** proyectos creados con target .NET 9.  
   **Riesgo:** diferencias de versión o plantillas inconsistentes.
-- [ ] **W1-H1-T3** Crear proyectos de test `Aura.UnitTests`, `Aura.IntegrationTests`, `Aura.E2E`, `Aura.ArchitectureTests`.  
+- [x] **W1-H1-T3** Crear proyectos de test `Aura.UnitTests`, `Aura.IntegrationTests`, `Aura.E2E`, `Aura.ArchitectureTests`.  
   **DoD:** proyectos de test creados y agregados a solución.  
   **Riesgo:** dejar la validación para más tarde.
-- [ ] **W1-H1-T4** Configurar referencias entre capas respetando Clean Architecture.  
+- [x] **W1-H1-T4** Configurar referencias entre capas respetando Clean Architecture.  
   **DoD:** `Domain` no depende de `Infrastructure`; compilación verde.  
   **Riesgo:** contaminar el modelo desde el primer día.
-- [ ] **W1-H1-T5** Añadir README corto de arranque técnico.  
+- [x] **W1-H1-T5** Añadir README corto de arranque técnico.  
   **DoD:** instrucciones mínimas para compilar y arrancar la solución.  
   **Riesgo:** fricción de onboarding desde el inicio.
 
@@ -46,13 +46,13 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** solución validable con comando único y reglas básicas de calidad.
 
-- [ ] **W1-H2-T1** Añadir `.editorconfig` con reglas base.  
+- [x] **W1-H2-T1** Añadir `.editorconfig` con reglas base.  
   **DoD:** formato y estilo homogéneo en la solución.  
   **Riesgo:** deriva de estilo temprana.
-- [ ] **W1-H2-T2** Activar analyzers/StyleCop básicos.  
+- [x] **W1-H2-T2** Activar analyzers/StyleCop básicos.  
   **DoD:** warnings visibles en build local.  
   **Riesgo:** deuda técnica silenciosa.
-- [ ] **W1-H2-T3** Definir comando de validación local (`restore/build/test`).  
+- [x] **W1-H2-T3** Definir comando de validación local (`restore/build/test`).  
   **DoD:** existe un flujo reproducible documentado.  
   **Riesgo:** cada desarrollador valida distinto.
 
@@ -62,16 +62,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** entorno local reproducible con almacenamiento vectorial listo para integrarse.
 
-- [ ] **W1-H3-T1** Crear `docker-compose.yml` con servicio Qdrant.  
+- [x] **W1-H3-T1** Crear `docker-compose.yml` con servicio Qdrant.  
   **DoD:** servicio definido con puerto y volumen persistente.  
   **Riesgo:** configuración frágil o no portable.
-- [ ] **W1-H3-T2** Añadir healthcheck y variables locales.  
+- [x] **W1-H3-T2** Añadir healthcheck y variables locales.  
   **DoD:** el contenedor expone estado saludable.  
   **Riesgo:** falso positivo de disponibilidad.
-- [ ] **W1-H3-T3** Documentar arranque y parada del entorno.  
+- [x] **W1-H3-T3** Documentar arranque y parada del entorno.  
   **DoD:** pasos locales claros en markdown.  
   **Riesgo:** dependencia de memoria operativa.
-- [ ] **W1-H3-T4** Crear prueba de conectividad desde `Infrastructure`.  
+- [x] **W1-H3-T4** Crear prueba de conectividad desde `Infrastructure`.  
   **DoD:** un test o endpoint simple verifica conexión a Qdrant.  
   **Riesgo:** descubrir tarde que la integración base no funciona.
 
@@ -354,4 +354,4 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 ## Siguiente paso recomendado
 
-Empezar por **W1-H1-T1** y no abrir más de una historia a la vez hasta tener una base compilable. Esa disciplina es la que mantiene el control del proyecto.
+Empezar por **W1-H4-T1** y no abrir más de una historia a la vez hasta cerrar el skeleton del kernel. Esa disciplina es la que mantiene el control del proyecto.
