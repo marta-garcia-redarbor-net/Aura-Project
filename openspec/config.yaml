@@ -1,16 +1,16 @@
 schema: spec-driven
 
 context: |
-  Stack: .NET 9 / ASP.NET Core minimal API + Worker Service; solution docs still reference .NET 8 and planned Blazor Server UI.
+  Stack: .NET 9 / ASP.NET Core minimal API + Worker Service; solution docs still reference .NET 8 and a planned Blazor Server UI.
   Architecture: Clean Architecture + Ports & Adapters across Domain, Application, Infrastructure, Api, and Workers.
-  Testing: xUnit runner with Unit, Integration, and Architecture test projects; E2E project exists but Playwright is not configured.
+  Testing: xUnit runner with Unit, Integration, and Architecture test projects; architecture rules use NetArchTest; E2E project exists but Playwright is not configured.
   Quality: SDK analyzers + .editorconfig, coverlet collector, and dotnet format are available; warnings are not yet treated as errors.
   Delivery: TDD-first is an explicit project principle and tests/telemetry are expected in the same change.
 
 strict_tdd: true
 
 testing:
-  detected: 2026-06-02
+  detected: 2026-06-10
   runner:
     command: dotnet test Aura.sln
     framework: xUnit + Microsoft.NET.Test.Sdk
@@ -23,10 +23,10 @@ testing:
       tool: xUnit (`tests/Aura.IntegrationTests`)
     e2e:
       available: false
-      tool: scaffold only (`tests/Aura.E2E` without Playwright package/tooling)
+      tool: xUnit placeholder project (`tests/Aura.E2E`) without Playwright package/tooling
     architecture:
       available: true
-      tool: xUnit scaffold (`tests/Aura.ArchitectureTests`; no NetArchTest/ArchUnitNET package detected)
+      tool: xUnit + NetArchTest (`tests/Aura.ArchitectureTests`)
   coverage:
     available: true
     command: dotnet test Aura.sln --collect:"XPlat Code Coverage"
