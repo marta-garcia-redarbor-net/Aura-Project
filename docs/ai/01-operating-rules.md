@@ -13,6 +13,15 @@ Reglas que todo agente debe respetar al trabajar en el código de Aura. Son no n
 
 ---
 
+## Reglas de colaboración
+
+- Las respuestas al usuario deben ser concisas por defecto, sin omitir decisiones, riesgos ni siguiente paso.
+- Evitá redundancia, contexto accesorio y explicaciones largas si no cambian la decisión.
+- Al proponer tests, priorizá sólo los que aportan valor real sobre comportamiento, riesgo o integración.
+- No agregar tests que sólo validen cableado trivial, duplican cobertura existente o no cambian la confianza sobre el cambio.
+
+---
+
 ## Reglas de código
 
 | Regla | Obligatorio |
@@ -48,6 +57,7 @@ Reglas que todo agente debe respetar al trabajar en el código de Aura. Son no n
 ## Reglas de calidad
 
 - TDD como estrategia preferida; tests en el mismo commit que el código.
+- Menos tests, mejor elegidos: cubrir comportamiento crítico, regresiones probables e integración relevante antes que inflar cobertura mecánica.
 - `Domain` sólo depende de abstracciones propias.
 - Casos de uso no contienen lógica de transporte ni SDK.
 - Conventional Commits obligatorio para versionado y ChangeLog automático.

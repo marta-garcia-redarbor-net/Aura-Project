@@ -2,13 +2,27 @@ using Aura.Application;
 using Aura.Infrastructure;
 using Aura.Workers;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+var kernelOnly = args.Contains("--kernel-only");
 
-// Application + Infrastructure unified DI
+var builder = Host.CreateApplicationBuilder(args);
+
+// Application services are always registered (kernel + domain abstractions)
 builder.Services.AddAuraApplication();
-builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
-builder.Services.AddHostedService<SemanticIndexSyncWorker>();
+
+if (kernelOnly)
+{
+    // Kernel-only mode: skip infrastructure adapters that require external config
+    // (EmbeddingProvider, Qdrant, ConnectionStrings). Only the kernel pipeline runs.
+    builder.Services.AddHostedService<HelloKernelWorker>();
+}
+else
+{
+    // Full mode: all infrastructure adapters + background workers
+    builder.Services.AddHostedService<Worker>();
+    builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
+    builder.Services.AddHostedService<SemanticIndexSyncWorker>();
+    builder.Services.AddHostedService<HelloKernelWorker>();
+}
 
 var host = builder.Build();
 host.Run();
