@@ -2,6 +2,8 @@ using Aura.Application.Ports;
 using Aura.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NSubstitute;
 
 namespace Aura.UnitTests.Infrastructure;
 
@@ -25,11 +27,18 @@ public class InfrastructureDependencyInjectionTests
             })
             .Build();
 
+    private static IHostEnvironment CreateDevEnvironment()
+    {
+        var env = Substitute.For<IHostEnvironment>();
+        env.EnvironmentName.Returns(Environments.Development);
+        return env;
+    }
+
     [Fact]
     public void AddAuraInfrastructure_ResolvesIEmbeddingProvider()
     {
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
         using var provider = services.BuildServiceProvider();
 
         var embedding = provider.GetRequiredService<IEmbeddingProvider>();
@@ -41,7 +50,7 @@ public class InfrastructureDependencyInjectionTests
     public void AddAuraInfrastructure_ResolvesISemanticIndexWriter()
     {
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -54,7 +63,7 @@ public class InfrastructureDependencyInjectionTests
     public void AddAuraInfrastructure_ResolvesISemanticContextRetriever()
     {
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
@@ -67,7 +76,7 @@ public class InfrastructureDependencyInjectionTests
     public void AddAuraInfrastructure_ResolvesISemanticOutboxRepository()
     {
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
         using var provider = services.BuildServiceProvider();
 
         var repo = provider.GetRequiredService<ISemanticOutboxRepository>();
@@ -85,7 +94,7 @@ public class InfrastructureDependencyInjectionTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
 
         // Act
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ISemanticChunkExtractor));
@@ -104,7 +113,7 @@ public class InfrastructureDependencyInjectionTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddAuraInfrastructure(CreateConfig());
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
         using var provider = services.BuildServiceProvider();
 
         // Act & Assert: attempting to resolve throws because it's not registered

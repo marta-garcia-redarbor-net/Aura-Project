@@ -19,7 +19,7 @@ else
 {
     // Full mode: all infrastructure adapters + background workers
     builder.Services.AddHostedService<Worker>();
-    builder.Services.AddAuraInfrastructure(builder.Configuration);
+    builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
 }
