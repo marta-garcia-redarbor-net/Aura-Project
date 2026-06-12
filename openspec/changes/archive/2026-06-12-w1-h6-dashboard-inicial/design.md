@@ -2,7 +2,7 @@
 
 ## Technical Approach
 
-Create a separate `src/Aura.UI/` Blazor Server host and keep all business/data access behind `Aura.Api`. `Aura.Api` will add one dashboard endpoint that composes an initial response from Application services and current-user context. `Aura.UI` will render the Stitch-derived shell first, then call the API through a typed `HttpClient` and map the response into loading, empty, error, and populated states.
+Create a separate `src/Aura.UI/` Blazor Server host and keep all business/data access behind `Aura.Api`. `Aura.Api` will add one dashboard endpoint that composes an initial response from Application services and current-user context. `Aura.UI` renders the Stitch-derived shell through `MainLayout`, performs the initial dashboard fetch in `OnInitializedAsync`, persists the resolved `DashboardViewState` with `PersistentComponentState`, and passes the shared state down to the page/components for loading, empty, error, and populated rendering.
 
 ## Architecture Decisions
 
@@ -15,9 +15,9 @@ Create a separate `src/Aura.UI/` Blazor Server host and keep all business/data a
 
 ## Data Flow
 
-`Browser -> Aura.UI (Blazor Server page/component) -> typed HttpClient -> Aura.Api /api/dashboard/initial -> Application service -> ICurrentUserService`
+`Browser -> Aura.UI MainLayout -> typed HttpClient -> Aura.Api /api/dashboard/initial -> Application service -> ICurrentUserService`
 
-The page renders shell markup immediately. After first render, a UI state container requests dashboard data. API returns a small DTO with user greeting and initial cards. UI maps:
+`MainLayout.razor` owns the initial fetch/persist handoff. During `OnInitializedAsync` it first tries `PersistentComponentState`, otherwise calls the typed API client, maps the response into `DashboardViewState`, registers persistence for prerender handoff, and cascades the shared state to `Index.razor` and child components. API returns a small DTO with user greeting and initial cards. UI maps:
 - request pending -> loading
 - 200 with empty cards -> empty
 - non-success/exception -> error
@@ -30,10 +30,10 @@ The page renders shell markup immediately. After first render, a UI state contai
 | `Aura.sln` | Modify | Add `Aura.UI` under `src` and keep test projects wired. |
 | `src/Aura.UI/Aura.UI.csproj` | Create | New Blazor Server host; no references to Domain/Application/Infrastructure. |
 | `src/Aura.UI/Program.cs` | Create | Register Razor components, typed dashboard API client, auth token forwarding, and `Program` marker for tests. |
-| `src/Aura.UI/Components/Layout/MainLayout.razor` | Create | Stitch-derived dashboard shell. |
+| `src/Aura.UI/Components/Layout/MainLayout.razor` | Create | Stitch-derived dashboard shell plus initial dashboard fetch/persist handoff via `OnInitializedAsync` and `PersistentComponentState`. |
 | `src/Aura.UI/Components/Layout/Sidebar.razor` | Create | Sidebar navigation fragment. |
 | `src/Aura.UI/Components/Layout/Header.razor` | Create | Header fragment with user summary. |
-| `src/Aura.UI/Pages/Index.razor` | Create | Default dashboard route with loading/empty/error/populated states. |
+| `src/Aura.UI/Pages/Index.razor` | Create | Default dashboard route that renders loading/empty/error/populated states from cascaded shared dashboard state. |
 | `src/Aura.UI/Services/DashboardApiClient.cs` | Create | HTTP-only client for `Aura.Api`. |
 | `src/Aura.UI/Models/InitialDashboardResponse.cs` | Create | UI transport contract matching API JSON. |
 | `src/Aura.UI/wwwroot/...` | Create | Imported Stitch CSS/fonts/icons trimmed to required assets. |

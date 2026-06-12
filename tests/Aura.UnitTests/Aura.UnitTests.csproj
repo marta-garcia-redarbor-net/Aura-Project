@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\src\Aura.Domain\Aura.Domain.csproj" />
     <ProjectReference Include="..\..\src\Aura.Infrastructure\Aura.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Aura.Workers\Aura.Workers.csproj" />
+    <ProjectReference Include="..\..\src\Aura.UI\Aura.UI.csproj" />
   </ItemGroup>
 
 </Project>
