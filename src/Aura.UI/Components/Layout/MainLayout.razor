@@ -1,7 +1,7 @@
 @attribute [StreamRendering]
 @implements IDisposable
 @inherits LayoutComponentBase
-@inject IDashboardApiClient DashboardApiClient
+@inject IDashboardApiClient DashboardClient
 @inject PersistentComponentState ApplicationState
 @inject ILogger<MainLayout> Logger
 
@@ -42,7 +42,7 @@
             }
 
             activity?.SetTag("dashboard.state_source", "api");
-            var response = await DashboardApiClient.GetInitialDashboardAsync(_initialLoadCancellation.Token);
+            var response = await DashboardClient.GetInitialDashboardAsync(_initialLoadCancellation.Token);
             _state = DashboardViewStateMapper.FromResponse(response);
             activity?.SetTag("dashboard.view_state", _state.Kind.ToString());
         }
@@ -56,7 +56,7 @@
             Logger.LogError(ex,
                 "Initial dashboard load failed in {Component}; falling back to error state.",
                 nameof(MainLayout));
-            _state = DashboardViewStateMapper.FromError();
+            _state = DashboardViewStateMapper.FromError(ex);
             activity?.SetTag("dashboard.view_state", _state.Kind.ToString());
         }
         finally
