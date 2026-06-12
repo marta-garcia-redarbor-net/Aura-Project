@@ -1,6 +1,4 @@
 @page "/"
-@attribute [StreamRendering]
-@inject IDashboardApiClient DashboardApiClient
 
 <PageTitle>Aura Dashboard</PageTitle>
 
@@ -15,8 +13,8 @@
     </span>
 </div>
 
-<DashboardStatePanel State="@_state" />
-<DashboardCards Cards="@_state.Cards" />
+<DashboardStatePanel State="@State" />
+<DashboardCards Cards="@State.Cards" />
 
 @code {
     private DashboardViewState _state = DashboardViewState.Loading();
@@ -33,4 +31,6 @@
             _state = DashboardViewStateMapper.FromError(ex);
         }
     }
+    [CascadingParameter]
+    public DashboardViewState State { get; set; } = DashboardViewState.Loading();
 }
