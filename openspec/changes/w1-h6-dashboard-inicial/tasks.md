@@ -29,7 +29,7 @@ Chain strategy: pending
 - [x] 1.1 RED: Add failing `tests/Aura.UnitTests/Dashboard/InitialDashboardReaderTests.cs` for populated and empty results from `IInitialDashboardReader`.
 - [x] 1.2 GREEN: Create `src/Aura.Application/Models/InitialDashboardDto.cs`, `Ports/IInitialDashboardReader.cs`, `Services/InitialDashboardReader.cs`, and register it in `DependencyInjection.cs`.
 - [x] 1.3 REFACTOR: Extract shared card-building/null-guard logic inside `src/Aura.Application/Services/InitialDashboardReader.cs`; keep framework types out of Application.
-- [ ] 1.4 GREEN: Create `src/Aura.UI/Aura.UI.csproj` and `src/Aura.UI/Program.cs`, then add `Aura.UI` to `Aura.sln` with HTTP-only dependencies.
+- [x] 1.4 GREEN: Create `src/Aura.UI/Aura.UI.csproj` and `src/Aura.UI/Program.cs`, then add `Aura.UI` to `Aura.sln` with HTTP-only dependencies.
 
 ## Phase 2: API Contract Slice
 
@@ -39,10 +39,10 @@ Chain strategy: pending
 
 ## Phase 3: UI Shell Slice
 
-- [ ] 3.1 RED: Add failing `tests/Aura.E2E/Dashboard/InitialDashboardSmokeTests.cs`; update `tests/Aura.E2E/Aura.E2E.csproj` with `Microsoft.AspNetCore.Mvc.Testing` and `Aura.UI` reference.
-- [ ] 3.2 GREEN: Create `src/Aura.UI/Components/Layout/MainLayout.razor`, `Sidebar.razor`, `Header.razor`, `Pages/Index.razor`, `Models/InitialDashboardResponse.cs`, and `Services/DashboardApiClient.cs`.
-- [ ] 3.3 GREEN: Import minimal Stitch assets into `src/Aura.UI/wwwroot/`, configure API base URL/token forwarding in `src/Aura.UI/Program.cs`, and render loading/empty/error/populated states with stable markers.
-- [ ] 3.4 REFACTOR: Split repeated render/state mapping into small UI helpers/components; keep Blazor files presentation-only.
+- [x] 3.1 RED: Add failing `tests/Aura.E2E/Dashboard/InitialDashboardSmokeTests.cs`; update `tests/Aura.E2E/Aura.E2E.csproj` with `Microsoft.AspNetCore.Mvc.Testing` and `Aura.UI` reference.
+- [x] 3.2 GREEN: Create `src/Aura.UI/Components/Layout/MainLayout.razor`, `Sidebar.razor`, `Header.razor`, `Pages/Index.razor`, `Models/InitialDashboardResponse.cs`, and `Services/DashboardApiClient.cs`.
+- [x] 3.3 GREEN: Import minimal Stitch assets into `src/Aura.UI/wwwroot/`, configure API base URL/token forwarding in `src/Aura.UI/Program.cs`, and render loading/empty/error/populated states with stable markers.
+- [x] 3.4 REFACTOR: Split repeated render/state mapping into small UI helpers/components; keep Blazor files presentation-only.
 
 ## Phase 4: Verification and Cleanup
 

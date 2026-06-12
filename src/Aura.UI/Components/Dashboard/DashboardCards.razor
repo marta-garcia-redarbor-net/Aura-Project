@@ -1,0 +1,23 @@
+@if (Cards.Count > 0)
+{
+    <section class="dashboard-cards" aria-label="Dashboard summary cards">
+        @foreach (var card in Cards)
+        {
+            <article class="dashboard-card" data-testid="dashboard-card">
+                <div class="dashboard-card__header">
+                    <p class="dashboard-card__title">@card.Title</p>
+                </div>
+                <div class="dashboard-card__value">
+                    <span>@card.Value</span>
+                    <div class="dashboard-card__status-dot dashboard-card__status-dot--@card.Status"
+                         data-testid="dashboard-card-status"></div>
+                </div>
+            </article>
+        }
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<DashboardCardResponse> Cards { get; set; } = [];
+}

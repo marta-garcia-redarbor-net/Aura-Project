@@ -1,0 +1,12 @@
+@inherits LayoutComponentBase
+
+<div class="dashboard-shell" data-testid="dashboard-shell">
+    <Header />
+    <Sidebar />
+
+    <div class="dashboard-shell__content">
+        <main class="dashboard-shell__main" data-testid="dashboard-main">
+            @Body
+        </main>
+    </div>
+</div>

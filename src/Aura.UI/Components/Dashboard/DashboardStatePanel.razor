@@ -1,0 +1,32 @@
+@code {
+    [Parameter, EditorRequired]
+    public DashboardViewState State { get; set; } = DashboardViewState.Loading();
+}
+
+@switch (State.Kind)
+{
+    case DashboardViewStateKind.Loading:
+        <section class="dashboard-panel dashboard-panel--loading" data-testid="dashboard-state-loading" aria-live="polite">
+            <h2>Loading dashboard</h2>
+            <p>@State.Message</p>
+        </section>
+        break;
+    case DashboardViewStateKind.Empty:
+        <section class="dashboard-panel dashboard-panel--empty" data-testid="dashboard-state-empty">
+            <h2>No dashboard items yet</h2>
+            <p>@State.Message</p>
+        </section>
+        break;
+    case DashboardViewStateKind.Error:
+        <section class="dashboard-panel dashboard-panel--error" data-testid="dashboard-state-error" role="alert">
+            <h2>Dashboard unavailable</h2>
+            <p>@State.Message</p>
+        </section>
+        break;
+    case DashboardViewStateKind.Populated:
+        <section class="dashboard-panel dashboard-panel--populated" data-testid="dashboard-state-populated">
+            <h2>Hello, @State.UserDisplayName</h2>
+            <p>@State.Message</p>
+        </section>
+        break;
+}

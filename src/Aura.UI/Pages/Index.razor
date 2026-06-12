@@ -1,0 +1,36 @@
+@page "/"
+@attribute [StreamRendering]
+@inject IDashboardApiClient DashboardApiClient
+
+<PageTitle>Aura Dashboard</PageTitle>
+
+<div class="dashboard-page-header">
+    <div>
+        <h1 class="dashboard-page-header__title">System Status</h1>
+        <p class="dashboard-page-header__subtitle">Real-time telemetry and service heartbeat.</p>
+    </div>
+    <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+        <span class="dashboard-page-header__badge-dot"></span>
+        Live Sync
+    </span>
+</div>
+
+<DashboardStatePanel State="@_state" />
+<DashboardCards Cards="@_state.Cards" />
+
+@code {
+    private DashboardViewState _state = DashboardViewState.Loading();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await DashboardApiClient.GetInitialDashboardAsync(CancellationToken.None);
+            _state = DashboardViewStateMapper.FromResponse(response);
+        }
+        catch (Exception)
+        {
+            _state = DashboardViewStateMapper.FromError();
+        }
+    }
+}
