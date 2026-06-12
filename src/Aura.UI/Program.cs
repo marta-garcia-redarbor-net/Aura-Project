@@ -14,7 +14,16 @@ public static class Program
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();
-        builder.Services.AddHttpClient<IDashboardApiClient, DashboardApiClient>((serviceProvider, client) =>
+
+        // DEV-ONLY: auto-acquire a mock JWT so the UI can call protected API endpoints
+        // without a real browser token. Remove when real auth (e.g. MSAL) is wired up.
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddTransient<DevAccessTokenHandler>();
+        }
+
+        var httpClientBuilder = builder.Services
+            .AddHttpClient<IDashboardApiClient, DashboardApiClient>((serviceProvider, client) =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
                 var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
@@ -23,6 +32,11 @@ public static class Program
                 client.Timeout = TimeSpan.FromSeconds(10);
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+        }
 
         var app = builder.Build();
 

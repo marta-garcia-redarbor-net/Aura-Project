@@ -28,9 +28,9 @@
             var response = await DashboardApiClient.GetInitialDashboardAsync(CancellationToken.None);
             _state = DashboardViewStateMapper.FromResponse(response);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _state = DashboardViewStateMapper.FromError();
+            _state = DashboardViewStateMapper.FromError(ex);
         }
     }
 }

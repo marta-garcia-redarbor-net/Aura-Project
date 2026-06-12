@@ -41,10 +41,10 @@ public static class DashboardViewStateMapper
                 "Your initial dashboard summary is ready.");
     }
 
-    public static DashboardViewState FromError()
+    public static DashboardViewState FromError(Exception ex)
         => new(
             DashboardViewStateKind.Error,
-            string.Empty,
+            ex.Message,
             [],
             "We couldn't load the dashboard from Aura.Api. Please retry.");
 }
