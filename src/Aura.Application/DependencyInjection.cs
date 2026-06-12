@@ -20,6 +20,7 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<ISemanticChunkExtractor, BasicSemanticChunkExtractor>();
+        services.AddScoped<IInitialDashboardReader, InitialDashboardReader>();
 
         AddKernel(services);
 
