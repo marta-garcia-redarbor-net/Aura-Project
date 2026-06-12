@@ -11,6 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Aura.IntegrationTests.Dashboard;
 
+/// <summary>
+/// Integration tests for <c>GET /api/dashboard/initial</c>.
+/// These verify the HTTP contract (auth, response shape, empty/populated) through
+/// <see cref="WebApplicationFactory{TEntryPoint}"/> against Aura.Api. The UI host
+/// (Aura.UI) consumes this endpoint over HTTP only — it never bypasses the API boundary.
+/// </summary>
 public class InitialDashboardEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -102,6 +108,67 @@ public class InitialDashboardEndpointTests : IClassFixture<WebApplicationFactory
         return JsonSerializer.Deserialize<InitialDashboardDto>(content, SerializerOptions)!;
     }
 
+    [Fact]
+    public async Task GetInitialDashboard_WhenReaderThrows_Returns500Problem()
+    {
+        var client = CreateAuthenticatedClientWithReader(
+            new ThrowingInitialDashboardReader(new InvalidOperationException("Reader exploded")));
+
+        var response = await client.GetAsync("/api/dashboard/initial");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Dashboard request failed", content);
+    }
+
+    [Fact]
+    public async Task GetInitialDashboard_WhenReaderReturnsCanceledTask_TestHostCurrentlySurfaces500()
+    {
+        var client = CreateAuthenticatedClientWithReader(
+            new CancellingInitialDashboardReader());
+
+        // This assertion documents the current WebApplicationFactory/TestServer behavior
+        // for a cancelled reader task. It is not a claim that request cancellation is
+        // semantically a server fault in production hosting.
+        var response = await client.GetAsync("/api/dashboard/initial");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetInitialDashboard_WhenRequestIsCancelled_PropagatesRequestTokenToReader()
+    {
+        var reader = new RequestCancellationObservingDashboardReader();
+        var client = CreateAuthenticatedClientWithReader(reader);
+        using var requestCancellation = new CancellationTokenSource();
+
+        var requestTask = client.GetAsync("/api/dashboard/initial", requestCancellation.Token);
+
+        await reader.WaitForInvocationAsync();
+
+        requestCancellation.Cancel();
+
+        await reader.WaitForCancellationAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await requestTask);
+        Assert.True(reader.ObservedCancellationRequested);
+    }
+
+    private HttpClient CreateAuthenticatedClientWithReader(IInitialDashboardReader reader)
+    {
+        var factory = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton(reader);
+            });
+        });
+
+        var client = factory.CreateClient();
+        var token = GetMockTokenAsync(client).GetAwaiter().GetResult();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return client;
+    }
+
     private sealed class StubInitialDashboardReader : IInitialDashboardReader
     {
         private readonly InitialDashboardDto _dashboard;
@@ -113,5 +180,51 @@ public class InitialDashboardEndpointTests : IClassFixture<WebApplicationFactory
 
         public Task<InitialDashboardDto> GetAsync(CancellationToken cancellationToken)
             => Task.FromResult(_dashboard);
+    }
+
+    private sealed class ThrowingInitialDashboardReader : IInitialDashboardReader
+    {
+        private readonly Exception _exception;
+
+        public ThrowingInitialDashboardReader(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public Task<InitialDashboardDto> GetAsync(CancellationToken cancellationToken)
+            => Task.FromException<InitialDashboardDto>(_exception);
+    }
+
+    private sealed class CancellingInitialDashboardReader : IInitialDashboardReader
+    {
+        public Task<InitialDashboardDto> GetAsync(CancellationToken cancellationToken)
+            => Task.FromCanceled<InitialDashboardDto>(new CancellationToken(canceled: true));
+    }
+
+    private sealed class RequestCancellationObservingDashboardReader : IInitialDashboardReader
+    {
+        private readonly TaskCompletionSource<bool> _invoked = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> _cancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool ObservedCancellationRequested { get; private set; }
+
+        public Task<bool> WaitForInvocationAsync() => _invoked.Task;
+
+        public Task<bool> WaitForCancellationAsync() => _cancelled.Task;
+
+        public Task<InitialDashboardDto> GetAsync(CancellationToken cancellationToken)
+        {
+            _invoked.TrySetResult(true);
+
+            cancellationToken.Register(() =>
+            {
+                ObservedCancellationRequested = true;
+                _cancelled.TrySetResult(true);
+            });
+
+            var result = new TaskCompletionSource<InitialDashboardDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+            cancellationToken.Register(() => result.TrySetCanceled(cancellationToken));
+            return result.Task;
+        }
     }
 }

@@ -159,6 +159,12 @@ a {
     color: var(--aura-primary);
 }
 
+.dashboard-header__identity {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
 .dashboard-header__nav {
     display: flex;
     gap: 1.5rem;
@@ -207,6 +213,15 @@ a {
 .dashboard-header__icon-btn:hover {
     color: var(--aura-primary);
     background: var(--aura-surface-container-high);
+}
+
+.dashboard-header__user {
+    color: var(--aura-on-surface-variant);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--aura-border-subtle);
 }
 
 /* --- Sidebar (fixed left column) --- */

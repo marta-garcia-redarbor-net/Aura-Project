@@ -46,5 +46,20 @@ Chain strategy: pending
 
 ## Phase 4: Verification and Cleanup
 
-- [ ] 4.1 VERIFY: Run `dotnet test Aura.sln` and confirm unit, integration, and smoke coverage satisfy the spec scenarios.
-- [ ] 4.2 CLEANUP: Document the HTTP-only boundary and non-Playwright smoke scope in test names/comments where added; remove unused imported Stitch assets.
+- [x] 4.1 VERIFY: Run `dotnet test Aura.sln` and confirm unit, integration, and smoke coverage satisfy the spec scenarios.
+- [x] 4.2 CLEANUP: Document the HTTP-only boundary and non-Playwright smoke scope in test names/comments where added; remove unused imported Stitch assets.
+
+## Phase 5: Verification Fix Batch (Coverage Gaps)
+
+- [x] 5.1 Unit tests for `ForwardedAccessTokenHandler` — bearer forwarding, missing/empty header, null context.
+- [x] 5.2 Unit tests for `DashboardApiClient` — deserialization, error status codes, null body, request path.
+- [x] 5.3 E2E runtime path test — proves real `DashboardApiClient` executes via stubbed HTTP transport.
+- [x] 5.4 E2E loading→populated transition test — single request flow proves streaming renders loading first, then populated.
+
+## Phase 6: Verify Warning Fix Batch (Coverage + Header + Progress Count)
+
+- [x] 6.1 Integration test for `DashboardEndpoints.cs` exception path — `IInitialDashboardReader` throws `InvalidOperationException`, endpoint returns 500 Problem.
+- [x] 6.2 Integration test for `DashboardEndpoints.cs` cancellation path — real request-token cancellation propagation into `IInitialDashboardReader` is proven, and the current WebApplicationFactory/TestServer response to an already-cancelled reader task is documented separately without treating it as desired server-fault semantics.
+- [x] 6.3 E2E test for `Header.razor` user summary — populated dashboard renders `data-testid="dashboard-header-user"` with user display name.
+- [x] 6.4 Adjust `MainLayout.razor` to load the dashboard once, pass user summary into `Header.razor`, and keep the header aligned with the shared layout state.
+- [x] 6.5 Fix stale `apply-progress.md` summary count (was 16/16, now 22/22 after all phases including fix batches).

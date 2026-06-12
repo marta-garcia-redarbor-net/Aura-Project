@@ -1,12 +1,80 @@
+@attribute [StreamRendering]
+@implements IDisposable
 @inherits LayoutComponentBase
+@inject IDashboardApiClient DashboardApiClient
+@inject PersistentComponentState ApplicationState
+@inject ILogger<MainLayout> Logger
 
 <div class="dashboard-shell" data-testid="dashboard-shell">
-    <Header />
+    <Header UserDisplayName="@_state.UserDisplayName" />
     <Sidebar />
 
     <div class="dashboard-shell__content">
         <main class="dashboard-shell__main" data-testid="dashboard-main">
-            @Body
+            <CascadingValue Value="_state" IsFixed="false">
+                @Body
+            </CascadingValue>
         </main>
     </div>
 </div>
+
+@code {
+    private const string DashboardStateKey = "initial-dashboard-state";
+    private static readonly System.Diagnostics.ActivitySource ActivitySource = new("Aura.UI");
+    private DashboardViewState _state = DashboardViewState.Loading();
+    private readonly CancellationTokenSource _initialLoadCancellation = new();
+    private PersistingComponentStateSubscription? _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var activity = ActivitySource.StartActivity("dashboard.layout.initialize");
+        activity?.SetTag("ui.component", nameof(MainLayout));
+        activity?.SetTag("dashboard.state_key", DashboardStateKey);
+
+        try
+        {
+            if (ApplicationState.TryTakeFromJson<DashboardViewState>(DashboardStateKey, out var persistedState)
+                && persistedState is not null)
+            {
+                _state = persistedState;
+                activity?.SetTag("dashboard.state_source", "persisted");
+                return;
+            }
+
+            activity?.SetTag("dashboard.state_source", "api");
+            var response = await DashboardApiClient.GetInitialDashboardAsync(_initialLoadCancellation.Token);
+            _state = DashboardViewStateMapper.FromResponse(response);
+            activity?.SetTag("dashboard.view_state", _state.Kind.ToString());
+        }
+        catch (OperationCanceledException) when (_initialLoadCancellation.IsCancellationRequested)
+        {
+            Logger.LogDebug("Initial dashboard load was cancelled for {Component}.", nameof(MainLayout));
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(System.Diagnostics.ActivityStatusCode.Error, ex.Message);
+            Logger.LogError(ex,
+                "Initial dashboard load failed in {Component}; falling back to error state.",
+                nameof(MainLayout));
+            _state = DashboardViewStateMapper.FromError();
+            activity?.SetTag("dashboard.view_state", _state.Kind.ToString());
+        }
+        finally
+        {
+            _persistingSubscription ??= ApplicationState.RegisterOnPersisting(PersistDashboardStateAsync);
+        }
+    }
+
+    private Task PersistDashboardStateAsync()
+    {
+        ApplicationState.PersistAsJson(DashboardStateKey, _state);
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _initialLoadCancellation.Cancel();
+        _initialLoadCancellation.Dispose();
+        _persistingSubscription?.Dispose();
+    }
+}
