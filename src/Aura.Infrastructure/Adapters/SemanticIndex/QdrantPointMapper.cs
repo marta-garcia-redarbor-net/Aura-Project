@@ -4,7 +4,7 @@ using Aura.Domain.SemanticIndex.ValueObjects;
 using Google.Protobuf.Collections;
 using Qdrant.Client.Grpc;
 
-namespace Aura.Infrastructure.Adapters.SemanticIndex;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 /// <summary>
 /// Pure mapping functions between domain types and Qdrant SDK types.

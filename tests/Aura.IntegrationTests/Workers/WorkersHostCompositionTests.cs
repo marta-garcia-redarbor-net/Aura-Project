@@ -1,7 +1,7 @@
 using Aura.Application;
 using Aura.Application.Ports;
 using Aura.Infrastructure;
-using Aura.Infrastructure.Adapters.Embedding;
+using Aura.Infrastructure.Adapters.Ingestion.Embedding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using Polly.Registry;
 
-namespace Aura.Infrastructure.Adapters.Embedding;
+namespace Aura.Infrastructure.Adapters.Ingestion.Embedding;
 
 /// <summary>
 /// DI registration for the MEAI-based embedding provider adapter.

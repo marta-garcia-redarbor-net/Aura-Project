@@ -8,6 +8,18 @@
 2. Diseñar contratos en `Application` y adaptadores en `Infrastructure`.
 3. Asegurar idempotencia, resiliencia, telemetría y testing.
 
+## Adaptadores implementados
+
+Los siguientes adaptadores viven bajo `src/Aura.Infrastructure/Adapters/Ingestion/`:
+
+| Adaptador | Path | Puerto que implementa |
+|-----------|------|-----------------------|
+| MEAI Embedding | `Ingestion/Embedding/` | `IEmbeddingProvider` |
+| Qdrant SemanticIndex | `Ingestion/SemanticIndex/` | `ISemanticIndexWriter`, `ISemanticContextRetriever` |
+| SQLite SemanticOutbox | `Ingestion/SemanticOutbox/` | `ISemanticOutboxRepository` |
+
+El health check de Qdrant (`QdrantHealthCheck`) vive junto a su adaptador en `Ingestion/SemanticIndex/`.
+
 ## Debe cubrir
 
 - Modelo canónico de `NormalizedWorkItem`.
@@ -19,3 +31,5 @@
 ## Pendiente
 
 - [ ] Completar arquitectura detallada de la capa de ingestión.
+- [ ] Agregar adaptadores para Graph (Teams, Outlook, Calendar) bajo `Ingestion/Graph/`.
+- [ ] Agregar adaptador para GitHub bajo `Ingestion/GitHub/`.

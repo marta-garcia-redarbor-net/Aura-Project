@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 using Polly;
 
-namespace Aura.Infrastructure.Adapters.Embedding;
+namespace Aura.Infrastructure.Adapters.Ingestion.Embedding;
 
 /// <summary>
 /// Infrastructure adapter wrapping MEAI's <see cref="IEmbeddingGenerator{String, Embedding}"/>

@@ -6,7 +6,7 @@ using Polly.Registry;
 using Polly.Retry;
 using Polly.Timeout;
 
-namespace Aura.Infrastructure.Adapters.Embedding;
+namespace Aura.Infrastructure.Adapters.Ingestion.Embedding;
 
 /// <summary>
 /// Polly resilience pipeline factory for embedding provider operations.

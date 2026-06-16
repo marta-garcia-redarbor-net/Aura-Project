@@ -80,8 +80,35 @@ Aura.Reviewer
 
 | Dependencia | Autenticación | Conector |
 |-------------|---------------|----------|
-| Microsoft Graph (Teams, Outlook, Calendar) | Managed Identity / Entra ID | `Infrastructure/Graph/` |
-| GitHub PRs | GitHub App | `Infrastructure/GitHub/` |
-| SonarQube | API Key (secret manager) | `Infrastructure/SonarQube/` |
-| Dependabot | GitHub App | `Infrastructure/Dependabot/` |
-| Qdrant (vector store) | API Key (secret manager) | `Infrastructure/VectorStore/` |
+| Microsoft Graph (Teams, Outlook, Calendar) | Managed Identity / Entra ID | `Adapters/Ingestion/Graph/` |
+| GitHub PRs | GitHub App | `Adapters/Ingestion/GitHub/` |
+| SonarQube | API Key (secret manager) | `Adapters/Reviewer/SonarQube/` |
+| Dependabot | GitHub App | `Adapters/Reviewer/Dependabot/` |
+| Qdrant (vector store) | API Key (secret manager) | `Adapters/Ingestion/SemanticIndex/` |
+| OpenAI / MEAI (embeddings) | API Key (secret manager) | `Adapters/Ingestion/Embedding/` |
+
+---
+
+## Estructura de Aura.Infrastructure
+
+Los adaptadores se organizan por **bounded context funcional** primero, luego por implementación técnica.
+La tecnología es un detalle; el dominio es la estructura.
+
+```
+Aura.Infrastructure/
+├── DependencyInjection.cs              ← único entry point público (AddAuraInfrastructure)
+└── Adapters/
+    ├── Ingestion/                      ← fuentes de entrada y pipeline semántico
+    │   ├── DependencyInjection.cs      ← AddIngestionAdapters() (internal)
+    │   ├── Embedding/                  ← MEAI + OpenAI
+    │   ├── SemanticIndex/              ← Qdrant read/write + health check
+    │   └── SemanticOutbox/             ← SQLite outbox
+    └── Identity/                       ← JWT Bearer + ICurrentUserService
+```
+
+**Regla de promoción:** cuando `SemanticPipeline` (Embedding + SemanticIndex + SemanticOutbox)
+sea consumido por un segundo bounded context (Reviewer, Triage), promover esas subcarpetas
+desde `Adapters/Ingestion/` a `Adapters/SemanticPipeline/` como carpeta transversal.
+
+**Regla para nuevos adaptadores:** cada nuevo conector (Graph, GitHub, SonarQube...)
+va bajo `Adapters/{BoundedContext}/{Technology}/` con su propio `DependencyInjection.cs` internal.

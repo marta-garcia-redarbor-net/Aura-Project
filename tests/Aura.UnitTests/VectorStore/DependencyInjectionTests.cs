@@ -1,9 +1,9 @@
 using Aura.Application;
 using Aura.Application.Ports;
 using Aura.Application.Services;
-using Aura.Infrastructure.Adapters.Embedding;
-using Aura.Infrastructure.Adapters.SemanticIndex;
-using Aura.Infrastructure.Adapters.SemanticOutbox;
+using Aura.Infrastructure.Adapters.Ingestion.Embedding;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -128,7 +128,7 @@ public class DependencyInjectionTests
         var config = new ConfigurationBuilder().Build();
 
         Assert.Throws<ArgumentNullException>(() =>
-            Aura.Infrastructure.Adapters.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter(null!, config));
+            Aura.Infrastructure.Adapters.Ingestion.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter(null!, config));
     }
 
     [Fact]

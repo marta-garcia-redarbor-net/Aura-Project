@@ -1,4 +1,4 @@
-namespace Aura.Infrastructure.Adapters.Embedding;
+namespace Aura.Infrastructure.Adapters.Ingestion.Embedding;
 
 /// <summary>
 /// Configuration for the MEAI-based embedding provider.

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Qdrant.Client;
 
-namespace Aura.Infrastructure.Adapters.SemanticIndex;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 /// <summary>
 /// DI registration for the Qdrant semantic index adapter.

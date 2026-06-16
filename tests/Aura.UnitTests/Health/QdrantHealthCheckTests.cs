@@ -1,4 +1,4 @@
-using Aura.Infrastructure.Health;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Aura.UnitTests.Health;

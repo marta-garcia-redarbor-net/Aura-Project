@@ -2,7 +2,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.SemanticIndex.Enums;
 using Aura.Domain.SemanticIndex.ValueObjects;
-using Aura.Infrastructure.Adapters.SemanticIndex;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Microsoft.Extensions.Options;
 
 namespace Aura.IntegrationTests.VectorStore;

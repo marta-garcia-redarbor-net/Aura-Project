@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
-namespace Aura.Infrastructure.Adapters.SemanticIndex;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 /// <summary>
 /// Qdrant implementation of <see cref="ISemanticIndexWriter"/>.
