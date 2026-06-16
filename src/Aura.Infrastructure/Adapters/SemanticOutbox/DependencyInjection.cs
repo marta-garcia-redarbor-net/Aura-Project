@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Aura.Infrastructure.Adapters.SemanticOutbox;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
 
 /// <summary>
 /// DI registration for the SQLite-backed semantic outbox adapter.

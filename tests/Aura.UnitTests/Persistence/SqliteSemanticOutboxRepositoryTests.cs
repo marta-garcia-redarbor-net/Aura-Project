@@ -1,7 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.SemanticIndex.Enums;
-using Aura.Infrastructure.Adapters.SemanticOutbox;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
 using Microsoft.Data.Sqlite;
 
 namespace Aura.UnitTests.Persistence;

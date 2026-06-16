@@ -1,5 +1,5 @@
 using Aura.Domain.SemanticIndex.Enums;
-using Aura.Infrastructure.Adapters.SemanticIndex;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 namespace Aura.UnitTests.VectorStore;
 

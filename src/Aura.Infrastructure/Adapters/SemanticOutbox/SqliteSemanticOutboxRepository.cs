@@ -3,7 +3,7 @@ using Aura.Application.Ports;
 using Aura.Domain.SemanticIndex.Enums;
 using Microsoft.Data.Sqlite;
 
-namespace Aura.Infrastructure.Adapters.SemanticOutbox;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
 
 /// <summary>
 /// SQLite-backed outbox repository for semantic index sync entries.

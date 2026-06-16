@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Qdrant.Client;
 
-namespace Aura.Infrastructure.Health;
+namespace Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 /// <summary>
 /// ASP.NET Core health check that verifies connectivity to the Qdrant vector store.
 /// Uses the existing <see cref="QdrantClient"/> singleton registered by
-/// <see cref="Adapters.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter"/>.
+/// <see cref="Adapters.Ingestion.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter"/>.
 /// </summary>
 internal sealed class QdrantHealthCheck : IHealthCheck
 {

@@ -1,6 +1,6 @@
 using System.Net;
 using Aura.Application.Ports;
-using Aura.Infrastructure.Adapters.Embedding;
+using Aura.Infrastructure.Adapters.Ingestion.Embedding;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
