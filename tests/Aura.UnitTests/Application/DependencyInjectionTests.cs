@@ -1,7 +1,9 @@
 using Aura.Application;
+using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Aura.UnitTests.Application;
 
@@ -31,5 +33,39 @@ public class DependencyInjectionTests
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ISemanticChunkExtractor));
         Assert.NotNull(descriptor);
         Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public async Task AddAuraApplication_ResolvesGraphConnectorStatusReader()
+    {
+        var services = new ServiceCollection();
+        services.AddAuraApplication();
+        services.AddSingleton<IGraphConnectorSettingsProvider>(
+            new StubGraphConnectorSettingsProvider(new GraphConnectorSettings(
+                Enabled: true,
+                TenantId: "tenant",
+                ClientId: "client",
+                HasValidCredentialsBlock: true)));
+        services.AddSingleton(typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var reader = scope.ServiceProvider.GetRequiredService<IGraphConnectorStatusReader>();
+
+        var status = await reader.GetStatusAsync(CancellationToken.None);
+
+        Assert.Equal(GraphConnectorState.ValidConfig, status.State);
+    }
+
+    private sealed class StubGraphConnectorSettingsProvider : IGraphConnectorSettingsProvider
+    {
+        private readonly GraphConnectorSettings _settings;
+
+        public StubGraphConnectorSettingsProvider(GraphConnectorSettings settings)
+        {
+            _settings = settings;
+        }
+
+        public GraphConnectorSettings GetSettings() => _settings;
     }
 }

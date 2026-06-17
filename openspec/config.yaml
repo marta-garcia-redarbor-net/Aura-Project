@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Stack: .NET 9 / ASP.NET Core minimal API + Worker Service; solution docs still reference .NET 8 and a planned Blazor Server UI.
+  Stack: .NET 9 / ASP.NET Core minimal API + Worker Service + Blazor Server UI (`src/Aura.UI`); solution docs still reference .NET 8.
   Architecture: Clean Architecture + Ports & Adapters across Domain, Application, Infrastructure, Api, and Workers.
   Testing: xUnit runner with Unit, Integration, and Architecture test projects; architecture rules use NetArchTest; E2E project exists but Playwright is not configured.
   Quality: SDK analyzers + .editorconfig, coverlet collector, and dotnet format are available; warnings are not yet treated as errors.

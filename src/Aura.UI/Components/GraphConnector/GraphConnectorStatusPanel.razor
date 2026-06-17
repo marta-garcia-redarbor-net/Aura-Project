@@ -1,0 +1,48 @@
+@inject IGraphConnectorApiClient GraphConnectorApiClient
+
+<section class="dashboard-panel" data-testid="graph-connector-panel" aria-live="polite">
+    <h2>Graph Connector</h2>
+    <p>Read-only configuration readiness based on backend settings.</p>
+
+    @if (_status is null)
+    {
+        <p data-testid="graph-connector-state-loading">Loading connector status...</p>
+    }
+    else
+    {
+        @switch (_status.State)
+        {
+            case "Disabled":
+                <p data-testid="graph-connector-state-disabled">Disabled — connector is explicitly turned off.</p>
+                break;
+            case "MissingConfig":
+                <p data-testid="graph-connector-state-missing">MissingConfig — tenant and client identifiers are missing.</p>
+                break;
+            case "PartialConfig":
+                <p data-testid="graph-connector-state-partial">PartialConfig — some required settings are still missing.</p>
+                break;
+            case "ValidConfig":
+                <p data-testid="graph-connector-state-valid">ValidConfig — connector bootstrap configuration is complete.</p>
+                break;
+            default:
+                <p data-testid="graph-connector-state-partial">PartialConfig — unrecognized state received.</p>
+                break;
+        }
+    }
+</section>
+
+@code {
+    private GraphConnectorStatusResponse? _status;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _status = await GraphConnectorApiClient.GetStatusAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _status = new GraphConnectorStatusResponse("PartialConfig");
+        }
+    }
+}

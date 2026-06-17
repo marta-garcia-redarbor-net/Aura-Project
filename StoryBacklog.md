@@ -81,19 +81,19 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** pipeline mínimo capaz de registrar y ejecutar un plugin dummy.
 
-- [ ] **W1-H4-T1** Definir contrato base de plugin (`IPlugin` o equivalente).  
+- [x] **W1-H4-T1** Definir contrato base de plugin (`IPlugin` o equivalente).  
   **DoD:** interfaz acordada y ubicada en capa correcta.  
   **Riesgo:** contrato ambiguo que cambie cada semana.
-- [ ] **W1-H4-T2** Definir modelo inicial de `WorkItem`.  
+- [x] **W1-H4-T2** Definir modelo inicial de `WorkItem`.  
   **DoD:** entidad/DTO canónico mínimo creado con tests básicos.  
   **Riesgo:** inconsistencia posterior entre conectores.
-- [ ] **W1-H4-T3** Implementar registry/catálogo de plugins.  
+- [x] **W1-H4-T3** Implementar registry/catálogo de plugins.  
   **DoD:** kernel descubre o registra plugins explícitamente.  
   **Riesgo:** acoplar orquestación a implementaciones concretas.
-- [ ] **W1-H4-T4** Crear plugin dummy de prueba.  
+- [x] **W1-H4-T4** Crear plugin dummy de prueba.  
   **DoD:** devuelve un `WorkItem` controlado.  
   **Riesgo:** no tener forma segura de validar el pipeline.
-- [ ] **W1-H4-T5** Exponer ejecución “hello kernel” desde API o worker.  
+- [x] **W1-H4-T5** Exponer ejecución “hello kernel” desde API o worker.  
   **DoD:** existe una ruta/flujo ejecutable de punta a punta.  
   **Riesgo:** kernel definido pero no ejecutable.
 
@@ -101,16 +101,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** login local mockeado y arquitectura lista para proveedor real.
 
-- [ ] **W1-H5-T1** Definir puerto de autenticación/autorización.  
+- [x] **W1-H5-T1** Definir puerto de autenticación/autorización.  
   **DoD:** contrato base ubicado fuera de infraestructura.  
   **Riesgo:** atar seguridad a SDK externo.
-- [ ] **W1-H5-T2** Implementar proveedor mock de identidad.  
+- [x] **W1-H5-T2** Implementar proveedor mock de identidad.  
   **DoD:** devuelve usuario/sesión simulada para desarrollo.  
   **Riesgo:** frenar el avance por falta de credenciales reales.
-- [ ] **W1-H5-T3** Integrar login mock en API.  
+- [x] **W1-H5-T3** Integrar login mock en API.  
   **DoD:** endpoint o flujo web funcional en local.  
   **Riesgo:** auth no demostrable desde UI.
-- [ ] **W1-H5-T4** Crear pruebas de autorización mínima.  
+- [x] **W1-H5-T4** Crear pruebas de autorización mínima.  
   **DoD:** acceso permitido/denegado cubierto por tests.  
   **Riesgo:** seguridad simulada sin reglas verificadas.
 
@@ -120,7 +120,7 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** una pantalla que muestre que Aura está vivo y qué módulos existen.
 
-- [ ] **W1-H6-T1** Crear layout base del dashboard.  
+- [x] **W1-H6-T1** Crear layout base del dashboard.  
   **DoD:** existe una vista inicial navegable.  
   **Riesgo:** no tener punto central de demostración.
 - [ ] **W1-H6-T2** Mostrar estado de API, Qdrant y auth mock.  

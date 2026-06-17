@@ -59,6 +59,7 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapAuthEndpoints(app.Environment);
 app.MapDashboardEndpoints();
+app.MapGraphConnectorEndpoints();
 
 app.Run();
 
