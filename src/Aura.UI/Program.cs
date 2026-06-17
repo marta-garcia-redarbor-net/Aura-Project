@@ -33,9 +33,21 @@ public static class Program
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
+        var graphHttpClientBuilder = builder.Services
+            .AddHttpClient<IGraphConnectorApiClient, GraphConnectorApiClient>((serviceProvider, client) =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+                client.Timeout = TimeSpan.FromSeconds(10);
+            })
+            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
         if (builder.Environment.IsDevelopment())
         {
             httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            graphHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();

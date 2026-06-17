@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         services.AddSingleton<ISemanticChunkExtractor, BasicSemanticChunkExtractor>();
         services.AddScoped<IInitialDashboardReader, InitialDashboardReader>();
+        services.AddScoped<IGraphConnectorStatusReader, GraphConnectorStatusReader>();
 
         AddKernel(services);
 
