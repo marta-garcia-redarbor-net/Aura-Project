@@ -28,15 +28,33 @@ public sealed class HelloKernelWorker : BackgroundService
     {
         _logger.LogInformation("HelloKernelWorker started — executing kernel pipeline validation");
 
-        var workItem = new WorkItem("Hello Kernel Validation", "hello-worker");
+        var correlationId = Guid.NewGuid().ToString();
+        var workItem = new WorkItem(
+            externalId: $"hello-worker-{Guid.NewGuid():N}",
+            title: "Hello Kernel Validation",
+            source: "hello-worker",
+            sourceType: WorkItemSourceType.TodoTask,
+            priority: WorkItemPriority.Low,
+            metadata: new Dictionary<string, string>
+            {
+                ["worker"] = nameof(HelloKernelWorker),
+                ["scenario"] = "kernel-validation"
+            },
+            correlationId: correlationId,
+            capturedAtUtc: null);
 
         try
         {
             await _registry.ExecuteAsync(workItem, stoppingToken);
 
             _logger.LogInformation(
-                "HelloKernelWorker completed. WorkItem {WorkItemId} final status: {Status}",
-                workItem.Id, workItem.Status);
+                "HelloKernelWorker completed. WorkItem {WorkItemId} final status: {Status}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}",
+                workItem.Id,
+                workItem.Status,
+                workItem.ExternalId,
+                workItem.SourceType,
+                workItem.Priority,
+                workItem.CorrelationId);
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {

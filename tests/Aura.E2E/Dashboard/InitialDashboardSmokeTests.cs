@@ -230,7 +230,123 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("3 pending", html);
     }
 
-    private HttpClient CreateClient(IDashboardApiClient dashboardApiClient)
+    [Fact]
+    public async Task GetRootWithSystemStatusDto_RendersIndicatorsAndMicrocopy()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Status User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API healthy"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "Qdrant degraded"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Error, "Mock auth unavailable"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"system-status-panel\"", html);
+        Assert.Contains("data-testid=\"system-status-list\"", html);
+        Assert.Contains("data-testid=\"system-indicator-state-api\"", html);
+        Assert.Contains("data-testid=\"system-indicator-state-qdrant\"", html);
+        Assert.Contains("data-testid=\"system-indicator-state-mockauth\"", html);
+        Assert.Contains("API healthy", html);
+        Assert.Contains("Qdrant degraded", html);
+        Assert.Contains("Mock auth unavailable", html);
+        Assert.DoesNotContain("data-testid=\"system-status-edit\"", html);
+        Assert.DoesNotContain("data-testid=\"system-status-submit\"", html);
+    }
+
+    [Fact]
+    public async Task GetRootWhenSystemStatusFails_RendersPanelErrorState()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Status User", [])),
+            new ThrowingSystemStatusApiClient(),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"system-status-panel\"", html);
+        Assert.Contains("data-testid=\"system-status-error\"", html);
+        Assert.Contains("System status is currently unavailable.", html);
+    }
+
+    [Fact]
+    public async Task GetRootWithThreeModuleStates_RendersDistinctProgressStates()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Module User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse(
+                [
+                    new ModuleEntryResponse("w1-ingestion", ModuleProgressStateResponse.Pending),
+                    new ModuleEntryResponse("w1-triage", ModuleProgressStateResponse.InProgress),
+                    new ModuleEntryResponse("w1-reviewer", ModuleProgressStateResponse.Completed)
+                ],
+                IsSeeded: true)));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"module-progress-panel\"", html);
+        Assert.Contains("data-testid=\"module-progress-list\"", html);
+        Assert.Contains("Pending", html);
+        Assert.Contains("In Progress", html);
+        Assert.Contains("Completed", html);
+        Assert.DoesNotContain("data-testid=\"module-progress-edit\"", html);
+        Assert.DoesNotContain("data-testid=\"module-progress-submit\"", html);
+    }
+
+    [Fact]
+    public async Task GetRootWithEmptyModuleProgress_RendersExplicitEmptyState()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Module User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"module-progress-empty\"", html);
+        Assert.Contains("No module progress entries are available yet.", html);
+    }
+
+    [Fact]
+    public async Task GetRootWhenModuleProgressFails_RendersPanelErrorState()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Module User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new ThrowingModuleProgressApiClient());
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"module-progress-panel\"", html);
+        Assert.Contains("data-testid=\"module-progress-error\"", html);
+        Assert.Contains("Module progress is currently unavailable.", html);
+    }
+
+    private HttpClient CreateClient(
+        IDashboardApiClient dashboardApiClient,
+        ISystemStatusApiClient? systemStatusApiClient = null,
+        IModuleProgressApiClient? moduleProgressApiClient = null)
     {
         var factory = _factory.WithWebHostBuilder(builder =>
         {
@@ -238,6 +354,18 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             {
                 services.RemoveAll<IDashboardApiClient>();
                 services.AddScoped(_ => dashboardApiClient);
+
+                if (systemStatusApiClient is not null)
+                {
+                    services.RemoveAll<ISystemStatusApiClient>();
+                    services.AddScoped(_ => systemStatusApiClient);
+                }
+
+                if (moduleProgressApiClient is not null)
+                {
+                    services.RemoveAll<IModuleProgressApiClient>();
+                    services.AddScoped(_ => moduleProgressApiClient);
+                }
             });
         });
 
@@ -282,6 +410,44 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     {
         public Task<InitialDashboardResponse> GetInitialDashboardAsync(CancellationToken cancellationToken)
             => Task.FromException<InitialDashboardResponse>(new HttpRequestException("Dashboard unavailable"));
+    }
+
+    private sealed class StubSystemStatusApiClient : ISystemStatusApiClient
+    {
+        private readonly SystemStatusResponse _response;
+
+        public StubSystemStatusApiClient(SystemStatusResponse response)
+        {
+            _response = response;
+        }
+
+        public Task<SystemStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
+            => Task.FromResult(_response);
+    }
+
+    private sealed class ThrowingSystemStatusApiClient : ISystemStatusApiClient
+    {
+        public Task<SystemStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
+            => Task.FromException<SystemStatusResponse>(new HttpRequestException("System status unavailable"));
+    }
+
+    private sealed class StubModuleProgressApiClient : IModuleProgressApiClient
+    {
+        private readonly ModuleProgressResponse _response;
+
+        public StubModuleProgressApiClient(ModuleProgressResponse response)
+        {
+            _response = response;
+        }
+
+        public Task<ModuleProgressResponse> GetAsync(CancellationToken cancellationToken)
+            => Task.FromResult(_response);
+    }
+
+    private sealed class ThrowingModuleProgressApiClient : IModuleProgressApiClient
+    {
+        public Task<ModuleProgressResponse> GetAsync(CancellationToken cancellationToken)
+            => Task.FromException<ModuleProgressResponse>(new HttpRequestException("Module progress unavailable"));
     }
 
     /// <summary>

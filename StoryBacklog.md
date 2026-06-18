@@ -123,15 +123,14 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - [x] **W1-H6-T1** Crear layout base del dashboard.  
   **DoD:** existe una vista inicial navegable.  
   **Riesgo:** no tener punto central de demostración.
-- [ ] **W1-H6-T2** Mostrar estado de API, Qdrant y auth mock.  
+- [x] **W1-H6-T2** Mostrar estado de API, Qdrant y auth mock.  
   **DoD:** indicadores visibles y entendibles.  
   **Riesgo:** backend operativo pero invisible.
-- [ ] **W1-H6-T3** Añadir panel de progreso por módulo.  
+- [x] **W1-H6-T3** Añadir panel de progreso por módulo.  
   **DoD:** se ven módulos pendientes/en curso/hechos.  
   **Riesgo:** perder trazabilidad del avance.
-- [ ] **W1-H6-T4** Crear primer test Playwright de smoke del dashboard.  
-  **DoD:** Playwright abre la app y valida elementos críticos de arranque.  
-  **Riesgo:** no detectar roturas tempranas de experiencia básica.
+
+**Nota:** el smoke browser real con Playwright se mueve a **W4-H2** para tratarlo como un slice específico de tooling y validación E2E, separado del cierre visual/funcional inicial del dashboard.
 
 ---
 
@@ -314,13 +313,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W4-H2 — Consolidar suite Playwright
 
-- [ ] **W4-H2-T1** Crear fixtures de demo para journeys completos.  
+- [ ] **W4-H2-T1** Configurar Playwright para Aura y crear el proyecto base de smoke del dashboard.  
+  **DoD:** existe proyecto/configuración Playwright ejecutable en local contra la UI con un caso smoke mínimo.  
+  **Riesgo:** seguir posponiendo E2E browser real y descubrir tarde problemas de integración visual.
+- [ ] **W4-H2-T2** Crear fixtures de demo para journeys completos.  
   **DoD:** dataset reproducible para E2E.  
   **Riesgo:** tests flaky.
-- [ ] **W4-H2-T2** Cubrir flujo dashboard → ingestión → summary → focus → reviewer.  
+- [ ] **W4-H2-T3** Cubrir flujo dashboard → ingestión → summary → focus → reviewer.  
   **DoD:** journey principal automatizado.  
   **Riesgo:** integración final no validada.
-- [ ] **W4-H2-T3** Guardar screenshots, traces y artifacts.  
+- [ ] **W4-H2-T4** Guardar screenshots, traces y artifacts.  
   **DoD:** evidencia diagnóstica accesible.  
   **Riesgo:** errores difíciles de reproducir.
 

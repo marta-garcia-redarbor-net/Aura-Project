@@ -10,7 +10,7 @@ context: |
 strict_tdd: true
 
 testing:
-  detected: 2026-06-10
+  detected: 2026-06-18
   runner:
     command: dotnet test Aura.sln
     framework: xUnit + Microsoft.NET.Test.Sdk

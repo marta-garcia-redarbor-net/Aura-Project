@@ -8,7 +8,7 @@ The Plugin Kernel provides a core execution pipeline to process `WorkItem` entit
 
 ### Requirement: WorkItem State Encapsulation
 
-The `WorkItem` entity MUST encapsulate its own state and MUST NOT expose public setters for state mutations. It SHALL reside entirely in the `Domain` layer without external dependencies.
+The `WorkItem` entity MUST encapsulate its own state and MUST NOT expose public setters for state mutations. It SHALL reside entirely in the `Domain` layer without external dependencies. Construction MUST satisfy the full mandatory-field contract defined in the `work-item-contract` specification.
 
 #### Scenario: Valid state transition
 - GIVEN a `WorkItem` in an initial state
