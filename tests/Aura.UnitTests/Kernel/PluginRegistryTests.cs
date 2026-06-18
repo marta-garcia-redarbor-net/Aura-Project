@@ -11,6 +11,20 @@ public class PluginRegistryTests
 {
     private readonly ILogger<PluginRegistry> _logger = NullLogger<PluginRegistry>.Instance;
 
+    private static WorkItem CreateWorkItem() =>
+        new(
+            "ext-001",
+            "Test",
+            "manual",
+            WorkItemSourceType.TeamsMessage,
+            WorkItemPriority.Medium,
+            new Dictionary<string, string>
+            {
+                ["suite"] = "PluginRegistryTests"
+            },
+            "corr-001",
+            new DateTimeOffset(2026, 01, 01, 00, 00, 00, TimeSpan.Zero));
+
     [Fact]
     public async Task ExecuteAsync_SequentialOrder_PluginsExecuteInRegistrationOrder()
     {
@@ -25,7 +39,7 @@ public class PluginRegistryTests
             .Returns(ci => { callOrder.Add("plugin2"); return Task.CompletedTask; });
 
         var registry = new PluginRegistry(new[] { plugin1, plugin2 }, _logger);
-        var item = new WorkItem("Test", "manual");
+        var item = CreateWorkItem();
 
         await registry.ExecuteAsync(item, CancellationToken.None);
 
@@ -37,7 +51,7 @@ public class PluginRegistryTests
     public async Task ExecuteAsync_EmptyRegistry_CompletesWithoutModifyingWorkItem()
     {
         var registry = new PluginRegistry(Enumerable.Empty<IPlugin>(), _logger);
-        var item = new WorkItem("Test", "manual");
+        var item = CreateWorkItem();
 
         await registry.ExecuteAsync(item, CancellationToken.None);
 
@@ -56,7 +70,7 @@ public class PluginRegistryTests
         var plugin2 = Substitute.For<IPlugin>();
 
         var registry = new PluginRegistry(new[] { plugin1, plugin2 }, _logger);
-        var item = new WorkItem("Test", "manual");
+        var item = CreateWorkItem();
 
         await registry.ExecuteAsync(item, CancellationToken.None);
 
@@ -73,7 +87,7 @@ public class PluginRegistryTests
             .Returns(Task.CompletedTask);
 
         var registry = new PluginRegistry(new[] { plugin }, _logger);
-        var item = new WorkItem("Test", "manual");
+        var item = CreateWorkItem();
 
         await registry.ExecuteAsync(item, CancellationToken.None);
 
@@ -96,7 +110,7 @@ public class PluginRegistryTests
         var plugin3 = Substitute.For<IPlugin>();
 
         var registry = new PluginRegistry(new[] { plugin1, plugin2, plugin3 }, _logger);
-        var item = new WorkItem("Test", "manual");
+        var item = CreateWorkItem();
 
         await registry.ExecuteAsync(item, CancellationToken.None);
 

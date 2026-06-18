@@ -2,6 +2,7 @@ using Aura.Infrastructure.Adapters.Identity;
 using Aura.Infrastructure.Adapters.Ingestion;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.GraphConnector;
+using Aura.Infrastructure.Adapters.Dashboard;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddIngestionAdapters(configuration);
         services.AddGraphConnectorAdapter(configuration);
         services.AddIdentityAdapter(configuration, environment);
+        services.AddDashboardAdapters(configuration, environment);
 
         services.AddHealthChecks()
             .AddCheck<QdrantHealthCheck>("qdrant");

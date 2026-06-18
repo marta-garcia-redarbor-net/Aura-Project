@@ -39,8 +39,15 @@ public sealed class PluginRegistry : IPluginRegistry
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError(ex, "Plugin {PluginType} failed for WorkItem {WorkItemId}",
-                    plugin.GetType().Name, item.Id);
+                _logger.LogError(
+                    ex,
+                    "Plugin {PluginType} failed for WorkItem {WorkItemId}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}",
+                    plugin.GetType().Name,
+                    item.Id,
+                    item.ExternalId,
+                    item.SourceType,
+                    item.Priority,
+                    item.CorrelationId);
                 item.MarkFaulted(ex.Message);
                 return;
             }

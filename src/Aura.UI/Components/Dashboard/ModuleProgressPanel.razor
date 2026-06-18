@@ -1,0 +1,64 @@
+@inject IModuleProgressApiClient ModuleProgressApiClient
+
+<section class="dashboard-panel" data-testid="module-progress-panel" aria-live="polite">
+    <h2>Module progress</h2>
+    <p>Read-only progress states from seeded dashboard data.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="module-progress-error">@_loadError</p>
+    }
+    else if (_progress is null)
+    {
+        <p data-testid="module-progress-loading">Loading module progress...</p>
+    }
+    else if (_progress.Entries.Count == 0)
+    {
+        <p data-testid="module-progress-empty">No module progress entries are available yet.</p>
+    }
+    else
+    {
+        @if (_progress.IsSeeded)
+        {
+            <p data-testid="module-progress-seeded-flag">Seeded data</p>
+        }
+
+        <ul class="dashboard-progress-list" data-testid="module-progress-list">
+            @foreach (var entry in _progress.Entries)
+            {
+                <li class="dashboard-progress-item" data-testid="module-progress-item">
+                    <span class="dashboard-progress-item__module" data-testid="module-progress-module">@entry.ModuleId</span>
+                    <span class="dashboard-progress-item__state dashboard-progress-item__state--@entry.State.ToString().ToLowerInvariant()"
+                          data-testid="module-progress-state">
+                        @FormatState(entry.State)
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private ModuleProgressResponse? _progress;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _progress = await ModuleProgressApiClient.GetAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _loadError = "Module progress is currently unavailable.";
+        }
+    }
+
+    private static string FormatState(ModuleProgressStateResponse state)
+        => state switch
+        {
+            ModuleProgressStateResponse.InProgress => "In Progress",
+            ModuleProgressStateResponse.Completed => "Completed",
+            _ => "Pending"
+        };
+}

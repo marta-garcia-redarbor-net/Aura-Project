@@ -497,6 +497,75 @@ a {
     border-color: rgba(255, 180, 171, 0.35);
 }
 
+.dashboard-status-list,
+.dashboard-progress-list {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.dashboard-status-item,
+.dashboard-progress-item {
+    display: grid;
+    gap: 0.25rem;
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    padding: 0.75rem;
+    background: var(--aura-surface-container);
+}
+
+.dashboard-status-item__name,
+.dashboard-progress-item__module {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--aura-on-surface-variant);
+}
+
+.dashboard-status-item__state,
+.dashboard-progress-item__state {
+    width: fit-content;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.dashboard-status-item__state--ok,
+.dashboard-progress-item__state--completed {
+    color: var(--aura-status-healthy);
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.dashboard-status-item__state--warning,
+.dashboard-progress-item__state--inprogress {
+    color: var(--aura-status-warning);
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.dashboard-status-item__state--error,
+.dashboard-progress-item__state--pending {
+    color: var(--aura-error);
+    border-color: rgba(255, 180, 171, 0.4);
+    background: rgba(255, 180, 171, 0.08);
+}
+
+.dashboard-status-item__microcopy {
+    color: var(--aura-on-surface);
+    font-size: 13px;
+    line-height: 18px;
+}
+
 /* ==========================================================================
    Footer
    ========================================================================== */

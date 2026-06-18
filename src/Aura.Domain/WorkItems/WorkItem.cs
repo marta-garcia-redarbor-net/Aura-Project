@@ -6,23 +6,56 @@ namespace Aura.Domain.WorkItems;
 /// </summary>
 public sealed class WorkItem
 {
+    private const string CurrentSchemaVersion = "v1";
+
     public Guid Id { get; }
+    public string ExternalId { get; }
     public string Title { get; }
     public string Source { get; }
+    public WorkItemSourceType SourceType { get; }
+    public WorkItemPriority Priority { get; }
+    public IReadOnlyDictionary<string, string> Metadata { get; }
+    public string CorrelationId { get; }
+    public DateTimeOffset CapturedAtUtc { get; }
+    public string SchemaVersion { get; }
     public WorkItemStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; }
     public string? FaultReason { get; private set; }
 
-    public WorkItem(string title, string source)
+    public WorkItem(
+        string externalId,
+        string title,
+        string source,
+        WorkItemSourceType sourceType,
+        WorkItemPriority priority,
+        IReadOnlyDictionary<string, string> metadata,
+        string? correlationId = null,
+        DateTimeOffset? capturedAtUtc = null)
     {
+        if (string.IsNullOrEmpty(externalId))
+            throw new ArgumentException("ExternalId must not be null or empty.", nameof(externalId));
         if (string.IsNullOrEmpty(title))
             throw new ArgumentException("Title must not be null or empty.", nameof(title));
         if (string.IsNullOrEmpty(source))
             throw new ArgumentException("Source must not be null or empty.", nameof(source));
+        if (!Enum.IsDefined(sourceType))
+            throw new ArgumentException("SourceType is outside the supported source set.", nameof(sourceType));
+        if (!Enum.IsDefined(priority))
+            throw new ArgumentException("Priority is outside the supported priority set.", nameof(priority));
+        ArgumentNullException.ThrowIfNull(metadata);
 
         Id = Guid.NewGuid();
+        ExternalId = externalId;
         Title = title;
         Source = source;
+        SourceType = sourceType;
+        Priority = priority;
+        Metadata = metadata;
+        CorrelationId = string.IsNullOrEmpty(correlationId)
+            ? Guid.NewGuid().ToString()
+            : correlationId;
+        CapturedAtUtc = capturedAtUtc ?? DateTimeOffset.UtcNow;
+        SchemaVersion = CurrentSchemaVersion;
         Status = WorkItemStatus.Pending;
         CreatedAt = DateTimeOffset.UtcNow;
     }

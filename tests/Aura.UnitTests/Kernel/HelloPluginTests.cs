@@ -8,10 +8,24 @@ public class HelloPluginTests
 {
     private readonly HelloPlugin _plugin = new(NullLogger<HelloPlugin>.Instance);
 
+    private static WorkItem CreateWorkItem(string externalId, string title, string source) =>
+        new(
+            externalId,
+            title,
+            source,
+            WorkItemSourceType.TeamsMessage,
+            WorkItemPriority.Low,
+            new Dictionary<string, string>
+            {
+                ["suite"] = "HelloPluginTests"
+            },
+            "corr-hello",
+            new DateTimeOffset(2026, 01, 01, 00, 00, 00, TimeSpan.Zero));
+
     [Fact]
     public async Task ExecuteAsync_CompletesWithoutMutatingWorkItemState()
     {
-        var item = new WorkItem("Test Plugin", "unit-test");
+        var item = CreateWorkItem("ext-hp-1", "Test Plugin", "unit-test");
 
         await _plugin.ExecuteAsync(item, CancellationToken.None);
 
@@ -23,8 +37,8 @@ public class HelloPluginTests
     [Fact]
     public async Task ExecuteAsync_HandlesMultipleWorkItemsIndependently()
     {
-        var item1 = new WorkItem("First Item", "source-a");
-        var item2 = new WorkItem("Second Item", "source-b");
+        var item1 = CreateWorkItem("ext-hp-2", "First Item", "source-a");
+        var item2 = CreateWorkItem("ext-hp-3", "Second Item", "source-b");
 
         await _plugin.ExecuteAsync(item1, CancellationToken.None);
         await _plugin.ExecuteAsync(item2, CancellationToken.None);

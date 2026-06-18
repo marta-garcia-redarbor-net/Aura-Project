@@ -1,0 +1,66 @@
+@inject ISystemStatusApiClient SystemStatusApiClient
+
+<section class="dashboard-panel" data-testid="system-status-panel" aria-live="polite">
+    <h2>System status</h2>
+    <p>Read-only status indicators derived server-side.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="system-status-error">@_loadError</p>
+    }
+    else if (_status is null)
+    {
+        <p data-testid="system-status-loading">Loading system status...</p>
+    }
+    else
+    {
+        <ul class="dashboard-status-list" data-testid="system-status-list">
+            @foreach (var indicator in GetIndicators())
+            {
+                <li class="dashboard-status-item" data-testid="system-indicator-@indicator.Key.ToLowerInvariant()">
+                    <span class="dashboard-status-item__name">@indicator.Key</span>
+                    <span class="dashboard-status-item__state dashboard-status-item__state--@indicator.Value.State.ToString().ToLowerInvariant()"
+                          data-testid="system-indicator-state-@indicator.Key.ToLowerInvariant()">
+                        @indicator.Value.State
+                    </span>
+                    <span class="dashboard-status-item__microcopy"
+                          data-testid="system-indicator-microcopy-@indicator.Key.ToLowerInvariant()">
+                        @indicator.Value.Microcopy
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private SystemStatusResponse? _status;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _status = await SystemStatusApiClient.GetStatusAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _loadError = "System status is currently unavailable.";
+        }
+    }
+
+    private IEnumerable<KeyValuePair<string, SystemIndicatorResponse>> GetIndicators()
+    {
+        if (_status is null)
+        {
+            return [];
+        }
+
+        return
+        [
+            new KeyValuePair<string, SystemIndicatorResponse>("API", _status.Api),
+            new KeyValuePair<string, SystemIndicatorResponse>("Qdrant", _status.Qdrant),
+            new KeyValuePair<string, SystemIndicatorResponse>("MockAuth", _status.MockAuth)
+        ];
+    }
+}

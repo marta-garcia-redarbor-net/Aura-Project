@@ -44,10 +44,34 @@ public static class Program
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
+        var systemStatusHttpClientBuilder = builder.Services
+            .AddHttpClient<ISystemStatusApiClient, SystemStatusApiClient>((serviceProvider, client) =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+                client.Timeout = TimeSpan.FromSeconds(10);
+            })
+            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
+        var moduleProgressHttpClientBuilder = builder.Services
+            .AddHttpClient<IModuleProgressApiClient, ModuleProgressApiClient>((serviceProvider, client) =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+                client.Timeout = TimeSpan.FromSeconds(10);
+            })
+            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
         if (builder.Environment.IsDevelopment())
         {
             httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             graphHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            systemStatusHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            moduleProgressHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();
