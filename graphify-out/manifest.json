@@ -940,8 +940,8 @@
     "semantic_hash": ""
   },
   "Agents.md": {
-    "mtime": 1781799635.2960007,
-    "ast_hash": "70faf38dbce53e7fdad19df0e7b82b51",
+    "mtime": 1781815235.590942,
+    "ast_hash": "bab09ddf910d6e401557f2e036eb4aac",
     "semantic_hash": ""
   },
   "README.md": {
@@ -1137,36 +1137,6 @@
   "docs/architecture/triage/04-priority-scoring.md": {
     "mtime": 1780035909.7388377,
     "ast_hash": "95a78f5c3f0c46fd77f6b8340c8715ca",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/apply-progress.md": {
-    "mtime": 1781813906.9500475,
-    "ast_hash": "aa98ce8a966303c858a0b7cef44d06f7",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/design.md": {
-    "mtime": 1781801137.6669788,
-    "ast_hash": "74b070808dd952f273cd961ac6425761",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/exploration.md": {
-    "mtime": 1781798540.4406195,
-    "ast_hash": "7ab58e70b9ce9a35431cb56c94bb92d1",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/proposal.md": {
-    "mtime": 1781800570.6243117,
-    "ast_hash": "edb2450b6592a4ae7dc812660e35a380",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/specs/work-item-contract/spec.md": {
-    "mtime": 1781813282.8322628,
-    "ast_hash": "5fbcebf8ae02dc0f7efeaa92b53ac8ef",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W2-H1-T2/tasks.md": {
-    "mtime": 1781813842.1413746,
-    "ast_hash": "ed6022805b12f9196c345d203603ead3",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-04-qdrant-semantic-index/design.md": {
@@ -1590,8 +1560,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/work-item-contract/spec.md": {
-    "mtime": 1781797633.9538152,
-    "ast_hash": "dcd7092b27c66a05fc329c7c0f35bf0f",
+    "mtime": 1781815216.9540486,
+    "ast_hash": "81868a993282baa46036006d05cbaf30",
     "semantic_hash": ""
   },
   "skills/aura-backlog-slicer/SKILL.md": {
@@ -1662,6 +1632,41 @@
   "skills/aura-triage-rules/references/docs.md": {
     "mtime": 1780332611.650376,
     "ast_hash": "de383cd7fb91a129608bd38544435a63",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/apply-progress.md": {
+    "mtime": 1781813906.9500475,
+    "ast_hash": "aa98ce8a966303c858a0b7cef44d06f7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/design.md": {
+    "mtime": 1781801137.6669788,
+    "ast_hash": "74b070808dd952f273cd961ac6425761",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/exploration.md": {
+    "mtime": 1781798540.4406195,
+    "ast_hash": "7ab58e70b9ce9a35431cb56c94bb92d1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/proposal.md": {
+    "mtime": 1781800570.6243117,
+    "ast_hash": "edb2450b6592a4ae7dc812660e35a380",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/specs/work-item-contract/spec.md": {
+    "mtime": 1781814603.5000367,
+    "ast_hash": "61f785e421bfce017afbd660e2fe1177",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/tasks.md": {
+    "mtime": 1781813842.1413746,
+    "ast_hash": "ed6022805b12f9196c345d203603ead3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-18-W2-H1-T2/verify-report.md": {
+    "mtime": 1781814973.8473394,
+    "ast_hash": "5ba0b75762660a1635098babe6f962a2",
     "semantic_hash": ""
   }
 }

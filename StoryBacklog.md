@@ -140,10 +140,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H1 — Consolidar el modelo canónico de WorkItem
 
-- [ ] **W2-H1-T1** Refinar campos obligatorios del `WorkItem`.  
+- [x] **W2-H1-T1** Refinar campos obligatorios del `WorkItem`.  
   **DoD:** origen, prioridad, timestamp y metadatos mínimos definidos.  
   **Riesgo:** modelo insuficiente para summary y triaje.
-- [ ] **W2-H1-T2** Añadir tests de normalización e idempotencia.  
+- [x] **W2-H1-T2** Añadir tests de normalización e idempotencia.  
   **DoD:** duplicados y campos nulos cubiertos.  
   **Riesgo:** inconsistencias silenciosas.
 
