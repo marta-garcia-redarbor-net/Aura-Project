@@ -140,3 +140,17 @@ Implementar en este orden, antes de la Semana 2 del sprint:
 | 5 | `aura-triage-rules` | Semana 3; el triáje tiene reglas de dominio complejas que merecen skill dedicada. |
 
 Las skills 6-8 (`review-evidence`, `demo-mode`, `tfm-doc-writer`) pueden esperar a Semana 3-4.
+
+---
+
+### 9. `aura-graphify-query`
+
+**Estado:** Implementada en [`skills/aura-graphify-query/SKILL.md`](../../skills/aura-graphify-query/SKILL.md)
+
+| Campo | Detalle |
+|-------|---------|
+| Trigger | "explorar codebase", "estructura de X", "dependencias de Y", "dónde está Z", "qué usa X", "llamadas a Y", "qué implementa", "qué clases", "qué hereda", "flujo de" |
+| Propósito | Consultar el grafo de conocimiento de Graphify (`graphify-out/graph.json`) en lugar de leer archivos fuente directamente, reduciendo el consumo de tokens en lecturas estructurales en un ~93%. |
+| Cuándo usar | Al orientarse en el codebase: encontrar clases, trazar dependencias, entender flujos entre capas, localizar implementaciones de contratos. |
+| Cuándo NO usar | Cuando se necesita la implementación exacta de un método o se va a modificar código — en ese caso leer el archivo fuente directamente. |
+| Prioridad | **Alta** — reduce directamente el 40% del consumo de tokens en lectura. |

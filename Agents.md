@@ -68,3 +68,36 @@ Resumen operativo y flujos end-to-end → [`docs/ai/00-overview.md`](./docs/ai/0
 ## Decisión arquitectónica final
 
 Aura es una solución **modular, observable, testeable y orientada a dominio**. Los SDKs externos son detalles de infraestructura, NO el núcleo del sistema. Si mezclás Graph, GitHub, SonarQube, reglas de negocio y transporte en la misma capa, rompés mantenibilidad, testabilidad y performance. Este router existe para evitar ese caos desde el día uno.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, invoke the `skill` tool with `skill: "graphify"` before doing anything else.
+
+Rules:
+
+### When graphify is the right tool
+Use `graphify query/path/explain` when the question involves **known symbol names**:
+- Relationships between two concrete classes → `graphify path "<A>" "<B>"`
+- Methods, fields, and interfaces of a specific class → `graphify query "<ClassName> dependencies"`
+- Architecture concepts already indexed → `graphify explain "<concept>"`
+- Broad navigation → `graphify-out/wiki/index.md` if it exists
+
+### When to fall back to grep/glob instead
+Skip graphify and use grep/glob/Read directly when:
+- The question is **semantically broad** (e.g. "what interfaces exist in Ports/") — graphify will match docs instead of code
+- The relationship involves **dependency injection resolution** — the graph does not model the DI container, so `path A → B` via an injected interface will return "no path found"
+- The query requires **discovering unknown symbols** (e.g. "find all classes that implement X") — grep is more reliable
+- graphify returns results only from `openspec/` or `docs/` when code was expected — that is a signal to fall back immediately
+
+### Fallback protocol
+1. Run graphify first for concrete-symbol queries.
+2. If the result is empty, only contains doc nodes (`openspec/`, `docs/`), or "No path found" — **stop and fall back to grep/glob**.
+3. Never retry the same graphify query with rephrasing more than once.
+4. Combine both: use graphify for the relationship skeleton, grep to fill in line numbers and confirm.
+
+### Other rules
+- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
