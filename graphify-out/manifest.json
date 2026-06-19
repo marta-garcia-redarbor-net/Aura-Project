@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/DependencyInjection.cs": {
-    "mtime": 1781797633.9588132,
-    "ast_hash": "6d0a7754142486a4e9132aabff5a0899",
+    "mtime": 1781850601.3708403,
+    "ast_hash": "45efc9e1dfa65d9d5b1ce023622686e6",
     "semantic_hash": ""
   },
   "src/Aura.Application/Kernel/IPlugin.cs": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Ingestion/DependencyInjection.cs": {
-    "mtime": 1781643120.2405899,
-    "ast_hash": "86357d540f288af492f403732c918ad6",
+    "mtime": 1781850853.306408,
+    "ast_hash": "a0be488611bbcf29fb8741f6843d0826",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Ingestion/SemanticIndex/QdrantHealthCheck.cs": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/DependencyInjection.cs": {
-    "mtime": 1781797634.0002315,
-    "ast_hash": "5c71c6cd08ac28f7022e82ec05c869ce",
+    "mtime": 1781850630.4595766,
+    "ast_hash": "0f8ce630435065859bd394c72e503156",
     "semantic_hash": ""
   },
   "src/Aura.UI/Aura.UI.csproj": {
@@ -600,8 +600,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Workers/Program.cs": {
-    "mtime": 1781072166.9810078,
-    "ast_hash": "407a40dd484ba11e117c574c09b3dcf1",
+    "mtime": 1781850653.305505,
+    "ast_hash": "ced0d0019f5f63d982db0c46923ea81a",
     "semantic_hash": ""
   },
   "src/Aura.Workers/Properties/launchSettings.json": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Application/DependencyInjectionTests.cs": {
-    "mtime": 1781681200.9312236,
-    "ast_hash": "959207f45212a8a72107b64636b15b99",
+    "mtime": 1781850554.8892488,
+    "ast_hash": "5bb9d4998f1315fc295bcc2524ea47cd",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Aura.UnitTests.csproj": {
@@ -835,8 +835,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Infrastructure/InfrastructureDependencyInjectionTests.cs": {
-    "mtime": 1781072167.0096228,
-    "ast_hash": "7a99ba9ead7d8feb090fb9f7dc5ec880",
+    "mtime": 1781850711.732866,
+    "ast_hash": "1b8c3cddcad706f4c18652f125df468b",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Infrastructure/MeaiEmbeddingProviderTests.cs": {
@@ -950,8 +950,8 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1781815498.432698,
-    "ast_hash": "47d72f6e2fe5d7d6274582a19a6fcc51",
+    "mtime": 1781847004.755619,
+    "ast_hash": "ddb3407e2c3ebbab50115ade340ffa0d",
     "semantic_hash": ""
   },
   "StoryPlan.md": {
@@ -1752,6 +1752,106 @@
   "openspec/specs/ingestion-checkpoint-store/spec.md": {
     "mtime": 1781817047.4942317,
     "ast_hash": "d35748d3fbadc020728d28d57fed3b1d",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Models/ConnectorExecutionRequest.cs": {
+    "mtime": 1781850462.7960646,
+    "ast_hash": "81ab95ee46ecb2b16ee1229958a6dfff",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Models/ConnectorExecutionResult.cs": {
+    "mtime": 1781850471.1849358,
+    "ast_hash": "fa5a3b1d4e7878748e580734596de380",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Ports/IConnectorAdapter.cs": {
+    "mtime": 1781850454.0370238,
+    "ast_hash": "49a32515f8ead84657679367dd84ea42",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/UseCases/ConnectorExecution/ExecuteConnectorUseCase.cs": {
+    "mtime": 1781850961.0467503,
+    "ast_hash": "d23380cab324aee88bf76129bd26ebcb",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/DependencyInjection.cs": {
+    "mtime": 1781850612.1422098,
+    "ast_hash": "a68b8297f220678b9b97bcc529d1b05c",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/Teams/TeamsConnectorAdapter.cs": {
+    "mtime": 1781850623.0126705,
+    "ast_hash": "6849ae1fbdab757742923d7886a6a698",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Ingestion/InMemoryIngestionCheckpointStore.cs": {
+    "mtime": 1781850845.7284203,
+    "ast_hash": "b73dc6b3e37110b12895b0145f6cb28b",
+    "semantic_hash": ""
+  },
+  "src/Aura.Workers/ConnectorExecutionWorker.cs": {
+    "mtime": 1781850645.9543273,
+    "ast_hash": "c4d364d4a3f64d032beb2f6293b796e9",
+    "semantic_hash": ""
+  },
+  "tests/Aura.ArchitectureTests/ConnectorExecutionArchitectureTests.cs": {
+    "mtime": 1781850663.0551894,
+    "ast_hash": "caa5099041354c1eb8cb6534e24c26d5",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs": {
+    "mtime": 1781850389.5892642,
+    "ast_hash": "044b9264e6043a1895fb68468bc4e32f",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs": {
+    "mtime": 1781850574.222843,
+    "ast_hash": "6e922d783f376d1e4bc9439a50372f25",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/apply-progress.md": {
+    "mtime": 1781851030.2889094,
+    "ast_hash": "7f51a2e38893f50553a10b4e892723d7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/archive-report.md": {
+    "mtime": 1781853376.3380492,
+    "ast_hash": "e9afe63c97322261985f0836d9805780",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/design.md": {
+    "mtime": 1781849214.9332693,
+    "ast_hash": "baae1320bd1e334df16f1ceee3969318",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/exploration.md": {
+    "mtime": 1781847549.3647175,
+    "ast_hash": "428fc0f7a075f8409259e6c68d76b6d6",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/proposal.md": {
+    "mtime": 1781848200.2879322,
+    "ast_hash": "53c4486965233ffb97722f8e6556ced4",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/specs/connector-execution/spec.md": {
+    "mtime": 1781848792.0732486,
+    "ast_hash": "15682631a4d5ff4401188c5c55209304",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/tasks.md": {
+    "mtime": 1781850948.4187956,
+    "ast_hash": "eccc79597fa5a0b6b0a497cb8e1c8bf6",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T2/verify-report.md": {
+    "mtime": 1781852882.2745824,
+    "ast_hash": "faec779d65e639c665db68f3b4599662",
+    "semantic_hash": ""
+  },
+  "openspec/specs/connector-execution/spec.md": {
+    "mtime": 1781848792.0732486,
+    "ast_hash": "15682631a4d5ff4401188c5c55209304",
     "semantic_hash": ""
   }
 }

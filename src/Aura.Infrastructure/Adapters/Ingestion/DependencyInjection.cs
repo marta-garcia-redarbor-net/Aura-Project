@@ -1,6 +1,7 @@
 using Aura.Infrastructure.Adapters.Ingestion.Embedding;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
+using Aura.Application.Ports;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,7 @@ internal static class DependencyInjection
         services.AddEmbeddingAdapter(configuration);
         services.AddSemanticIndexAdapter(configuration);
         services.AddSemanticOutboxAdapter(configuration);
+        services.AddSingleton<IIngestionCheckpointStore, InMemoryIngestionCheckpointStore>();
 
         return services;
     }

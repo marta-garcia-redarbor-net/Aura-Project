@@ -1,16 +1,16 @@
 # Graph Report - Aura  (2026-06-19)
 
 ## Corpus Check
-- 349 files · ~112,624 words
+- 369 files · ~120,625 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3338 nodes · 3997 edges · 322 communities (291 shown, 31 thin omitted)
+- 3582 nodes · 4294 edges · 341 communities (311 shown, 30 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cb35801b`
+- Built from commit: `577f5334`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -311,6 +311,23 @@
 - [[_COMMUNITY_Community 319|Community 319]]
 - [[_COMMUNITY_Community 320|Community 320]]
 - [[_COMMUNITY_Community 321|Community 321]]
+- [[_COMMUNITY_Community 322|Community 322]]
+- [[_COMMUNITY_Community 323|Community 323]]
+- [[_COMMUNITY_Community 324|Community 324]]
+- [[_COMMUNITY_Community 325|Community 325]]
+- [[_COMMUNITY_Community 326|Community 326]]
+- [[_COMMUNITY_Community 327|Community 327]]
+- [[_COMMUNITY_Community 328|Community 328]]
+- [[_COMMUNITY_Community 329|Community 329]]
+- [[_COMMUNITY_Community 330|Community 330]]
+- [[_COMMUNITY_Community 331|Community 331]]
+- [[_COMMUNITY_Community 332|Community 332]]
+- [[_COMMUNITY_Community 333|Community 333]]
+- [[_COMMUNITY_Community 334|Community 334]]
+- [[_COMMUNITY_Community 335|Community 335]]
+- [[_COMMUNITY_Community 336|Community 336]]
+- [[_COMMUNITY_Community 337|Community 337]]
+- [[_COMMUNITY_Community 340|Community 340]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `WorkItemTests` - 28 edges
@@ -325,27 +342,33 @@
 10. `InitialDashboardEndpointTests` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
+- `CapturingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
+- `StubConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `StubHealthCheckService` --inherits--> `HealthCheckService`  [EXTRACTED]
   tests/Aura.UnitTests/Dashboard/QdrantReadinessAdapterTests.cs → src/Aura.Infrastructure/Adapters/Dashboard/QdrantReadinessAdapter.cs
-- `HelloPlugin` --implements--> `IPlugin`  [EXTRACTED]
-  src/Aura.Application/Kernel/Plugins/HelloPlugin.cs → src/Aura.Application/Kernel/IPlugin.cs
+- `TeamsConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  src/Aura.Infrastructure/Adapters/Connectors/Teams/TeamsConnectorAdapter.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (322 total, 31 thin omitted)
+## Communities (341 total, 30 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
-Nodes (40): ConcurrentQueue, EventId, GraphConnectorStatusEndpointTests, InMemoryLogger, InMemoryLoggerProvider, NullScope, StubGraphConnectorStatusReader, IGraphConnectorStatusReader (+32 more)
+Nodes (40): ConcurrentQueue, GraphConnectorStatusEndpointTests, InMemoryLogger, InMemoryLoggerProvider, NullScope, StubGraphConnectorStatusReader, IGraphConnectorStatusReader, ILoggerProvider (+32 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
 Nodes (34): AuthorizationFlowTests, CancellingInitialDashboardReader, InitialDashboardEndpointTests, RequestCancellationObservingDashboardReader, StubInitialDashboardReader, ThrowingInitialDashboardReader, GraphConnectorStatusSmokeTests, StubGraphConnectorApiClient (+26 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (31): CapturingInnerHandler, DashboardApiClientTests, StubHandler, CapturingInnerHandler, ForwardedAccessTokenHandlerTests, StubHandler, SystemStatusApiClientTests, HttpMessageHandler (+23 more)
+Cohesion: 0.42
+Nodes (4): DashboardApiClientTests, Fact, JsonSerializerOptions, Task
 
 ### Community 3 - "Community 3"
 Cohesion: 0.11
@@ -357,7 +380,7 @@ Nodes (42): Cómo usar este backlog, Historia W1-H1 — Crear la solución base 
 
 ### Community 5 - "Community 5"
 Cohesion: 0.13
-Nodes (9): DateTimeOffset, IReadOnlyDictionary, Fact, InlineData, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
+Nodes (9): IReadOnlyDictionary, DateTimeOffset, Fact, InlineData, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.07
@@ -392,8 +415,8 @@ Cohesion: 0.16
 Nodes (15): DashboardEndpoints, Log, ActivitySource, CancellationToken, Exception, IEndpointRouteBuilder, IInitialDashboardReader, ILogger (+7 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.08
-Nodes (21): HelloKernelWorker, SemanticIndexSyncWorker, Worker, BackgroundService, CancellationToken, IHostApplicationLifetime, ILogger, IPluginRegistry (+13 more)
+Cohesion: 0.06
+Nodes (30): ConnectorExecutionWorker, Log, HelloKernelWorker, SemanticIndexSyncWorker, Worker, BackgroundService, CancellationToken, Exception (+22 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.11
@@ -452,16 +475,16 @@ Cohesion: 0.15
 Nodes (13): GraphConnectorEndpoints, Log, ActivitySource, CancellationToken, Exception, GraphConnectorState, IEndpointRouteBuilder, IGraphConnectorStatusReader (+5 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.18
-Nodes (11): CapturingHandler, DevAccessTokenHandlerTests, StubHttpClientFactory, IHttpClientFactory, CancellationToken, Fact, HttpClient, HttpRequestMessage (+3 more)
+Cohesion: 0.30
+Nodes (7): DevAccessTokenHandlerTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IConfiguration, Task
 
 ### Community 30 - "Community 30"
 Cohesion: 0.11
 Nodes (17): Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window, Requirement: Provider Isolation, Requirements (+9 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.12
-Nodes (9): MockJwtOptionsReadinessAdapter, DependencyInjection, MockJwtGenerator, IMockAuthReadinessProvider, options, IOptionsMonitor, IConfiguration, IServiceCollection (+1 more)
+Cohesion: 0.15
+Nodes (6): DependencyInjection, MockJwtGenerator, options, IConfiguration, IServiceCollection, MockJwtOptions
 
 ### Community 32 - "Community 32"
 Cohesion: 0.15
@@ -560,15 +583,15 @@ Cohesion: 0.13
 Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.24
-Nodes (5): Config, Fact, IConfiguration, IServiceCollection, DependencyInjectionTests
+Cohesion: 0.05
+Nodes (25): DependencyInjection, Program, UiMarker, BasicSemanticChunkExtractor, Config, InitialDashboardReaderTests, ModuleProgressReaderTests, GraphConnectorStatusReaderTests (+17 more)
 
 ### Community 57 - "Community 57"
 Cohesion: 0.21
 Nodes (9): DashboardCardDto, IInitialDashboardReader, InitialDashboardReader, AuraUser, CancellationToken, ICurrentUserService, IEnumerable, InitialDashboardDto (+1 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.16
+Cohesion: 0.18
 Nodes (11): MeaiEmbeddingProvider, IEmbeddingProvider, ActivitySource, CancellationToken, EmbeddingProviderOptions, IEmbeddingGenerator, IReadOnlyList, List (+3 more)
 
 ### Community 59 - "Community 59"
@@ -580,8 +603,8 @@ Cohesion: 0.13
 Nodes (14): Delta for semantic-index, MODIFIED Requirements, Requirement: Application Ports for Abstraction, Requirement: Derived Store Segregation, Requirement: Observable and Resilient Embedding Generation, Scenario: Canonical source missing (Orphaned Chunk), Scenario: Generating embeddings without SDK leakage, Scenario: Protecting context window limits (+6 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.32
-Nodes (4): BasicSemanticChunkExtractor, BasicSemanticChunkExtractorTests, Fact, Task
+Cohesion: 0.09
+Nodes (22): Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case, Requirement: Telemetry Emission (+14 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.14
@@ -648,7 +671,7 @@ Cohesion: 0.17
 Nodes (9): net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.37
+Cohesion: 0.36
 Nodes (4): InfrastructureDependencyInjectionTests, Fact, IConfiguration, IHostEnvironment
 
 ### Community 79 - "Community 79"
@@ -796,7 +819,7 @@ Cohesion: 0.20
 Nodes (9): Phase 1: RED — Contract Tests First, Phase 2: GREEN — Domain Contract Implementation, Phase 3: GREEN — Application/Worker Wiring, Phase 4: REFACTOR — Clean Architecture and Test Maintainability, Phase 5: Verification, Review Workload Forecast, Spec Scenario Mapping (for PR notes), Suggested Work Units (+1 more)
 
 ### Community 117 - "Community 117"
-Cohesion: 0.14
+Cohesion: 0.13
 Nodes (10): DependencyInjectionTests, StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, Fact (+2 more)
 
 ### Community 118 - "Community 118"
@@ -1044,8 +1067,8 @@ Cohesion: 0.25
 Nodes (7): commandName, dotnetRunMessages, environmentVariables, DOTNET_ENVIRONMENT, Aura.Workers, profiles, $schema
 
 ### Community 180 - "Community 180"
-Cohesion: 0.18
-Nodes (10): ModuleProgressApiClientTests, StubHandler, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, JsonSerializerOptions (+2 more)
+Cohesion: 0.09
+Nodes (22): Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case, Requirement: Telemetry Emission (+14 more)
 
 ### Community 181 - "Community 181"
 Cohesion: 0.39
@@ -1356,16 +1379,16 @@ Cohesion: 0.20
 Nodes (9): Architecture Decisions, Data Flow, Design: Ingestion Checkpoint Store Contract, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
 
 ### Community 311 - "Community 311"
-Cohesion: 0.42
-Nodes (3): SystemStatusReaderTests, Fact, Task
+Cohesion: 0.28
+Nodes (9): CapturingInnerHandler, ForwardedAccessTokenHandlerTests, HttpMessageInvoker, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IHttpContextAccessor (+1 more)
 
 ### Community 312 - "Community 312"
-Cohesion: 0.29
-Nodes (7): Dictionary, InMemoryIngestionCheckpointStore, IIngestionCheckpointStore, CancellationToken, CheckpointIdentity, IngestionCheckpoint, Task
+Cohesion: 0.14
+Nodes (14): InMemoryIngestionCheckpointStore, IIngestionCheckpointStore, InMemoryIngestionCheckpointStore, Lock, CancellationToken, CheckpointIdentity, Dictionary, IngestionCheckpoint (+6 more)
 
 ### Community 313 - "Community 313"
-Cohesion: 0.36
-Nodes (5): GraphConnectorStatusReaderTests, Fact, InlineData, Task, Theory
+Cohesion: 0.13
+Nodes (16): Activity, ExecuteConnectorUseCase, Log, Counter, Meter, ActivitySource, CancellationToken, CheckpointIdentity (+8 more)
 
 ### Community 314 - "Community 314"
 Cohesion: 0.42
@@ -1380,40 +1403,112 @@ Cohesion: 0.25
 Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T1 — Checkpoint store contract, Ready for Proposal, Recommendation, Risks
 
 ### Community 317 - "Community 317"
-Cohesion: 0.29
-Nodes (3): Program, UiMarker, Services
+Cohesion: 0.12
+Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+7 more)
 
 ### Community 318 - "Community 318"
-Cohesion: 0.47
-Nodes (3): InitialDashboardReaderTests, Fact, Task
+Cohesion: 0.18
+Nodes (10): ModuleProgressApiClientTests, StubHandler, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, JsonSerializerOptions (+2 more)
 
 ### Community 319 - "Community 319"
-Cohesion: 0.47
-Nodes (3): ModuleProgressReaderTests, Fact, Task
+Cohesion: 0.18
+Nodes (10): ILogger, NullScope, RecordingLogger, T, EventId, Exception, Func, IDisposable (+2 more)
 
 ### Community 320 - "Community 320"
 Cohesion: 0.47
 Nodes (3): IngestionCheckpointFirstRunWindowTests, Fact, Task
 
+### Community 321 - "Community 321"
+Cohesion: 0.42
+Nodes (4): ExecuteConnectorUseCaseTests, GetTag(), Fact, Task
+
+### Community 322 - "Community 322"
+Cohesion: 0.20
+Nodes (9): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, ILogger, LoggerMessage, Task, Log (+1 more)
+
+### Community 323 - "Community 323"
+Cohesion: 0.42
+Nodes (3): SystemStatusReaderTests, Fact, Task
+
+### Community 324 - "Community 324"
+Cohesion: 0.18
+Nodes (10): StubHandler, SystemStatusApiClientTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, JsonSerializerOptions (+2 more)
+
+### Community 325 - "Community 325"
+Cohesion: 0.22
+Nodes (7): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, ConnectorExecutionWorkerTests, SuccessAdapter
+
+### Community 326 - "Community 326"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 327 - "Community 327"
+Cohesion: 0.25
+Nodes (6): CapturingConnectorAdapter, StubConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult
+
+### Community 328 - "Community 328"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W2-H2-T2 — Teams-First Connector Execution Flow, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 329 - "Community 329"
+Cohesion: 0.22
+Nodes (8): Phase 1: Foundation / TDD RED, Phase 2: Core Implementation / TDD GREEN, Phase 3: Integration / Teams-First Wiring, Phase 4: Verification / REFACTOR, Phase 5: Cleanup / Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H2-T2 — Teams-First Connector Execution Flow
+
+### Community 330 - "Community 330"
+Cohesion: 0.22
+Nodes (6): CapturingHandler, StubHttpClientFactory, CapturingInnerHandler, HttpMessageHandler, IHttpClientFactory, HttpClient
+
+### Community 331 - "Community 331"
+Cohesion: 0.25
+Nodes (7): Apply Progress: W2-H2-T2 — Teams-First Connector Execution Flow, Completed Tasks, Execution Mode, Issues / Notes, Scope Compliance, TDD Cycle Evidence, Test Summary
+
+### Community 332 - "Community 332"
+Cohesion: 0.43
+Nodes (3): ConnectorExecutionArchitectureTests, Fact, TestResult
+
+### Community 333 - "Community 333"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T2 — Connector execution flow, Ready for Proposal, Recommendation, Risks
+
+### Community 334 - "Community 334"
+Cohesion: 0.25
+Nodes (6): StubHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+
+### Community 335 - "Community 335"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 336 - "Community 336"
+Cohesion: 0.40
+Nodes (4): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Task
+
+### Community 337 - "Community 337"
+Cohesion: 0.29
+Nodes (6): Archive Report: W2-H2-T2, Artifacts, Executive Summary, Risks / Warnings, Status, Traceability
+
+### Community 340 - "Community 340"
+Cohesion: 0.40
+Nodes (3): MockJwtOptionsReadinessAdapter, IMockAuthReadinessProvider, IOptionsMonitor
+
 ## Knowledge Gaps
-- **1664 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+1659 more)
+- **1785 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+1780 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Services` connect `Community 317` to `Community 321`, `Community 2`, `Community 3`, `Community 1`, `Community 180`, `Community 117`, `Community 311`, `Community 56`, `Community 31`, `Community 29`, `Community 318`, `Community 319`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `options` connect `Community 31` to `Community 32`, `Community 195`, `Community 9`, `Community 16`, `Community 19`, `Community 84`, `Community 245`, `Community 117`, `Community 307`, `Community 85`, `Community 58`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `Services` connect `Community 56` to `Community 1`, `Community 3`, `Community 324`, `Community 323`, `Community 330`, `Community 334`, `Community 117`, `Community 318`, `Community 31`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `options` connect `Community 31` to `Community 32`, `Community 195`, `Community 9`, `Community 16`, `Community 19`, `Community 340`, `Community 245`, `Community 84`, `Community 117`, `Community 307`, `Community 85`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Why does `InitialDashboardSmokeTests` connect `Community 3` to `Community 1`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
-  _1664 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1785 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.0672316384180791 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.06485671191553545 - nodes in this community are weakly interconnected._
+- **Should `Community 3` be split into smaller, more focused modules?**
+  _Cohesion score 0.10884353741496598 - nodes in this community are weakly interconnected._

@@ -1,6 +1,7 @@
 using Aura.Infrastructure.Adapters.Identity;
 using Aura.Infrastructure.Adapters.Ingestion;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
+using Aura.Infrastructure.Adapters.Connectors;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.Dashboard;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(environment);
 
         services.AddIngestionAdapters(configuration);
+        services.AddConnectorAdapters(configuration);
         services.AddGraphConnectorAdapter(configuration);
         services.AddIdentityAdapter(configuration, environment);
         services.AddDashboardAdapters(configuration, environment);

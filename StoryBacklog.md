@@ -149,7 +149,7 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H2 — Crear orquestador de ingestión
 
-- [ ] **W2-H2-T1** Definir contrato de checkpoint store.  
+- [x] **W2-H2-T1** Definir contrato de checkpoint store.  
   **DoD:** interfaz lista para persistencia.  
   **Riesgo:** duplicidad en sincronizaciones.
 - [ ] **W2-H2-T2** Implementar flujo de ejecución por conector.  
