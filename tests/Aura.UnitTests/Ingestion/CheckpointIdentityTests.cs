@@ -42,18 +42,20 @@ public class CheckpointIdentityTests
     [Fact]
     public void Constructor_AllowsBothNullableCheckpointFieldsToBeNull()
     {
-        var checkpoint = new IngestionCheckpoint(null, null);
+        var checkpoint = new IngestionCheckpoint(null, null, null);
 
         Assert.Null(checkpoint.Cursor);
-        Assert.Null(checkpoint.ProcessedAt);
+        Assert.Null(checkpoint.MaxProcessedAt);
+        Assert.Null(checkpoint.ExecutionFinishedAt);
     }
 
     [Fact]
     public void Record_UsesStructuralEquality_ForSameValues()
     {
         var expectedProcessedAt = DateTimeOffset.Parse("2026-06-18T10:00:00Z", CultureInfo.InvariantCulture);
-        var first = new IngestionCheckpoint("delta-abc", expectedProcessedAt);
-        var second = new IngestionCheckpoint("delta-abc", expectedProcessedAt);
+        var expectedExecutionFinishedAt = DateTimeOffset.Parse("2026-06-18T10:05:00Z", CultureInfo.InvariantCulture);
+        var first = new IngestionCheckpoint("delta-abc", expectedProcessedAt, expectedExecutionFinishedAt);
+        var second = new IngestionCheckpoint("delta-abc", expectedProcessedAt, expectedExecutionFinishedAt);
 
         Assert.Equal(first, second);
     }

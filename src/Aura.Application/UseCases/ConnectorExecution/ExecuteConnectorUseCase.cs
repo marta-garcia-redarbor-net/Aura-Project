@@ -42,11 +42,9 @@ public sealed partial class ExecuteConnectorUseCase
         activity?.SetTag("connector.source", identity.Source);
         activity?.SetTag("connector.tenant", identity.Tenant);
 
-        // Read-only boundary: this slice consumes checkpoint state only to derive the fetch window.
-        // Checkpoint writes/mutations are intentionally deferred to W2-H2-T3.
         var checkpoint = await _checkpointStore.GetAsync(identity, ct);
         var now = _utcNow();
-        var windowStart = checkpoint?.ProcessedAt ?? new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
+        var windowStart = checkpoint?.MaxProcessedAt ?? new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
         var request = new ConnectorExecutionRequest(identity, windowStart, now);
 
         // Lightweight Strategy Pattern dispatch: select one provider adapter by canonical connector name.
@@ -66,6 +64,7 @@ public sealed partial class ExecuteConnectorUseCase
         try
         {
             var result = await adapter.ExecuteAsync(request, ct);
+            await PersistCheckpointAsync(identity, checkpoint, result, now, ct);
             EmitTelemetry(activity, result);
             return result;
         }
@@ -82,6 +81,46 @@ public sealed partial class ExecuteConnectorUseCase
         }
     }
 
+    private async Task PersistCheckpointAsync(
+        CheckpointIdentity identity,
+        IngestionCheckpoint? prior,
+        ConnectorExecutionResult result,
+        DateTimeOffset now,
+        CancellationToken ct)
+    {
+        if (result.Status == ConnectorExecutionStatus.Failure)
+        {
+            return;
+        }
+
+        if (result.Status == ConnectorExecutionStatus.PartialFailure)
+        {
+            if (result.MaxProcessedAt is null)
+            {
+                return;
+            }
+
+            var partialCheckpoint = new IngestionCheckpoint(
+                prior?.Cursor,
+                result.MaxProcessedAt,
+                prior?.ExecutionFinishedAt);
+
+            await _checkpointStore.SaveAsync(identity, partialCheckpoint, ct);
+            return;
+        }
+
+        var maxProcessedAt = result.ItemCount > 0
+            ? result.MaxProcessedAt
+            : prior?.MaxProcessedAt;
+
+        var successCheckpoint = new IngestionCheckpoint(
+            prior?.Cursor,
+            maxProcessedAt,
+            now);
+
+        await _checkpointStore.SaveAsync(identity, successCheckpoint, ct);
+    }
+
     private void EmitTelemetry(Activity? activity, ConnectorExecutionResult result, Exception? exception = null)
     {
         var correlationId = activity?.Id ?? Activity.Current?.Id ?? Guid.NewGuid().ToString("N");
@@ -90,7 +129,8 @@ public sealed partial class ExecuteConnectorUseCase
         activity?.SetTag("execution.status", result.Status.ToString());
         activity?.SetTag("execution.item_count", result.ItemCount);
 
-        if (result.Status == ConnectorExecutionStatus.Failure && !string.IsNullOrWhiteSpace(result.FailureReason))
+        if ((result.Status == ConnectorExecutionStatus.Failure || result.Status == ConnectorExecutionStatus.PartialFailure)
+            && !string.IsNullOrWhiteSpace(result.FailureReason))
         {
             activity?.SetStatus(ActivityStatusCode.Error, result.FailureReason);
         }
@@ -110,6 +150,20 @@ public sealed partial class ExecuteConnectorUseCase
                 result.FailureReason ?? "Unknown failure",
                 correlationId,
                 exception);
+
+            return;
+        }
+
+        if (result.Status == ConnectorExecutionStatus.PartialFailure)
+        {
+            Log.ExecutionPartiallyFailed(
+                _logger,
+                result.Identity.Connector,
+                result.Identity.Source,
+                result.Identity.Tenant,
+                result.ItemCount,
+                result.FailureReason ?? "Unknown partial failure",
+                correlationId);
 
             return;
         }
@@ -149,5 +203,18 @@ public sealed partial class ExecuteConnectorUseCase
             string failureReason,
             string correlationId,
             Exception? exception);
+
+        [LoggerMessage(
+            EventId = 2203,
+            Level = LogLevel.Warning,
+            Message = "Connector execution partially failed for {Connector}/{Source}/{Tenant}. ItemCount={ItemCount}. Reason={FailureReason}. CorrelationId={CorrelationId}")]
+        public static partial void ExecutionPartiallyFailed(
+            ILogger logger,
+            string connector,
+            string source,
+            string tenant,
+            int itemCount,
+            string failureReason,
+            string correlationId);
     }
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.ConnectorExecution;
@@ -63,7 +64,7 @@ public class ExecuteConnectorUseCaseTests
 
         var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
         checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
-            .Returns(new IngestionCheckpoint("cursor", checkpointTime));
+            .Returns(new IngestionCheckpoint("cursor", checkpointTime, DateTimeOffset.Parse("2026-06-19T10:03:00Z")));
 
         var adapter = new CapturingConnectorAdapter("teams", new ConnectorExecutionResult(identity, 1, ConnectorExecutionStatus.Success));
         var logger = new RecordingLogger<ExecuteConnectorUseCase>();
@@ -115,6 +116,155 @@ public class ExecuteConnectorUseCaseTests
         var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
 
         Assert.Equal(failure, result);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FullSuccessWithItems_ReturnsCanonicalResultContract()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var maxProcessedAt = DateTimeOffset.Parse("2026-06-19T14:30:00Z", CultureInfo.InvariantCulture);
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var expected = new ConnectorExecutionResult(
+            identity,
+            5,
+            ConnectorExecutionStatus.Success,
+            FailureReason: null,
+            MaxProcessedAt: maxProcessedAt);
+
+        var adapter = new StubConnectorAdapter("teams", expected);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.Equal(identity, result.Identity);
+        Assert.Equal(5, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
+        Assert.Null(result.FailureReason);
+        Assert.Equal(maxProcessedAt, result.MaxProcessedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FullSuccessWithoutItems_ReturnsCanonicalResultContract()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var expected = new ConnectorExecutionResult(
+            identity,
+            0,
+            ConnectorExecutionStatus.Success,
+            FailureReason: null,
+            MaxProcessedAt: null);
+
+        var adapter = new StubConnectorAdapter("teams", expected);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.Equal(identity, result.Identity);
+        Assert.Equal(0, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
+        Assert.Null(result.FailureReason);
+        Assert.Null(result.MaxProcessedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FullFailure_ReturnsCanonicalResultContract()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var expected = new ConnectorExecutionResult(
+            identity,
+            0,
+            ConnectorExecutionStatus.Failure,
+            FailureReason: "adapter failure",
+            MaxProcessedAt: null);
+
+        var adapter = new StubConnectorAdapter("teams", expected);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.Equal(identity, result.Identity);
+        Assert.Equal(0, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Failure, result.Status);
+        Assert.False(string.IsNullOrWhiteSpace(result.FailureReason));
+        Assert.Null(result.MaxProcessedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PartialFailure_ReturnsCanonicalResultContract()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var successfulItemsMax = DateTimeOffset.Parse("2026-06-19T14:30:00Z", CultureInfo.InvariantCulture);
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var expected = new ConnectorExecutionResult(
+            identity,
+            3,
+            ConnectorExecutionStatus.PartialFailure,
+            FailureReason: "2 items failed",
+            MaxProcessedAt: successfulItemsMax);
+
+        var adapter = new StubConnectorAdapter("teams", expected);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.Equal(identity, result.Identity);
+        Assert.Equal(3, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.PartialFailure, result.Status);
+        Assert.False(string.IsNullOrWhiteSpace(result.FailureReason));
+        Assert.Equal(successfulItemsMax, result.MaxProcessedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAdapterThrows_ReturnsTypedFailureContract()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var adapter = new ThrowingConnectorAdapter("teams", new InvalidOperationException("connector crashed"));
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        var result = await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.Equal(identity, result.Identity);
+        Assert.Equal(0, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Failure, result.Status);
+        Assert.Equal("connector crashed", result.FailureReason);
+        Assert.Null(result.MaxProcessedAt);
     }
 
     [Fact]
@@ -233,6 +383,174 @@ public class ExecuteConnectorUseCaseTests
         Assert.Equal(0, measurements[0].Value);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_FullSuccessWithItems_PersistsBothCheckpointTimestamps()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var now = DateTimeOffset.Parse("2026-06-19T15:45:00Z", CultureInfo.InvariantCulture);
+        var maxProcessedAt = DateTimeOffset.Parse("2026-06-19T14:30:00Z", CultureInfo.InvariantCulture);
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var success = new ConnectorExecutionResult(
+            identity,
+            5,
+            ConnectorExecutionStatus.Success,
+            MaxProcessedAt: maxProcessedAt);
+
+        var adapter = new StubConnectorAdapter("teams", success);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>(),
+            () => now);
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await checkpointStore.Received(1).SaveAsync(
+            identity,
+            Arg.Is<IngestionCheckpoint>(c =>
+                c.Cursor == null &&
+                c.MaxProcessedAt == maxProcessedAt &&
+                c.ExecutionFinishedAt == now),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FullSuccessWithoutItems_PersistsOnlyExecutionFinishedAt()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var now = DateTimeOffset.Parse("2026-06-19T16:00:00Z", CultureInfo.InvariantCulture);
+        var priorMaxProcessedAt = DateTimeOffset.Parse("2026-06-19T12:00:00Z", CultureInfo.InvariantCulture);
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns(new IngestionCheckpoint("cursor-v1", priorMaxProcessedAt, null));
+
+        var successWithoutItems = new ConnectorExecutionResult(
+            identity,
+            0,
+            ConnectorExecutionStatus.Success,
+            MaxProcessedAt: null);
+
+        var adapter = new StubConnectorAdapter("teams", successWithoutItems);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>(),
+            () => now);
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await checkpointStore.Received(1).SaveAsync(
+            identity,
+            Arg.Is<IngestionCheckpoint>(c =>
+                c.Cursor == "cursor-v1" &&
+                c.MaxProcessedAt == priorMaxProcessedAt &&
+                c.ExecutionFinishedAt == now),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FullFailure_DoesNotPersistCheckpoint()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns(new IngestionCheckpoint(
+                "cursor-v1",
+                DateTimeOffset.Parse("2026-06-19T12:00:00Z", CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-06-19T12:05:00Z", CultureInfo.InvariantCulture)));
+
+        var failure = new ConnectorExecutionResult(identity, 0, ConnectorExecutionStatus.Failure, "adapter failure", null);
+        var adapter = new StubConnectorAdapter("teams", failure);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await checkpointStore.DidNotReceive().SaveAsync(
+            Arg.Any<CheckpointIdentity>(),
+            Arg.Any<IngestionCheckpoint>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PartialFailure_PersistsOnlyMaxProcessedAt()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var priorFinishedAt = DateTimeOffset.Parse("2026-06-19T12:05:00Z", CultureInfo.InvariantCulture);
+        var successfulItemsMax = DateTimeOffset.Parse("2026-06-19T14:30:00Z", CultureInfo.InvariantCulture);
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns(new IngestionCheckpoint("cursor-v1", DateTimeOffset.Parse("2026-06-19T12:00:00Z", CultureInfo.InvariantCulture), priorFinishedAt));
+
+        var partial = new ConnectorExecutionResult(
+            identity,
+            3,
+            ConnectorExecutionStatus.PartialFailure,
+            FailureReason: "2 items failed",
+            MaxProcessedAt: successfulItemsMax);
+
+        var adapter = new StubConnectorAdapter("teams", partial);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>(),
+            () => DateTimeOffset.Parse("2026-06-19T15:45:00Z", CultureInfo.InvariantCulture));
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await checkpointStore.Received(1).SaveAsync(
+            identity,
+            Arg.Is<IngestionCheckpoint>(c =>
+                c.Cursor == "cursor-v1" &&
+                c.MaxProcessedAt == successfulItemsMax &&
+                c.ExecutionFinishedAt == priorFinishedAt),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_RepeatedRunWithSameWindow_DoesNotRegressCheckpoint()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var maxProcessedAt = DateTimeOffset.Parse("2026-06-19T14:30:00Z", CultureInfo.InvariantCulture);
+        var now = DateTimeOffset.Parse("2026-06-19T16:00:00Z", CultureInfo.InvariantCulture);
+        IngestionCheckpoint? persisted = null;
+
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+            .Returns(_ => persisted);
+
+        checkpointStore
+            .When(s => s.SaveAsync(identity, Arg.Any<IngestionCheckpoint>(), Arg.Any<CancellationToken>()))
+            .Do(callInfo => persisted = callInfo.ArgAt<IngestionCheckpoint>(1));
+
+        var success = new ConnectorExecutionResult(identity, 2, ConnectorExecutionStatus.Success, MaxProcessedAt: maxProcessedAt);
+        var adapter = new StubConnectorAdapter("teams", success);
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            new RecordingLogger<ExecuteConnectorUseCase>(),
+            () => now);
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+        var firstSaved = persisted;
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+        var secondSaved = persisted;
+
+        Assert.NotNull(firstSaved);
+        Assert.NotNull(secondSaved);
+        Assert.True(secondSaved!.MaxProcessedAt >= firstSaved!.MaxProcessedAt);
+    }
+
     private sealed class StubConnectorAdapter(string connectorName, ConnectorExecutionResult result) : IConnectorAdapter
     {
         public string ConnectorName => connectorName;
@@ -251,6 +569,14 @@ public class ExecuteConnectorUseCaseTests
             LastRequest = request;
             return Task.FromResult(result);
         }
+    }
+
+    private sealed class ThrowingConnectorAdapter(string connectorName, Exception exception) : IConnectorAdapter
+    {
+        public string ConnectorName => connectorName;
+
+        public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
+            => Task.FromException<ConnectorExecutionResult>(exception);
     }
 
     private sealed class RecordingLogger<T> : ILogger<T>
