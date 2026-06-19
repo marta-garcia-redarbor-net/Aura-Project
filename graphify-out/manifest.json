@@ -950,8 +950,8 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1781797633.904128,
-    "ast_hash": "dc91f5abe12dd28c18851deab036b175",
+    "mtime": 1781815498.432698,
+    "ast_hash": "47d72f6e2fe5d7d6274582a19a6fcc51",
     "semantic_hash": ""
   },
   "StoryPlan.md": {
@@ -1025,8 +1025,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/05-normalization-checkpoints.md": {
-    "mtime": 1780035909.7088509,
-    "ast_hash": "20f6f664358b7c1bae15c8c82c9ea19c",
+    "mtime": 1781818054.6380632,
+    "ast_hash": "25415487654c5d6634fddb76818a6305",
     "semantic_hash": ""
   },
   "docs/architecture/observability/00-overview.md": {
@@ -1667,6 +1667,91 @@
   "openspec/changes/archive/2026-06-18-W2-H1-T2/verify-report.md": {
     "mtime": 1781814973.8473394,
     "ast_hash": "5ba0b75762660a1635098babe6f962a2",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Models/CheckpointIdentity.cs": {
+    "mtime": 1781817828.5387807,
+    "ast_hash": "b9314db503926a07fc53f88df5a09a42",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Models/IngestionCheckpoint.cs": {
+    "mtime": 1781817911.1182814,
+    "ast_hash": "a78a6ef225aca2c198d6dbda72af0648",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Ports/IIngestionCheckpointStore.cs": {
+    "mtime": 1781817966.2490215,
+    "ast_hash": "1faaded5eeb224bac918a5912453f8de",
+    "semantic_hash": ""
+  },
+  "tests/Aura.ArchitectureTests/IngestionArchitectureTests.cs": {
+    "mtime": 1781817786.3692605,
+    "ast_hash": "d4c2215c624f1c9d12c5cef5ab27f201",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/CheckpointIdentityTests.cs": {
+    "mtime": 1781818017.0280495,
+    "ast_hash": "51f673f622340928d0a5e746a5cb80fc",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/Fakes/InMemoryIngestionCheckpointStore.cs": {
+    "mtime": 1781846384.3287365,
+    "ast_hash": "fb223cf682987dc4496c8e51cc84fb09",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/InMemoryCheckpointStoreContractTests.cs": {
+    "mtime": 1781846434.889007,
+    "ast_hash": "c0d5559f9af1a7b36f2ed33cb74c45bb",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/IngestionCheckpointFirstRunWindowTests.cs": {
+    "mtime": 1781846442.7511265,
+    "ast_hash": "6d8e4c2f9264dc4ac0bc26c74fd51857",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/Support/IngestionCheckpointCallerHarness.cs": {
+    "mtime": 1781846392.9859302,
+    "ast_hash": "75a367c5f96e13d5fb1a8092b0594429",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/apply-progress.md": {
+    "mtime": 1781846564.6669579,
+    "ast_hash": "45d0706dd5de392a22be3c59fe301149",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/design.md": {
+    "mtime": 1781817341.9874692,
+    "ast_hash": "c858b7bc982f7f010be74d6094388b45",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/exploration.md": {
+    "mtime": 1781816074.9004087,
+    "ast_hash": "5707ee4799519ad7f9f60c4f7f90bf26",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/proposal.md": {
+    "mtime": 1781816813.3334665,
+    "ast_hash": "cdce7ca7d348fca93670b9d7a8901381",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/specs/ingestion-checkpoint-store/spec.md": {
+    "mtime": 1781817047.4942317,
+    "ast_hash": "d35748d3fbadc020728d28d57fed3b1d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/tasks.md": {
+    "mtime": 1781846513.6216998,
+    "ast_hash": "a4664d6e3f40daefcbc80171056077e1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-19-W2-H2-T1/verify-report.md": {
+    "mtime": 1781846601.1393714,
+    "ast_hash": "84c04c8968b9463e543e3c5a0eefa5fa",
+    "semantic_hash": ""
+  },
+  "openspec/specs/ingestion-checkpoint-store/spec.md": {
+    "mtime": 1781817047.4942317,
+    "ast_hash": "d35748d3fbadc020728d28d57fed3b1d",
     "semantic_hash": ""
   }
 }

@@ -1,21 +1,47 @@
-# Ingestión — Normalización, checkpoints e idempotencia
+# Ingestion — Normalization, checkpoints, and idempotency
 
-> Placeholder. Este documento debe fijar el contrato de normalización, persistencia de checkpoints y estrategia de deduplicación.
+## Scope of this slice (W2-H2-T1)
 
-## Quick path
+This slice defines the **Application-layer checkpoint contract only**.
+Persistence adapters and orchestrator behavior are implemented in follow-up slices.
 
-1. Definir el modelo canónico y sus invariantes.
-2. Diseñar almacenamiento de checkpoints por fuente.
-3. Establecer reglas de idempotencia y re-procesamiento seguro.
+## Ingestion checkpoint contract
 
-## Debe cubrir
+### Identity
 
-- Estructura de `NormalizedWorkItem`.
-- Claves de deduplicación y versionado de eventos.
-- Persistencia de delta tokens, cursors o watermarks.
-- Reprocesamiento, backfill y recuperación ante fallas.
-- Métricas de duplicados, lag y throughput.
+A checkpoint is uniquely identified by the tuple:
 
-## Pendiente
+- `connector`
+- `source`
+- `tenant`
 
-- [ ] Completar contrato canónico y política global de idempotencia.
+All three identity parts are required non-null, non-empty strings.
+
+### Value shape
+
+Checkpoint value contains exactly these two fields:
+
+- `Cursor` (`string?`) — nullable cursor/delta token
+- `ProcessedAt` (`DateTimeOffset?`) — nullable processed timestamp
+
+No additional fields are part of this contract.
+
+### First-run behavior
+
+When `GetAsync(identity)` returns `null`, callers MUST treat this as first-run and bound
+their initial fetch window to **UTC today only**:
+
+- `start = UTC 00:00:00`
+- `end = UtcNow`
+
+This bound is **caller responsibility** and MUST NOT be stored as checkpoint data.
+
+## Deferred items
+
+- Concrete adapter implementation and persistence round-trip behavior are deferred to **W2-H2-T2/T3**.
+- Canonical `NormalizedWorkItem` model and global idempotency policy are out of scope for this slice.
+
+## Observability note
+
+Runtime ingestion lag/throughput metrics are deferred in this slice because only the
+checkpoint contract is introduced here (no runtime ingestion path or adapter yet).
