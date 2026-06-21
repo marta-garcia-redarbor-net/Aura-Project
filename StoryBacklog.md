@@ -163,25 +163,25 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H3 — Implementar plugin de Teams
 
-- [ ] **W2-H3-T1** Definir DTOs/mock payloads de Teams.  
+- [x] **W2-H3-T1** Definir DTOs/mock payloads de Teams.  
   **DoD:** fixtures controlados disponibles.  
   **Riesgo:** depender demasiado pronto del entorno real.
-- [ ] **W2-H3-T2** Mapear payloads de Teams a `WorkItem`.  
+- [x] **W2-H3-T2** Mapear payloads de Teams a `WorkItem`.  
   **DoD:** mensajes convertidos con prioridad y contexto.  
   **Riesgo:** pérdida de semántica útil.
-- [ ] **W2-H3-T3** Añadir tests de mapeo y errores.  
+- [x] **W2-H3-T3** Añadir tests de mapeo y errores.  
   **DoD:** casos felices y fallos cubiertos.  
   **Riesgo:** mapeos rotos detectados tarde.
 
 #### Historia W2-H4 — Implementar plugin de Outlook
 
-- [ ] **W2-H4-T1** Definir DTOs/mock payloads de Outlook.  
+- [x] **W2-H4-T1** Definir DTOs/mock payloads de Outlook.  
   **DoD:** correos/eventos de ejemplo versionados.  
   **Riesgo:** dataset pobre para validar reglas.
-- [ ] **W2-H4-T2** Mapear correos a `WorkItem`.  
+- [x] **W2-H4-T2** Mapear correos a `WorkItem`.  
   **DoD:** soporte a remitente, prioridad y deadline inicial.  
   **Riesgo:** heurística demasiado ingenua.
-- [ ] **W2-H4-T3** Añadir tests de clasificación inicial.  
+- [x] **W2-H4-T3** Añadir tests de clasificación inicial.  
   **DoD:** reglas básicas validadas.  
   **Riesgo:** summary inconsistente.
 

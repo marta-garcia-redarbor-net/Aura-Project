@@ -99,6 +99,19 @@ public class InfrastructureDependencyInjectionTests
     }
 
     [Fact]
+    public void AddAuraInfrastructure_RegistersOutlookConnectorAdapter_AsIConnectorAdapter()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var adapters = provider.GetServices<IConnectorAdapter>().ToList();
+
+        Assert.Contains(adapters, a => string.Equals(a.ConnectorName, "outlook", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task AddAuraInfrastructure_ResolvesIWorkItemStore_AndPersistsThroughPort()
     {
         var services = new ServiceCollection();

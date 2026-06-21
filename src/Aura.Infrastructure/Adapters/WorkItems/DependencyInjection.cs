@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ internal static class DependencyInjection
         services.AddSingleton<IWorkItemStore, InMemoryWorkItemStore>();
         services.AddScoped<IWorkItemBuffer, InMemoryWorkItemBuffer>();
         services.AddSingleton<TeamsWorkItemMapper>();
+        services.AddSingleton<OutlookWorkItemMapper>();
 
         return services;
     }

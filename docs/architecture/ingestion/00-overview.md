@@ -20,6 +20,23 @@ Los siguientes adaptadores viven bajo `src/Aura.Infrastructure/Adapters/Ingestio
 
 El health check de Qdrant (`QdrantHealthCheck`) vive junto a su adaptador en `Ingestion/SemanticIndex/`.
 
+## Connector adapters implemented
+
+The connector adapter layer lives under `src/Aura.Infrastructure/Adapters/Connectors/` and maps provider payloads to canonical `WorkItem` entities.
+
+| Connector | Path | Mapping/classification behavior |
+|-----------|------|---------------------------------|
+| Teams | `Connectors/Teams/` | Maps Teams payloads to canonical `WorkItem` with metadata traceability and batch-skip tolerance |
+| Outlook | `Connectors/Outlook/` | Maps Outlook email payloads to canonical `WorkItem` (`SourceType = OutlookEmail`) with multi-signal priority scoring (`Importance + subject + sender + body`) and deadline-cue metadata |
+
+Outlook scoring is additive and deterministic:
+- `score >= 6` => `Critical`
+- `score >= 2` => `High`
+- `score >= 0` => `Medium`
+- `score < 0` => `Low`
+
+All scoring inputs are written into `WorkItem.Metadata` keys under `outlook.scoring.*`, and deadline cues are recorded via `outlook.deadline.*` keys.
+
 ## Debe cubrir
 
 - Modelo canónico de `NormalizedWorkItem`.
@@ -31,5 +48,5 @@ El health check de Qdrant (`QdrantHealthCheck`) vive junto a su adaptador en `In
 ## Pendiente
 
 - [ ] Completar arquitectura detallada de la capa de ingestión.
-- [ ] Agregar adaptadores para Graph (Teams, Outlook, Calendar) bajo `Ingestion/Graph/`.
+- [ ] Agregar adaptadores restantes para Graph (Calendar) bajo `Ingestion/Graph/`.
 - [ ] Agregar adaptador para GitHub bajo `Ingestion/GitHub/`.

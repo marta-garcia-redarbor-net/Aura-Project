@@ -835,8 +835,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Infrastructure/InfrastructureDependencyInjectionTests.cs": {
-    "mtime": 1781880042.2812502,
-    "ast_hash": "434e8f9ffec01e9894680320c6799d75",
+    "mtime": 1782060863.1635327,
+    "ast_hash": "cab60b1ded2a6a8a369aa88a8538d520",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Infrastructure/MeaiEmbeddingProviderTests.cs": {
@@ -1000,8 +1000,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/00-overview.md": {
-    "mtime": 1781643120.2108586,
-    "ast_hash": "e8709effb428b91e7ced42b6ae9d08f1",
+    "mtime": 1782060981.9270906,
+    "ast_hash": "88b90f8c0fe4ec99050c966f54bbbe07",
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/01-microsoft-graph-teams.md": {
@@ -1775,8 +1775,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/DependencyInjection.cs": {
-    "mtime": 1781880128.62772,
-    "ast_hash": "7944707f7ba17cb71fa74a8b72c984bb",
+    "mtime": 1782060886.7504249,
+    "ast_hash": "09a3f14c978b6e7872f50085b65e99d1",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Teams/TeamsConnectorAdapter.cs": {
@@ -1925,8 +1925,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/WorkItems/DependencyInjection.cs": {
-    "mtime": 1781880122.1288724,
-    "ast_hash": "d629995d57a78079becd64906aa4b5d8",
+    "mtime": 1782060924.066623,
+    "ast_hash": "53bfac238ffa55dc21171811cfed69c2",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/WorkItems/InMemoryWorkItemBuffer.cs": {
@@ -2022,6 +2022,76 @@
   "openspec/specs/work-item-persistence/spec.md": {
     "mtime": 1781886335.0259259,
     "ast_hash": "1d0d4d725847a99796ffe64197144583",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookConnectorAdapter.cs": {
+    "mtime": 1782060804.0597775,
+    "ast_hash": "d5a08242a464bfbf070fca49e440d549",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookEmailDto.cs": {
+    "mtime": 1782060638.565268,
+    "ast_hash": "e217179b25d0816534397d0f0f469154",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookWorkItemMapper.cs": {
+    "mtime": 1782062389.6425347,
+    "ast_hash": "57d016aae58ad42656b2048a5307848f",
+    "semantic_hash": ""
+  },
+  "tests/Aura.ArchitectureTests/OutlookConnectorBoundaryTests.cs": {
+    "mtime": 1782060682.2195296,
+    "ast_hash": "19c29b8d30d5351ce43b2b125e56d9eb",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/Outlook/OutlookConnectorAdapterTests.cs": {
+    "mtime": 1782060765.7490764,
+    "ast_hash": "2aa7a0d3943a996b1fef82732da89567",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/Outlook/OutlookEmailDtoTests.cs": {
+    "mtime": 1782060602.6386588,
+    "ast_hash": "b058a47e30517560dd1d703e1ede68bd",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/Outlook/OutlookWorkItemMapperTests.cs": {
+    "mtime": 1782062346.4637208,
+    "ast_hash": "71e77024b8302c276808075ff94f2569",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/design.md": {
+    "mtime": 1782060293.6679552,
+    "ast_hash": "60957649cd0350030855c358febbec1a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/exploration.md": {
+    "mtime": 1782058329.8236058,
+    "ast_hash": "a57ab480770304f26bb93d98860c0db9",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/proposal.md": {
+    "mtime": 1782059757.1139462,
+    "ast_hash": "d1e3e29784fd57d8cd738f65be3e2db3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/specs/outlook-connector-mapping/spec.md": {
+    "mtime": 1782059985.7072127,
+    "ast_hash": "edae66b72c88f9e91a9aa9eac5e50176",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/tasks.md": {
+    "mtime": 1782060962.8722441,
+    "ast_hash": "eadab1b83f9cc8727c0fc9489bec53d6",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/apply-progress.md": {
+    "mtime": 1782061105.1296697,
+    "ast_hash": "d60b001dc2ea99c7285b683737413e83",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H4/verify-report.md": {
+    "mtime": 1782061536.9718432,
+    "ast_hash": "ce6c194ec8d99ba01b99740880a03eec",
     "semantic_hash": ""
   }
 }
