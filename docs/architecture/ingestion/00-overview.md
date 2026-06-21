@@ -1,12 +1,13 @@
-# Ingestión — Visión general
+# Ingestion — Overview
 
-> Placeholder de arquitectura para Aura. Este documento debe detallar cómo la capa de ingestión convierte eventos externos en trabajo normalizado, observable e idempotente.
+Aura ingestion converts external events into normalized, observable, and idempotent work units.
 
 ## Quick path
 
-1. Definir fuentes soportadas y eventos de entrada.
-2. Diseñar contratos en `Application` y adaptadores en `Infrastructure`.
-3. Asegurar idempotencia, resiliencia, telemetría y testing.
+1. Ingest source events from supported connectors.
+2. Normalize payloads into canonical `WorkItem` entities.
+3. Attach source-specific signals and preliminary score metadata.
+4. Emit canonical work to Application-level triage.
 
 ## Adaptadores implementados
 
@@ -27,9 +28,9 @@ The connector adapter layer lives under `src/Aura.Infrastructure/Adapters/Connec
 | Connector | Path | Mapping/classification behavior |
 |-----------|------|---------------------------------|
 | Teams | `Connectors/Teams/` | Maps Teams payloads to canonical `WorkItem` with metadata traceability and batch-skip tolerance |
-| Outlook | `Connectors/Outlook/` | Maps Outlook email payloads to canonical `WorkItem` (`SourceType = OutlookEmail`) with multi-signal priority scoring (`Importance + subject + sender + body`) and deadline-cue metadata |
+| Outlook | `Connectors/Outlook/` | Maps Outlook email payloads to canonical `WorkItem` (`SourceType = OutlookEmail`) with multi-signal preliminary scoring (`Importance + subject + sender + body`) and deadline-cue metadata |
 
-Outlook scoring is additive and deterministic:
+Outlook preliminary scoring is additive and deterministic:
 - `score >= 6` => `Critical`
 - `score >= 2` => `High`
 - `score >= 0` => `Medium`
@@ -37,16 +38,24 @@ Outlook scoring is additive and deterministic:
 
 All scoring inputs are written into `WorkItem.Metadata` keys under `outlook.scoring.*`, and deadline cues are recorded via `outlook.deadline.*` keys.
 
-## Debe cubrir
+## Boundary contract with triage
 
-- Modelo canónico de `NormalizedWorkItem`.
-- Estrategia webhook + reconciliación programada.
-- Checkpoints, delta sync e idempotencia.
-- Bounded concurrency, retry y circuit breaker.
-- Métricas por conector y correlación end-to-end.
+Connector-level scoring is **preliminary only** and remains source-specific.
 
-## Pendiente
+- Connectors normalize and pre-score.
+- The global triage engine (`IInterruptionPolicyEngine`) owns final interrupt-vs-queue decisions.
 
-- [ ] Completar arquitectura detallada de la capa de ingestión.
-- [ ] Agregar adaptadores restantes para Graph (Calendar) bajo `Ingestion/Graph/`.
-- [ ] Agregar adaptador para GitHub bajo `Ingestion/GitHub/`.
+No ingestion connector is allowed to own the final interruption decision.
+
+## Coverage
+
+- Canonical `WorkItem` normalization model
+- Webhook + reconciliation strategy
+- Checkpoints, delta sync, and idempotency
+- Bounded concurrency, retry, and circuit breaker behavior
+- Connector-level observability and end-to-end correlation
+
+## Open follow-ups
+
+- [ ] Add remaining Graph Calendar adapters under `Ingestion/Graph/`.
+- [ ] Add GitHub ingestion adapter under `Ingestion/GitHub/`.

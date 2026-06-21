@@ -40,6 +40,10 @@ IFocusStateResolver
 IPriorityScoringService
 ```
 
+`IInterruptionPolicyEngine` is the authoritative global triage decision contract for
+final interrupt-vs-queue outcomes. If an alias `ITriageEngine` is introduced later,
+it should remain a naming alias and must not split decision authority across contracts.
+
 ### The Reviewer
 
 ```
