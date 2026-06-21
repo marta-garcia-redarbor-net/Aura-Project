@@ -26,7 +26,8 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
         return Task.FromResult(new ConnectorExecutionResult(
             request.Identity,
             stubItemCount,
-            ConnectorExecutionStatus.Success));
+            ConnectorExecutionStatus.Success,
+            MaxProcessedAt: request.WindowEnd));
     }
 
     private static partial class Log

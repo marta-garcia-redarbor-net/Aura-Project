@@ -152,10 +152,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - [x] **W2-H2-T1** Definir contrato de checkpoint store.  
   **DoD:** interfaz lista para persistencia.  
   **Riesgo:** duplicidad en sincronizaciones.
-- [ ] **W2-H2-T2** Implementar flujo de ejecución por conector.  
+- [x] **W2-H2-T2** Implementar flujo de ejecución por conector.  
   **DoD:** ingestión invocable de forma controlada.  
   **Riesgo:** pipeline difícil de depurar.
-- [ ] **W2-H2-T3** Guardar y recuperar checkpoints.  
+- [x] **W2-H2-T3** Guardar y recuperar checkpoints.  
   **DoD:** una segunda ejecución no duplica datos.  
   **Riesgo:** pérdida de confianza en la plataforma.
 

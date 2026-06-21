@@ -8,7 +8,7 @@ namespace Aura.Workers;
 
 /// <summary>
 /// One-shot worker that runs the connector execution use case once and stops the host.
-/// Uses lightweight strategy dispatch in the use case and keeps checkpoint access read-only.
+/// Uses lightweight strategy dispatch in the use case and relies on Application checkpoint policy.
 /// </summary>
 public sealed partial class ConnectorExecutionWorker : BackgroundService
 {

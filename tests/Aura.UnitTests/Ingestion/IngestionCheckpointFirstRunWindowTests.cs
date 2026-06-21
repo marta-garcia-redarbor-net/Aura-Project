@@ -31,7 +31,10 @@ public class IngestionCheckpointFirstRunWindowTests
         var store = new InMemoryIngestionCheckpointStore();
         var harness = new IngestionCheckpointCallerHarness(store, utcNow);
         var identity = new CheckpointIdentity("teams", "messages", "acme");
-        var checkpoint = new IngestionCheckpoint("delta-v2", DateTimeOffset.Parse("2026-06-19T10:00:00Z", CultureInfo.InvariantCulture));
+        var checkpoint = new IngestionCheckpoint(
+            "delta-v2",
+            DateTimeOffset.Parse("2026-06-19T10:00:00Z", CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-06-19T10:10:00Z", CultureInfo.InvariantCulture));
 
         await store.SaveAsync(identity, checkpoint, CancellationToken.None);
 
