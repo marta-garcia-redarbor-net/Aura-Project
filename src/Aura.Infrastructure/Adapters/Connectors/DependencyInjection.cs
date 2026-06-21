@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Aura.Infrastructure.Adapters.WorkItems;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,7 @@ internal static class DependencyInjection
 
         services.AddWorkItems();
         services.AddScoped<IConnectorAdapter, TeamsConnectorAdapter>();
+        services.AddScoped<IConnectorAdapter, OutlookConnectorAdapter>();
 
         return services;
     }
