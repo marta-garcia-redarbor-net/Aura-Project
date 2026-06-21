@@ -1,21 +1,20 @@
-# Triáje — Focus State Machine
+# Triage — Focus State Machine
 
-> Placeholder. Este documento debe modelar los estados `Deep Work`, `Window of Opportunity`, `Away` y `Recovery`.
+## Status
 
-## Quick path
+**Deferred / Out of Scope** for `triage-global-policy-foundation`.
 
-1. Definir estados, transiciones y señales de entrada.
-2. Diseñar políticas dependientes del estado.
-3. Verificar consistencia con tests de dominio y métricas.
+## Why deferred
 
-## Debe cubrir
+This change establishes the policy foundation and ownership boundary first:
 
-- Contrato `IFocusStateResolver`.
-- Transiciones válidas y guards.
-- Uso de calendario, actividad y preferencias como señales.
-- Reglas de fallback frente a contexto incompleto.
-- Tests de transición y de invariantes.
+- Connectors normalize and pre-score.
+- The global triage engine decides interrupt-vs-queue.
 
-## Pendiente
+Defining Focus Mode state transitions before this boundary is fully stabilized would create
+false confidence and likely require immediate rework.
 
-- [ ] Completar diagrama de estados y reglas de transición.
+## Contract note
+
+`IFocusStateResolver` remains a future integration point that can consume triage outcomes,
+but no Focus Mode behavior is defined in this documentation change.

@@ -1,21 +1,28 @@
 # Microsoft Graph — Teams Connector
 
-> Placeholder. Este documento debe definir el conector de Teams para mensajes, menciones y actividad de canales usando Microsoft Graph.
+This document defines the Teams connector scope for message and mention ingestion via Microsoft Graph.
 
 ## Quick path
 
-1. Listar eventos de Teams que Aura necesita ingerir.
-2. Diseñar permisos Graph, webhooks y fallback de polling.
-3. Mapear eventos a `NormalizedWorkItem` con checkpoints.
+1. Ingest Teams events required by Aura triage flow.
+2. Normalize Teams payloads into canonical `WorkItem` records.
+3. Attach source-specific signal metadata for downstream triage.
 
-## Debe cubrir
+## Connector responsibilities
 
-- Contrato `IExternalConnector<TeamsEvent>`.
-- Permisos mínimos y estrategia de autenticación.
-- Límites de rate, retries con jitter y manejo de throttling.
-- Normalización, deduplicación y correlación.
-- Tests de integración con sandbox/mocks.
+- Implement `IExternalConnector<TeamsEvent>`.
+- Enforce least-privilege Graph permissions and auth flow.
+- Handle throttling with retries/jitter and safe backoff.
+- Normalize, deduplicate, and correlate events.
+- Emit source-specific metadata for preliminary scoring inputs.
 
-## Pendiente
+## Boundary with global triage
 
-- [ ] Completar endpoints, permisos y estrategia incremental para Teams.
+The Teams connector may extract source signals and prepare preliminary scoring inputs,
+but it does not own final interrupt-vs-queue decisions.
+
+Final decision authority belongs to the global triage engine (`IInterruptionPolicyEngine`).
+
+## Future work
+
+- [ ] Teams content-based preliminary scoring remains future work and is tracked in `StoryBacklog.md`.

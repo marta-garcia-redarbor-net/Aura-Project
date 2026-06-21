@@ -1,21 +1,34 @@
 # Microsoft Graph — Outlook Connector
 
-> Placeholder. Este documento debe definir la ingestión de correos y señales relevantes desde Outlook vía Microsoft Graph.
+This document defines Outlook email ingestion and source-signal extraction via Microsoft Graph.
 
 ## Quick path
 
-1. Delimitar qué correos deben entrar al modelo canónico.
-2. Definir filtros, categorías, prioridad y sincronización incremental.
-3. Diseñar observabilidad, resiliencia y políticas de privacidad.
+1. Select Outlook messages to ingest into canonical flow.
+2. Normalize selected messages into canonical `WorkItem` records.
+3. Compute source-specific preliminary scoring signals and emit metadata.
 
-## Debe cubrir
+## Connector responsibilities
 
-- Contrato `IExternalConnector<OutlookEvent>`.
-- Delta queries, checkpoints y reintentos.
-- Reglas para adjuntos, remitentes y clasificación.
-- Redacción/minimización de datos sensibles.
-- Métricas por volumen, latencia y errores.
+- Implement `IExternalConnector<OutlookEvent>`.
+- Use delta queries, checkpoints, and retries.
+- Apply sender/subject/body signal extraction and deadline cue detection.
+- Minimize sensitive data in metadata.
+- Emit connector metrics for volume, latency, and errors.
 
-## Pendiente
+## Preliminary scoring note
 
-- [ ] Completar criterios de selección y estrategia de sync para Outlook.
+Outlook currently applies deterministic multi-signal preliminary scoring
+(`Importance + subject + sender + body`) and writes score breakdown metadata under
+`outlook.scoring.*` plus deadline cues under `outlook.deadline.*`.
+
+This scoring is connector-local and preliminary.
+
+## Boundary with global triage
+
+The Outlook connector does not own final interrupt-vs-queue decisions.
+Final decision authority belongs to the global triage engine (`IInterruptionPolicyEngine`).
+
+## Open follow-up
+
+- [ ] Extend Outlook selection and sync strategy documentation with concrete filtering examples.

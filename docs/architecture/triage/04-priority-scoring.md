@@ -1,21 +1,39 @@
-# Triáje — Priority Scoring y carga mental
+# Triage — Priority Scoring and Cognitive Load
 
-> Placeholder. Este documento debe definir el score de prioridad combinando impacto, deadline, dependencia, riesgo y carga cognitiva.
+Aura uses global priority scoring as part of triage policy, not as connector-owned logic.
 
 ## Quick path
 
-1. Definir factores del score y su peso relativo.
-2. Diseñar reglas configurables y trazables.
-3. Validar sesgos, explainability y performance.
+1. Receive canonical `WorkItem` plus connector preliminary score/signals.
+2. Apply global scoring through `IPriorityScoringService`.
+3. Use score output as one input for interruption policy decisions.
 
-## Debe cubrir
+## Two-stage scoring boundary
 
-- Contrato `IPriorityScoringService`.
-- Factores de scoring y normalización de señales.
-- Explainability del resultado para auditoría.
-- Recalibración y feature flags.
-- Tests unitarios con casos límite y regresión.
+- **Connector layer** computes source-specific **preliminary** score and writes signal metadata.
+- **Global triage layer** computes policy-ready priority score across sources and contexts.
 
-## Pendiente
+Connector scoring helps preserve source semantics, but it is not the final triage decision.
 
-- [ ] Completar fórmula, pesos y estrategia de calibración del score.
+## Governance requirements
+
+Global scoring must be:
+
+- **Explainable**: factor contributions are visible and reviewable.
+- **Auditable**: historical score inputs/outputs can be inspected.
+- **User-adjustable**: tuning and overrides are user-controlled.
+
+## Refinement anchors (explicit only)
+
+Score refinement is allowed only from explicit, traceable inputs:
+
+- Explicit user preferences
+- Explicit user feedback
+- Historical decisions and outcomes
+
+Opaque self-learning or silent score recalibration is out of scope.
+
+## Relationship to interruption policy
+
+`IPriorityScoringService` outputs feed `IInterruptionPolicyEngine`.
+The interruption policy remains the final authority for `INTERRUPT`, `QUEUE`, or `DEFER`.

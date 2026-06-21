@@ -238,6 +238,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** cada decisión incluye explicación trazable.  
   **Riesgo:** caja negra difícil de defender.
 
+- [ ] **W3-H2-T4** Add Teams connector content-based preliminary scoring (future, non-authoritative).  
+  **DoD:** Teams connector extracts content signals and writes preliminary score metadata only; final `INTERRUPT|QUEUE|DEFER` remains owned by `IInterruptionPolicyEngine`; evidence includes docs + tests for metadata mapping.  
+  **Riesgo:** accidentally pushing final triage authority into connector logic.
+
 #### Historia W3-H3 — Exponer foco y cola priorizada en UI
 
 - [ ] **W3-H3-T1** Mostrar estado de foco actual en dashboard.  
