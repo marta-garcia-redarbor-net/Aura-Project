@@ -950,8 +950,8 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1781872015.6739206,
-    "ast_hash": "2e4ac95807d2a2d4b5a8deb221a64583",
+    "mtime": 1782068136.474138,
+    "ast_hash": "f8599d36c3ce3360a57b6ff00f04bee1",
     "semantic_hash": ""
   },
   "StoryPlan.md": {
@@ -975,8 +975,8 @@
     "semantic_hash": ""
   },
   "docs/ai/02-architecture-map.md": {
-    "mtime": 1781643120.2058527,
-    "ast_hash": "257aed749ce45b1b72eb7bf238d444e5",
+    "mtime": 1782068128.2795072,
+    "ast_hash": "33d8c0cc8644c14cf1e6c6d1b0935c43",
     "semantic_hash": ""
   },
   "docs/ai/03-delivery-rules.md": {
@@ -1000,18 +1000,18 @@
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/00-overview.md": {
-    "mtime": 1782060981.9270906,
-    "ast_hash": "88b90f8c0fe4ec99050c966f54bbbe07",
+    "mtime": 1782068101.6112373,
+    "ast_hash": "d64ddd363da57af9ad26588d360aa9c2",
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/01-microsoft-graph-teams.md": {
-    "mtime": 1780035909.6873734,
-    "ast_hash": "4e90c52b2990c6ef98790b69db425d63",
+    "mtime": 1782068111.2745245,
+    "ast_hash": "854444b0bf5c24cc026d5c3c313c702e",
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/02-microsoft-graph-outlook.md": {
-    "mtime": 1780035909.692554,
-    "ast_hash": "8df042bef974af3b5aaf0e0af3105cea",
+    "mtime": 1782068121.4614456,
+    "ast_hash": "147ed2312798fc7fe8227e3d1c167cab",
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/03-microsoft-graph-calendar.md": {
@@ -1115,8 +1115,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/00-overview.md": {
-    "mtime": 1780035909.7107599,
-    "ast_hash": "65b79a9cbd37e98acd8c6aa9f8fdd616",
+    "mtime": 1782068054.705943,
+    "ast_hash": "2dbb534727de0a8c791d1e0890b438ea",
     "semantic_hash": ""
   },
   "docs/architecture/triage/01-morning-summary.md": {
@@ -1125,18 +1125,18 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/02-proactive-interruptions.md": {
-    "mtime": 1780035909.7184255,
-    "ast_hash": "1fcf5eaae2b1475b79f41a546786626c",
+    "mtime": 1782068066.0414464,
+    "ast_hash": "7444ff5a65b47e512927c2d2bccf25db",
     "semantic_hash": ""
   },
   "docs/architecture/triage/03-focus-state-machine.md": {
-    "mtime": 1780035909.7184255,
-    "ast_hash": "c13a7a30e5a4672bb03e4d53079c850f",
+    "mtime": 1782068074.4921975,
+    "ast_hash": "1ad892e53bc3231046b8affa2141bb6f",
     "semantic_hash": ""
   },
   "docs/architecture/triage/04-priority-scoring.md": {
-    "mtime": 1780035909.7388377,
-    "ast_hash": "95a78f5c3f0c46fd77f6b8340c8715ca",
+    "mtime": 1782068086.3442056,
+    "ast_hash": "f8325b66f387cc4c0fb88918d838c7ce",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-04-qdrant-semantic-index/design.md": {
@@ -2059,39 +2059,94 @@
     "ast_hash": "71e77024b8302c276808075ff94f2569",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/design.md": {
+  "openspec/changes/archive/2026-06-21-W2-H4/apply-progress.md": {
+    "mtime": 1782063987.9384532,
+    "ast_hash": "2080e2ae047b101fda2199d1008244af",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-W2-H4/archive-report.md": {
+    "mtime": 1782064519.46808,
+    "ast_hash": "3443db60e3ec7d1376b7285394304e48",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-W2-H4/design.md": {
     "mtime": 1782060293.6679552,
     "ast_hash": "60957649cd0350030855c358febbec1a",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/exploration.md": {
+  "openspec/changes/archive/2026-06-21-W2-H4/exploration.md": {
     "mtime": 1782058329.8236058,
     "ast_hash": "a57ab480770304f26bb93d98860c0db9",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/proposal.md": {
+  "openspec/changes/archive/2026-06-21-W2-H4/proposal.md": {
     "mtime": 1782059757.1139462,
     "ast_hash": "d1e3e29784fd57d8cd738f65be3e2db3",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/specs/outlook-connector-mapping/spec.md": {
+  "openspec/changes/archive/2026-06-21-W2-H4/specs/outlook-connector-mapping/spec.md": {
     "mtime": 1782059985.7072127,
     "ast_hash": "edae66b72c88f9e91a9aa9eac5e50176",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/tasks.md": {
+  "openspec/changes/archive/2026-06-21-W2-H4/tasks.md": {
     "mtime": 1782060962.8722441,
     "ast_hash": "eadab1b83f9cc8727c0fc9489bec53d6",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/apply-progress.md": {
-    "mtime": 1782061105.1296697,
-    "ast_hash": "d60b001dc2ea99c7285b683737413e83",
+  "openspec/changes/archive/2026-06-21-W2-H4/verify-report.md": {
+    "mtime": 1782064315.3613887,
+    "ast_hash": "7df51e77a9355570a0d68308d4c78a9c",
     "semantic_hash": ""
   },
-  "openspec/changes/W2-H4/verify-report.md": {
-    "mtime": 1782061536.9718432,
-    "ast_hash": "ce6c194ec8d99ba01b99740880a03eec",
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/apply-progress.md": {
+    "mtime": 1782068264.4361136,
+    "ast_hash": "773ec1024b0c52a886a2b629d1fe2269",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/archive-report.md": {
+    "mtime": 1782068817.4808865,
+    "ast_hash": "b63d9e1a1ef2b7e12a41fba55924523f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/design.md": {
+    "mtime": 1782067679.3833807,
+    "ast_hash": "af094d1978e2e77ed439446f3a4265cc",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/exploration.md": {
+    "mtime": 1782067326.6419828,
+    "ast_hash": "0b968c87b5be158e6f35edb6f60e059a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/proposal.md": {
+    "mtime": 1782067471.3511949,
+    "ast_hash": "da6cb4a3f1ae882564b4ba662878e9d1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/specs/triage-global-policy/spec.md": {
+    "mtime": 1782067686.7407537,
+    "ast_hash": "dfb990c18a697be0abce24e435137bc0",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/tasks.md": {
+    "mtime": 1782068219.1261404,
+    "ast_hash": "20f2a749d915b37bb7bd18df1071e953",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-21-triage-global-policy-foundation/verify-report.md": {
+    "mtime": 1782068718.6821551,
+    "ast_hash": "2b53e0b2bc2a0165361b6468213e0e18",
+    "semantic_hash": ""
+  },
+  "openspec/specs/outlook-connector-mapping/spec.md": {
+    "mtime": 1782059985.7072127,
+    "ast_hash": "edae66b72c88f9e91a9aa9eac5e50176",
+    "semantic_hash": ""
+  },
+  "openspec/specs/triage-global-policy/spec.md": {
+    "mtime": 1782067686.7407537,
+    "ast_hash": "dfb990c18a697be0abce24e435137bc0",
     "semantic_hash": ""
   }
 }

@@ -1,16 +1,16 @@
 # Graph Report - Aura  (2026-06-21)
 
 ## Corpus Check
-- 417 files · ~145,864 words
+- 428 files · ~153,312 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4156 nodes · 5008 edges · 385 communities (352 shown, 33 thin omitted)
+- 4310 nodes · 5155 edges · 401 communities (367 shown, 34 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e99aaf26`
+- Built from commit: `cd3bdb02`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -370,6 +370,22 @@
 - [[_COMMUNITY_Community 382|Community 382]]
 - [[_COMMUNITY_Community 383|Community 383]]
 - [[_COMMUNITY_Community 384|Community 384]]
+- [[_COMMUNITY_Community 385|Community 385]]
+- [[_COMMUNITY_Community 386|Community 386]]
+- [[_COMMUNITY_Community 387|Community 387]]
+- [[_COMMUNITY_Community 388|Community 388]]
+- [[_COMMUNITY_Community 389|Community 389]]
+- [[_COMMUNITY_Community 390|Community 390]]
+- [[_COMMUNITY_Community 391|Community 391]]
+- [[_COMMUNITY_Community 392|Community 392]]
+- [[_COMMUNITY_Community 393|Community 393]]
+- [[_COMMUNITY_Community 394|Community 394]]
+- [[_COMMUNITY_Community 395|Community 395]]
+- [[_COMMUNITY_Community 396|Community 396]]
+- [[_COMMUNITY_Community 397|Community 397]]
+- [[_COMMUNITY_Community 398|Community 398]]
+- [[_COMMUNITY_Community 399|Community 399]]
+- [[_COMMUNITY_Community 400|Community 400]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `WorkItemTests` - 28 edges
@@ -386,19 +402,19 @@
 ## Surprising Connections (you probably didn't know these)
 - `StubAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
+- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `CapturingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `StubConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `ThrowingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
-- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
-  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (385 total, 33 thin omitted)
+## Communities (401 total, 34 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
@@ -437,8 +453,8 @@ Cohesion: 0.17
 Nodes (14): SemanticIndexSyncWorker, Fact, IEmbeddingProvider, ILogger, ISemanticChunkExtractor, ISemanticIndexWriter, ISemanticOutboxRepository, IServiceScopeFactory (+6 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.13
-Nodes (20): IOptions, QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, CancellationToken, DomainTag, EmbeddedSemanticChunk, Fact, IEmbeddingProvider (+12 more)
+Cohesion: 0.17
+Nodes (16): IOptions, QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, DomainTag, EmbeddedSemanticChunk, Fact, IReadOnlyList, List (+8 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.06
@@ -517,19 +533,19 @@ Cohesion: 0.15
 Nodes (13): GraphConnectorEndpoints, Log, ActivitySource, CancellationToken, Exception, GraphConnectorState, IEndpointRouteBuilder, IGraphConnectorStatusReader (+5 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.18
-Nodes (11): CapturingHandler, DevAccessTokenHandlerTests, StubHttpClientFactory, IHttpClientFactory, CancellationToken, Fact, HttpClient, HttpRequestMessage (+3 more)
+Cohesion: 0.30
+Nodes (7): DevAccessTokenHandlerTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IConfiguration, Task
 
 ### Community 30 - "Community 30"
 Cohesion: 0.11
 Nodes (17): Scenario: Full value is stored and returned unchanged, Scenario: Null fields are preserved, Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window (+9 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.14
-Nodes (7): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, IOptionsMonitor, IConfiguration, IServiceCollection
+Cohesion: 0.11
+Nodes (10): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IOptionsMonitor, IConfiguration, IServiceCollection (+2 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (14): ISemanticContextRetriever, QdrantSemanticContextAdapter, CancellationToken, DomainTag, Func, IEmbeddingProvider, IReadOnlyList, List (+6 more)
 
 ### Community 33 - "Community 33"
@@ -549,8 +565,8 @@ Cohesion: 0.11
 Nodes (18): Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window, Requirement: Provider Isolation, Requirements (+10 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.10
-Nodes (18): IDisposable, ILogger, NullScope, RecordingLogger, SqliteSemanticOutboxRepositoryTests, T, EventId, Exception (+10 more)
+Cohesion: 0.24
+Nodes (7): SqliteSemanticOutboxRepositoryTests, Fact, ISemanticOutboxRepository, SemanticCollectionType, SemanticOutboxEntry, SqliteConnection, Task
 
 ### Community 38 - "Community 38"
 Cohesion: 0.12
@@ -781,8 +797,8 @@ Cohesion: 0.18
 Nodes (10): Aura.UI.Components, Aura.UI.Components.Dashboard, Aura.UI.Components.GraphConnector, Aura.UI.Components.Layout, Aura.UI.Models, Aura.UI.Services, Microsoft.AspNetCore.Components, Microsoft.AspNetCore.Components.Routing (+2 more)
 
 ### Community 97 - "Community 97"
-Cohesion: 0.08
-Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
+Cohesion: 0.10
+Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
 
 ### Community 98 - "Community 98"
 Cohesion: 0.35
@@ -861,8 +877,8 @@ Cohesion: 0.20
 Nodes (9): Phase 1: RED — Contract Tests First, Phase 2: GREEN — Domain Contract Implementation, Phase 3: GREEN — Application/Worker Wiring, Phase 4: REFACTOR — Clean Architecture and Test Maintainability, Phase 5: Verification, Review Workload Forecast, Spec Scenario Mapping (for PR notes), Suggested Work Units (+1 more)
 
 ### Community 117 - "Community 117"
-Cohesion: 0.22
-Nodes (7): StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, GraphConnectorSettings
+Cohesion: 0.13
+Nodes (10): DependencyInjectionTests, StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, Fact (+2 more)
 
 ### Community 118 - "Community 118"
 Cohesion: 0.20
@@ -1185,8 +1201,8 @@ Cohesion: 0.09
 Nodes (18): DependencyInjection, MockJwtGenerator, OutlookWorkItemMapper, Dictionary, IDictionary, IEnumerable, IReadOnlyList, List (+10 more)
 
 ### Community 199 - "Community 199"
-Cohesion: 0.29
-Nodes (6): Adaptadores implementados, Connector adapters implemented, Debe cubrir, Ingestión — Visión general, Pendiente, Quick path
+Cohesion: 0.25
+Nodes (7): Adaptadores implementados, Boundary contract with triage, Connector adapters implemented, Coverage, Ingestion — Overview, Open follow-ups, Quick path
 
 ### Community 200 - "Community 200"
 Cohesion: 0.33
@@ -1261,12 +1277,12 @@ Cohesion: 0.40
 Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
 
 ### Community 221 - "Community 221"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Microsoft Graph — Teams Connector, Pendiente, Quick path
+Cohesion: 0.33
+Nodes (5): Boundary with global triage, Connector responsibilities, Future work, Microsoft Graph — Teams Connector, Quick path
 
 ### Community 222 - "Community 222"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Microsoft Graph — Outlook Connector, Pendiente, Quick path
+Cohesion: 0.29
+Nodes (6): Boundary with global triage, Connector responsibilities, Microsoft Graph — Outlook Connector, Open follow-up, Preliminary scoring note, Quick path
 
 ### Community 223 - "Community 223"
 Cohesion: 0.40
@@ -1369,24 +1385,24 @@ Cohesion: 0.40
 Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
 
 ### Community 248 - "Community 248"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Visión general
+Cohesion: 0.33
+Nodes (5): Decision authority and governance, Quick path, Refinement model, Scope note, Triage — Overview
 
 ### Community 249 - "Community 249"
 Cohesion: 0.40
 Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Morning Summary
 
 ### Community 250 - "Community 250"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Motor de interrupciones proactivo
+Cohesion: 0.29
+Nodes (6): Boundary and authority, Governance requirements, Observability contract, Policy inputs, Quick path, Triage — Proactive Interruption Policy
 
 ### Community 251 - "Community 251"
 Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Focus State Machine
+Nodes (4): Contract note, Status, Triage — Focus State Machine, Why deferred
 
 ### Community 252 - "Community 252"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Priority Scoring y carga mental
+Cohesion: 0.29
+Nodes (6): Governance requirements, Quick path, Refinement anchors (explicit only), Relationship to interruption policy, Triage — Priority Scoring and Cognitive Load, Two-stage scoring boundary
 
 ### Community 257 - "Community 257"
 Cohesion: 0.50
@@ -1461,8 +1477,8 @@ Cohesion: 0.47
 Nodes (3): IngestionCheckpointFirstRunWindowTests, Fact, Task
 
 ### Community 321 - "Community 321"
-Cohesion: 0.07
-Nodes (30): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CapturingConnectorAdapter, ExecuteConnectorUseCaseTests, GetTag(), StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter (+22 more)
+Cohesion: 0.25
+Nodes (6): ExecuteConnectorUseCaseTests, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task
 
 ### Community 322 - "Community 322"
 Cohesion: 0.14
@@ -1561,8 +1577,8 @@ Cohesion: 0.33
 Nodes (5): Archive Notes, Archive Report: W2-H2-T3 — Ingestion Checkpoint Persistence, Main Spec Sync, Outcome, Source Artifacts Reviewed
 
 ### Community 348 - "Community 348"
-Cohesion: 0.18
-Nodes (8): StubHandler, CapturingInnerHandler, HttpMessageHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+Cohesion: 0.22
+Nodes (6): CapturingHandler, StubHttpClientFactory, CapturingInnerHandler, HttpMessageHandler, IHttpClientFactory, HttpClient
 
 ### Community 349 - "Community 349"
 Cohesion: 0.25
@@ -1621,16 +1637,16 @@ Cohesion: 0.23
 Nodes (4): OutlookWorkItemMapperTests, Fact, OutlookEmailDto, OutlookWorkItemMapper
 
 ### Community 365 - "Community 365"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+Cohesion: 0.10
+Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
 
 ### Community 366 - "Community 366"
 Cohesion: 0.25
 Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H3 — Teams plugin mapping, Ready for Proposal, Recommendation, Risks
 
 ### Community 367 - "Community 367"
-Cohesion: 0.14
-Nodes (13): Architecture Decisions, Data Flow, Deadline scan keywords (case-insensitive; subject first, body fallback), Design: W2-H4 — Outlook Plugin Mapping and Initial Classification, File Changes, Interfaces / Contracts, Log event IDs (sequential after Teams 3201–3202), Metadata key convention (`outlook.*`) (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 368 - "Community 368"
 Cohesion: 0.33
@@ -1641,31 +1657,27 @@ Cohesion: 0.42
 Nodes (4): OutlookConnectorAdapterTests, ConnectorExecutionRequest, Fact, Task
 
 ### Community 370 - "Community 370"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H4 — Outlook Plugin Implementation, Ready for Proposal, Recommendation, Risks
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
 
 ### Community 371 - "Community 371"
-Cohesion: 0.25
-Nodes (7): Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD), Phase 4: Verification and Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H4 — Outlook Plugin Mapping and Initial Classification
+Cohesion: 0.24
+Nodes (8): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, WorkItem
 
 ### Community 372 - "Community 372"
 Cohesion: 0.43
 Nodes (3): OutlookConnectorBoundaryTests, Fact, TestResult
 
 ### Community 374 - "Community 374"
-Cohesion: 0.14
-Nodes (13): Apply Progress: W2-H4, Change, Command Log, Cumulative Task Status, Key Files Changed, Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD) (+5 more)
+Cohesion: 0.17
+Nodes (11): Apply Progress — triage-global-policy-foundation, Command Log, Completed Tasks, Deviations from Design, Execution Summary, Files Changed, Issues / Notes, Rollback Notes (+3 more)
 
 ### Community 377 - "Community 377"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 378 - "Community 378"
 Cohesion: 0.20
-Nodes (5): DependencyInjection, Program, UiMarker, Services, IServiceCollection
+Nodes (9): CapturingConnectorAdapter, GetTag(), StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult (+1 more)
 
 ### Community 379 - "Community 379"
-Cohesion: 0.42
+Cohesion: 0.50
 Nodes (3): SystemStatusReaderTests, Fact, Task
 
 ### Community 380 - "Community 380"
@@ -1673,8 +1685,8 @@ Cohesion: 0.36
 Nodes (5): GraphConnectorStatusReaderTests, Fact, InlineData, Task, Theory
 
 ### Community 381 - "Community 381"
-Cohesion: 0.36
-Nodes (3): DependencyInjectionTests, Fact, Task
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Triage Global Policy Foundation, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
 
 ### Community 382 - "Community 382"
 Cohesion: 0.47
@@ -1685,25 +1697,89 @@ Cohesion: 0.47
 Nodes (3): ModuleProgressReaderTests, Fact, Task
 
 ### Community 384 - "Community 384"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+Cohesion: 0.22
+Nodes (7): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, ConnectorExecutionWorkerTests, SuccessAdapter
+
+### Community 385 - "Community 385"
+Cohesion: 0.08
+Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
+
+### Community 386 - "Community 386"
+Cohesion: 0.08
+Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
+
+### Community 387 - "Community 387"
+Cohesion: 0.12
+Nodes (15): Apply Progress: W2-H4, Change, Command Log, Cumulative Task Status, Key Files Changed, Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD) (+7 more)
+
+### Community 388 - "Community 388"
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+
+### Community 389 - "Community 389"
+Cohesion: 0.14
+Nodes (13): Architecture Decisions, Data Flow, Deadline scan keywords (case-insensitive; subject first, body fallback), Design: W2-H4 — Outlook Plugin Mapping and Initial Classification, File Changes, Interfaces / Contracts, Log event IDs (sequential after Teams 3201–3202), Metadata key convention (`outlook.*`) (+5 more)
+
+### Community 390 - "Community 390"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 391 - "Community 391"
+Cohesion: 0.17
+Nodes (11): IDisposable, ILogger, NullScope, RecordingLogger, T, EventId, Exception, Func (+3 more)
+
+### Community 392 - "Community 392"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H4 — Outlook Plugin Implementation, Ready for Proposal, Recommendation, Risks
+
+### Community 393 - "Community 393"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD), Phase 4: Verification and Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H4 — Outlook Plugin Mapping and Initial Classification
+
+### Community 394 - "Community 394"
+Cohesion: 0.33
+Nodes (5): Archive Report: W2-H4, Notes, Summary, Synced Specs, Verification
+
+### Community 395 - "Community 395"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: triage global policy foundation, Ready for Proposal, Recommendation, Risks
+
+### Community 396 - "Community 396"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation / Boundary Framing, Phase 2: Core Documentation Updates, Phase 3: Specification Trace Verification, Phase 4: Cleanup / Delivery Guard, Review Workload Forecast, Suggested Work Units, Tasks: Triage Global Policy Foundation
+
+### Community 397 - "Community 397"
+Cohesion: 0.25
+Nodes (3): Program, UiMarker, Services
+
+### Community 398 - "Community 398"
+Cohesion: 0.25
+Nodes (6): StubHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+
+### Community 399 - "Community 399"
+Cohesion: 0.33
+Nodes (4): CancellationToken, IEmbeddingProvider, ReadOnlyMemory, DeterministicEmbeddingProvider
+
+### Community 400 - "Community 400"
+Cohesion: 0.33
+Nodes (5): Archive Report: triage-global-policy-foundation, Notes, Source of Truth, Status, Summary
 
 ## Knowledge Gaps
-- **2086 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2081 more)
+- **2194 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2189 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `options` connect `Community 31` to `Community 384`, `Community 195`, `Community 198`, `Community 9`, `Community 16`, `Community 19`, `Community 84`, `Community 245`, `Community 117`, `Community 85`, `Community 58`?**
+- **Why does `options` connect `Community 31` to `Community 32`, `Community 195`, `Community 198`, `Community 9`, `Community 399`, `Community 16`, `Community 19`, `Community 84`, `Community 245`, `Community 117`, `Community 85`, `Community 58`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `Services` connect `Community 378` to `Community 318`, `Community 1`, `Community 3`, `Community 324`, `Community 330`, `Community 31`, `Community 381`, `Community 379`, `Community 348`, `Community 29`, `Community 382`, `Community 383`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **Why does `Services` connect `Community 397` to `Community 318`, `Community 1`, `Community 3`, `Community 324`, `Community 330`, `Community 31`, `Community 398`, `Community 117`, `Community 378`, `Community 348`, `Community 382`, `Community 383`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Why does `InitialDashboardSmokeTests` connect `Community 3` to `Community 1`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
-  _2086 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2194 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
