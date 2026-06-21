@@ -151,6 +151,7 @@ public class WorkItemTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("   ")]
     [InlineData(null)]
     public void Constructor_EmptyExternalId_ThrowsArgumentException(string? externalId)
     {
@@ -160,6 +161,7 @@ public class WorkItemTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("   ")]
     [InlineData(null)]
     public void Constructor_EmptyTitle_ThrowsArgumentException(string? title)
     {
@@ -169,6 +171,7 @@ public class WorkItemTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("   ")]
     [InlineData(null)]
     public void Constructor_EmptySource_ThrowsArgumentException(string? source)
     {
@@ -213,9 +216,26 @@ public class WorkItemTests
         Assert.Empty(item.Metadata);
     }
 
+    [Fact]
+    public void Constructor_PopulatedMetadata_IsAcceptedAndPreserved()
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            ["key"] = "value",
+            ["channel"] = "teams"
+        };
+
+        var item = CreateValidWorkItem(metadata: metadata);
+
+        Assert.Equal(2, item.Metadata.Count);
+        Assert.Equal("value", item.Metadata["key"]);
+        Assert.Equal("teams", item.Metadata["channel"]);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
+    [InlineData("   ")]
     public void Constructor_EmptyCorrelationId_GeneratesCorrelationId(string? correlationId)
     {
         var item = CreateValidWorkItem(correlationId: correlationId);
@@ -258,6 +278,29 @@ public class WorkItemTests
 
         Assert.True(item.CapturedAtUtc >= before);
         Assert.True(item.CapturedAtUtc <= after);
+    }
+
+    [Fact]
+    public void Constructor_CapturedAtUtcMinValue_FallsBackToCurrentUtc()
+    {
+        var before = DateTimeOffset.UtcNow;
+        var item = CreateValidWorkItem(capturedAtUtc: DateTimeOffset.MinValue);
+        var after = DateTimeOffset.UtcNow;
+
+        Assert.NotEqual(DateTimeOffset.MinValue, item.CapturedAtUtc);
+        Assert.True(item.CapturedAtUtc >= before);
+        Assert.True(item.CapturedAtUtc <= after);
+    }
+
+    [Fact]
+    public void Constructor_CapturedAtUtcWithLocalOffset_IsAcceptedAndPreserved()
+    {
+        var localOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 01, 01));
+        var expected = new DateTimeOffset(2026, 01, 01, 09, 30, 00, localOffset);
+
+        var item = CreateValidWorkItem(capturedAtUtc: expected);
+
+        Assert.Equal(expected, item.CapturedAtUtc);
     }
 
     [Fact]

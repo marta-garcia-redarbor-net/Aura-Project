@@ -84,6 +84,19 @@ public class InfrastructureDependencyInjectionTests
         Assert.NotNull(repo);
     }
 
+    [Fact]
+    public void AddAuraInfrastructure_RegistersTeamsConnectorAdapter_AsIConnectorAdapter()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var adapters = provider.GetServices<IConnectorAdapter>().ToList();
+
+        Assert.Contains(adapters, a => string.Equals(a.ConnectorName, "teams", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>
     /// Negative DI test: proves that AddAuraInfrastructure alone does NOT register
     /// ISemanticChunkExtractor. This service belongs in the Application layer only.

@@ -21,6 +21,7 @@ else
     builder.Services.AddHostedService<Worker>();
     builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
+    builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
 }
 

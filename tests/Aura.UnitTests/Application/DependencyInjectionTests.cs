@@ -2,6 +2,7 @@ using Aura.Application;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.Services;
+using Aura.Application.UseCases.ConnectorExecution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -67,5 +68,17 @@ public class DependencyInjectionTests
         }
 
         public GraphConnectorSettings GetSettings() => _settings;
+    }
+
+    [Fact]
+    public void AddAuraApplication_RegistersExecuteConnectorUseCase_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ExecuteConnectorUseCase));
+        Assert.NotNull(descriptor);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor!.Lifetime);
     }
 }

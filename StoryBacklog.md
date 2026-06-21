@@ -140,16 +140,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H1 — Consolidar el modelo canónico de WorkItem
 
-- [ ] **W2-H1-T1** Refinar campos obligatorios del `WorkItem`.  
+- [x] **W2-H1-T1** Refinar campos obligatorios del `WorkItem`.  
   **DoD:** origen, prioridad, timestamp y metadatos mínimos definidos.  
   **Riesgo:** modelo insuficiente para summary y triaje.
-- [ ] **W2-H1-T2** Añadir tests de normalización e idempotencia.  
+- [x] **W2-H1-T2** Añadir tests de normalización e idempotencia.  
   **DoD:** duplicados y campos nulos cubiertos.  
   **Riesgo:** inconsistencias silenciosas.
 
 #### Historia W2-H2 — Crear orquestador de ingestión
 
-- [ ] **W2-H2-T1** Definir contrato de checkpoint store.  
+- [x] **W2-H2-T1** Definir contrato de checkpoint store.  
   **DoD:** interfaz lista para persistencia.  
   **Riesgo:** duplicidad en sincronizaciones.
 - [ ] **W2-H2-T2** Implementar flujo de ejecución por conector.  

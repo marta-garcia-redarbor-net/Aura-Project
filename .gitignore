@@ -36,3 +36,9 @@ qdrant_storage/
 
 # AI / local tooling indexes
 .atl/
+
+# Graphify knowledge graph (generated artifact — rebuild with: graphify . --update --no-viz)
+graphify-out/graph.json
+graphify-out/*.html
+graphify-out/cache/
+graphify-out/cost.json

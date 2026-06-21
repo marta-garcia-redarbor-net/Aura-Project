@@ -32,11 +32,11 @@ public sealed class WorkItem
         string? correlationId = null,
         DateTimeOffset? capturedAtUtc = null)
     {
-        if (string.IsNullOrEmpty(externalId))
+        if (string.IsNullOrWhiteSpace(externalId))
             throw new ArgumentException("ExternalId must not be null or empty.", nameof(externalId));
-        if (string.IsNullOrEmpty(title))
+        if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title must not be null or empty.", nameof(title));
-        if (string.IsNullOrEmpty(source))
+        if (string.IsNullOrWhiteSpace(source))
             throw new ArgumentException("Source must not be null or empty.", nameof(source));
         if (!Enum.IsDefined(sourceType))
             throw new ArgumentException("SourceType is outside the supported source set.", nameof(sourceType));
@@ -51,10 +51,12 @@ public sealed class WorkItem
         SourceType = sourceType;
         Priority = priority;
         Metadata = metadata;
-        CorrelationId = string.IsNullOrEmpty(correlationId)
+        CorrelationId = string.IsNullOrWhiteSpace(correlationId)
             ? Guid.NewGuid().ToString()
             : correlationId;
-        CapturedAtUtc = capturedAtUtc ?? DateTimeOffset.UtcNow;
+        CapturedAtUtc = capturedAtUtc is null || capturedAtUtc == DateTimeOffset.MinValue
+            ? DateTimeOffset.UtcNow
+            : capturedAtUtc.Value;
         SchemaVersion = CurrentSchemaVersion;
         Status = WorkItemStatus.Pending;
         CreatedAt = DateTimeOffset.UtcNow;

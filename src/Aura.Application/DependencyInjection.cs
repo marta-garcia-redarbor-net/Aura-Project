@@ -2,6 +2,7 @@ using Aura.Application.Kernel;
 using Aura.Application.Kernel.Plugins;
 using Aura.Application.Ports;
 using Aura.Application.Services;
+using Aura.Application.UseCases.ConnectorExecution;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aura.Application;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IGraphConnectorStatusReader, GraphConnectorStatusReader>();
         services.AddScoped<ISystemStatusReader, SystemStatusReader>();
         services.AddScoped<IModuleProgressReader, ModuleProgressReader>();
+        services.AddScoped<ExecuteConnectorUseCase>();
 
         AddKernel(services);
 
