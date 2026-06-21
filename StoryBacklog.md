@@ -300,16 +300,41 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 #### Historia W4-H1 — Añadir logs estructurados con correlación
 
 - [ ] **W4-H1-T1** Definir formato mínimo de logs.  
-  **DoD:** eventos clave comparten estructura.  
-  **Riesgo:** diagnósticos inconsistentes.
+   **DoD:** eventos clave comparten estructura.  
+   **Riesgo:** diagnósticos inconsistentes.
 - [ ] **W4-H1-T2** Introducir correlation id en API y workers.  
-  **DoD:** se puede seguir un flujo extremo a extremo.  
-  **Riesgo:** imposible reconstruir incidencias.
+   **DoD:** se puede seguir un flujo extremo a extremo.  
+   **Riesgo:** imposible reconstruir incidencias.
 - [ ] **W4-H1-T3** Mostrar errores/estado relevante en dashboard o panel técnico.  
-  **DoD:** fallos importantes visibles para demo y depuración.  
-  **Riesgo:** soporte totalmente dependiente de consola.
+   **DoD:** fallos importantes visibles para demo y depuración.  
+   **Riesgo:** soporte totalmente dependiente de consola.
 
-### Épica W4-E2 — Validación E2E y demo
+### Épica W4-E2 — Infraestructura de ingestión para producción
+
+#### Historia W4-H1bis — Persistencia de checkpoints en base de datos
+
+**Resultado esperado:** checkpoints de ejecución de conectores persistidos durablemente en BD.
+
+- [ ] **W4-H1bis-T1** Diseñar entidad EF Core `ConnectorCheckpointEntity`.  
+   **DoD:** entidad con índice compuesto (Connector, Source, Tenant) definida.  
+   **Riesgo:** esquema insuficiente para recuperación por tenant.
+- [ ] **W4-H1bis-T2** Implementar `DatabaseIngestionCheckpointStore` reemplazando in-memory.  
+   **DoD:** implementa `IIngestionCheckpointStore` con persistencia real.  
+   **Riesgo:** transacciones race o deadlock en concurrencia.
+- [ ] **W4-H1bis-T3** Crear migration de EF Core para tabla de checkpoints.  
+   **DoD:** migración ejecutable y versionada.  
+   **Riesgo:** inconsistencia entre entornos.
+- [ ] **W4-H1bis-T4** Añadir tests de integración para recuperación desde cursor anterior.  
+   **DoD:** prueba verifica idempotencia en reinicio de worker.  
+   **Riesgo:** pérdida de checkpoint o duplicidad silenciosa.
+- [ ] **W4-H1bis-T5** Registrar implementación en DI para producción.  
+   **DoD:** `IIngestionCheckpointStore` resuelve a `DatabaseIngestionCheckpointStore` en Prod.  
+   **Riesgo:** seguir usando in-memory en producción por olvido.
+- [ ] **W4-H1bis-T6** Documentar estrategia de recuperación ante corrupción de checkpoint.  
+   **DoD:** manual de troubleshooting para operación.  
+   **Riesgo:** incidente sin playbook.
+
+### Épica W4-E3 — Validación E2E y demo
 
 #### Historia W4-H2 — Consolidar suite Playwright
 
@@ -338,7 +363,7 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** activación simple y visible.  
   **Riesgo:** activar demo con configuración insegura.
 
-### Épica W4-E3 — Cierre documental
+### Épica W4-E4 — Cierre documental
 
 #### Historia W4-H4 — Documentar TFM y operación técnica
 
