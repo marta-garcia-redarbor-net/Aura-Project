@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Domain.WorkItems;
 using Aura.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +96,47 @@ public class InfrastructureDependencyInjectionTests
         var adapters = provider.GetServices<IConnectorAdapter>().ToList();
 
         Assert.Contains(adapters, a => string.Equals(a.ConnectorName, "teams", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AddAuraInfrastructure_ResolvesIWorkItemStore_AndPersistsThroughPort()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var store = scope.ServiceProvider.GetRequiredService<IWorkItemStore>();
+        var item = new WorkItem(
+            externalId: "di-msg-1",
+            title: "Persist from DI",
+            source: "messages",
+            sourceType: WorkItemSourceType.TeamsMessage,
+            priority: WorkItemPriority.Medium,
+            metadata: new Dictionary<string, string>());
+
+        var result = await store.SaveAsync(item, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.FailureReason);
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_IWorkItemBuffer_IsIsolatedPerScope()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        using var scope1 = provider.CreateScope();
+        using var scope2 = provider.CreateScope();
+
+        var buffer1 = scope1.ServiceProvider.GetRequiredService<IWorkItemBuffer>();
+        var buffer2 = scope2.ServiceProvider.GetRequiredService<IWorkItemBuffer>();
+
+        Assert.NotSame(buffer1, buffer2);
     }
 
     /// <summary>

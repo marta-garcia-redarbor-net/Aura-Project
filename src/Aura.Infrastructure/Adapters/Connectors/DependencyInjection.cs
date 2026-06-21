@@ -1,5 +1,6 @@
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
+using Aura.Infrastructure.Adapters.WorkItems;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +15,8 @@ internal static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddSingleton<IConnectorAdapter, TeamsConnectorAdapter>();
+        services.AddWorkItems();
+        services.AddScoped<IConnectorAdapter, TeamsConnectorAdapter>();
 
         return services;
     }

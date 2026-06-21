@@ -14,6 +14,8 @@ public sealed partial class ExecuteConnectorUseCase
 
     private readonly IIngestionCheckpointStore _checkpointStore;
     private readonly IReadOnlyList<IConnectorAdapter> _adapters;
+    private readonly IWorkItemBuffer _workItemBuffer;
+    private readonly IWorkItemStore _workItemStore;
     private readonly ILogger<ExecuteConnectorUseCase> _logger;
     private readonly Func<DateTimeOffset> _utcNow;
 
@@ -22,15 +24,52 @@ public sealed partial class ExecuteConnectorUseCase
         IEnumerable<IConnectorAdapter> adapters,
         ILogger<ExecuteConnectorUseCase> logger,
         Func<DateTimeOffset>? utcNow = null)
+        : this(
+            checkpointStore,
+            adapters,
+            new NoopWorkItemBuffer(),
+            new NoopWorkItemStore(),
+            logger,
+            utcNow)
+    {
+    }
+
+    public ExecuteConnectorUseCase(
+        IIngestionCheckpointStore checkpointStore,
+        IEnumerable<IConnectorAdapter> adapters,
+        IWorkItemBuffer workItemBuffer,
+        IWorkItemStore workItemStore,
+        ILogger<ExecuteConnectorUseCase> logger,
+        Func<DateTimeOffset>? utcNow = null)
     {
         ArgumentNullException.ThrowIfNull(checkpointStore);
         ArgumentNullException.ThrowIfNull(adapters);
+        ArgumentNullException.ThrowIfNull(workItemBuffer);
+        ArgumentNullException.ThrowIfNull(workItemStore);
         ArgumentNullException.ThrowIfNull(logger);
 
         _checkpointStore = checkpointStore;
         _adapters = adapters.ToArray();
+        _workItemBuffer = workItemBuffer;
+        _workItemStore = workItemStore;
         _logger = logger;
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+    }
+
+    private sealed class NoopWorkItemBuffer : IWorkItemBuffer
+    {
+        public void Enqueue(Aura.Domain.WorkItems.WorkItem item)
+        {
+        }
+
+        public IReadOnlyList<Aura.Domain.WorkItems.WorkItem> Drain()
+            => [];
+    }
+
+    private sealed class NoopWorkItemStore : IWorkItemStore
+    {
+        public Task<WorkItemPersistenceResult> SaveAsync(Aura.Domain.WorkItems.WorkItem item, CancellationToken ct)
+            => Task.FromResult(WorkItemPersistenceResult.Success());
     }
 
     public async Task<ConnectorExecutionResult> ExecuteAsync(CheckpointIdentity identity, CancellationToken ct)
@@ -63,10 +102,12 @@ public sealed partial class ExecuteConnectorUseCase
 
         try
         {
-            var result = await adapter.ExecuteAsync(request, ct);
-            await PersistCheckpointAsync(identity, checkpoint, result, now, ct);
-            EmitTelemetry(activity, result);
-            return result;
+            var adapterResult = await adapter.ExecuteAsync(request, ct);
+            var finalResult = await PersistWorkItemsAsync(adapterResult, ct);
+
+            await PersistCheckpointAsync(identity, checkpoint, finalResult, now, ct);
+            EmitTelemetry(activity, finalResult);
+            return finalResult;
         }
         catch (Exception ex)
         {
@@ -79,6 +120,50 @@ public sealed partial class ExecuteConnectorUseCase
             EmitTelemetry(activity, failure, ex);
             return failure;
         }
+    }
+
+    private async Task<ConnectorExecutionResult> PersistWorkItemsAsync(ConnectorExecutionResult adapterResult, CancellationToken ct)
+    {
+        var bufferedItems = _workItemBuffer.Drain();
+        if (bufferedItems.Count == 0)
+        {
+            return adapterResult;
+        }
+
+        var failureReasons = new List<string>();
+
+        foreach (var item in bufferedItems)
+        {
+            var persistResult = await _workItemStore.SaveAsync(item, ct);
+            if (!persistResult.IsSuccess)
+            {
+                failureReasons.Add(persistResult.FailureReason ?? "Unknown persistence failure.");
+            }
+        }
+
+        if (failureReasons.Count == 0)
+        {
+            return adapterResult;
+        }
+
+        var mergedFailureReason = string.Join(" | ", failureReasons);
+
+        if (adapterResult.Status == ConnectorExecutionStatus.Failure)
+        {
+            return adapterResult;
+        }
+
+        if (adapterResult.Status == ConnectorExecutionStatus.PartialFailure)
+        {
+            var priorReason = adapterResult.FailureReason ?? "Connector partial failure.";
+            return adapterResult with { FailureReason = $"{priorReason} | Persistence: {mergedFailureReason}" };
+        }
+
+        return adapterResult with
+        {
+            Status = ConnectorExecutionStatus.PartialFailure,
+            FailureReason = $"Persistence: {mergedFailureReason}"
+        };
     }
 
     private async Task PersistCheckpointAsync(
