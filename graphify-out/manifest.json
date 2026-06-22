@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/DependencyInjection.cs": {
-    "mtime": 1782069344.7393186,
-    "ast_hash": "506822d4ef814e0c80f18b1451c8f3ed",
+    "mtime": 1782161118.3775306,
+    "ast_hash": "3c744168a79b1fe2c7a9c0bc361bd87d",
     "semantic_hash": ""
   },
   "src/Aura.Application/Kernel/IPlugin.cs": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Application/DependencyInjectionTests.cs": {
-    "mtime": 1782069344.7865853,
-    "ast_hash": "e64f53281cb55319526ffff04baa454d",
+    "mtime": 1782161055.1945617,
+    "ast_hash": "ebd092e77d284f7c02a5a8bc965b17f9",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Aura.UnitTests.csproj": {
@@ -1120,8 +1120,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/01-morning-summary.md": {
-    "mtime": 1780035909.7184255,
-    "ast_hash": "8286340ec1e6717e8d42a6049f5fac66",
+    "mtime": 1782158367.3695147,
+    "ast_hash": "fb2e592badd3267339a7518dc2f50d8a",
     "semantic_hash": ""
   },
   "docs/architecture/triage/02-proactive-interruptions.md": {
@@ -1135,8 +1135,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/04-priority-scoring.md": {
-    "mtime": 1782073520.333625,
-    "ast_hash": "d974c1623ad2aa8c77ac99111a4600fa",
+    "mtime": 1782158375.7849212,
+    "ast_hash": "754542dc8e8ca6dd5f2fb1fc28fa700d",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-04-qdrant-semantic-index/design.md": {
@@ -2185,8 +2185,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/RankingFactor.cs": {
-    "mtime": 1782149459.583707,
-    "ast_hash": "2be2ad23baea0b26573862b008eca33f",
+    "mtime": 1782160788.2869895,
+    "ast_hash": "2c70f6b2cd280c800b343a3af4ec8b2b",
     "semantic_hash": ""
   },
   "src/Aura.Application/Ports/IMorningSummaryComposer.cs": {
@@ -2205,8 +2205,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.ArchitectureTests/MorningSummaryArchitectureTests.cs": {
-    "mtime": 1782149434.8917954,
-    "ast_hash": "66ac24bc8cd063f575caf5fbe31cff22",
+    "mtime": 1782160958.6023166,
+    "ast_hash": "59a5cc8ab001407a01673a4453e1a576",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Triage/MorningSummaryContractTests.cs": {
@@ -2252,6 +2252,66 @@
   "openspec/specs/morning-summary-contracts/spec.md": {
     "mtime": 1782149080.7379632,
     "ast_hash": "d8acd2467faf51f251ecf85b041e41f9",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Models/WorkItemSignalKeys.cs": {
+    "mtime": 1782160796.3489046,
+    "ast_hash": "a15febf6089369f6c41c9dd9015edaf4",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/Ports/IMorningSummaryRankingPolicy.cs": {
+    "mtime": 1782160803.535165,
+    "ast_hash": "d17f0e92431085bfe99c5fc25c481004",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/UseCases/MorningSummary/MorningSummaryComposer.cs": {
+    "mtime": 1782161183.7838678,
+    "ast_hash": "0e5c5b78cc867d7f8da85059eecee80d",
+    "semantic_hash": ""
+  },
+  "src/Aura.Application/UseCases/MorningSummary/MorningSummaryRankingPolicy.cs": {
+    "mtime": 1782160832.5094821,
+    "ast_hash": "66db5da3e45c6ab73c09e63c1f84a356",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Triage/MorningSummaryComposerTests.cs": {
+    "mtime": 1782160741.4023578,
+    "ast_hash": "3011462f4141ea7c5973cfc65e22d1d0",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Triage/MorningSummaryRankingPolicyTests.cs": {
+    "mtime": 1782160904.9425678,
+    "ast_hash": "c34807d5f94553a9f8cb383844d2db62",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/apply-progress.md": {
+    "mtime": 1782161348.199795,
+    "ast_hash": "2306aa6c4d850982ec4e94472fb5245a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/design.md": {
+    "mtime": 1782159559.193061,
+    "ast_hash": "aab136f0fa1ed02b3da0936295962392",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/exploration.md": {
+    "mtime": 1782158356.2406163,
+    "ast_hash": "c104ac8bab03323f56fde3c3c9b6d1f5",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/proposal.md": {
+    "mtime": 1782158340.0737758,
+    "ast_hash": "30f104da90c2007b7f2017028efde9bf",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/specs/morning-summary-ranking/spec.md": {
+    "mtime": 1782158670.57445,
+    "ast_hash": "76631efc1454409e1eccdc2eb428b371",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W2-H5-T2/tasks.md": {
+    "mtime": 1782161309.5241897,
+    "ast_hash": "ed8155905312ff8139176b47d3a6e8d0",
     "semantic_hash": ""
   }
 }

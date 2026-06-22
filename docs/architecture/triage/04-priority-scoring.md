@@ -15,6 +15,13 @@ Aura uses global priority scoring as part of triage policy, not as connector-own
 
 Connector scoring helps preserve source semantics, but it is not the final triage decision.
 
+For Morning Summary ranking, connector preliminary score is a decision input only after explicit
+signals (Deadline > Impact > Risk) and a fallback input when explicit signals are absent.
+It is one decision input used in two contexts, not two independent rules.
+
+If neither explicit signals nor preliminary score exists, items are classified as
+`insufficient-signals` and ordered last.
+
 ## Governance requirements
 
 Global scoring must be:
@@ -37,3 +44,9 @@ Opaque self-learning or silent score recalibration is out of scope.
 
 `IPriorityScoringService` outputs feed `IInterruptionPolicyEngine`.
 The interruption policy remains the final authority for `INTERRUPT`, `QUEUE`, or `DEFER`.
+
+## Relationship to Morning Summary
+
+Morning Summary ranking uses deterministic policy owned by Application and outputs an ordered list
+plus structured per-item explanations. Future AI-assisted prioritization remains design-only and is
+out of scope for current implementation.

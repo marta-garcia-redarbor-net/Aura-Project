@@ -11,6 +11,7 @@ public class MorningSummaryArchitectureTests
         _ = typeof(Aura.Application.Ports.IMorningSummaryComposer);
         _ = typeof(Aura.Application.Ports.IMorningSummaryScheduler);
         _ = typeof(Aura.Application.Ports.IWorkItemReader);
+        _ = typeof(Aura.Application.Ports.IMorningSummaryRankingPolicy);
 
         var composerResult = Types
             .InAssembly(assembly)
@@ -44,6 +45,17 @@ public class MorningSummaryArchitectureTests
 
         Assert.True(readerResult.IsSuccessful,
             $"IWorkItemReader must reside in Aura.Application.Ports: {FormatFailingTypes(readerResult)}");
+
+        var rankingPolicyPortResult = Types
+            .InAssembly(assembly)
+            .That()
+            .HaveName("IMorningSummaryRankingPolicy")
+            .Should()
+            .ResideInNamespace("Aura.Application.Ports")
+            .GetResult();
+
+        Assert.True(rankingPolicyPortResult.IsSuccessful,
+            $"IMorningSummaryRankingPolicy must reside in Aura.Application.Ports: {FormatFailingTypes(rankingPolicyPortResult)}");
     }
 
     [Fact]
@@ -53,6 +65,7 @@ public class MorningSummaryArchitectureTests
         _ = typeof(Aura.Application.Ports.IMorningSummaryComposer);
         _ = typeof(Aura.Application.Ports.IMorningSummaryScheduler);
         _ = typeof(Aura.Application.Ports.IWorkItemReader);
+        _ = typeof(Aura.Application.Ports.IMorningSummaryRankingPolicy);
 
         var noInfrastructureDependency = Types
             .InAssembly(assembly)
@@ -60,6 +73,8 @@ public class MorningSummaryArchitectureTests
             .HaveNameStartingWith("IMorningSummary")
             .Or()
             .HaveName("IWorkItemReader")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
             .ShouldNot()
             .HaveDependencyOn("Aura.Infrastructure")
             .GetResult();
@@ -73,6 +88,8 @@ public class MorningSummaryArchitectureTests
             .HaveNameStartingWith("IMorningSummary")
             .Or()
             .HaveName("IWorkItemReader")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
             .ShouldNot()
             .HaveDependencyOn("Microsoft.Graph")
             .GetResult();
@@ -86,6 +103,8 @@ public class MorningSummaryArchitectureTests
             .HaveNameStartingWith("IMorningSummary")
             .Or()
             .HaveName("IWorkItemReader")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
             .ShouldNot()
             .HaveDependencyOn("Qdrant.Client")
             .GetResult();
@@ -99,12 +118,66 @@ public class MorningSummaryArchitectureTests
             .HaveNameStartingWith("IMorningSummary")
             .Or()
             .HaveName("IWorkItemReader")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
             .ShouldNot()
             .HaveDependencyOn("Aura.UI")
             .GetResult();
 
         Assert.True(noUiDependency.IsSuccessful,
             $"Morning Summary ports reference Aura.UI: {FormatFailingTypes(noUiDependency)}");
+    }
+
+    [Fact]
+    public void MorningSummaryRankingPolicy_ShouldResideInApplicationUseCasesNamespace()
+    {
+        var applicationAssembly = typeof(Aura.Application.Ports.IConnectorAdapter).Assembly;
+        _ = typeof(Aura.Application.UseCases.MorningSummary.MorningSummaryRankingPolicy);
+
+        var residesInApplicationResult = Types
+            .InAssembly(applicationAssembly)
+            .That()
+            .HaveName("MorningSummaryRankingPolicy")
+            .Should()
+            .ResideInNamespace("Aura.Application.UseCases.MorningSummary")
+            .GetResult();
+
+        Assert.True(residesInApplicationResult.IsSuccessful,
+            $"MorningSummaryRankingPolicy must reside in Aura.Application.UseCases.MorningSummary: {FormatFailingTypes(residesInApplicationResult)}");
+    }
+
+    [Fact]
+    public void MorningSummaryRankingPath_ShouldNotReferenceAiPrioritizationPortsOrImplementations()
+    {
+        var applicationAssembly = typeof(Aura.Application.Ports.IConnectorAdapter).Assembly;
+        _ = typeof(Aura.Application.UseCases.MorningSummary.MorningSummaryRankingPolicy);
+        _ = typeof(Aura.Application.Ports.IMorningSummaryRankingPolicy);
+
+        var noAiPortDependency = Types
+            .InAssembly(applicationAssembly)
+            .That()
+            .ResideInNamespace("Aura.Application.UseCases.MorningSummary")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
+            .ShouldNot()
+            .HaveDependencyOn("IAiPrioritizationSuggestionProvider")
+            .GetResult();
+
+        Assert.True(noAiPortDependency.IsSuccessful,
+            $"Morning Summary ranking path references IAiPrioritizationSuggestionProvider: {FormatFailingTypes(noAiPortDependency)}");
+
+        var noAiImplementationDependency = Types
+            .InAssembly(applicationAssembly)
+            .That()
+            .ResideInNamespace("Aura.Application.UseCases.MorningSummary")
+            .Or()
+            .HaveName("IMorningSummaryRankingPolicy")
+            .ShouldNot()
+            .HaveDependencyOn("AiPrioritization")
+            .GetResult();
+
+        Assert.True(noAiImplementationDependency.IsSuccessful,
+            $"Morning Summary ranking path references AI prioritization implementation namespace: {FormatFailingTypes(noAiImplementationDependency)}");
     }
 
     private static string FormatFailingTypes(TestResult result)

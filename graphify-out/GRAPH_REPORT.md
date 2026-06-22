@@ -1,16 +1,16 @@
 # Graph Report - Aura  (2026-06-22)
 
 ## Corpus Check
-- 448 files · ~160,210 words
+- 460 files · ~167,051 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4473 nodes · 5307 edges · 414 communities (381 shown, 33 thin omitted)
+- 4656 nodes · 5542 edges · 425 communities (390 shown, 35 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a7ac42f5`
+- Built from commit: `c546fa15`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -391,6 +391,17 @@
 - [[_COMMUNITY_Community 403|Community 403]]
 - [[_COMMUNITY_Community 404|Community 404]]
 - [[_COMMUNITY_Community 405|Community 405]]
+- [[_COMMUNITY_Community 414|Community 414]]
+- [[_COMMUNITY_Community 415|Community 415]]
+- [[_COMMUNITY_Community 416|Community 416]]
+- [[_COMMUNITY_Community 417|Community 417]]
+- [[_COMMUNITY_Community 418|Community 418]]
+- [[_COMMUNITY_Community 419|Community 419]]
+- [[_COMMUNITY_Community 420|Community 420]]
+- [[_COMMUNITY_Community 421|Community 421]]
+- [[_COMMUNITY_Community 422|Community 422]]
+- [[_COMMUNITY_Community 423|Community 423]]
+- [[_COMMUNITY_Community 424|Community 424]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `WorkItemTests` - 28 edges
@@ -419,7 +430,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (414 total, 33 thin omitted)
+## Communities (425 total, 35 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
@@ -451,7 +462,7 @@ Nodes (24): AlwaysHealthyCheck, QdrantHealthCheckIntegrationTests, QdrantHealthC
 
 ### Community 7 - "Community 7"
 Cohesion: 0.13
-Nodes (9): IReadOnlyDictionary, DateTimeOffset, Fact, InlineData, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
+Nodes (9): DateTimeOffset, Fact, InlineData, IReadOnlyDictionary, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.09
@@ -550,8 +561,8 @@ Cohesion: 0.11
 Nodes (18): Apply Progress: W1-H6 Dashboard Inicial, Completed Tasks, Deviations from Design, Files Changed, Issues Found, PR 2 Stitch refinement batch, PR 2 Stitch refinement batch, PR 3 verify + cleanup batch (+10 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.13
-Nodes (10): DependencyInjectionTests, StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, Fact (+2 more)
+Cohesion: 0.20
+Nodes (7): StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, GraphConnectorSettings
 
 ### Community 33 - "Community 33"
 Cohesion: 0.15
@@ -590,8 +601,8 @@ Cohesion: 0.24
 Nodes (5): Config, Fact, IConfiguration, IServiceCollection, DependencyInjectionTests
 
 ### Community 42 - "Community 42"
-Cohesion: 0.14
-Nodes (7): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, IOptionsMonitor, IConfiguration, IServiceCollection
+Cohesion: 0.11
+Nodes (10): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IOptionsMonitor, IConfiguration, IServiceCollection (+2 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.22
@@ -710,7 +721,7 @@ Cohesion: 0.21
 Nodes (9): DashboardCardDto, IInitialDashboardReader, InitialDashboardReader, AuraUser, CancellationToken, ICurrentUserService, IEnumerable, InitialDashboardDto (+1 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (11): MeaiEmbeddingProvider, IEmbeddingProvider, ActivitySource, CancellationToken, EmbeddingProviderOptions, IEmbeddingGenerator, IReadOnlyList, List (+3 more)
 
 ### Community 73 - "Community 73"
@@ -814,7 +825,7 @@ Cohesion: 0.15
 Nodes (12): Aura — Router de Agentes, Decisión arquitectónica final, Estructura de solución, Fallback protocol, Flujos principales, graphify, Guías operativas para agentes IA, Other rules (+4 more)
 
 ### Community 98 - "Community 98"
-Cohesion: 0.17
+Cohesion: 0.18
 Nodes (9): net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
 
 ### Community 99 - "Community 99"
@@ -878,8 +889,8 @@ Cohesion: 0.18
 Nodes (10): ActivitySources (OpenTelemetry), Capas y responsabilidades, Contratos clave por dominio, Dependencias externas (sólo via adaptadores), Estructura de Aura.Infrastructure, Ingestión, Mapa arquitectónico de Aura, Patrones por dominio (+2 more)
 
 ### Community 116 - "Community 116"
-Cohesion: 0.18
-Nodes (9): NetArchTest.Rules (1.3.2), net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
+Cohesion: 0.25
+Nodes (7): NetArchTest.Rules (1.3.2), net9.0, coverlet.collector (6.0.2), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2), Microsoft.NET.Sdk
 
 ### Community 117 - "Community 117"
 Cohesion: 0.18
@@ -1006,8 +1017,8 @@ Cohesion: 0.36
 Nodes (5): GraphConnectorStatusReaderTests, Fact, InlineData, Task, Theory
 
 ### Community 148 - "Community 148"
-Cohesion: 0.07
-Nodes (21): IMorningSummaryComposer, IMorningSummaryScheduler, CancellationToken, MorningSummary, MorningSummaryRequest, Task, DateTimeOffset, MorningSummaryScheduleContext (+13 more)
+Cohesion: 0.05
+Nodes (32): MorningSummaryComposer, MorningSummaryModel, IMorningSummaryComposer, IMorningSummaryScheduler, CancellationToken, MorningSummary, MorningSummaryRequest, Task (+24 more)
 
 ### Community 149 - "Community 149"
 Cohesion: 0.31
@@ -1346,12 +1357,12 @@ Cohesion: 0.47
 Nodes (3): ModuleProgressReaderTests, Fact, Task
 
 ### Community 234 - "Community 234"
-Cohesion: 0.40
-Nodes (4): EmbeddingProviderOptionsValidator, IValidateOptions, EmbeddingProviderOptions, ValidateOptionsResult
+Cohesion: 0.33
+Nodes (3): DependencyInjectionTests, Fact, Task
 
 ### Community 235 - "Community 235"
-Cohesion: 0.33
-Nodes (4): EmbeddingResiliencePolicyBuilder, EmbeddingProviderOptions, IServiceCollection, string
+Cohesion: 0.12
+Nodes (16): HasImpactSignal, HasPreliminaryScore, HasRiskSignal, IComparer, IMorningSummaryRankingPolicy, MorningSummaryRankingPolicy, SnapshotComparer, RankingExplanation (+8 more)
 
 ### Community 236 - "Community 236"
 Cohesion: 0.47
@@ -1558,8 +1569,8 @@ Cohesion: 0.33
 Nodes (5): Decision authority and governance, Quick path, Refinement model, Scope note, Triage — Overview
 
 ### Community 290 - "Community 290"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Morning Summary
+Cohesion: 0.29
+Nodes (6): Architecture boundary, Decision (final rule), Output contract, Quick path, Scope notes, Triage — Morning Summary
 
 ### Community 291 - "Community 291"
 Cohesion: 0.29
@@ -1570,8 +1581,8 @@ Cohesion: 0.40
 Nodes (4): Contract note, Status, Triage — Focus State Machine, Why deferred
 
 ### Community 293 - "Community 293"
-Cohesion: 0.29
-Nodes (6): Governance requirements, Quick path, Refinement anchors (explicit only), Relationship to interruption policy, Triage — Priority Scoring and Cognitive Load, Two-stage scoring boundary
+Cohesion: 0.25
+Nodes (7): Governance requirements, Quick path, Refinement anchors (explicit only), Relationship to interruption policy, Relationship to Morning Summary, Triage — Priority Scoring and Cognitive Load, Two-stage scoring boundary
 
 ### Community 298 - "Community 298"
 Cohesion: 0.50
@@ -1682,8 +1693,8 @@ Cohesion: 0.13
 Nodes (14): Log, OutlookConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger (+6 more)
 
 ### Community 376 - "Community 376"
-Cohesion: 0.30
-Nodes (7): DevAccessTokenHandlerTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IConfiguration, Task
+Cohesion: 0.18
+Nodes (11): CapturingHandler, DevAccessTokenHandlerTests, StubHttpClientFactory, IHttpClientFactory, CancellationToken, Fact, HttpClient, HttpRequestMessage (+3 more)
 
 ### Community 377 - "Community 377"
 Cohesion: 0.10
@@ -1719,7 +1730,7 @@ Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Inte
 
 ### Community 385 - "Community 385"
 Cohesion: 0.25
-Nodes (6): MorningSummaryQuery, IWorkItemReader, CancellationToken, IReadOnlyList, Task, WorkItem
+Nodes (6): IWorkItemReader, CancellationToken, IReadOnlyList, MorningSummaryQuery, Task, WorkItem
 
 ### Community 386 - "Community 386"
 Cohesion: 0.17
@@ -1778,40 +1789,76 @@ Cohesion: 0.25
 Nodes (7): Phase 1: DTO Contracts (Foundation), Phase 2: Ports, Phase 3: Testing (TDD — write RED first, before Phases 1–2 compile), Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: W2-H5-T1 Morning Summary Contracts
 
 ### Community 402 - "Community 402"
-Cohesion: 0.43
+Cohesion: 0.42
 Nodes (3): MorningSummaryArchitectureTests, Fact, TestResult
 
 ### Community 403 - "Community 403"
-Cohesion: 0.22
-Nodes (6): CapturingHandler, StubHttpClientFactory, CapturingInnerHandler, HttpMessageHandler, IHttpClientFactory, HttpClient
+Cohesion: 0.08
+Nodes (23): Morning Summary Ranking Specification, Purpose, Requirement: AI-Assisted Prioritization Boundary, Requirement: Application Layer Ownership, Requirement: Deterministic Tiebreak Chain, Requirement: Insufficient Signals Handling, Requirement: Preliminary Score as Decision Input, Requirement: Primary Ranking Order (+15 more)
 
 ### Community 404 - "Community 404"
-Cohesion: 0.25
-Nodes (6): StubHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+Cohesion: 0.18
+Nodes (8): StubHandler, CapturingInnerHandler, HttpMessageHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
 
 ### Community 405 - "Community 405"
+Cohesion: 0.17
+Nodes (12): IWorkItemReader, CancellationToken, Fact, IReadOnlyDictionary, IReadOnlyList, MorningSummaryQuery, MorningSummaryWindow, Task (+4 more)
+
+### Community 414 - "Community 414"
+Cohesion: 0.11
+Nodes (17): AI extension point — explicitly out of scope, design-only, Architecture Decisions, Current signal availability, Data Flow, Design: W2-H5-T2 Morning Summary Ranking Rule, File Changes, In-scope (this change — documentation only), Interfaces / Contracts (+9 more)
+
+### Community 415 - "Community 415"
+Cohesion: 0.26
+Nodes (6): DateTimeOffset, Fact, IReadOnlyDictionary, WorkItem, WorkItemPriority, MorningSummaryRankingPolicyTests
+
+### Community 416 - "Community 416"
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+
+### Community 417 - "Community 417"
+Cohesion: 0.15
+Nodes (12): Apply Progress: W2-H5-T2 Morning Summary Ranking Policy Implementation, Files Changed, Notes / Deviations, Phase 1: Foundation (TDD RED), Phase 2: Core Policy Implementation (TDD GREEN), Phase 3: Composer Wiring & DI (TDD GREEN), Phase 4: Architecture Guard & Verification (TDD REFACTOR), Task Status (+4 more)
+
+### Community 418 - "Community 418"
+Cohesion: 0.22
+Nodes (8): Affected Areas, Clarification (important), Current State, Exploration: W2-H5-T2 Morning Summary ranking, Final Decision to Document, Ready for Proposal, Recommendation, Risks
+
+### Community 419 - "Community 419"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation (TDD RED), Phase 2: Core Policy Implementation (TDD GREEN), Phase 3: Composer Wiring & DI (TDD GREEN), Phase 4: Architecture Guard & Verification (TDD REFACTOR), Review Workload Forecast, Suggested Work Units, Tasks: W2-H5-T2 Morning Summary Ranking Policy Implementation
+
+### Community 420 - "Community 420"
 Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+Nodes (4): EmbeddingProviderOptionsValidator, IValidateOptions, EmbeddingProviderOptions, ValidateOptionsResult
+
+### Community 421 - "Community 421"
+Cohesion: 0.33
+Nodes (4): EmbeddingResiliencePolicyBuilder, EmbeddingProviderOptions, IServiceCollection, string
+
+### Community 422 - "Community 422"
+Cohesion: 0.33
+Nodes (4): IMorningSummaryRankingPolicy, IReadOnlyList, RankedWorkItem, WorkItem
 
 ## Knowledge Gaps
-- **2279 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2274 more)
+- **2367 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2362 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Services` connect `Community 46` to `Community 32`, `Community 2`, `Community 3`, `Community 69`, `Community 70`, `Community 232`, `Community 233`, `Community 42`, `Community 41`, `Community 403`, `Community 404`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `options` connect `Community 42` to `Community 32`, `Community 37`, `Community 106`, `Community 234`, `Community 235`, `Community 107`, `Community 238`, `Community 18`, `Community 19`, `Community 405`, `Community 23`?**
+- **Why does `Services` connect `Community 46` to `Community 32`, `Community 2`, `Community 3`, `Community 69`, `Community 70`, `Community 232`, `Community 233`, `Community 42`, `Community 41`, `Community 404`, `Community 376`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `options` connect `Community 42` to `Community 32`, `Community 420`, `Community 421`, `Community 37`, `Community 72`, `Community 106`, `Community 107`, `Community 238`, `Community 18`, `Community 19`, `Community 23`?**
   _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `InitialDashboardSmokeTests` connect `Community 3` to `Community 2`?**
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
-  _2279 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2367 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.0672316384180791 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.10884353741496598 - nodes in this community are weakly interconnected._

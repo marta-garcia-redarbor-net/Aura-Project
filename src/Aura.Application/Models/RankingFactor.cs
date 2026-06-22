@@ -7,5 +7,6 @@ public enum RankingFactor
 {
     Impact,
     Deadline,
-    Risk
+    Risk,
+    PreliminaryScore
 }
