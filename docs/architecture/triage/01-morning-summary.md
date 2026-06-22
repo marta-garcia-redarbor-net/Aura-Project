@@ -1,21 +1,33 @@
-# Triáje — Morning Summary
+# Triage — Morning Summary
 
-> Placeholder. Este documento debe definir el resumen ejecutivo diario de las 09:00 AM con foco en impacto, urgencia y claridad.
+Morning Summary produces a deterministic, explainable ranked list each morning.
+
+## Decision (final rule)
+
+1. Primary decision order: **Deadline > Impact > Risk**.
+2. If explicit signals do not fully decide order, use connector **preliminary score**.
+3. If items still tie, use nearest due date, then oldest item, then stable Id.
+4. If all explicit signals are missing, preliminary score is the fallback decision input.
+5. If neither explicit signals nor preliminary score exists, classify `insufficient-signals` and place last.
 
 ## Quick path
 
-1. Definir inputs: calendario, correos, PRs, bloqueos y prioridades.
-2. Diseñar composición del resumen por usuario y timezone.
-3. Validar formato, ranking y señales de seguimiento.
+1. Normalize inputs into canonical `WorkItem` records with explicit signals and optional connector preliminary score.
+2. Apply the final ranking policy in Application using the decision sequence above.
+3. Emit ordered output plus structured per-item ranking explanation.
 
-## Debe cubrir
+## Architecture boundary
 
-- Contratos `IMorningSummaryScheduler` y `IMorningSummaryComposer`.
-- Reglas de priorización y agrupación.
-- Generación idempotente por ventana diaria.
-- Telemetría de entrega, lectura y utilidad.
-- Tests de composición y edge cases temporales.
+- Connector adapters may compute source-specific **preliminary** scores.
+- `Aura.Application` owns final Morning Summary ranking policy.
+- Connectors must not own final ranking decisions.
 
-## Pendiente
+## Output contract
 
-- [ ] Completar formato final, ranking y condiciones de envío del resumen.
+- **Ordered list**: deterministic rank order for the summary window.
+- **Per-item explanation**: structured explanation aligned with each item's final rank.
+
+## Scope notes
+
+- AI-assisted prioritization is design-only for now and remains out of scope.
+- This document defines ranking policy only; transport, delivery scheduling, and UI rendering are handled elsewhere.
