@@ -23,6 +23,7 @@ public static partial class DashboardEndpoints
             .RequireAuthorization();
 
         group.MapGet("/initial", GetInitialDashboardAsync);
+        group.MapGet("/preview", GetDashboardPreviewAsync);
         group.MapGet("/system-status", GetSystemStatusAsync);
         group.MapGet("/module-progress", GetModuleProgressAsync);
 
@@ -132,6 +133,40 @@ public static partial class DashboardEndpoints
         }
     }
 
+    private static async Task<IResult> GetDashboardPreviewAsync(
+        IDashboardPreviewReader dashboardPreviewReader,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger("Aura.Api.Dashboard");
+
+        using var activity = ActivitySource.StartActivity("dashboard.preview.read", ActivityKind.Server);
+        activity?.SetTag("dashboard.endpoint", "/api/dashboard/preview");
+
+        try
+        {
+            var preview = await dashboardPreviewReader.GetAsync(cancellationToken);
+            activity?.SetTag("dashboard.preview.inbox_group_count", preview.InboxGroups.Count);
+            activity?.SetTag("dashboard.preview.summary_entry_count", preview.SummaryEntries.Count);
+
+            Log.DashboardPreviewSucceeded(logger, preview.InboxGroups.Count, preview.SummaryEntries.Count);
+
+            return Results.Ok(preview);
+        }
+        catch (OperationCanceledException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Request cancelled");
+            Log.DashboardPreviewCancelled(logger);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Log.DashboardPreviewFailed(logger, ex);
+            return Results.Problem(title: "Dashboard preview request failed", statusCode: StatusCodes.Status500InternalServerError);
+        }
+    }
+
     private static partial class Log
     {
         [LoggerMessage(EventId = 1001, Level = LogLevel.Information,
@@ -173,5 +208,17 @@ public static partial class DashboardEndpoints
         [LoggerMessage(EventId = 1009, Level = LogLevel.Error,
             Message = "Module progress request failed")]
         public static partial void ModuleProgressFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 1010, Level = LogLevel.Information,
+            Message = "Dashboard preview returned {InboxGroupCount} inbox groups and {SummaryEntryCount} summary entries")]
+        public static partial void DashboardPreviewSucceeded(ILogger logger, int inboxGroupCount, int summaryEntryCount);
+
+        [LoggerMessage(EventId = 1011, Level = LogLevel.Warning,
+            Message = "Dashboard preview request was cancelled")]
+        public static partial void DashboardPreviewCancelled(ILogger logger);
+
+        [LoggerMessage(EventId = 1012, Level = LogLevel.Error,
+            Message = "Dashboard preview request failed")]
+        public static partial void DashboardPreviewFailed(ILogger logger, Exception exception);
     }
 }

@@ -1,0 +1,125 @@
+using Aura.Application.Models;
+using Aura.Application.Ports;
+
+namespace Aura.Application.Services;
+
+/// <summary>
+/// Projects ranked work items into dashboard-specific preview DTOs.
+/// </summary>
+public sealed class DashboardPreviewReader : IDashboardPreviewReader
+{
+    private readonly IWorkItemReader? _workItemReader;
+    private readonly IMorningSummaryRankingPolicy _rankingPolicy;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly Func<DateTimeOffset> _utcNow;
+
+    public DashboardPreviewReader(
+        IWorkItemReader workItemReader,
+        IMorningSummaryRankingPolicy rankingPolicy,
+        ICurrentUserService currentUserService,
+        Func<DateTimeOffset>? utcNow = null)
+    {
+        ArgumentNullException.ThrowIfNull(workItemReader);
+        ArgumentNullException.ThrowIfNull(rankingPolicy);
+        ArgumentNullException.ThrowIfNull(currentUserService);
+
+        _workItemReader = workItemReader;
+        _rankingPolicy = rankingPolicy;
+        _currentUserService = currentUserService;
+        _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+    }
+
+    public DashboardPreviewReader(
+        IMorningSummaryRankingPolicy rankingPolicy,
+        ICurrentUserService currentUserService,
+        Func<DateTimeOffset>? utcNow = null)
+    {
+        ArgumentNullException.ThrowIfNull(rankingPolicy);
+        ArgumentNullException.ThrowIfNull(currentUserService);
+
+        _rankingPolicy = rankingPolicy;
+        _currentUserService = currentUserService;
+        _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+    }
+
+    public async Task<DashboardPreviewDto> GetAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var now = _utcNow();
+        var currentUser = _currentUserService.GetCurrentUser();
+        var userId = string.IsNullOrWhiteSpace(currentUser?.UserId) ? "system" : currentUser.UserId;
+
+        var query = new MorningSummaryQuery(userId, now.AddHours(-24), now);
+        var items = _workItemReader is null
+            ? []
+            : await _workItemReader.ReadForWindowAsync(query, cancellationToken);
+        var ranked = _rankingPolicy.Rank(items);
+
+        var groups = ranked
+            .GroupBy(entry => entry.Item.Source, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new InboxSourceGroupDto(
+                group.Key,
+                group.Select(entry => new InboxItemPreviewDto(
+                    entry.Item.Title,
+                    entry.Item.Source,
+                    ToRelativeTimestamp(entry.Item.CapturedAtUtc, now),
+                    entry.Score,
+                    BuildSuggestedAction(entry.Item.Source)))
+                .ToArray()))
+            .ToArray();
+
+        var summary = ranked
+            .Select(entry => new SummaryPreviewEntryDto(
+                entry.Rank,
+                entry.Item.Title,
+                entry.Item.Source,
+                entry.Score))
+            .ToArray();
+
+        return new DashboardPreviewDto(groups, summary);
+    }
+
+    private static string BuildSuggestedAction(string source)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return "Review and triage";
+        }
+
+        return source.Trim().ToLowerInvariant() switch
+        {
+            "outlook" => "Review and reply",
+            "teams" => "Review and respond",
+            "github" => "Review and prioritize",
+            _ => "Review and triage"
+        };
+    }
+
+    private static string ToRelativeTimestamp(DateTimeOffset capturedAtUtc, DateTimeOffset nowUtc)
+    {
+        var elapsed = nowUtc - capturedAtUtc;
+        if (elapsed < TimeSpan.Zero)
+        {
+            elapsed = TimeSpan.Zero;
+        }
+
+        if (elapsed.TotalMinutes < 1)
+        {
+            return "just now";
+        }
+
+        if (elapsed.TotalHours < 1)
+        {
+            return $"{(int)elapsed.TotalMinutes}m ago";
+        }
+
+        if (elapsed.TotalDays < 1)
+        {
+            return $"{(int)elapsed.TotalHours}h ago";
+        }
+
+        return $"{(int)elapsed.TotalDays}d ago";
+    }
+}

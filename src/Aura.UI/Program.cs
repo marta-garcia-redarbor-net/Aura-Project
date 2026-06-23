@@ -44,6 +44,17 @@ public static class Program
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
+        var dashboardPreviewHttpClientBuilder = builder.Services
+            .AddHttpClient<IDashboardPreviewApiClient, DashboardPreviewApiClient>((serviceProvider, client) =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+                client.Timeout = TimeSpan.FromSeconds(10);
+            })
+            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
         var systemStatusHttpClientBuilder = builder.Services
             .AddHttpClient<ISystemStatusApiClient, SystemStatusApiClient>((serviceProvider, client) =>
             {
@@ -70,6 +81,7 @@ public static class Program
         {
             httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             graphHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            dashboardPreviewHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             systemStatusHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             moduleProgressHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }

@@ -1,0 +1,50 @@
+@inject IDashboardPreviewApiClient DashboardPreviewApiClient
+
+<section class="dashboard-panel" data-testid="morning-summary-preview-panel" aria-live="polite">
+    <h2>Morning summary preview</h2>
+    <p>Summarized ranked items from the current dashboard window.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="morning-summary-preview-error">@_loadError</p>
+    }
+    else if (_preview is null)
+    {
+        <p data-testid="morning-summary-preview-loading">Loading morning summary preview...</p>
+    }
+    else if (_preview.SummaryEntries.Count == 0)
+    {
+        <p data-testid="morning-summary-preview-empty">No morning summary entries are available yet.</p>
+    }
+    else
+    {
+        <ol data-testid="morning-summary-preview-populated">
+            @foreach (var entry in _preview.SummaryEntries)
+            {
+                <li data-testid="morning-summary-preview-item">
+                    <span data-testid="morning-summary-preview-rank">#@entry.Rank</span>
+                    <strong data-testid="morning-summary-preview-title">@entry.Title</strong>
+                    <span data-testid="morning-summary-preview-source">@entry.Source</span>
+                    <span data-testid="morning-summary-preview-score">@entry.Score.ToString("0.##")</span>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    private DashboardPreviewResponse? _preview;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _preview = await DashboardPreviewApiClient.GetPreviewAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _loadError = "Morning summary preview is currently unavailable.";
+        }
+    }
+}

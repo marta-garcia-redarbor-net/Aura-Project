@@ -24,6 +24,7 @@ public static class DependencyInjection
 
         services.AddSingleton<ISemanticChunkExtractor, BasicSemanticChunkExtractor>();
         services.AddScoped<IInitialDashboardReader, InitialDashboardReader>();
+        services.AddScoped<IDashboardPreviewReader, DashboardPreviewReader>();
         services.AddScoped<IGraphConnectorStatusReader, GraphConnectorStatusReader>();
         services.AddScoped<ISystemStatusReader, SystemStatusReader>();
         services.AddScoped<IModuleProgressReader, ModuleProgressReader>();

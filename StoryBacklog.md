@@ -202,13 +202,13 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H6 — Mostrar bandeja y summary en dashboard
 
-- [ ] **W2-H6-T1** Crear vista de bandeja por origen.  
+- [x] **W2-H6-T1** Crear vista de bandeja por origen.  
   **DoD:** Teams/Outlook visibles en UI.  
   **Riesgo:** ingestión correcta pero no interpretable.
-- [ ] **W2-H6-T2** Crear tarjeta de Morning Summary.  
+- [x] **W2-H6-T2** Crear tarjeta de Morning Summary.  
   **DoD:** resumen visible con ranking y acciones sugeridas.  
   **Riesgo:** imposibilidad de validar utilidad real.
-- [ ] **W2-H6-T3** Añadir test Playwright del flujo de ingestión + preview.  
+- [x] **W2-H6-T3** Añadir test Playwright del flujo de ingestión + preview.  
   **DoD:** prueba E2E cubre aparición de items y summary.  
   **Riesgo:** integración rota entre backend y UI.
 
