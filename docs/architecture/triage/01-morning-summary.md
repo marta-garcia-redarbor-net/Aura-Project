@@ -1,33 +1,31 @@
 # Triage — Morning Summary
 
-Morning Summary produces a deterministic, explainable ranked list each morning.
+Contrato operativo de **W2-H5-T3** para la emisión diaria de Morning Summary.
 
-## Decision (final rule)
-
-1. Primary decision order: **Deadline > Impact > Risk**.
-2. If explicit signals do not fully decide order, use connector **preliminary score**.
-3. If items still tie, use nearest due date, then oldest item, then stable Id.
-4. If all explicit signals are missing, preliminary score is the fallback decision input.
-5. If neither explicit signals nor preliminary score exists, classify `insufficient-signals` and place last.
+Define únicamente scheduling, timezone y reglas de idempotencia diaria a partir de `Project/System Settings`.
 
 ## Quick path
 
-1. Normalize inputs into canonical `WorkItem` records with explicit signals and optional connector preliminary score.
-2. Apply the final ranking policy in Application using the decision sequence above.
-3. Emit ordered output plus structured per-item ranking explanation.
+1. Leer `Project/System Settings` y obtener `timezoneId` + `targetLocalTime`.
+2. Resolver timezone efectiva con cadena: configurada → timezone del sistema → `UTC`.
+3. Calcular `isDue` para `targetLocalTime` como hora local (wall-clock), aplicando reglas IANA/DST.
+4. Emitir como máximo un Morning Summary por usuario y día local.
 
-## Architecture boundary
+## Contrato operativo
 
-- Connector adapters may compute source-specific **preliminary** scores.
-- `Aura.Application` owns final Morning Summary ranking policy.
-- Connectors must not own final ranking decisions.
+| Tema | Regla |
+| --- | --- |
+| Modelo global de settings | Fuente única compartida: `Project/System Settings`. |
+| Campos mínimos | `timezoneId` y `targetLocalTime` configurables (valor esperado por defecto: `09:00`). |
+| Cadena de timezone | `timezoneId` configurado → timezone del sistema → `UTC` (fallback final). |
+| Semántica de hora objetivo | `targetLocalTime` representa hora local (wall-clock) en la timezone resuelta; no es una hora UTC fija. |
+| DST / horario de verano | Se aplica automáticamente según reglas de la timezone resuelta; no usar offsets UTC hardcodeados. |
+| Idempotencia diaria | Máximo un Morning Summary por usuario por día local. |
+| Reejecución en el mismo día local | Debe tratarse como “ya emitido” (sin duplicados). |
+| Cambio de timezone en el mismo día local | Mantiene estado “ya emitido”; no habilita segundo summary. |
+| Resultado del scheduler | Debe exponer `resolvedTimezoneId`, `localDate`, `targetLocalTime` e `isDue`. Si no está vencido, basta con `isDue = false`. |
 
-## Output contract
+## Límite de alcance
 
-- **Ordered list**: deterministic rank order for the summary window.
-- **Per-item explanation**: structured explanation aligned with each item's final rank.
-
-## Scope notes
-
-- AI-assisted prioritization is design-only for now and remains out of scope.
-- This document defines ranking policy only; transport, delivery scheduling, and UI rendering are handled elsewhere.
+- Incluido: scheduling + timezone + idempotencia de emisión diaria.
+- Excluido: ranking, composición del contenido y semántica de data windows timezone-aware.

@@ -14,19 +14,34 @@ namespace Aura.UnitTests.Infrastructure;
 /// </summary>
 public class InfrastructureDependencyInjectionTests
 {
-    private static IConfiguration CreateConfig() =>
-        new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+    private static IConfiguration CreateConfig(Dictionary<string, string?>? overrides = null)
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["Qdrant:Host"] = "test-host",
+            ["Qdrant:GrpcPort"] = "6334",
+            ["Qdrant:VectorSize"] = "768",
+            ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
+            ["ConnectionStrings:Aura"] = "Data Source=:memory:",
+            ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
+            ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
+            ["EmbeddingProvider:ApiKey"] = "test-key",
+            ["MorningSummary:TimezoneId"] = "UTC",
+            ["MorningSummary:TargetLocalTime"] = "09:00"
+        };
+
+        if (overrides is not null)
+        {
+            foreach (var (key, value) in overrides)
             {
-                ["Qdrant:Host"] = "test-host",
-                ["Qdrant:GrpcPort"] = "6334",
-                ["Qdrant:VectorSize"] = "768",
-                ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
-                ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
-                ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
-                ["EmbeddingProvider:ApiKey"] = "test-key"
-            })
+                values[key] = value;
+            }
+        }
+
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(values)
             .Build();
+    }
 
     private static IHostEnvironment CreateDevEnvironment()
     {
@@ -83,6 +98,60 @@ public class InfrastructureDependencyInjectionTests
         var repo = provider.GetRequiredService<ISemanticOutboxRepository>();
 
         Assert.NotNull(repo);
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_ResolvesMorningSummarySchedulingAdapters()
+    {
+        var services = new ServiceCollection();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var settingsProvider = provider.GetRequiredService<IMorningSummarySettingsProvider>();
+        var emissionStore = provider.GetRequiredService<IMorningSummaryEmissionStore>();
+
+        Assert.NotNull(settingsProvider);
+        Assert.NotNull(emissionStore);
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_MorningSummarySettingsProvider_BindsConfiguredValues()
+    {
+        var config = CreateConfig(new Dictionary<string, string?>
+        {
+            ["MorningSummary:TimezoneId"] = "Europe/Madrid",
+            ["MorningSummary:TargetLocalTime"] = "07:45"
+        });
+
+        var services = new ServiceCollection();
+        services.AddAuraInfrastructure(config, CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var settingsProvider = provider.GetRequiredService<IMorningSummarySettingsProvider>();
+        var settings = settingsProvider.GetSettings();
+
+        Assert.Equal("Europe/Madrid", settings.TimezoneId);
+        Assert.Equal(new TimeOnly(7, 45), settings.TargetLocalTime);
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_MorningSummarySettingsProvider_InvalidTargetLocalTime_FallsBackToDefault()
+    {
+        var config = CreateConfig(new Dictionary<string, string?>
+        {
+            ["MorningSummary:TimezoneId"] = "UTC",
+            ["MorningSummary:TargetLocalTime"] = "not-a-time"
+        });
+
+        var services = new ServiceCollection();
+        services.AddAuraInfrastructure(config, CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var settingsProvider = provider.GetRequiredService<IMorningSummarySettingsProvider>();
+        var settings = settingsProvider.GetSettings();
+
+        Assert.Equal("UTC", settings.TimezoneId);
+        Assert.Equal(new TimeOnly(9, 0), settings.TargetLocalTime);
     }
 
     [Fact]

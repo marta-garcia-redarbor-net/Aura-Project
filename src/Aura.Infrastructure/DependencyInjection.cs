@@ -4,6 +4,7 @@ using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Connectors;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.Dashboard;
+using Aura.Infrastructure.Adapters.MorningSummaryScheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddGraphConnectorAdapter(configuration);
         services.AddIdentityAdapter(configuration, environment);
         services.AddDashboardAdapters(configuration, environment);
+        services.AddMorningSummarySchedulingAdapters(configuration);
 
         services.AddHealthChecks()
             .AddCheck<QdrantHealthCheck>("qdrant");

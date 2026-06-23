@@ -121,4 +121,46 @@ public class DependencyInjectionTests
         var composer = scope.ServiceProvider.GetRequiredService<IMorningSummaryComposer>();
         Assert.NotNull(composer);
     }
+
+    [Fact]
+    public async Task AddAuraApplication_ResolvesMorningSummaryScheduler()
+    {
+        var services = new ServiceCollection();
+        services.AddAuraApplication();
+        services.AddSingleton<IMorningSummarySettingsProvider>(
+            new StubMorningSummarySettingsProvider(new MorningSummarySettings("UTC", new TimeOnly(9, 0))));
+        services.AddSingleton<IMorningSummaryEmissionStore>(new StubMorningSummaryEmissionStore());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var scheduler = scope.ServiceProvider.GetRequiredService<IMorningSummaryScheduler>();
+        var result = await scheduler.ResolveAsync("system", CancellationToken.None);
+
+        Assert.Equal("UTC", result.ResolvedTimezoneId);
+    }
+
+    private sealed class StubMorningSummarySettingsProvider : IMorningSummarySettingsProvider
+    {
+        private readonly MorningSummarySettings _settings;
+
+        public StubMorningSummarySettingsProvider(MorningSummarySettings settings)
+        {
+            _settings = settings;
+        }
+
+        public MorningSummarySettings GetSettings() => _settings;
+    }
+
+    private sealed class StubMorningSummaryEmissionStore : IMorningSummaryEmissionStore
+    {
+        public Task<bool> HasBeenEmittedAsync(string userId, DateOnly localDate, CancellationToken ct)
+            => Task.FromResult(false);
+
+        public Task MarkEmittedAsync(string userId, DateOnly localDate, CancellationToken ct)
+            => Task.CompletedTask;
+
+        public Task ResetAsync(string userId, DateOnly localDate, CancellationToken ct)
+            => Task.CompletedTask;
+    }
 }

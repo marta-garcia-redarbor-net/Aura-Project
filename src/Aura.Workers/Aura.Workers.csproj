@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Aura.Application\Aura.Application.csproj" />
     <ProjectReference Include="..\Aura.Infrastructure\Aura.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Aura.UnitTests" />
+    <InternalsVisibleTo Include="Aura.IntegrationTests" />
+  </ItemGroup>
 </Project>

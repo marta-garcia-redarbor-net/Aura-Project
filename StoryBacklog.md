@@ -195,8 +195,9 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - [ ] **W2-H5-T2** Implementar ranking por impacto, deadline y riesgo.  
   **DoD:** output priorizado y testeado.  
   **Riesgo:** resumen plano sin criterio ejecutivo.
-- [ ] **W2-H5-T3** Añadir soporte inicial de timezone.  
-  **DoD:** test de 09:00 según zona configurada.  
+- [x] **W2-H5-T3** Añadir soporte inicial de timezone.  
+  **DoD:** scheduling según `Project/System Settings` (incluye `timezoneId` y `targetLocalTime`, configurable; default esperado `09:00`), resolución de timezone con cadena configurada -> sistema -> UTC, idempotencia de un único summary por usuario/día local y test de due-state.  
+  **Alcance:** sólo scheduling/timezone; no incluye semántica timezone-aware de ventanas de datos ni cambios de ranking/composición.  
   **Riesgo:** resumen disparado en momentos incorrectos.
 
 #### Historia W2-H6 — Mostrar bandeja y summary en dashboard

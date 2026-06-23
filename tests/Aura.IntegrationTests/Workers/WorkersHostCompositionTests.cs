@@ -2,6 +2,7 @@ using Aura.Application;
 using Aura.Application.Ports;
 using Aura.Infrastructure;
 using Aura.Infrastructure.Adapters.Ingestion.Embedding;
+using Aura.Workers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -33,9 +34,12 @@ public class WorkersHostCompositionTests
                 ["Qdrant:GrpcPort"] = "6334",
                 ["Qdrant:VectorSize"] = "768",
                 ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
+                ["ConnectionStrings:Aura"] = "Data Source=:memory:",
                 ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
-                ["EmbeddingProvider:ApiKey"] = "test-key"
+                ["EmbeddingProvider:ApiKey"] = "test-key",
+                ["MorningSummary:TimezoneId"] = "UTC",
+                ["MorningSummary:TargetLocalTime"] = "09:00"
             })
             .Build();
 
@@ -47,6 +51,7 @@ public class WorkersHostCompositionTests
         // Mirror the exact extension method calls from Workers/Program.cs
         services.AddAuraApplication();
         services.AddAuraInfrastructure(config, new FakeHostEnvironment());
+        services.AddHostedService<MorningSummarySchedulingWorker>();
 
         return services.BuildServiceProvider();
     }
@@ -91,5 +96,15 @@ public class WorkersHostCompositionTests
         var extractor = sp.GetRequiredService<ISemanticChunkExtractor>();
 
         Assert.NotNull(extractor);
+    }
+
+    [Fact]
+    public void WorkerHost_RegistersMorningSummarySchedulingWorker_AsHostedService()
+    {
+        using var sp = BuildWorkerServiceProvider();
+
+        var hostedServices = sp.GetServices<IHostedService>().ToList();
+
+        Assert.Contains(hostedServices, service => service is MorningSummarySchedulingWorker);
     }
 }
