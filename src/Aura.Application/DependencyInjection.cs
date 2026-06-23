@@ -3,6 +3,7 @@ using Aura.Application.Kernel.Plugins;
 using Aura.Application.Ports;
 using Aura.Application.Services;
 using Aura.Application.UseCases.ConnectorExecution;
+using Aura.Application.UseCases.MorningSummary;
 using Aura.Application.UseCases.MorningSummaryScheduling;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +27,8 @@ public static class DependencyInjection
         services.AddScoped<IGraphConnectorStatusReader, GraphConnectorStatusReader>();
         services.AddScoped<ISystemStatusReader, SystemStatusReader>();
         services.AddScoped<IModuleProgressReader, ModuleProgressReader>();
+        services.AddScoped<IMorningSummaryRankingPolicy, MorningSummaryRankingPolicy>();
+        services.AddScoped<IMorningSummaryComposer, MorningSummaryComposer>();
         services.AddScoped<IMorningSummaryScheduler, MorningSummaryScheduler>();
         services.AddScoped<ExecuteConnectorUseCase>();
 

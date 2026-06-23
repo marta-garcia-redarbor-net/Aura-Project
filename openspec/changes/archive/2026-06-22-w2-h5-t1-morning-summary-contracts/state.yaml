@@ -1,0 +1,21 @@
+change: w2-h5-t1-morning-summary-contracts
+created: 2026-06-22
+mode: openspec
+strict_tdd: true
+test_command: dotnet test Aura.sln
+review_budget_lines: 400
+phases:
+  explore: done
+  propose: done
+  spec: done
+  design: done
+  tasks: done
+  apply: pending
+  verify: pending
+  archive: pending
+capability: morning-summary-contracts
+decisions:
+  - A: IWorkItemReader is a port only, no adapter in T1
+  - B: scoring is a contract shape (explainable factors), no engine in T1
+  - C: composer contract deterministic so future Redis/cache adapter is safe
+next: sdd-apply (single PR, low review risk)

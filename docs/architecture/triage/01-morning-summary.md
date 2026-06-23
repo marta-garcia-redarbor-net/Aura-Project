@@ -1,30 +1,31 @@
-# Triáje — Morning Summary
+# Triage — Morning Summary
 
-Contrato operativo para emisión del Morning Summary diario según `Project/System Settings`, con reglas explícitas de timezone, hora objetivo configurable, idempotencia y observabilidad.
+Contrato operativo de **W2-H5-T3** para la emisión diaria de Morning Summary.
+
+Define únicamente scheduling, timezone y reglas de idempotencia diaria a partir de `Project/System Settings`.
 
 ## Quick path
 
-1. Resolver `Project/System Settings` y obtener `timezoneId` y `targetLocalTime`.
-2. Resolver timezone efectiva (configurada en settings; fallback al sistema y luego UTC).
-3. Determinar due-state para `targetLocalTime` (wall-clock) usando reglas IANA/DST.
+1. Leer `Project/System Settings` y obtener `timezoneId` + `targetLocalTime`.
+2. Resolver timezone efectiva con cadena: configurada → timezone del sistema → `UTC`.
+3. Calcular `isDue` para `targetLocalTime` como hora local (wall-clock), aplicando reglas IANA/DST.
 4. Emitir como máximo un Morning Summary por usuario y día local.
 
-## Contrato de scheduling (W2-H5-T3)
+## Contrato operativo
 
 | Tema | Regla |
 | --- | --- |
-| Fuente de verdad de scheduling | Objeto único `Project/System Settings` compartido por el proyecto/sistema. |
-| Campos mínimos de settings | `timezoneId` configurado y `targetLocalTime` configurado (por defecto esperado: `09:00`). |
-| Fallback de timezone | Si falta o es inválida, usar timezone del sistema. |
-| Falla resolviendo timezone del sistema | Usar `UTC` como fallback final. |
-| Semántica de hora objetivo | `targetLocalTime` significa hora local (wall-clock) en la timezone resuelta; es configurable y no hardcodeada. |
-| DST / horario de verano | Se aplica automáticamente por reglas de timezone; nunca usar offsets UTC fijos. |
+| Modelo global de settings | Fuente única compartida: `Project/System Settings`. |
+| Campos mínimos | `timezoneId` y `targetLocalTime` configurables (valor esperado por defecto: `09:00`). |
+| Cadena de timezone | `timezoneId` configurado → timezone del sistema → `UTC` (fallback final). |
+| Semántica de hora objetivo | `targetLocalTime` representa hora local (wall-clock) en la timezone resuelta; no es una hora UTC fija. |
+| DST / horario de verano | Se aplica automáticamente según reglas de la timezone resuelta; no usar offsets UTC hardcodeados. |
 | Idempotencia diaria | Máximo un Morning Summary por usuario por día local. |
-| Reejecución del scheduler el mismo día | Las ejecuciones posteriores deben tratarlo como “ya emitido”. |
-| Cambio de timezone del proyecto/sistema durante el día | Sigue contando como “ya emitido”; no generar un segundo summary. |
-| Resultado del scheduler | Debe exponer `resolvedTimezoneId`, `localDate`, `targetLocalTime` (configurada; por defecto esperado `09:00`) y `isDue`. Si no está vencido, basta con `isDue = false`. |
+| Reejecución en el mismo día local | Debe tratarse como “ya emitido” (sin duplicados). |
+| Cambio de timezone en el mismo día local | Mantiene estado “ya emitido”; no habilita segundo summary. |
+| Resultado del scheduler | Debe exponer `resolvedTimezoneId`, `localDate`, `targetLocalTime` e `isDue`. Si no está vencido, basta con `isDue = false`. |
 
-## Alcance de este corte
+## Límite de alcance
 
 - Incluido: scheduling + timezone + idempotencia de emisión diaria.
-- Excluido: interpretación timezone-aware de ventanas de datos, ranking o semántica de composición del contenido.
+- Excluido: ranking, composición del contenido y semántica de data windows timezone-aware.

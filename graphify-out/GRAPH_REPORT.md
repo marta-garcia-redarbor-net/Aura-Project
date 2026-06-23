@@ -1,16 +1,16 @@
-# Graph Report - Aura  (2026-06-21)
+# Graph Report - Aura  (2026-06-22)
 
 ## Corpus Check
-- 428 files · ~153,312 words
+- 460 files · ~167,051 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4310 nodes · 5155 edges · 401 communities (367 shown, 34 thin omitted)
+- 4656 nodes · 5542 edges · 425 communities (390 shown, 35 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cd3bdb02`
+- Built from commit: `c546fa15`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -289,53 +289,53 @@
 - [[_COMMUNITY_Community 271|Community 271]]
 - [[_COMMUNITY_Community 272|Community 272]]
 - [[_COMMUNITY_Community 273|Community 273]]
+- [[_COMMUNITY_Community 274|Community 274]]
 - [[_COMMUNITY_Community 275|Community 275]]
 - [[_COMMUNITY_Community 276|Community 276]]
 - [[_COMMUNITY_Community 277|Community 277]]
 - [[_COMMUNITY_Community 278|Community 278]]
 - [[_COMMUNITY_Community 279|Community 279]]
 - [[_COMMUNITY_Community 280|Community 280]]
+- [[_COMMUNITY_Community 281|Community 281]]
+- [[_COMMUNITY_Community 282|Community 282]]
+- [[_COMMUNITY_Community 283|Community 283]]
+- [[_COMMUNITY_Community 284|Community 284]]
+- [[_COMMUNITY_Community 285|Community 285]]
+- [[_COMMUNITY_Community 286|Community 286]]
+- [[_COMMUNITY_Community 287|Community 287]]
+- [[_COMMUNITY_Community 288|Community 288]]
+- [[_COMMUNITY_Community 289|Community 289]]
+- [[_COMMUNITY_Community 290|Community 290]]
+- [[_COMMUNITY_Community 291|Community 291]]
+- [[_COMMUNITY_Community 292|Community 292]]
+- [[_COMMUNITY_Community 293|Community 293]]
+- [[_COMMUNITY_Community 294|Community 294]]
+- [[_COMMUNITY_Community 295|Community 295]]
+- [[_COMMUNITY_Community 296|Community 296]]
+- [[_COMMUNITY_Community 297|Community 297]]
+- [[_COMMUNITY_Community 298|Community 298]]
+- [[_COMMUNITY_Community 299|Community 299]]
+- [[_COMMUNITY_Community 300|Community 300]]
+- [[_COMMUNITY_Community 301|Community 301]]
+- [[_COMMUNITY_Community 302|Community 302]]
+- [[_COMMUNITY_Community 303|Community 303]]
 - [[_COMMUNITY_Community 304|Community 304]]
 - [[_COMMUNITY_Community 305|Community 305]]
 - [[_COMMUNITY_Community 306|Community 306]]
 - [[_COMMUNITY_Community 307|Community 307]]
+- [[_COMMUNITY_Community 308|Community 308]]
+- [[_COMMUNITY_Community 309|Community 309]]
 - [[_COMMUNITY_Community 310|Community 310]]
 - [[_COMMUNITY_Community 311|Community 311]]
 - [[_COMMUNITY_Community 312|Community 312]]
 - [[_COMMUNITY_Community 313|Community 313]]
 - [[_COMMUNITY_Community 314|Community 314]]
-- [[_COMMUNITY_Community 315|Community 315]]
 - [[_COMMUNITY_Community 316|Community 316]]
 - [[_COMMUNITY_Community 317|Community 317]]
 - [[_COMMUNITY_Community 318|Community 318]]
 - [[_COMMUNITY_Community 319|Community 319]]
 - [[_COMMUNITY_Community 320|Community 320]]
 - [[_COMMUNITY_Community 321|Community 321]]
-- [[_COMMUNITY_Community 322|Community 322]]
-- [[_COMMUNITY_Community 323|Community 323]]
-- [[_COMMUNITY_Community 324|Community 324]]
-- [[_COMMUNITY_Community 325|Community 325]]
-- [[_COMMUNITY_Community 326|Community 326]]
-- [[_COMMUNITY_Community 327|Community 327]]
-- [[_COMMUNITY_Community 328|Community 328]]
-- [[_COMMUNITY_Community 329|Community 329]]
-- [[_COMMUNITY_Community 330|Community 330]]
-- [[_COMMUNITY_Community 331|Community 331]]
-- [[_COMMUNITY_Community 332|Community 332]]
-- [[_COMMUNITY_Community 333|Community 333]]
-- [[_COMMUNITY_Community 334|Community 334]]
-- [[_COMMUNITY_Community 335|Community 335]]
-- [[_COMMUNITY_Community 336|Community 336]]
-- [[_COMMUNITY_Community 337|Community 337]]
-- [[_COMMUNITY_Community 340|Community 340]]
-- [[_COMMUNITY_Community 341|Community 341]]
-- [[_COMMUNITY_Community 342|Community 342]]
-- [[_COMMUNITY_Community 343|Community 343]]
-- [[_COMMUNITY_Community 344|Community 344]]
-- [[_COMMUNITY_Community 345|Community 345]]
-- [[_COMMUNITY_Community 346|Community 346]]
-- [[_COMMUNITY_Community 347|Community 347]]
-- [[_COMMUNITY_Community 348|Community 348]]
 - [[_COMMUNITY_Community 349|Community 349]]
 - [[_COMMUNITY_Community 350|Community 350]]
 - [[_COMMUNITY_Community 351|Community 351]]
@@ -348,6 +348,7 @@
 - [[_COMMUNITY_Community 358|Community 358]]
 - [[_COMMUNITY_Community 359|Community 359]]
 - [[_COMMUNITY_Community 360|Community 360]]
+- [[_COMMUNITY_Community 361|Community 361]]
 - [[_COMMUNITY_Community 362|Community 362]]
 - [[_COMMUNITY_Community 363|Community 363]]
 - [[_COMMUNITY_Community 364|Community 364]]
@@ -355,13 +356,13 @@
 - [[_COMMUNITY_Community 366|Community 366]]
 - [[_COMMUNITY_Community 367|Community 367]]
 - [[_COMMUNITY_Community 368|Community 368]]
-- [[_COMMUNITY_Community 369|Community 369]]
 - [[_COMMUNITY_Community 370|Community 370]]
 - [[_COMMUNITY_Community 371|Community 371]]
 - [[_COMMUNITY_Community 372|Community 372]]
 - [[_COMMUNITY_Community 373|Community 373]]
 - [[_COMMUNITY_Community 374|Community 374]]
 - [[_COMMUNITY_Community 375|Community 375]]
+- [[_COMMUNITY_Community 376|Community 376]]
 - [[_COMMUNITY_Community 377|Community 377]]
 - [[_COMMUNITY_Community 378|Community 378]]
 - [[_COMMUNITY_Community 379|Community 379]]
@@ -385,7 +386,22 @@
 - [[_COMMUNITY_Community 397|Community 397]]
 - [[_COMMUNITY_Community 398|Community 398]]
 - [[_COMMUNITY_Community 399|Community 399]]
-- [[_COMMUNITY_Community 400|Community 400]]
+- [[_COMMUNITY_Community 401|Community 401]]
+- [[_COMMUNITY_Community 402|Community 402]]
+- [[_COMMUNITY_Community 403|Community 403]]
+- [[_COMMUNITY_Community 404|Community 404]]
+- [[_COMMUNITY_Community 405|Community 405]]
+- [[_COMMUNITY_Community 414|Community 414]]
+- [[_COMMUNITY_Community 415|Community 415]]
+- [[_COMMUNITY_Community 416|Community 416]]
+- [[_COMMUNITY_Community 417|Community 417]]
+- [[_COMMUNITY_Community 418|Community 418]]
+- [[_COMMUNITY_Community 419|Community 419]]
+- [[_COMMUNITY_Community 420|Community 420]]
+- [[_COMMUNITY_Community 421|Community 421]]
+- [[_COMMUNITY_Community 422|Community 422]]
+- [[_COMMUNITY_Community 423|Community 423]]
+- [[_COMMUNITY_Community 424|Community 424]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `WorkItemTests` - 28 edges
@@ -402,235 +418,235 @@
 ## Surprising Connections (you probably didn't know these)
 - `StubAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
-- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
-  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `CapturingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `StubConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `ThrowingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
+- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (401 total, 34 thin omitted)
+## Communities (425 total, 35 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
-Nodes (40): ConcurrentQueue, GraphConnectorStatusEndpointTests, InMemoryLogger, InMemoryLoggerProvider, NullScope, StubGraphConnectorStatusReader, IGraphConnectorStatusReader, ILoggerProvider (+32 more)
+Nodes (40): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, ILogger, CapturingConnectorAdapter, ExecuteConnectorUseCaseTests, GetTag(), NullScope, RecordingLogger (+32 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (34): AuthorizationFlowTests, CancellingInitialDashboardReader, InitialDashboardEndpointTests, RequestCancellationObservingDashboardReader, StubInitialDashboardReader, ThrowingInitialDashboardReader, GraphConnectorStatusSmokeTests, StubGraphConnectorApiClient (+26 more)
+Cohesion: 0.05
+Nodes (40): ConcurrentQueue, GraphConnectorStatusEndpointTests, InMemoryLogger, InMemoryLoggerProvider, NullScope, StubGraphConnectorStatusReader, IGraphConnectorStatusReader, ILoggerProvider (+32 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.42
-Nodes (4): DashboardApiClientTests, Fact, JsonSerializerOptions, Task
+Cohesion: 0.07
+Nodes (34): AuthorizationFlowTests, CancellingInitialDashboardReader, InitialDashboardEndpointTests, RequestCancellationObservingDashboardReader, StubInitialDashboardReader, ThrowingInitialDashboardReader, GraphConnectorStatusSmokeTests, StubGraphConnectorApiClient (+26 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.11
 Nodes (26): DelayedDashboardApiClient, InitialDashboardSmokeTests, StubApiPrimaryHandler, StubDashboardApiClient, StubModuleProgressApiClient, StubSystemStatusApiClient, ThrowingDashboardApiClient, ThrowingModuleProgressApiClient (+18 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.05
-Nodes (42): Cómo usar este backlog, Historia W1-H1 — Crear la solución base en .NET 9, Historia W1-H2 — Asegurar reglas de calidad iniciales, Historia W1-H3 — Levantar Qdrant con Docker, Historia W1-H4 — Montar el skeleton del kernel, Historia W1-H5 — Preparar autenticación desacoplada de Graph, Historia W1-H6 — Construir dashboard inicial, Historia W2-H1 — Consolidar el modelo canónico de WorkItem (+34 more)
+Cohesion: 0.06
+Nodes (30): ConnectorExecutionWorker, Log, HelloKernelWorker, SemanticIndexSyncWorker, Worker, BackgroundService, CancellationToken, Exception (+22 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (9): IReadOnlyDictionary, DateTimeOffset, Fact, InlineData, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
+Cohesion: 0.04
+Nodes (44): Cómo usar este backlog, Historia W1-H1 — Crear la solución base en .NET 9, Historia W1-H2 — Asegurar reglas de calidad iniciales, Historia W1-H3 — Levantar Qdrant con Docker, Historia W1-H4 — Montar el skeleton del kernel, Historia W1-H5 — Preparar autenticación desacoplada de Graph, Historia W1-H6 — Construir dashboard inicial, Historia W2-H1 — Consolidar el modelo canónico de WorkItem (+36 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.07
 Nodes (24): AlwaysHealthyCheck, QdrantHealthCheckIntegrationTests, QdrantHealthCheckRealInstanceTests, IAsyncLifetime, ICollectionFixture, IHealthCheck, QdrantHealthCheck, CancellationToken (+16 more)
 
 ### Community 7 - "Community 7"
+Cohesion: 0.13
+Nodes (9): DateTimeOffset, Fact, InlineData, IReadOnlyDictionary, Theory, WorkItem, WorkItemPriority, WorkItemTests (+1 more)
+
+### Community 8 - "Community 8"
 Cohesion: 0.09
 Nodes (23): StubSystemStatusReader, SystemStatusEndpointTests, ISystemStatusReader, SystemStatusReader, CancellationToken, IApiReadinessProvider, IMockAuthReadinessProvider, IQdrantReadinessProvider (+15 more)
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.17
 Nodes (14): SemanticIndexSyncWorker, Fact, IEmbeddingProvider, ILogger, ISemanticChunkExtractor, ISemanticIndexWriter, ISemanticOutboxRepository, IServiceScopeFactory (+6 more)
 
-### Community 9 - "Community 9"
-Cohesion: 0.17
-Nodes (16): IOptions, QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, DomainTag, EmbeddedSemanticChunk, Fact, IReadOnlyList, List (+8 more)
-
 ### Community 10 - "Community 10"
 Cohesion: 0.06
-Nodes (30): Anti-patrones a evitar, Criterio de atomicidad, Criterios operativos del plan, Cómo Playwright validará el flujo de usuario desde el dashboard, Directriz de crecimiento de UI, Entregable visible de la semana, Entregable visible de la semana, Entregable visible de la semana (+22 more)
+Nodes (31): Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case, Requirement: Telemetry Emission (+23 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.11
-Nodes (19): ModuleProgressEndpointTests, StubModuleProgressReader, IModuleProgressReader, ModuleProgressReader, CancellationToken, IModuleProgressProvider, ModuleProgressDto, Task (+11 more)
-
-### Community 12 - "Community 12"
-Cohesion: 0.14
-Nodes (15): EmbeddingResilienceTests, StallingGenerator, TransientFailureGenerator, EmbeddingGenerationOptions, CancellationToken, Embedding, Fact, GeneratedEmbeddings (+7 more)
-
-### Community 13 - "Community 13"
-Cohesion: 0.16
-Nodes (15): DashboardEndpoints, Log, ActivitySource, CancellationToken, Exception, IEndpointRouteBuilder, IInitialDashboardReader, ILogger (+7 more)
-
-### Community 14 - "Community 14"
-Cohesion: 0.06
-Nodes (30): ConnectorExecutionWorker, Log, HelloKernelWorker, SemanticIndexSyncWorker, Worker, BackgroundService, CancellationToken, Exception (+22 more)
-
-### Community 15 - "Community 15"
-Cohesion: 0.11
-Nodes (19): DelegatingHandler, SemaphoreSlim, DevAccessTokenHandler, Log, ForwardedAccessTokenHandler, CancellationToken, Exception, HttpRequestMessage (+11 more)
-
-### Community 16 - "Community 16"
-Cohesion: 0.25
-Nodes (9): MeaiEmbeddingProviderTests, MeaiEmbeddingProvider, Embedding, EmbeddingProviderOptions, Fact, GeneratedEmbeddings, IEmbeddingGenerator, ResiliencePipeline (+1 more)
-
-### Community 17 - "Community 17"
-Cohesion: 0.11
-Nodes (16): QdrantReadinessAdapter, QdrantReadinessAdapterTests, StubHealthCheckService, HealthCheckRegistration, HealthReport, HealthStatus, IQdrantReadinessProvider, CancellationToken (+8 more)
-
-### Community 18 - "Community 18"
-Cohesion: 0.09
-Nodes (22): Purpose, Requirement: Application Ports for Abstraction, Requirement: Collection Segregation, Requirement: Derived Store Segregation, Requirement: Observable and Resilient Embedding Generation, Requirement: Semantic Unit Structure, Requirements, Scenario: Accurate Dependency Injection and Host Composition (+14 more)
-
-### Community 19 - "Community 19"
-Cohesion: 0.13
-Nodes (16): embedder, DeterministicEmbeddingProvider, SemanticIndexPipelineTests, extractor, CancellationToken, Fact, IEmbeddingProvider, IReadOnlyList (+8 more)
-
-### Community 20 - "Community 20"
-Cohesion: 0.09
-Nodes (21): Graph Connector Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Config Status Derivation, Requirement: Configuration Source v1, Requirement: Read-Only Status UI Panel, Requirement: Status API Endpoint, Requirements (+13 more)
-
-### Community 21 - "Community 21"
-Cohesion: 0.09
-Nodes (21): Graph Connector Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Config Status Derivation, Requirement: Configuration Source v1, Requirement: Read-Only Status UI Panel, Requirement: Status API Endpoint, Requirements (+13 more)
-
-### Community 22 - "Community 22"
-Cohesion: 0.10
-Nodes (20): Purpose, Requirement: capturedAtUtc Resolution, Requirement: correlationId Normalization, Requirement: Fixed schemaVersion, Requirement: Mandatory Field Presence, Requirement: Metadata Shape, Requirement: sourceType Closed-Set Validation, Requirements (+12 more)
-
-### Community 23 - "Community 23"
 Cohesion: 0.06
 Nodes (31): Purpose, Requirement: capturedAtUtc Boundary Inputs, Requirement: capturedAtUtc Resolution, Requirement: correlationId Normalization, Requirement: correlationId Whitespace Auto-Generation, Requirement: Fixed schemaVersion, Requirement: Mandatory Field Presence, Requirement: Mandatory Field Whitespace Rejection (+23 more)
 
+### Community 12 - "Community 12"
+Cohesion: 0.06
+Nodes (30): Anti-patrones a evitar, Criterio de atomicidad, Criterios operativos del plan, Cómo Playwright validará el flujo de usuario desde el dashboard, Directriz de crecimiento de UI, Entregable visible de la semana, Entregable visible de la semana, Entregable visible de la semana (+22 more)
+
+### Community 13 - "Community 13"
+Cohesion: 0.11
+Nodes (19): ModuleProgressEndpointTests, StubModuleProgressReader, IModuleProgressReader, ModuleProgressReader, CancellationToken, IModuleProgressProvider, ModuleProgressDto, Task (+11 more)
+
+### Community 14 - "Community 14"
+Cohesion: 0.14
+Nodes (15): EmbeddingResilienceTests, StallingGenerator, TransientFailureGenerator, EmbeddingGenerationOptions, CancellationToken, Embedding, Fact, GeneratedEmbeddings (+7 more)
+
+### Community 15 - "Community 15"
+Cohesion: 0.16
+Nodes (15): DashboardEndpoints, Log, ActivitySource, CancellationToken, Exception, IEndpointRouteBuilder, IInitialDashboardReader, ILogger (+7 more)
+
+### Community 16 - "Community 16"
+Cohesion: 0.11
+Nodes (19): DelegatingHandler, SemaphoreSlim, DevAccessTokenHandler, Log, ForwardedAccessTokenHandler, CancellationToken, Exception, HttpRequestMessage (+11 more)
+
+### Community 17 - "Community 17"
+Cohesion: 0.06
+Nodes (38): Activity, ExecuteConnectorUseCase, Log, NoopWorkItemBuffer, NoopWorkItemStore, Counter, InMemoryIngestionCheckpointStore, IIngestionCheckpointStore (+30 more)
+
+### Community 18 - "Community 18"
+Cohesion: 0.25
+Nodes (9): MeaiEmbeddingProviderTests, MeaiEmbeddingProvider, Embedding, EmbeddingProviderOptions, Fact, GeneratedEmbeddings, IEmbeddingGenerator, ResiliencePipeline (+1 more)
+
+### Community 19 - "Community 19"
+Cohesion: 0.13
+Nodes (20): IOptions, QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, CancellationToken, DomainTag, EmbeddedSemanticChunk, Fact, IEmbeddingProvider (+12 more)
+
+### Community 20 - "Community 20"
+Cohesion: 0.09
+Nodes (22): Scenario: Absent checkpoint → today-only window, no write, Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case (+14 more)
+
+### Community 21 - "Community 21"
+Cohesion: 0.11
+Nodes (16): QdrantReadinessAdapter, QdrantReadinessAdapterTests, StubHealthCheckService, HealthCheckRegistration, HealthReport, HealthStatus, IQdrantReadinessProvider, CancellationToken (+8 more)
+
+### Community 22 - "Community 22"
+Cohesion: 0.09
+Nodes (22): Purpose, Requirement: Application Ports for Abstraction, Requirement: Collection Segregation, Requirement: Derived Store Segregation, Requirement: Observable and Resilient Embedding Generation, Requirement: Semantic Unit Structure, Requirements, Scenario: Accurate Dependency Injection and Host Composition (+14 more)
+
+### Community 23 - "Community 23"
+Cohesion: 0.13
+Nodes (16): embedder, DeterministicEmbeddingProvider, SemanticIndexPipelineTests, extractor, CancellationToken, Fact, IEmbeddingProvider, IReadOnlyList (+8 more)
+
 ### Community 24 - "Community 24"
-Cohesion: 0.21
-Nodes (7): Guid, DomainTag, Fact, IReadOnlyList, SemanticChunk, SemanticCollectionType, QdrantPointMapperTests
+Cohesion: 0.09
+Nodes (21): Graph Connector Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Config Status Derivation, Requirement: Configuration Source v1, Requirement: Read-Only Status UI Panel, Requirement: Status API Endpoint, Requirements (+13 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.10
-Nodes (19): Dashboard System Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Mock-Auth Indicator Scope, Requirement: Read-Only Status Panel, Requirement: Status API Endpoint, Requirement: Status Derivation, Requirements (+11 more)
+Cohesion: 0.09
+Nodes (21): Graph Connector Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Config Status Derivation, Requirement: Configuration Source v1, Requirement: Read-Only Status UI Panel, Requirement: Status API Endpoint, Requirements (+13 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.10
-Nodes (19): Dashboard System Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Mock-Auth Indicator Scope, Requirement: Read-Only Status Panel, Requirement: Status API Endpoint, Requirement: Status Derivation, Requirements (+11 more)
+Nodes (20): Purpose, Requirement: capturedAtUtc Resolution, Requirement: correlationId Normalization, Requirement: Fixed schemaVersion, Requirement: Mandatory Field Presence, Requirement: Metadata Shape, Requirement: sourceType Closed-Set Validation, Requirements (+12 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.11
-Nodes (18): Apply Progress: W1-H6 Dashboard Inicial, Completed Tasks, Deviations from Design, Files Changed, Issues Found, PR 2 Stitch refinement batch, PR 2 Stitch refinement batch, PR 3 verify + cleanup batch (+10 more)
+Cohesion: 0.13
+Nodes (14): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger, IReadOnlyList, IWorkItemBuffer (+6 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.15
-Nodes (13): GraphConnectorEndpoints, Log, ActivitySource, CancellationToken, Exception, GraphConnectorState, IEndpointRouteBuilder, IGraphConnectorStatusReader (+5 more)
+Cohesion: 0.21
+Nodes (7): Guid, DomainTag, Fact, IReadOnlyList, SemanticChunk, SemanticCollectionType, QdrantPointMapperTests
 
 ### Community 29 - "Community 29"
-Cohesion: 0.30
-Nodes (7): DevAccessTokenHandlerTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IConfiguration, Task
+Cohesion: 0.10
+Nodes (19): Dashboard System Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Mock-Auth Indicator Scope, Requirement: Read-Only Status Panel, Requirement: Status API Endpoint, Requirement: Status Derivation, Requirements (+11 more)
 
 ### Community 30 - "Community 30"
-Cohesion: 0.11
-Nodes (17): Scenario: Full value is stored and returned unchanged, Scenario: Null fields are preserved, Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window (+9 more)
+Cohesion: 0.10
+Nodes (19): Dashboard System Status Specification, Purpose, Requirement: Architecture Isolation, Requirement: Mock-Auth Indicator Scope, Requirement: Read-Only Status Panel, Requirement: Status API Endpoint, Requirement: Status Derivation, Requirements (+11 more)
 
 ### Community 31 - "Community 31"
 Cohesion: 0.11
-Nodes (10): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IOptionsMonitor, IConfiguration, IServiceCollection (+2 more)
+Nodes (18): Apply Progress: W1-H6 Dashboard Inicial, Completed Tasks, Deviations from Design, Files Changed, Issues Found, PR 2 Stitch refinement batch, PR 2 Stitch refinement batch, PR 3 verify + cleanup batch (+10 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.15
-Nodes (14): ISemanticContextRetriever, QdrantSemanticContextAdapter, CancellationToken, DomainTag, Func, IEmbeddingProvider, IReadOnlyList, List (+6 more)
+Cohesion: 0.20
+Nodes (7): StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, GraphConnectorSettings
 
 ### Community 33 - "Community 33"
-Cohesion: 0.11
-Nodes (17): Dashboard Module Progress Specification, Purpose, Requirement: Architecture Isolation, Requirement: Module Progress API Endpoint, Requirement: Module Progress Panel, Requirement: Module Progress Port Contract, Requirement: Seeded Data Labeling, Requirements (+9 more)
+Cohesion: 0.15
+Nodes (13): GraphConnectorEndpoints, Log, ActivitySource, CancellationToken, Exception, GraphConnectorState, IEndpointRouteBuilder, IGraphConnectorStatusReader (+5 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.11
-Nodes (17): Dashboard Module Progress Specification, Purpose, Requirement: Architecture Isolation, Requirement: Module Progress API Endpoint, Requirement: Module Progress Panel, Requirement: Module Progress Port Contract, Requirement: Seeded Data Labeling, Requirements (+9 more)
+Nodes (18): Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window, Requirement: Provider Isolation, Requirements (+10 more)
 
 ### Community 35 - "Community 35"
-Cohesion: 0.26
-Nodes (4): SemanticIndexArchitectureTests, Fact, string, TestResult
+Cohesion: 0.42
+Nodes (4): DashboardApiClientTests, Fact, JsonSerializerOptions, Task
 
 ### Community 36 - "Community 36"
 Cohesion: 0.11
-Nodes (18): Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window, Requirement: Provider Isolation, Requirements (+10 more)
+Nodes (17): Scenario: Full value is stored and returned unchanged, Scenario: Null fields are preserved, Ingestion Checkpoint Store Specification, Purpose, Requirement: Checkpoint Identity, Requirement: Checkpoint Read-Write Operations, Requirement: Checkpoint Value Shape, Requirement: First-Run Bounded Initial Window (+9 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.24
-Nodes (7): SqliteSemanticOutboxRepositoryTests, Fact, ISemanticOutboxRepository, SemanticCollectionType, SemanticOutboxEntry, SqliteConnection, Task
+Cohesion: 0.15
+Nodes (14): ISemanticContextRetriever, QdrantSemanticContextAdapter, CancellationToken, DomainTag, Func, IEmbeddingProvider, IReadOnlyList, List (+6 more)
 
 ### Community 38 - "Community 38"
+Cohesion: 0.11
+Nodes (17): Dashboard Module Progress Specification, Purpose, Requirement: Architecture Isolation, Requirement: Module Progress API Endpoint, Requirement: Module Progress Panel, Requirement: Module Progress Port Contract, Requirement: Seeded Data Labeling, Requirements (+9 more)
+
+### Community 39 - "Community 39"
+Cohesion: 0.11
+Nodes (17): Dashboard Module Progress Specification, Purpose, Requirement: Architecture Isolation, Requirement: Module Progress API Endpoint, Requirement: Module Progress Panel, Requirement: Module Progress Port Contract, Requirement: Seeded Data Labeling, Requirements (+9 more)
+
+### Community 40 - "Community 40"
+Cohesion: 0.26
+Nodes (4): SemanticIndexArchitectureTests, Fact, string, TestResult
+
+### Community 41 - "Community 41"
+Cohesion: 0.24
+Nodes (5): Config, Fact, IConfiguration, IServiceCollection, DependencyInjectionTests
+
+### Community 42 - "Community 42"
+Cohesion: 0.11
+Nodes (10): MockJwtOptionsReadinessAdapter, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IOptionsMonitor, IConfiguration, IServiceCollection (+2 more)
+
+### Community 43 - "Community 43"
+Cohesion: 0.22
+Nodes (8): IDisposable, SqliteSemanticOutboxRepositoryTests, Fact, ISemanticOutboxRepository, SemanticCollectionType, SemanticOutboxEntry, SqliteConnection, Task
+
+### Community 44 - "Community 44"
 Cohesion: 0.12
 Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+7 more)
 
-### Community 39 - "Community 39"
+### Community 45 - "Community 45"
+Cohesion: 0.12
+Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+7 more)
+
+### Community 46 - "Community 46"
+Cohesion: 0.18
+Nodes (5): DependencyInjection, Program, UiMarker, Services, IServiceCollection
+
+### Community 47 - "Community 47"
+Cohesion: 0.28
+Nodes (9): CapturingInnerHandler, ForwardedAccessTokenHandlerTests, HttpMessageInvoker, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IHttpContextAccessor (+1 more)
+
+### Community 48 - "Community 48"
+Cohesion: 0.12
+Nodes (15): Delta for connector-execution, MODIFIED Requirements, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Scenario: Absent checkpoint applies today-only window, Scenario: Existing checkpoint bounds fetch window, Scenario: Full failure advances neither timestamp, Scenario: Full failure — reason present, max-processed-at is null (+7 more)
+
+### Community 49 - "Community 49"
 Cohesion: 0.28
 Nodes (6): EmbeddingProviderOptionsValidator, EmbeddingProviderOptionsValidatorTests, EmbeddingProviderOptions, Fact, InlineData, Theory
 
-### Community 40 - "Community 40"
+### Community 50 - "Community 50"
 Cohesion: 0.12
 Nodes (15): Purpose, Requirement: Application Ports for Abstraction, Requirement: Collection Segregation, Requirement: Derived Store Segregation, Requirement: Semantic Unit Structure, Requirements, Scenario: Canonical source missing (Orphaned Chunk), Scenario: Chunking a large source event (+7 more)
 
-### Community 41 - "Community 41"
-Cohesion: 0.12
-Nodes (15): Initial Dashboard Specification, Purpose, Requirement: API-Only UI Integration, Requirement: Repository-Realistic Smoke Verification, Requirement: Separate Dashboard Host, Requirement: Visible View States, Requirements, Scenario: API failure does not bypass boundaries (+7 more)
-
-### Community 42 - "Community 42"
-Cohesion: 0.13
-Nodes (14): Requirement: capturedAtUtc Boundary Inputs, Requirement: correlationId Whitespace Auto-Generation, Requirement: Mandatory Field Whitespace Rejection, Requirement: Metadata Populated Dictionary Accepted, Scenario: correlationId whitespace-only triggers auto-generation, Scenario: DateTimeOffset.MinValue treated as absent, Scenario: externalId whitespace-only rejected, Scenario: Local-offset DateTimeOffset preserved without rejection (+6 more)
-
-### Community 43 - "Community 43"
-Cohesion: 0.12
-Nodes (15): Initial Dashboard Specification, Purpose, Requirement: API-Only UI Integration, Requirement: Repository-Realistic Smoke Verification, Requirement: Separate Dashboard Host, Requirement: Visible View States, Requirements, Scenario: API failure does not bypass boundaries (+7 more)
-
-### Community 44 - "Community 44"
-Cohesion: 0.13
-Nodes (15): applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, https, ASPNETCORE_ENVIRONMENT, applicationUrl (+7 more)
-
-### Community 45 - "Community 45"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 46 - "Community 46"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 47 - "Community 47"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 48 - "Community 48"
-Cohesion: 0.13
-Nodes (14): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness, Delta vs Previous Verify, Issues Found (+6 more)
-
-### Community 49 - "Community 49"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 50 - "Community 50"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
 ### Community 51 - "Community 51"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+Cohesion: 0.12
+Nodes (15): Initial Dashboard Specification, Purpose, Requirement: API-Only UI Integration, Requirement: Repository-Realistic Smoke Verification, Requirement: Separate Dashboard Host, Requirement: Visible View States, Requirements, Scenario: API failure does not bypass boundaries (+7 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+Cohesion: 0.12
+Nodes (15): Initial Dashboard Specification, Purpose, Requirement: API-Only UI Integration, Requirement: Repository-Realistic Smoke Verification, Requirement: Separate Dashboard Host, Requirement: Visible View States, Requirements, Scenario: API failure does not bypass boundaries (+7 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+Nodes (15): applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, https, ASPNETCORE_ENVIRONMENT, applicationUrl (+7 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.13
@@ -641,1148 +657,1208 @@ Cohesion: 0.13
 Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.32
-Nodes (4): BasicSemanticChunkExtractor, BasicSemanticChunkExtractorTests, Fact, Task
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 57 - "Community 57"
-Cohesion: 0.21
-Nodes (9): DashboardCardDto, IInitialDashboardReader, InitialDashboardReader, AuraUser, CancellationToken, ICurrentUserService, IEnumerable, InitialDashboardDto (+1 more)
+Cohesion: 0.13
+Nodes (14): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness, Delta vs Previous Verify, Issues Found (+6 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.16
-Nodes (11): MeaiEmbeddingProvider, IEmbeddingProvider, ActivitySource, CancellationToken, EmbeddingProviderOptions, IEmbeddingGenerator, IReadOnlyList, List (+3 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.15
-Nodes (11): ISemanticChunkExtractor, Regex, BasicSemanticChunkExtractor, CancellationToken, int, IReadOnlyList, List, SemanticChunk (+3 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.13
-Nodes (14): Delta for semantic-index, MODIFIED Requirements, Requirement: Application Ports for Abstraction, Requirement: Derived Store Segregation, Requirement: Observable and Resilient Embedding Generation, Scenario: Canonical source missing (Orphaned Chunk), Scenario: Generating embeddings without SDK leakage, Scenario: Protecting context window limits (+6 more)
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.09
-Nodes (22): Scenario: Absent checkpoint → today-only window, no write, Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case (+14 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 62 - "Community 62"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness, Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 63 - "Community 63"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 66 - "Community 66"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
+Cohesion: 0.32
+Nodes (4): BasicSemanticChunkExtractor, BasicSemanticChunkExtractorTests, Fact, Task
 
 ### Community 69 - "Community 69"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 70 - "Community 70"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 71 - "Community 71"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 72 - "Community 72"
-Cohesion: 0.14
-Nodes (13): 1. `aura-backlog-slicer`, 2. `aura-clean-arch-guard`, 3. `aura-ui-progress-slice` / `aura-blazor-ui-slice`, 4. `aura-plugin-design`, 5. `aura-triage-rules`, 6. `aura-review-evidence`, 7. `aura-demo-mode`, 8. `aura-tfm-doc-writer` (+5 more)
-
-### Community 73 - "Community 73"
-Cohesion: 0.24
-Nodes (8): ISemanticOutboxRepository, SqliteSemanticOutboxRepository, SqliteDataReader, CancellationToken, IReadOnlyList, SemanticOutboxEntry, SqliteConnection, Task
-
-### Community 74 - "Community 74"
-Cohesion: 0.14
-Nodes (13): Plugin Kernel Specification, Purpose, Requirement: Architectural Layer Constraints, Requirement: Resilient Plugin Execution, Requirement: Sequential Plugin Execution, Requirement: WorkItem State Encapsulation, Requirements, Scenario: Dependency Injection Initialization (+5 more)
-
-### Community 75 - "Community 75"
-Cohesion: 0.14
-Nodes (13): Plugin Kernel Specification, Purpose, Requirement: Architectural Layer Constraints, Requirement: Resilient Plugin Execution, Requirement: Sequential Plugin Execution, Requirement: WorkItem State Encapsulation, Requirements, Scenario: Dependency Injection Initialization (+5 more)
-
-### Community 76 - "Community 76"
-Cohesion: 0.26
-Nodes (6): DomainTag, Fact, IReadOnlyList, SemanticChunk, SemanticCollectionType, QdrantSemanticContextAdapterTests
-
-### Community 77 - "Community 77"
-Cohesion: 0.17
-Nodes (9): net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
-
-### Community 78 - "Community 78"
-Cohesion: 0.16
-Nodes (10): IHostEnvironment, InfrastructureDependencyInjectionTests, ServiceProvider, Fact, Fact, IConfiguration, IHostEnvironment, Task (+2 more)
-
-### Community 79 - "Community 79"
-Cohesion: 0.15
-Nodes (9): IPlugin, HelloPlugin, CancellationToken, Task, WorkItem, CancellationToken, ILogger, Task (+1 more)
-
-### Community 80 - "Community 80"
-Cohesion: 0.17
-Nodes (11): Apply Progress: Infrastructure Organization Refactor, Corrective Apply (Post-Verify Fix), Corrective Fix Tests Detail, Deviations from Design, Files Changed (Corrective Fix), Fix-A: Infrastructure File Placement (Spec: Adapter-Centric Organization), Fix-B: Negative DI Leakage (Spec: Dedicated Application DI), Issues Found (+3 more)
-
-### Community 81 - "Community 81"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 82 - "Community 82"
-Cohesion: 0.17
-Nodes (11): Microsoft.Extensions.DependencyInjection (10.0.8), NSubstitute (5.3.0), net9.0, coverlet.collector (6.0.2), Microsoft.Data.Sqlite (9.0.6), Microsoft.Extensions.Diagnostics.HealthChecks (10.0.8), Microsoft.NET.Test.Sdk (17.12.0), Polly.Core (8.6.6) (+3 more)
-
-### Community 83 - "Community 83"
-Cohesion: 0.17
-Nodes (11): CascadingValue, ILogger<MainLayout>, Dispose, OnInitializedAsync, PersistDashboardStateAsync, LayoutComponentBase, MainLayout, PersistentComponentState (+3 more)
-
-### Community 84 - "Community 84"
-Cohesion: 0.21
-Nodes (7): MockJwtOptionsReadinessAdapterTests, StubOptionsMonitor, IOptionsMonitor, Action, Fact, IDisposable, MockJwtOptions
-
-### Community 85 - "Community 85"
-Cohesion: 0.24
-Nodes (8): ISemanticIndexWriter, QdrantSemanticIndexAdapter, CancellationToken, EmbeddedSemanticChunk, IReadOnlyList, QdrantClient, QdrantOptions, Task
-
-### Community 86 - "Community 86"
-Cohesion: 0.36
-Nodes (5): PluginRegistryTests, Fact, ILogger, Task, WorkItem
-
-### Community 87 - "Community 87"
-Cohesion: 0.26
-Nodes (4): SemanticOutboxEntryTests, Fact, InlineData, Theory
-
-### Community 88 - "Community 88"
-Cohesion: 0.17
-Nodes (11): Aura, Configure secrets, Estructura, Local Environment, Notas, Prerequisites, Run the API, Start Qdrant (+3 more)
-
-### Community 89 - "Community 89"
-Cohesion: 0.24
-Nodes (4): DomainTagTests, Fact, InlineData, Theory
-
-### Community 91 - "Community 91"
-Cohesion: 0.27
-Nodes (3): ScoredSemanticChunkTests, SemanticQueryTests, Fact
-
-### Community 93 - "Community 93"
-Cohesion: 0.18
-Nodes (10): ActivitySources (OpenTelemetry), Capas y responsabilidades, Contratos clave por dominio, Dependencias externas (sólo via adaptadores), Estructura de Aura.Infrastructure, Ingestión, Mapa arquitectónico de Aura, Patrones por dominio (+2 more)
-
-### Community 94 - "Community 94"
-Cohesion: 0.18
-Nodes (9): NetArchTest.Rules (1.3.2), net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
-
-### Community 95 - "Community 95"
-Cohesion: 0.18
-Nodes (10): Microsoft.AspNetCore.Authentication.JwtBearer (9.0.6), Microsoft.Extensions.AI (10.6.0), Microsoft.Extensions.AI.OpenAI (10.6.0), Microsoft.Extensions.Options.ConfigurationExtensions (10.0.8), Microsoft.Extensions.Resilience (10.6.0), Qdrant.Client (1.18.1), net9.0, Microsoft.Data.Sqlite (9.0.6) (+2 more)
-
-### Community 96 - "Community 96"
-Cohesion: 0.18
-Nodes (10): Aura.UI.Components, Aura.UI.Components.Dashboard, Aura.UI.Components.GraphConnector, Aura.UI.Components.Layout, Aura.UI.Models, Aura.UI.Services, Microsoft.AspNetCore.Components, Microsoft.AspNetCore.Components.Routing (+2 more)
-
-### Community 97 - "Community 97"
-Cohesion: 0.10
-Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
-
-### Community 98 - "Community 98"
-Cohesion: 0.35
-Nodes (3): EmbeddingDependencyInjectionTests, Fact, IConfiguration
-
-### Community 99 - "Community 99"
-Cohesion: 0.18
-Nodes (8): MapField, PointId, PointStruct, QdrantPointMapper, ReadOnlyMemory, ScoredSemanticChunk, SemanticChunk, Value
-
-### Community 100 - "Community 100"
-Cohesion: 0.18
-Nodes (10): API Authentication Specification, Purpose, Requirement: API Authorization Enforcement, Requirement: Identity Decoupling, Requirement: Mock Login Generation, Requirements, Scenario: Access with valid mock token, Scenario: Access without token (+2 more)
-
-### Community 101 - "Community 101"
-Cohesion: 0.18
-Nodes (10): Purpose, Qdrant Local Environment Specification, Requirement: Clean Architecture Compliance, Requirement: Local Qdrant Container, Requirement: Qdrant Health Check Integration, Requirements, Scenario: API queries health endpoint when Qdrant is healthy, Scenario: API queries health endpoint when Qdrant is inaccessible (+2 more)
-
-### Community 102 - "Community 102"
-Cohesion: 0.18
-Nodes (10): API Authentication Specification, Purpose, Requirement: API Authorization Enforcement, Requirement: Identity Decoupling, Requirement: Mock Login Generation, Requirements, Scenario: Access with valid mock token, Scenario: Access without token (+2 more)
-
-### Community 103 - "Community 103"
-Cohesion: 0.18
-Nodes (10): Purpose, Qdrant Local Environment Specification, Requirement: Clean Architecture Compliance, Requirement: Local Qdrant Container, Requirement: Qdrant Health Check Integration, Requirements, Scenario: API queries health endpoint when Qdrant is healthy, Scenario: API queries health endpoint when Qdrant is inaccessible (+2 more)
-
-### Community 104 - "Community 104"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Qdrant Semantic Index, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 105 - "Community 105"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Embedding Hardening Warning Follow-up, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 106 - "Community 106"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Embedding Provider Hardening, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 107 - "Community 107"
-Cohesion: 0.20
-Nodes (9): Affected Areas, Approaches, Current State, Exploration: infrastructure-organization-refactor, Goal, Ready for Proposal, Recommendation, Review Size Forecast (+1 more)
-
-### Community 108 - "Community 108"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Kernel Skeleton, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 109 - "Community 109"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Mock Authentication Bootstrap, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 110 - "Community 110"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Week 1 Qdrant Local Environment, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 111 - "Community 111"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: W1-H6 Dashboard Inicial, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 112 - "Community 112"
-Cohesion: 0.20
-Nodes (9): Phase 1: Foundation, Phase 2: API Contract Slice, Phase 3: UI Shell Slice, Phase 4: Verification and Cleanup, Phase 5: Verification Fix Batch (Coverage Gaps), Phase 6: Verify Warning Fix Batch (Coverage + Header + Progress Count), Review Workload Forecast, Suggested Work Units (+1 more)
-
-### Community 113 - "Community 113"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Graph Connector Configuration Status, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 114 - "Community 114"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: W1-H6 Dashboard Status & Progress, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 115 - "Community 115"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Refine Mandatory WorkItem Fields (W2-H1-T1), File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 116 - "Community 116"
-Cohesion: 0.20
-Nodes (9): Phase 1: RED — Contract Tests First, Phase 2: GREEN — Domain Contract Implementation, Phase 3: GREEN — Application/Worker Wiring, Phase 4: REFACTOR — Clean Architecture and Test Maintainability, Phase 5: Verification, Review Workload Forecast, Spec Scenario Mapping (for PR notes), Suggested Work Units (+1 more)
-
-### Community 117 - "Community 117"
-Cohesion: 0.13
-Nodes (10): DependencyInjectionTests, StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor, Fact (+2 more)
-
-### Community 118 - "Community 118"
-Cohesion: 0.20
-Nodes (9): Testcontainers.Qdrant (4.12.0), net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), Polly.Core (8.6.6), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
-
-### Community 119 - "Community 119"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 120 - "Community 120"
-Cohesion: 0.20
-Nodes (9): Apply Progress: W2-H1-T2, Completed Tasks, Production Changes (Minimal), Run Context, Scope Confirmation, Spec/Design Tension Resolution, TDD Cycle Evidence, Test Summary (+1 more)
-
-### Community 121 - "Community 121"
-Cohesion: 0.31
-Nodes (5): HelloPlugin, HelloPluginTests, Fact, Task, WorkItem
-
-### Community 122 - "Community 122"
-Cohesion: 0.20
-Nodes (9): Infrastructure Organization Specification, Purpose, Requirement: Adapter-Centric Organization, Requirement: Dedicated Application Dependency Injection, Requirement: Unified Infrastructure Dependency Injection, Requirements, Scenario: Infrastructure file placement, Scenario: Registering application services (+1 more)
-
-### Community 123 - "Community 123"
-Cohesion: 0.20
-Nodes (9): Infrastructure Organization Specification, Purpose, Requirement: Adapter-Centric Organization, Requirement: Dedicated Application Dependency Injection, Requirement: Unified Infrastructure Dependency Injection, Requirements, Scenario: Infrastructure file placement, Scenario: Registering application services (+1 more)
-
-### Community 124 - "Community 124"
-Cohesion: 0.24
-Nodes (5): SemanticCollectionTypeTests, Fact, InlineData, SemanticCollectionType, Theory
-
-### Community 125 - "Community 125"
-Cohesion: 0.20
-Nodes (9): ASPNETCORE_ENVIRONMENT, applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, profiles, http (+1 more)
-
-### Community 126 - "Community 126"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 127 - "Community 127"
-Cohesion: 0.27
-Nodes (5): CheckpointIdentityTests, Action, Fact, InlineData, Theory
-
-### Community 128 - "Community 128"
-Cohesion: 0.22
-Nodes (8): Phase 1: Contracts & DTO (Application layer), Phase 2: MEAI Adapter & Config (Infrastructure layer), Phase 3: Architecture Guard & Unit Tests, Phase 4: Worker & Wiring, Phase 5: Integration & E2E Tests, Review Workload Forecast, Suggested Work Units, Tasks: Embedding Provider Hardening
-
-### Community 129 - "Community 129"
-Cohesion: 0.22
-Nodes (8): Architecture Decisions, Data Flow, Design: Infrastructure Organization Refactor, File Changes, Migration / Rollout, Open Questions, Technical Approach, Testing Strategy
-
-### Community 130 - "Community 130"
-Cohesion: 0.22
-Nodes (8): Affected Areas, Approaches, Current State, Exploration: kernel-skeleton, Key Decisions for H4/H5 Independence, Ready for Proposal, Recommendation, Risks
-
-### Community 131 - "Community 131"
-Cohesion: 0.22
-Nodes (8): Apply Progress: w1-h6-dashboard-status-progress, Completed Tasks, Delivery, Deviations / Notes, Remediation Outcomes, Strict TDD Limitations (explicit), TDD Cycle Evidence, Test Summary
-
-### Community 132 - "Community 132"
-Cohesion: 0.15
-Nodes (12): Aura — Router de Agentes, Decisión arquitectónica final, Estructura de solución, Fallback protocol, Flujos principales, graphify, Guías operativas para agentes IA, Other rules (+4 more)
-
-### Community 133 - "Community 133"
-Cohesion: 0.22
-Nodes (8): Antes de generar código, Cuándo detenerse y preguntar, Reglas de calidad, Reglas de colaboración, Reglas de código, Reglas de observabilidad, Reglas de operación para agentes IA, Reglas de seguridad
-
-### Community 134 - "Community 134"
-Cohesion: 0.28
-Nodes (6): ApiMarker, Aura.Api, DashboardRequestLog, Exception, ILogger, LoggerMessage
-
-### Community 135 - "Community 135"
-Cohesion: 0.22
-Nodes (8): Activation Contract, aura-graphify-query, Commands Reference, Decision Gates, Execution Steps, Hard Rules, Limits, References
-
-### Community 136 - "Community 136"
-Cohesion: 0.22
-Nodes (7): IDashboardApiClient, DashboardApiClient, CancellationToken, HttpClient, InitialDashboardResponse, JsonSerializerOptions, Task
-
-### Community 137 - "Community 137"
-Cohesion: 0.22
-Nodes (7): IGraphConnectorApiClient, GraphConnectorApiClient, CancellationToken, GraphConnectorStatusResponse, HttpClient, JsonSerializerOptions, Task
-
-### Community 138 - "Community 138"
-Cohesion: 0.22
-Nodes (7): IModuleProgressApiClient, ModuleProgressApiClient, CancellationToken, HttpClient, JsonSerializerOptions, ModuleProgressResponse, Task
-
-### Community 139 - "Community 139"
-Cohesion: 0.22
-Nodes (7): IPluginRegistry, PluginRegistry, CancellationToken, ILogger, IReadOnlyList, Task, WorkItem
-
-### Community 140 - "Community 140"
-Cohesion: 0.22
-Nodes (7): ISystemStatusApiClient, SystemStatusApiClient, CancellationToken, HttpClient, JsonSerializerOptions, SystemStatusResponse, Task
-
-### Community 141 - "Community 141"
-Cohesion: 0.28
-Nodes (6): HelloKernelWorkerTests, Fact, IHostApplicationLifetime, ILogger, IPluginRegistry, Task
-
-### Community 142 - "Community 142"
-Cohesion: 0.39
-Nodes (5): ISemanticOutboxRepository, CancellationToken, IReadOnlyList, SemanticOutboxEntry, Task
-
-### Community 143 - "Community 143"
-Cohesion: 0.22
-Nodes (8): Affected Areas, Approaches (Collection Structure), Approaches (Source of Truth), Current State, Exploration: qdrant-semantic-index, Ready for Proposal, Recommendation, Risks
-
-### Community 144 - "Community 144"
-Cohesion: 0.25
-Nodes (7): Phase 1: Domain + Application Contracts (TDD: RED→GREEN), Phase 2: Qdrant Adapters + DI, Phase 3: SQLite Outbox + Sync Worker (TDD: RED→GREEN), Phase 4: Corrective Patch (Post-Verification Fixes), Review Workload Forecast, Suggested Work Units, Tasks: Qdrant Semantic Index
-
-### Community 145 - "Community 145"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: embedding-hardening-warning-followup, Ready for Proposal, Recommendation, Risks
-
-### Community 146 - "Community 146"
-Cohesion: 0.25
-Nodes (7): Phase 1: Legacy Cleanup (TDD: remove dead code, update existing tests), Phase 2: Resilience & Host Composition Tests, Phase 3: DI Coverage, Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: Embedding Hardening Warning Follow-up
-
-### Community 147 - "Community 147"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: embedding-provider-hardening, Ready for Proposal, Recommendation, Risks
-
-### Community 148 - "Community 148"
-Cohesion: 0.25
-Nodes (7): Phase 1: Application DI (TDD), Phase 2: Infrastructure Restructure + Adapter DI (TDD), Phase 3: Consumer + Test Updates, Phase 4: Cleanup + Verification, Review Workload Forecast, Suggested Work Units, Tasks: Infrastructure Organization Refactor
-
-### Community 149 - "Community 149"
-Cohesion: 0.25
-Nodes (7): Improvement Batch: Verify Warning Resolution, Phase 1: Domain Foundation (TDD), Phase 2: Kernel Pipeline (TDD), Phase 3: Wiring and Worker, Review Workload Forecast, Suggested Work Units, Tasks: Kernel Skeleton
-
-### Community 150 - "Community 150"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: mock-auth-bootstrap, Ready for Proposal, Recommendation, Risks
-
-### Community 151 - "Community 151"
-Cohesion: 0.25
-Nodes (7): Phase 1: Application Contracts, Phase 2: Infrastructure Identity Adapter (TDD), Phase 3: API Endpoint + Integration Tests (TDD), Phase 5: Remediation (verify blockers), Review Workload Forecast, Suggested Work Units, Tasks: Mock Authentication Bootstrap
-
-### Community 152 - "Community 152"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: week1-qdrant-local-environment, Ready for Proposal, Recommendation, Risks
-
-### Community 153 - "Community 153"
-Cohesion: 0.25
-Nodes (7): Phase 1: Foundation (Docker + Config), Phase 2: Core Implementation (TDD), Phase 3: Integration + Architecture Tests, Phase 4: Documentation, Review Workload Forecast, Suggested Work Units, Tasks: Week 1 Qdrant Local Environment
-
-### Community 154 - "Community 154"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: w1-h6-dashboard-inicial, Ready for Proposal, Recommendation, Risks
-
-### Community 155 - "Community 155"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: Graph connector configuration status, Ready for Proposal, Recommendation, Risks
-
-### Community 156 - "Community 156"
-Cohesion: 0.25
-Nodes (7): Phase 1: Foundation / Test-First Contracts (RED), Phase 2: Core Implementation (GREEN), Phase 3: Integration / API + UI Wiring (GREEN), Phase 4: Refactor / Verification / Documentation (REFACTOR), Review Workload Forecast, Suggested Work Units, Tasks: Graph Connector Configuration Status (Week 1)
-
-### Community 157 - "Community 157"
-Cohesion: 0.25
-Nodes (7): Completion Notes, Phase 1: System Status Capability (TDD First), Phase 2: Module Progress Capability (TDD First), Phase 3: UI Wiring, Isolation, and Non-Goals, Review Workload Forecast, Suggested Work Units, Tasks: W1-H6 Dashboard Status & Progress
-
-### Community 158 - "Community 158"
-Cohesion: 0.25
-Nodes (7): Archive Report: W2-H1-T1, Artifacts, Executive Summary, Risks / Warnings, Skill Resolution, Status, Traceability
-
-### Community 159 - "Community 159"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H1-T1 — Refine mandatory WorkItem fields, Ready for Proposal, Recommendation, Risks
-
-### Community 160 - "Community 160"
-Cohesion: 0.25
-Nodes (7): Conventional Commits, Definition of Done (DoD), Quality gates obligatorios, Reglas, Reglas de entrega, Stack tecnológico confirmado, Trazabilidad obligatoria, issue opcional
-
-### Community 161 - "Community 161"
-Cohesion: 0.25
-Nodes (7): Contratos de UI → API, Estrategia de UI incremental, Herramientas de UI, Por qué, Prioridad de pantallas por fase, Regla de slice vertical, Stack frontend decidido
-
-### Community 162 - "Community 162"
-Cohesion: 0.25
-Nodes (6): Microsoft.Extensions.DependencyInjection.Abstractions (10.0.8), Microsoft.Extensions.Logging.Abstractions (10.0.8), net9.0, Microsoft.NET.Sdk, net9.0, Microsoft.NET.Sdk
-
-### Community 163 - "Community 163"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-backlog-slicer, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 164 - "Community 164"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-blazor-ui-slice, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 165 - "Community 165"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-clean-arch-guard, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 166 - "Community 166"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-plugin-design, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 167 - "Community 167"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-review-evidence, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 168 - "Community 168"
-Cohesion: 0.25
-Nodes (7): Activation Contract, aura-triage-rules, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
-
-### Community 169 - "Community 169"
-Cohesion: 0.25
-Nodes (6): SeededModuleProgressProvider, IModuleProgressProvider, CancellationToken, IReadOnlyList, ModuleProgressDto, Task
-
-### Community 170 - "Community 170"
-Cohesion: 0.25
-Nodes (7): DashboardCards, DashboardStatePanel, GraphConnectorStatusPanel, ModuleProgressPanel, PageTitle, route:/, SystemStatusPanel
-
-### Community 171 - "Community 171"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: W2-H1-T2 — Harden WorkItem Contract Test Coverage, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 173 - "Community 173"
-Cohesion: 0.32
-Nodes (5): DashboardViewStateMapper, Loading(), DashboardViewState, Exception, InitialDashboardResponse
-
-### Community 174 - "Community 174"
-Cohesion: 0.25
-Nodes (7): Delta for Semantic Index, MODIFIED Requirements, Requirement: Observable and Resilient Embedding Generation, Scenario: Accurate Dependency Injection and Host Composition, Scenario: Enforcing timeout policies on prolonged generation, Scenario: Recovering from a transient rate limit, Scenario: Telemetry on successful batch generation
-
-### Community 175 - "Community 175"
-Cohesion: 0.39
-Nodes (5): IEmbeddingProvider, CancellationToken, IReadOnlyList, ReadOnlyMemory, Task
-
-### Community 176 - "Community 176"
-Cohesion: 0.25
-Nodes (6): ISemanticChunkExtractor, CancellationToken, IReadOnlyList, SemanticChunk, SemanticCollectionType, Task
-
-### Community 177 - "Community 177"
-Cohesion: 0.25
-Nodes (6): ISemanticContextRetriever, CancellationToken, IReadOnlyList, ScoredSemanticChunk, SemanticQuery, Task
-
-### Community 178 - "Community 178"
-Cohesion: 0.32
-Nodes (5): ISemanticIndexWriter, CancellationToken, EmbeddedSemanticChunk, IReadOnlyList, Task
-
-### Community 179 - "Community 179"
-Cohesion: 0.25
-Nodes (7): commandName, dotnetRunMessages, environmentVariables, DOTNET_ENVIRONMENT, Aura.Workers, profiles, $schema
-
-### Community 180 - "Community 180"
-Cohesion: 0.06
-Nodes (31): Connector Execution Specification, Purpose, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Requirement: Clean Architecture Boundary, Requirement: Connector Execution Port, Requirement: Connector Execution Use Case, Requirement: Telemetry Emission (+23 more)
-
-### Community 181 - "Community 181"
-Cohesion: 0.39
-Nodes (5): IIngestionCheckpointStore, CancellationToken, CheckpointIdentity, IngestionCheckpoint, Task
-
-### Community 182 - "Community 182"
-Cohesion: 0.29
-Nodes (6): Apply Progress: h7-graph-connector-config-status, Completed Tasks, Delivery, Deviations / Notes, TDD Cycle Evidence, Test Summary
-
-### Community 183 - "Community 183"
-Cohesion: 0.29
-Nodes (6): Apply Progress: W2-H1-T1, Completed Tasks, Delivery, Notes, TDD Cycle Evidence, Test Summary
-
-### Community 184 - "Community 184"
-Cohesion: 0.29
-Nodes (6): Aura — Visión general y flujos, Flujos end-to-end, Ingestión → Triáje, Observabilidad transversal, PR → Revisión inteligente, Siguientes ficheros
-
-### Community 185 - "Community 185"
-Cohesion: 0.43
-Nodes (3): DashboardArchitectureTests, Fact, TestResult
-
-### Community 186 - "Community 186"
-Cohesion: 0.43
-Nodes (3): GraphConnectorArchitectureTests, Fact, TestResult
-
-### Community 187 - "Community 187"
-Cohesion: 0.38
-Nodes (3): InfrastructureOrganizationTests, Fact, string
-
-### Community 188 - "Community 188"
-Cohesion: 0.29
-Nodes (5): AlwaysHealthyApiReadinessAdapter, IApiReadinessProvider, CancellationToken, ReadinessSignal, Task
-
-### Community 189 - "Community 189"
-Cohesion: 0.33
-Nodes (5): Archive Report: w1-h6-dashboard-status-progress, Notes, Result, Specs Synced, Task Gate
-
-### Community 190 - "Community 190"
-Cohesion: 0.33
-Nodes (5): Atomización de tareas, Cómo partir una tarea que es demasiado grande, Ejemplo de partición correcta, Qué hace atómica a una tarea, Señales de que una tarea no es atómica
-
-### Community 191 - "Community 191"
-Cohesion: 0.33
-Nodes (4): DependencyInjection, IConfiguration, IHostEnvironment, IServiceCollection
-
-### Community 192 - "Community 192"
-Cohesion: 0.33
-Nodes (4): DependencyInjection, IConfiguration, IHostEnvironment, IServiceCollection
-
-### Community 193 - "Community 193"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H1-T2 — Add normalization and idempotency tests, Ready for Proposal, Recommendation, Risks
-
-### Community 194 - "Community 194"
-Cohesion: 0.25
-Nodes (7): Phase 1: Foundation / RED, Phase 2: Core Implementation / GREEN, Phase 3: Refactor / Constraint Alignment, Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: W2-H1-T2 — Harden WorkItem Contract Test Coverage
-
-### Community 195 - "Community 195"
-Cohesion: 0.33
-Nodes (4): EmbeddingResiliencePolicyBuilder, EmbeddingProviderOptions, IServiceCollection, string
-
-### Community 196 - "Community 196"
-Cohesion: 0.47
-Nodes (3): QdrantHealthCheckTests, Fact, Task
-
-### Community 197 - "Community 197"
-Cohesion: 0.33
-Nodes (4): ICurrentUserService, HttpContextCurrentUserService, AuraUser, IHttpContextAccessor
-
-### Community 198 - "Community 198"
-Cohesion: 0.09
-Nodes (18): DependencyInjection, MockJwtGenerator, OutlookWorkItemMapper, Dictionary, IDictionary, IEnumerable, IReadOnlyList, List (+10 more)
-
-### Community 199 - "Community 199"
-Cohesion: 0.25
-Nodes (7): Adaptadores implementados, Boundary contract with triage, Connector adapters implemented, Coverage, Ingestion — Overview, Open follow-ups, Quick path
-
-### Community 200 - "Community 200"
-Cohesion: 0.33
-Nodes (4): IPluginRegistry, CancellationToken, Task, WorkItem
-
-### Community 203 - "Community 203"
-Cohesion: 0.33
-Nodes (5): Requirement: WorkItem State Encapsulation, Scenario: Invalid state transition, Scenario: Valid state transition, Delta for Plugin Kernel, MODIFIED Requirements
-
-### Community 204 - "Community 204"
-Cohesion: 0.33
-Nodes (4): IApiReadinessProvider, CancellationToken, ReadinessSignal, Task
-
-### Community 205 - "Community 205"
-Cohesion: 0.33
-Nodes (4): IGraphConnectorStatusReader, CancellationToken, GraphConnectorStatusDto, Task
-
-### Community 206 - "Community 206"
-Cohesion: 0.33
-Nodes (4): IInitialDashboardReader, CancellationToken, InitialDashboardDto, Task
-
-### Community 207 - "Community 207"
-Cohesion: 0.33
-Nodes (4): IModuleProgressProvider, CancellationToken, ModuleProgressDto, Task
-
-### Community 208 - "Community 208"
-Cohesion: 0.33
-Nodes (4): IModuleProgressReader, CancellationToken, ModuleProgressDto, Task
-
-### Community 209 - "Community 209"
-Cohesion: 0.33
-Nodes (4): IQdrantReadinessProvider, CancellationToken, ReadinessSignal, Task
-
-### Community 210 - "Community 210"
-Cohesion: 0.33
-Nodes (4): ISystemStatusReader, CancellationToken, SystemStatusDto, Task
-
-### Community 211 - "Community 211"
-Cohesion: 0.33
-Nodes (4): IDashboardApiClient, CancellationToken, InitialDashboardResponse, Task
-
-### Community 212 - "Community 212"
-Cohesion: 0.33
-Nodes (4): IGraphConnectorApiClient, CancellationToken, GraphConnectorStatusResponse, Task
-
-### Community 213 - "Community 213"
-Cohesion: 0.33
-Nodes (4): IModuleProgressApiClient, CancellationToken, ModuleProgressResponse, Task
-
-### Community 214 - "Community 214"
-Cohesion: 0.33
-Nodes (4): ISystemStatusApiClient, CancellationToken, SystemStatusResponse, Task
-
-### Community 216 - "Community 216"
-Cohesion: 0.40
-Nodes (4): FocusOnNavigate, Found, Router, RouteView
-
-### Community 217 - "Community 217"
-Cohesion: 0.40
-Nodes (3): AlwaysHealthyApiReadinessAdapterTests, Fact, Task
-
-### Community 218 - "Community 218"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 219 - "Community 219"
-Cohesion: 0.40
-Nodes (3): AuthEndpoints, IEndpointRouteBuilder, IHostEnvironment
-
-### Community 220 - "Community 220"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
-
-### Community 221 - "Community 221"
-Cohesion: 0.33
-Nodes (5): Boundary with global triage, Connector responsibilities, Future work, Microsoft Graph — Teams Connector, Quick path
-
-### Community 222 - "Community 222"
-Cohesion: 0.29
-Nodes (6): Boundary with global triage, Connector responsibilities, Microsoft Graph — Outlook Connector, Open follow-up, Preliminary scoring note, Quick path
-
-### Community 223 - "Community 223"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Microsoft Graph — Calendar Connector, Pendiente, Quick path
-
-### Community 224 - "Community 224"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, GitHub SDK — Pull Requests Connector, Pendiente, Quick path
-
-### Community 225 - "Community 225"
-Cohesion: 0.22
-Nodes (8): Deferred items, First-run behavior, Identity, Ingestion checkpoint contract, Ingestion — Normalization, checkpoints, and idempotency, Observability note, Scope of this slice (W2-H2-T1), Value shape
-
-### Community 226 - "Community 226"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
-
-### Community 227 - "Community 227"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Observabilidad — Visión general, Pendiente, Quick path
-
-### Community 228 - "Community 228"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Observabilidad — OpenTelemetry y trazas distribuidas, Pendiente, Quick path
-
-### Community 229 - "Community 229"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Observabilidad — Dashboard de tokens y costo IA, Pendiente, Quick path
-
-### Community 230 - "Community 230"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Observabilidad — Dashboard de latencia por plugin, Pendiente, Quick path
-
-### Community 231 - "Community 231"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Observabilidad — Correlación de logs, métricas y traces, Pendiente, Quick path
-
-### Community 232 - "Community 232"
-Cohesion: 0.40
-Nodes (4): Calidad — Visión general, Debe cubrir, Pendiente, Quick path
-
-### Community 233 - "Community 233"
-Cohesion: 0.40
-Nodes (4): Calidad — Estrategia TDD con xUnit, Debe cubrir, Pendiente, Quick path
-
-### Community 234 - "Community 234"
-Cohesion: 0.40
-Nodes (4): Calidad — Tests E2E con Playwright, Debe cubrir, Pendiente, Quick path
-
-### Community 235 - "Community 235"
-Cohesion: 0.40
-Nodes (4): Calidad — Linters, EditorConfig y StyleCop, Debe cubrir, Pendiente, Quick path
-
-### Community 236 - "Community 236"
-Cohesion: 0.40
-Nodes (4): Calidad — Conventional Commits y ChangeLog automático, Debe cubrir, Pendiente, Quick path
-
-### Community 237 - "Community 237"
-Cohesion: 0.40
-Nodes (4): Calidad — Architecture Tests y quality gates, Debe cubrir, Pendiente, Quick path
-
-### Community 238 - "Community 238"
-Cohesion: 0.40
-Nodes (4): Artefactos en el repo, Comandos clave, Graphify CLI, References — aura-graphify-query
-
-### Community 239 - "Community 239"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Visión general
-
-### Community 240 - "Community 240"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Integración con SonarQube API
-
-### Community 241 - "Community 241"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Integración con Dependabot
-
-### Community 242 - "Community 242"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Auditoría OWASP y MITRE
-
-### Community 243 - "Community 243"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Validación semántica contra User Story
-
-### Community 244 - "Community 244"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Modelo de evidencia y score de revisión
-
-### Community 245 - "Community 245"
-Cohesion: 0.40
-Nodes (4): EmbeddingProviderOptionsValidator, IValidateOptions, EmbeddingProviderOptions, ValidateOptionsResult
-
-### Community 246 - "Community 246"
-Cohesion: 0.40
-Nodes (3): QdrantOptions, SemanticCollectionType, string
-
-### Community 247 - "Community 247"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
-
-### Community 248 - "Community 248"
-Cohesion: 0.33
-Nodes (5): Decision authority and governance, Quick path, Refinement model, Scope note, Triage — Overview
-
-### Community 249 - "Community 249"
-Cohesion: 0.40
-Nodes (4): Debe cubrir, Pendiente, Quick path, Triáje — Morning Summary
-
-### Community 250 - "Community 250"
-Cohesion: 0.29
-Nodes (6): Boundary and authority, Governance requirements, Observability contract, Policy inputs, Quick path, Triage — Proactive Interruption Policy
-
-### Community 251 - "Community 251"
-Cohesion: 0.40
-Nodes (4): Contract note, Status, Triage — Focus State Machine, Why deferred
-
-### Community 252 - "Community 252"
-Cohesion: 0.29
-Nodes (6): Governance requirements, Quick path, Refinement anchors (explicit only), Relationship to interruption policy, Triage — Priority Scoring and Cognitive Load, Two-stage scoring boundary
-
-### Community 257 - "Community 257"
-Cohesion: 0.50
-Nodes (3): Microsoft.Extensions.Hosting (9.0.12), Microsoft.NET.Sdk.Worker, net9.0
-
-### Community 258 - "Community 258"
-Cohesion: 0.50
-Nodes (3): FormatState, OnInitializedAsync, IModuleProgressApiClient
-
-### Community 259 - "Community 259"
-Cohesion: 0.50
-Nodes (3): GetIndicators, OnInitializedAsync, ISystemStatusApiClient
-
-### Community 304 - "Community 304"
-Cohesion: 0.15
-Nodes (12): 9-Scenario Spec-to-Test Ledger, Completed Tasks, Deviations from Design, Files Changed, Implementation Progress, Issues Found, Remaining Tasks, Status (+4 more)
-
-### Community 305 - "Community 305"
-Cohesion: 0.17
-Nodes (11): Phase 1: Foundation / RED Tests, Phase 2: Core Contract / GREEN, Phase 3: Integration / Documentation, Phase 4: Verification / REFACTOR, Phase 5: Remediation A / Audit Parity, Phase 6: Remediation A / Harness, Phase 7: Remediation A / Runtime Tests, Phase 8: Remediation A / Re-Verification Readiness (+3 more)
-
-### Community 306 - "Community 306"
-Cohesion: 0.43
-Nodes (3): IngestionArchitectureTests, Fact, TestResult
-
-### Community 307 - "Community 307"
-Cohesion: 0.13
-Nodes (14): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger, IReadOnlyList, IWorkItemBuffer (+6 more)
-
-### Community 310 - "Community 310"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Ingestion Checkpoint Store Contract, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 311 - "Community 311"
-Cohesion: 0.28
-Nodes (9): CapturingInnerHandler, ForwardedAccessTokenHandlerTests, HttpMessageInvoker, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, IHttpContextAccessor (+1 more)
-
-### Community 312 - "Community 312"
-Cohesion: 0.12
-Nodes (15): Delta for connector-execution, MODIFIED Requirements, Requirement: Canonical Execution Result, Requirement: Checkpoint Read-Only Integration, Scenario: Absent checkpoint applies today-only window, Scenario: Existing checkpoint bounds fetch window, Scenario: Full failure advances neither timestamp, Scenario: Full failure — reason present, max-processed-at is null (+7 more)
-
-### Community 313 - "Community 313"
-Cohesion: 0.06
-Nodes (38): Activity, ExecuteConnectorUseCase, Log, NoopWorkItemBuffer, NoopWorkItemStore, Counter, InMemoryIngestionCheckpointStore, IIngestionCheckpointStore (+30 more)
-
-### Community 314 - "Community 314"
-Cohesion: 0.40
-Nodes (3): InMemoryCheckpointStoreContractTests, Fact, Task
-
-### Community 315 - "Community 315"
-Cohesion: 0.22
-Nodes (7): IngestionFetchPlan, IngestionCheckpointCallerHarness, CancellationToken, CheckpointIdentity, Func, IIngestionCheckpointStore, Task
-
-### Community 316 - "Community 316"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T1 — Checkpoint store contract, Ready for Proposal, Recommendation, Risks
-
-### Community 317 - "Community 317"
-Cohesion: 0.12
-Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+7 more)
-
-### Community 318 - "Community 318"
-Cohesion: 0.24
-Nodes (5): Config, Fact, IConfiguration, IServiceCollection, DependencyInjectionTests
-
-### Community 319 - "Community 319"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 320 - "Community 320"
-Cohesion: 0.47
-Nodes (3): IngestionCheckpointFirstRunWindowTests, Fact, Task
-
-### Community 321 - "Community 321"
-Cohesion: 0.25
-Nodes (6): ExecuteConnectorUseCaseTests, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task
-
-### Community 322 - "Community 322"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 323 - "Community 323"
-Cohesion: 0.12
-Nodes (16): Purpose, Requirement: Clean Architecture Boundary, Requirement: Metadata Traceability, Requirement: Partial Payload Tolerance, Requirement: Teams Field Mapping, Requirements, Scenario: Absent field recorded in Metadata, Scenario: Adapter returns only canonical domain types (+8 more)
-
-### Community 324 - "Community 324"
 Cohesion: 0.18
 Nodes (10): ModuleProgressApiClientTests, StubHandler, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, JsonSerializerOptions (+2 more)
 
-### Community 325 - "Community 325"
-Cohesion: 0.20
-Nodes (9): Apply Progress: W2-H2-T3 — Ingestion Checkpoint Persistence, Completed Tasks, Execution Mode, Notes, Remaining Work, Remediation Pass (Post-Verify FAIL), Remediation Test Runs, TDD Cycle Evidence (+1 more)
-
-### Community 326 - "Community 326"
-Cohesion: 0.14
-Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
-
-### Community 327 - "Community 327"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: W2-H2-T3 — Ingestion Checkpoint Persistence, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 328 - "Community 328"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: W2-H2-T2 — Teams-First Connector Execution Flow, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
-
-### Community 329 - "Community 329"
-Cohesion: 0.22
-Nodes (8): Phase 1: Foundation / TDD RED, Phase 2: Core Implementation / TDD GREEN, Phase 3: Integration / Teams-First Wiring, Phase 4: Verification / REFACTOR, Phase 5: Cleanup / Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H2-T2 — Teams-First Connector Execution Flow
-
-### Community 330 - "Community 330"
+### Community 70 - "Community 70"
 Cohesion: 0.18
 Nodes (10): StubHandler, SystemStatusApiClientTests, CancellationToken, Fact, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, JsonSerializerOptions (+2 more)
 
-### Community 331 - "Community 331"
-Cohesion: 0.25
-Nodes (7): Apply Progress: W2-H2-T2 — Teams-First Connector Execution Flow, Completed Tasks, Execution Mode, Issues / Notes, Scope Compliance, TDD Cycle Evidence, Test Summary
+### Community 71 - "Community 71"
+Cohesion: 0.21
+Nodes (9): DashboardCardDto, IInitialDashboardReader, InitialDashboardReader, AuraUser, CancellationToken, ICurrentUserService, IEnumerable, InitialDashboardDto (+1 more)
 
-### Community 332 - "Community 332"
-Cohesion: 0.42
-Nodes (3): ConnectorExecutionArchitectureTests, Fact, TestResult
+### Community 72 - "Community 72"
+Cohesion: 0.16
+Nodes (11): MeaiEmbeddingProvider, IEmbeddingProvider, ActivitySource, CancellationToken, EmbeddingProviderOptions, IEmbeddingGenerator, IReadOnlyList, List (+3 more)
 
-### Community 333 - "Community 333"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T2 — Connector execution flow, Ready for Proposal, Recommendation, Risks
+### Community 73 - "Community 73"
+Cohesion: 0.15
+Nodes (11): ISemanticChunkExtractor, Regex, BasicSemanticChunkExtractor, CancellationToken, int, IReadOnlyList, List, SemanticChunk (+3 more)
 
-### Community 334 - "Community 334"
-Cohesion: 0.12
-Nodes (16): Purpose, Requirement: Clean Architecture Boundary, Requirement: Metadata Traceability, Requirement: Partial Payload Tolerance, Requirement: Teams Field Mapping, Requirements, Scenario: Absent field recorded in Metadata, Scenario: Adapter returns only canonical domain types (+8 more)
-
-### Community 335 - "Community 335"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
-
-### Community 336 - "Community 336"
-Cohesion: 0.22
-Nodes (8): Phase 1: Foundation (Model Contracts), Phase 2: Core Implementation (Execution Result + Persistence Policy), Phase 3: Integration / Architecture Guard, Phase 4: Verification (Spec Scenario Coverage), Phase 5: Cleanup / Completion, Review Workload Forecast, Suggested Work Units, Tasks: W2-H2-T3 — Ingestion Checkpoint Persistence
-
-### Community 337 - "Community 337"
-Cohesion: 0.29
-Nodes (6): Archive Report: W2-H2-T2, Artifacts, Executive Summary, Risks / Warnings, Status, Traceability
-
-### Community 340 - "Community 340"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T3 — Checkpoint persistence, Ready for Proposal, Recommendation, Risks
-
-### Community 341 - "Community 341"
+### Community 74 - "Community 74"
 Cohesion: 0.13
-Nodes (14): Log, OutlookConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger (+6 more)
+Nodes (14): Delta for semantic-index, MODIFIED Requirements, Requirement: Application Ports for Abstraction, Requirement: Derived Store Segregation, Requirement: Observable and Resilient Embedding Generation, Scenario: Canonical source missing (Orphaned Chunk), Scenario: Generating embeddings without SDK leakage, Scenario: Protecting context window limits (+6 more)
 
-### Community 342 - "Community 342"
+### Community 75 - "Community 75"
 Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+Nodes (14): Requirement: capturedAtUtc Boundary Inputs, Requirement: correlationId Whitespace Auto-Generation, Requirement: Mandatory Field Whitespace Rejection, Requirement: Metadata Populated Dictionary Accepted, Scenario: correlationId whitespace-only triggers auto-generation, Scenario: DateTimeOffset.MinValue treated as absent, Scenario: externalId whitespace-only rejected, Scenario: Local-offset DateTimeOffset preserved without rejection (+6 more)
 
-### Community 343 - "Community 343"
+### Community 76 - "Community 76"
 Cohesion: 0.14
-Nodes (13): Apply Progress: W2-H3, Change, Command Log (This Batch), Cumulative Task Status, Notes, Phase 1: RED — Contracts and Boundary Tests, Phase 2: GREEN — Ports, Mapper, Adapter, Store, Phase 3: GREEN — Use Case Wiring and DI Integration (+5 more)
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness, Issues Found, Quality Metrics (+5 more)
 
-### Community 344 - "Community 344"
-Cohesion: 0.20
-Nodes (8): ConcurrentDictionary, IWorkItemStore, CancellationToken, Lock, Task, WorkItem, WorkItemPersistenceResult, InMemoryWorkItemStore
-
-### Community 345 - "Community 345"
-Cohesion: 0.29
-Nodes (6): Delta for ingestion-checkpoint-store, MODIFIED Requirements, Requirement: Checkpoint Value Shape, Scenario: Both timestamps null with non-null cursor, Scenario: Both timestamps stored and returned unchanged, Scenario: Null fields are preserved independently
-
-### Community 346 - "Community 346"
-Cohesion: 0.27
-Nodes (6): Dictionary, IDictionary, TeamsMessageDto, WorkItem, WorkItemPriority, TeamsWorkItemMapper
-
-### Community 347 - "Community 347"
-Cohesion: 0.33
-Nodes (5): Archive Notes, Archive Report: W2-H2-T3 — Ingestion Checkpoint Persistence, Main Spec Sync, Outcome, Source Artifacts Reviewed
-
-### Community 348 - "Community 348"
-Cohesion: 0.22
-Nodes (6): CapturingHandler, StubHttpClientFactory, CapturingInnerHandler, HttpMessageHandler, IHttpClientFactory, HttpClient
-
-### Community 349 - "Community 349"
-Cohesion: 0.25
-Nodes (6): IWorkItemBuffer, IReadOnlyList, List, Lock, WorkItem, InMemoryWorkItemBuffer
-
-### Community 350 - "Community 350"
-Cohesion: 0.42
-Nodes (4): TeamsConnectorAdapterTests, ConnectorExecutionRequest, Fact, Task
-
-### Community 351 - "Community 351"
-Cohesion: 0.29
-Nodes (3): TeamsWorkItemMapperTests, Fact, TeamsWorkItemMapper
-
-### Community 352 - "Community 352"
-Cohesion: 0.39
-Nodes (4): Fact, Task, WorkItem, InMemoryWorkItemStoreTests
-
-### Community 353 - "Community 353"
+### Community 77 - "Community 77"
 Cohesion: 0.14
 Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
 
-### Community 354 - "Community 354"
-Cohesion: 0.15
-Nodes (12): Architecture Decisions, Data Flow, Design: W2-H3 — Teams Plugin Mapping and Work Item Persistence, File Changes, In-memory store for W2-H3, Interfaces / Contracts, Migration / Rollout, Open Questions (+4 more)
-
-### Community 355 - "Community 355"
-Cohesion: 0.29
-Nodes (5): IWorkItemStore, CancellationToken, Task, WorkItem, WorkItemPersistenceResult
-
-### Community 356 - "Community 356"
-Cohesion: 0.43
-Nodes (3): Fact, WorkItem, InMemoryWorkItemBufferTests
-
-### Community 357 - "Community 357"
-Cohesion: 0.40
-Nodes (3): IWorkItemBuffer, IReadOnlyList, WorkItem
-
-### Community 358 - "Community 358"
-Cohesion: 0.15
-Nodes (12): Purpose, Requirement: Infrastructure Store Implementation, Requirement: Typed Persistence Result, Requirement: Work Item Persistence Port, Requirements, Scenario: Architecture test rejects store-technology leakage, Scenario: Persistence failure returns typed result with reason, Scenario: Port accepts canonical WorkItem and returns success (+4 more)
-
-### Community 359 - "Community 359"
-Cohesion: 0.67
-Nodes (3): Failure(), Success(), WorkItemPersistenceResult
-
-### Community 362 - "Community 362"
-Cohesion: 0.15
-Nodes (12): Purpose, Requirement: Infrastructure Store Implementation, Requirement: Typed Persistence Result, Requirement: Work Item Persistence Port, Requirements, Scenario: Architecture test rejects store-technology leakage, Scenario: Persistence failure returns typed result with reason, Scenario: Port accepts canonical WorkItem and returns success (+4 more)
-
-### Community 363 - "Community 363"
-Cohesion: 0.18
-Nodes (10): Phase 1: RED — Contracts and Boundary Tests, Phase 2: GREEN — Ports, Mapper, Adapter, Store, Phase 3: GREEN — Use Case Wiring and DI Integration, Phase 4: REFACTOR / Verification / Cleanup, Phase 5: REMEDIATION RED — Verify Gaps, Phase 6: REMEDIATION GREEN — Implementation Fixes, Phase 7: REMEDIATION Verification & Evidence, Review Workload Forecast (+2 more)
-
-### Community 364 - "Community 364"
-Cohesion: 0.23
-Nodes (4): OutlookWorkItemMapperTests, Fact, OutlookEmailDto, OutlookWorkItemMapper
-
-### Community 365 - "Community 365"
-Cohesion: 0.10
-Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
-
-### Community 366 - "Community 366"
-Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H3 — Teams plugin mapping, Ready for Proposal, Recommendation, Risks
-
-### Community 367 - "Community 367"
-Cohesion: 0.13
-Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
-
-### Community 368 - "Community 368"
-Cohesion: 0.33
-Nodes (5): Archive Report: W2-H3, Notes, Summary, Synced Specs, Verification
-
-### Community 369 - "Community 369"
-Cohesion: 0.42
-Nodes (4): OutlookConnectorAdapterTests, ConnectorExecutionRequest, Fact, Task
-
-### Community 370 - "Community 370"
+### Community 78 - "Community 78"
 Cohesion: 0.14
 Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
 
-### Community 371 - "Community 371"
+### Community 79 - "Community 79"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 80 - "Community 80"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 81 - "Community 81"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 82 - "Community 82"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 83 - "Community 83"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 84 - "Community 84"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 85 - "Community 85"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 86 - "Community 86"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 87 - "Community 87"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 88 - "Community 88"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 89 - "Community 89"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static + Runtime Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 90 - "Community 90"
+Cohesion: 0.14
+Nodes (13): 1. `aura-backlog-slicer`, 2. `aura-clean-arch-guard`, 3. `aura-ui-progress-slice` / `aura-blazor-ui-slice`, 4. `aura-plugin-design`, 5. `aura-triage-rules`, 6. `aura-review-evidence`, 7. `aura-demo-mode`, 8. `aura-tfm-doc-writer` (+5 more)
+
+### Community 91 - "Community 91"
+Cohesion: 0.16
+Nodes (10): IHostEnvironment, InfrastructureDependencyInjectionTests, ServiceProvider, Fact, Fact, IConfiguration, IHostEnvironment, Task (+2 more)
+
+### Community 92 - "Community 92"
 Cohesion: 0.24
-Nodes (8): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, WorkItem
+Nodes (8): ISemanticOutboxRepository, SqliteSemanticOutboxRepository, SqliteDataReader, CancellationToken, IReadOnlyList, SemanticOutboxEntry, SqliteConnection, Task
 
-### Community 372 - "Community 372"
-Cohesion: 0.43
-Nodes (3): OutlookConnectorBoundaryTests, Fact, TestResult
+### Community 93 - "Community 93"
+Cohesion: 0.14
+Nodes (13): Plugin Kernel Specification, Purpose, Requirement: Architectural Layer Constraints, Requirement: Resilient Plugin Execution, Requirement: Sequential Plugin Execution, Requirement: WorkItem State Encapsulation, Requirements, Scenario: Dependency Injection Initialization (+5 more)
 
-### Community 374 - "Community 374"
+### Community 94 - "Community 94"
+Cohesion: 0.14
+Nodes (13): Plugin Kernel Specification, Purpose, Requirement: Architectural Layer Constraints, Requirement: Resilient Plugin Execution, Requirement: Sequential Plugin Execution, Requirement: WorkItem State Encapsulation, Requirements, Scenario: Dependency Injection Initialization (+5 more)
+
+### Community 95 - "Community 95"
+Cohesion: 0.26
+Nodes (6): DomainTag, Fact, IReadOnlyList, SemanticChunk, SemanticCollectionType, QdrantSemanticContextAdapterTests
+
+### Community 96 - "Community 96"
+Cohesion: 0.15
+Nodes (12): 9-Scenario Spec-to-Test Ledger, Completed Tasks, Deviations from Design, Files Changed, Implementation Progress, Issues Found, Remaining Tasks, Status (+4 more)
+
+### Community 97 - "Community 97"
+Cohesion: 0.15
+Nodes (12): Aura — Router de Agentes, Decisión arquitectónica final, Estructura de solución, Fallback protocol, Flujos principales, graphify, Guías operativas para agentes IA, Other rules (+4 more)
+
+### Community 98 - "Community 98"
+Cohesion: 0.18
+Nodes (9): net9.0, Microsoft.NET.Sdk.Web, net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
+
+### Community 99 - "Community 99"
+Cohesion: 0.27
+Nodes (5): CheckpointIdentityTests, Action, Fact, InlineData, Theory
+
+### Community 100 - "Community 100"
+Cohesion: 0.15
+Nodes (9): IPlugin, HelloPlugin, CancellationToken, Task, WorkItem, CancellationToken, ILogger, Task (+1 more)
+
+### Community 101 - "Community 101"
 Cohesion: 0.17
-Nodes (11): Apply Progress — triage-global-policy-foundation, Command Log, Completed Tasks, Deviations from Design, Execution Summary, Files Changed, Issues / Notes, Rollback Notes (+3 more)
+Nodes (11): Apply Progress: Infrastructure Organization Refactor, Corrective Apply (Post-Verify Fix), Corrective Fix Tests Detail, Deviations from Design, Files Changed (Corrective Fix), Fix-A: Infrastructure File Placement (Spec: Adapter-Centric Organization), Fix-B: Negative DI Leakage (Spec: Dedicated Application DI), Issues Found (+3 more)
 
-### Community 377 - "Community 377"
-Cohesion: 0.20
-Nodes (9): CapturingConnectorAdapter, GetTag(), StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult (+1 more)
+### Community 102 - "Community 102"
+Cohesion: 0.17
+Nodes (11): Phase 1: Foundation / RED Tests, Phase 2: Core Contract / GREEN, Phase 3: Integration / Documentation, Phase 4: Verification / REFACTOR, Phase 5: Remediation A / Audit Parity, Phase 6: Remediation A / Harness, Phase 7: Remediation A / Runtime Tests, Phase 8: Remediation A / Re-Verification Readiness (+3 more)
 
-### Community 379 - "Community 379"
+### Community 103 - "Community 103"
+Cohesion: 0.17
+Nodes (11): Microsoft.Extensions.DependencyInjection (10.0.8), NSubstitute (5.3.0), net9.0, coverlet.collector (6.0.2), Microsoft.Data.Sqlite (9.0.6), Microsoft.Extensions.Diagnostics.HealthChecks (10.0.8), Microsoft.NET.Test.Sdk (17.12.0), Polly.Core (8.6.6) (+3 more)
+
+### Community 104 - "Community 104"
 Cohesion: 0.50
 Nodes (3): SystemStatusReaderTests, Fact, Task
 
-### Community 380 - "Community 380"
+### Community 105 - "Community 105"
+Cohesion: 0.17
+Nodes (11): CascadingValue, ILogger<MainLayout>, Dispose, OnInitializedAsync, PersistDashboardStateAsync, LayoutComponentBase, MainLayout, PersistentComponentState (+3 more)
+
+### Community 106 - "Community 106"
+Cohesion: 0.21
+Nodes (7): MockJwtOptionsReadinessAdapterTests, StubOptionsMonitor, IOptionsMonitor, Action, Fact, IDisposable, MockJwtOptions
+
+### Community 107 - "Community 107"
+Cohesion: 0.24
+Nodes (8): ISemanticIndexWriter, QdrantSemanticIndexAdapter, CancellationToken, EmbeddedSemanticChunk, IReadOnlyList, QdrantClient, QdrantOptions, Task
+
+### Community 108 - "Community 108"
+Cohesion: 0.36
+Nodes (5): PluginRegistryTests, Fact, ILogger, Task, WorkItem
+
+### Community 109 - "Community 109"
+Cohesion: 0.26
+Nodes (4): SemanticOutboxEntryTests, Fact, InlineData, Theory
+
+### Community 110 - "Community 110"
+Cohesion: 0.17
+Nodes (11): Aura, Configure secrets, Estructura, Local Environment, Notas, Prerequisites, Run the API, Start Qdrant (+3 more)
+
+### Community 111 - "Community 111"
+Cohesion: 0.24
+Nodes (4): DomainTagTests, Fact, InlineData, Theory
+
+### Community 113 - "Community 113"
+Cohesion: 0.27
+Nodes (3): ScoredSemanticChunkTests, SemanticQueryTests, Fact
+
+### Community 115 - "Community 115"
+Cohesion: 0.18
+Nodes (10): ActivitySources (OpenTelemetry), Capas y responsabilidades, Contratos clave por dominio, Dependencias externas (sólo via adaptadores), Estructura de Aura.Infrastructure, Ingestión, Mapa arquitectónico de Aura, Patrones por dominio (+2 more)
+
+### Community 116 - "Community 116"
+Cohesion: 0.25
+Nodes (7): NetArchTest.Rules (1.3.2), net9.0, coverlet.collector (6.0.2), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2), Microsoft.NET.Sdk
+
+### Community 117 - "Community 117"
+Cohesion: 0.18
+Nodes (10): Microsoft.AspNetCore.Authentication.JwtBearer (9.0.6), Microsoft.Extensions.AI (10.6.0), Microsoft.Extensions.AI.OpenAI (10.6.0), Microsoft.Extensions.Options.ConfigurationExtensions (10.0.8), Microsoft.Extensions.Resilience (10.6.0), Qdrant.Client (1.18.1), net9.0, Microsoft.Data.Sqlite (9.0.6) (+2 more)
+
+### Community 118 - "Community 118"
+Cohesion: 0.18
+Nodes (10): Aura.UI.Components, Aura.UI.Components.Dashboard, Aura.UI.Components.GraphConnector, Aura.UI.Components.Layout, Aura.UI.Models, Aura.UI.Services, Microsoft.AspNetCore.Components, Microsoft.AspNetCore.Components.Routing (+2 more)
+
+### Community 119 - "Community 119"
+Cohesion: 0.12
+Nodes (16): Purpose, Requirement: Clean Architecture Boundary, Requirement: Metadata Traceability, Requirement: Partial Payload Tolerance, Requirement: Teams Field Mapping, Requirements, Scenario: Absent field recorded in Metadata, Scenario: Adapter returns only canonical domain types (+8 more)
+
+### Community 120 - "Community 120"
+Cohesion: 0.35
+Nodes (3): EmbeddingDependencyInjectionTests, Fact, IConfiguration
+
+### Community 121 - "Community 121"
+Cohesion: 0.40
+Nodes (3): InMemoryCheckpointStoreContractTests, Fact, Task
+
+### Community 122 - "Community 122"
+Cohesion: 0.18
+Nodes (8): MapField, PointId, PointStruct, QdrantPointMapper, ReadOnlyMemory, ScoredSemanticChunk, SemanticChunk, Value
+
+### Community 123 - "Community 123"
+Cohesion: 0.18
+Nodes (10): API Authentication Specification, Purpose, Requirement: API Authorization Enforcement, Requirement: Identity Decoupling, Requirement: Mock Login Generation, Requirements, Scenario: Access with valid mock token, Scenario: Access without token (+2 more)
+
+### Community 124 - "Community 124"
+Cohesion: 0.18
+Nodes (10): Purpose, Qdrant Local Environment Specification, Requirement: Clean Architecture Compliance, Requirement: Local Qdrant Container, Requirement: Qdrant Health Check Integration, Requirements, Scenario: API queries health endpoint when Qdrant is healthy, Scenario: API queries health endpoint when Qdrant is inaccessible (+2 more)
+
+### Community 125 - "Community 125"
+Cohesion: 0.18
+Nodes (10): API Authentication Specification, Purpose, Requirement: API Authorization Enforcement, Requirement: Identity Decoupling, Requirement: Mock Login Generation, Requirements, Scenario: Access with valid mock token, Scenario: Access without token (+2 more)
+
+### Community 126 - "Community 126"
+Cohesion: 0.18
+Nodes (10): Purpose, Qdrant Local Environment Specification, Requirement: Clean Architecture Compliance, Requirement: Local Qdrant Container, Requirement: Qdrant Health Check Integration, Requirements, Scenario: API queries health endpoint when Qdrant is healthy, Scenario: API queries health endpoint when Qdrant is inaccessible (+2 more)
+
+### Community 127 - "Community 127"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Qdrant Semantic Index, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 128 - "Community 128"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Embedding Hardening Warning Follow-up, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 129 - "Community 129"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Embedding Provider Hardening, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 130 - "Community 130"
+Cohesion: 0.20
+Nodes (9): Affected Areas, Approaches, Current State, Exploration: infrastructure-organization-refactor, Goal, Ready for Proposal, Recommendation, Review Size Forecast (+1 more)
+
+### Community 131 - "Community 131"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Kernel Skeleton, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 132 - "Community 132"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Mock Authentication Bootstrap, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 133 - "Community 133"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Week 1 Qdrant Local Environment, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 134 - "Community 134"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W1-H6 Dashboard Inicial, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 135 - "Community 135"
+Cohesion: 0.20
+Nodes (9): Phase 1: Foundation, Phase 2: API Contract Slice, Phase 3: UI Shell Slice, Phase 4: Verification and Cleanup, Phase 5: Verification Fix Batch (Coverage Gaps), Phase 6: Verify Warning Fix Batch (Coverage + Header + Progress Count), Review Workload Forecast, Suggested Work Units (+1 more)
+
+### Community 136 - "Community 136"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Graph Connector Configuration Status, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 137 - "Community 137"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W1-H6 Dashboard Status & Progress, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 138 - "Community 138"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Refine Mandatory WorkItem Fields (W2-H1-T1), File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 139 - "Community 139"
+Cohesion: 0.20
+Nodes (9): Phase 1: RED — Contract Tests First, Phase 2: GREEN — Domain Contract Implementation, Phase 3: GREEN — Application/Worker Wiring, Phase 4: REFACTOR — Clean Architecture and Test Maintainability, Phase 5: Verification, Review Workload Forecast, Spec Scenario Mapping (for PR notes), Suggested Work Units (+1 more)
+
+### Community 140 - "Community 140"
+Cohesion: 0.20
+Nodes (9): Apply Progress: W2-H1-T2, Completed Tasks, Production Changes (Minimal), Run Context, Scope Confirmation, Spec/Design Tension Resolution, TDD Cycle Evidence, Test Summary (+1 more)
+
+### Community 141 - "Community 141"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W2-H1-T2 — Harden WorkItem Contract Test Coverage, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 142 - "Community 142"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Ingestion Checkpoint Store Contract, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 143 - "Community 143"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W2-H2-T2 — Teams-First Connector Execution Flow, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 144 - "Community 144"
+Cohesion: 0.20
+Nodes (9): Apply Progress: W2-H2-T3 — Ingestion Checkpoint Persistence, Completed Tasks, Execution Mode, Notes, Remaining Work, Remediation Pass (Post-Verify FAIL), Remediation Test Runs, TDD Cycle Evidence (+1 more)
+
+### Community 145 - "Community 145"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W2-H2-T3 — Ingestion Checkpoint Persistence, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 146 - "Community 146"
+Cohesion: 0.20
+Nodes (9): Testcontainers.Qdrant (4.12.0), net9.0, coverlet.collector (6.0.2), Microsoft.AspNetCore.Mvc.Testing (9.0.6), Microsoft.NET.Test.Sdk (17.12.0), Polly.Core (8.6.6), xunit (2.9.2), xunit.runner.visualstudio (2.8.2) (+1 more)
+
+### Community 147 - "Community 147"
 Cohesion: 0.36
 Nodes (5): GraphConnectorStatusReaderTests, Fact, InlineData, Task, Theory
 
-### Community 381 - "Community 381"
-Cohesion: 0.20
-Nodes (9): Architecture Decisions, Data Flow, Design: Triage Global Policy Foundation, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+### Community 148 - "Community 148"
+Cohesion: 0.05
+Nodes (32): MorningSummaryComposer, MorningSummaryModel, IMorningSummaryComposer, IMorningSummaryScheduler, CancellationToken, MorningSummary, MorningSummaryRequest, Task (+24 more)
 
-### Community 382 - "Community 382"
+### Community 149 - "Community 149"
+Cohesion: 0.31
+Nodes (5): HelloPlugin, HelloPluginTests, Fact, Task, WorkItem
+
+### Community 150 - "Community 150"
+Cohesion: 0.20
+Nodes (9): Infrastructure Organization Specification, Purpose, Requirement: Adapter-Centric Organization, Requirement: Dedicated Application Dependency Injection, Requirement: Unified Infrastructure Dependency Injection, Requirements, Scenario: Infrastructure file placement, Scenario: Registering application services (+1 more)
+
+### Community 151 - "Community 151"
+Cohesion: 0.20
+Nodes (9): Infrastructure Organization Specification, Purpose, Requirement: Adapter-Centric Organization, Requirement: Dedicated Application Dependency Injection, Requirement: Unified Infrastructure Dependency Injection, Requirements, Scenario: Infrastructure file placement, Scenario: Registering application services (+1 more)
+
+### Community 152 - "Community 152"
+Cohesion: 0.24
+Nodes (5): SemanticCollectionTypeTests, Fact, InlineData, SemanticCollectionType, Theory
+
+### Community 153 - "Community 153"
+Cohesion: 0.20
+Nodes (9): ASPNETCORE_ENVIRONMENT, applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, profiles, http (+1 more)
+
+### Community 154 - "Community 154"
+Cohesion: 0.22
+Nodes (8): Phase 1: Contracts & DTO (Application layer), Phase 2: MEAI Adapter & Config (Infrastructure layer), Phase 3: Architecture Guard & Unit Tests, Phase 4: Worker & Wiring, Phase 5: Integration & E2E Tests, Review Workload Forecast, Suggested Work Units, Tasks: Embedding Provider Hardening
+
+### Community 155 - "Community 155"
+Cohesion: 0.22
+Nodes (8): Architecture Decisions, Data Flow, Design: Infrastructure Organization Refactor, File Changes, Migration / Rollout, Open Questions, Technical Approach, Testing Strategy
+
+### Community 156 - "Community 156"
+Cohesion: 0.22
+Nodes (8): Affected Areas, Approaches, Current State, Exploration: kernel-skeleton, Key Decisions for H4/H5 Independence, Ready for Proposal, Recommendation, Risks
+
+### Community 157 - "Community 157"
+Cohesion: 0.22
+Nodes (8): Apply Progress: w1-h6-dashboard-status-progress, Completed Tasks, Delivery, Deviations / Notes, Remediation Outcomes, Strict TDD Limitations (explicit), TDD Cycle Evidence, Test Summary
+
+### Community 158 - "Community 158"
+Cohesion: 0.22
+Nodes (8): Phase 1: Foundation / TDD RED, Phase 2: Core Implementation / TDD GREEN, Phase 3: Integration / Teams-First Wiring, Phase 4: Verification / REFACTOR, Phase 5: Cleanup / Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H2-T2 — Teams-First Connector Execution Flow
+
+### Community 159 - "Community 159"
+Cohesion: 0.22
+Nodes (8): Phase 1: Foundation (Model Contracts), Phase 2: Core Implementation (Execution Result + Persistence Policy), Phase 3: Integration / Architecture Guard, Phase 4: Verification (Spec Scenario Coverage), Phase 5: Cleanup / Completion, Review Workload Forecast, Suggested Work Units, Tasks: W2-H2-T3 — Ingestion Checkpoint Persistence
+
+### Community 160 - "Community 160"
+Cohesion: 0.22
+Nodes (8): Antes de generar código, Cuándo detenerse y preguntar, Reglas de calidad, Reglas de colaboración, Reglas de código, Reglas de observabilidad, Reglas de operación para agentes IA, Reglas de seguridad
+
+### Community 161 - "Community 161"
+Cohesion: 0.28
+Nodes (6): ApiMarker, Aura.Api, DashboardRequestLog, Exception, ILogger, LoggerMessage
+
+### Community 162 - "Community 162"
+Cohesion: 0.22
+Nodes (8): Activation Contract, aura-graphify-query, Commands Reference, Decision Gates, Execution Steps, Hard Rules, Limits, References
+
+### Community 163 - "Community 163"
+Cohesion: 0.22
+Nodes (7): IDashboardApiClient, DashboardApiClient, CancellationToken, HttpClient, InitialDashboardResponse, JsonSerializerOptions, Task
+
+### Community 164 - "Community 164"
+Cohesion: 0.22
+Nodes (7): IGraphConnectorApiClient, GraphConnectorApiClient, CancellationToken, GraphConnectorStatusResponse, HttpClient, JsonSerializerOptions, Task
+
+### Community 165 - "Community 165"
+Cohesion: 0.22
+Nodes (7): IModuleProgressApiClient, ModuleProgressApiClient, CancellationToken, HttpClient, JsonSerializerOptions, ModuleProgressResponse, Task
+
+### Community 166 - "Community 166"
+Cohesion: 0.22
+Nodes (8): Deferred items, First-run behavior, Identity, Ingestion checkpoint contract, Ingestion — Normalization, checkpoints, and idempotency, Observability note, Scope of this slice (W2-H2-T1), Value shape
+
+### Community 167 - "Community 167"
+Cohesion: 0.22
+Nodes (7): IngestionFetchPlan, IngestionCheckpointCallerHarness, CancellationToken, CheckpointIdentity, Func, IIngestionCheckpointStore, Task
+
+### Community 168 - "Community 168"
+Cohesion: 0.22
+Nodes (7): IPluginRegistry, PluginRegistry, CancellationToken, ILogger, IReadOnlyList, Task, WorkItem
+
+### Community 169 - "Community 169"
+Cohesion: 0.22
+Nodes (7): ISystemStatusApiClient, SystemStatusApiClient, CancellationToken, HttpClient, JsonSerializerOptions, SystemStatusResponse, Task
+
+### Community 170 - "Community 170"
+Cohesion: 0.28
+Nodes (6): HelloKernelWorkerTests, Fact, IHostApplicationLifetime, ILogger, IPluginRegistry, Task
+
+### Community 171 - "Community 171"
+Cohesion: 0.39
+Nodes (5): ISemanticOutboxRepository, CancellationToken, IReadOnlyList, SemanticOutboxEntry, Task
+
+### Community 172 - "Community 172"
+Cohesion: 0.22
+Nodes (8): Affected Areas, Approaches (Collection Structure), Approaches (Source of Truth), Current State, Exploration: qdrant-semantic-index, Ready for Proposal, Recommendation, Risks
+
+### Community 173 - "Community 173"
+Cohesion: 0.25
+Nodes (7): Phase 1: Domain + Application Contracts (TDD: RED→GREEN), Phase 2: Qdrant Adapters + DI, Phase 3: SQLite Outbox + Sync Worker (TDD: RED→GREEN), Phase 4: Corrective Patch (Post-Verification Fixes), Review Workload Forecast, Suggested Work Units, Tasks: Qdrant Semantic Index
+
+### Community 174 - "Community 174"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: embedding-hardening-warning-followup, Ready for Proposal, Recommendation, Risks
+
+### Community 175 - "Community 175"
+Cohesion: 0.25
+Nodes (7): Phase 1: Legacy Cleanup (TDD: remove dead code, update existing tests), Phase 2: Resilience & Host Composition Tests, Phase 3: DI Coverage, Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: Embedding Hardening Warning Follow-up
+
+### Community 176 - "Community 176"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: embedding-provider-hardening, Ready for Proposal, Recommendation, Risks
+
+### Community 177 - "Community 177"
+Cohesion: 0.25
+Nodes (7): Phase 1: Application DI (TDD), Phase 2: Infrastructure Restructure + Adapter DI (TDD), Phase 3: Consumer + Test Updates, Phase 4: Cleanup + Verification, Review Workload Forecast, Suggested Work Units, Tasks: Infrastructure Organization Refactor
+
+### Community 178 - "Community 178"
+Cohesion: 0.25
+Nodes (7): Improvement Batch: Verify Warning Resolution, Phase 1: Domain Foundation (TDD), Phase 2: Kernel Pipeline (TDD), Phase 3: Wiring and Worker, Review Workload Forecast, Suggested Work Units, Tasks: Kernel Skeleton
+
+### Community 179 - "Community 179"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: mock-auth-bootstrap, Ready for Proposal, Recommendation, Risks
+
+### Community 180 - "Community 180"
+Cohesion: 0.25
+Nodes (7): Phase 1: Application Contracts, Phase 2: Infrastructure Identity Adapter (TDD), Phase 3: API Endpoint + Integration Tests (TDD), Phase 5: Remediation (verify blockers), Review Workload Forecast, Suggested Work Units, Tasks: Mock Authentication Bootstrap
+
+### Community 181 - "Community 181"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: week1-qdrant-local-environment, Ready for Proposal, Recommendation, Risks
+
+### Community 182 - "Community 182"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation (Docker + Config), Phase 2: Core Implementation (TDD), Phase 3: Integration + Architecture Tests, Phase 4: Documentation, Review Workload Forecast, Suggested Work Units, Tasks: Week 1 Qdrant Local Environment
+
+### Community 183 - "Community 183"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: w1-h6-dashboard-inicial, Ready for Proposal, Recommendation, Risks
+
+### Community 184 - "Community 184"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: Graph connector configuration status, Ready for Proposal, Recommendation, Risks
+
+### Community 185 - "Community 185"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation / Test-First Contracts (RED), Phase 2: Core Implementation (GREEN), Phase 3: Integration / API + UI Wiring (GREEN), Phase 4: Refactor / Verification / Documentation (REFACTOR), Review Workload Forecast, Suggested Work Units, Tasks: Graph Connector Configuration Status (Week 1)
+
+### Community 186 - "Community 186"
+Cohesion: 0.25
+Nodes (7): Completion Notes, Phase 1: System Status Capability (TDD First), Phase 2: Module Progress Capability (TDD First), Phase 3: UI Wiring, Isolation, and Non-Goals, Review Workload Forecast, Suggested Work Units, Tasks: W1-H6 Dashboard Status & Progress
+
+### Community 187 - "Community 187"
+Cohesion: 0.25
+Nodes (7): Archive Report: W2-H1-T1, Artifacts, Executive Summary, Risks / Warnings, Skill Resolution, Status, Traceability
+
+### Community 188 - "Community 188"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H1-T1 — Refine mandatory WorkItem fields, Ready for Proposal, Recommendation, Risks
+
+### Community 189 - "Community 189"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H1-T2 — Add normalization and idempotency tests, Ready for Proposal, Recommendation, Risks
+
+### Community 190 - "Community 190"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation / RED, Phase 2: Core Implementation / GREEN, Phase 3: Refactor / Constraint Alignment, Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: W2-H1-T2 — Harden WorkItem Contract Test Coverage
+
+### Community 191 - "Community 191"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T1 — Checkpoint store contract, Ready for Proposal, Recommendation, Risks
+
+### Community 192 - "Community 192"
+Cohesion: 0.25
+Nodes (7): Apply Progress: W2-H2-T2 — Teams-First Connector Execution Flow, Completed Tasks, Execution Mode, Issues / Notes, Scope Compliance, TDD Cycle Evidence, Test Summary
+
+### Community 193 - "Community 193"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T2 — Connector execution flow, Ready for Proposal, Recommendation, Risks
+
+### Community 194 - "Community 194"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H2-T3 — Checkpoint persistence, Ready for Proposal, Recommendation, Risks
+
+### Community 195 - "Community 195"
+Cohesion: 0.25
+Nodes (7): Conventional Commits, Definition of Done (DoD), Quality gates obligatorios, Reglas, Reglas de entrega, Stack tecnológico confirmado, Trazabilidad obligatoria, issue opcional
+
+### Community 196 - "Community 196"
+Cohesion: 0.25
+Nodes (7): Contratos de UI → API, Estrategia de UI incremental, Herramientas de UI, Por qué, Prioridad de pantallas por fase, Regla de slice vertical, Stack frontend decidido
+
+### Community 197 - "Community 197"
+Cohesion: 0.25
+Nodes (6): Microsoft.Extensions.DependencyInjection.Abstractions (10.0.8), Microsoft.Extensions.Logging.Abstractions (10.0.8), net9.0, Microsoft.NET.Sdk, net9.0, Microsoft.NET.Sdk
+
+### Community 198 - "Community 198"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-backlog-slicer, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 199 - "Community 199"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-blazor-ui-slice, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 200 - "Community 200"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-clean-arch-guard, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 201 - "Community 201"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-plugin-design, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 202 - "Community 202"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-review-evidence, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 203 - "Community 203"
+Cohesion: 0.25
+Nodes (7): Activation Contract, aura-triage-rules, Decision Gates, Execution Steps, Hard Rules, Output Contract, References
+
+### Community 204 - "Community 204"
+Cohesion: 0.25
+Nodes (6): SeededModuleProgressProvider, IModuleProgressProvider, CancellationToken, IReadOnlyList, ModuleProgressDto, Task
+
+### Community 205 - "Community 205"
+Cohesion: 0.25
+Nodes (7): DashboardCards, DashboardStatePanel, GraphConnectorStatusPanel, ModuleProgressPanel, PageTitle, route:/, SystemStatusPanel
+
+### Community 207 - "Community 207"
+Cohesion: 0.32
+Nodes (5): DashboardViewStateMapper, Loading(), DashboardViewState, Exception, InitialDashboardResponse
+
+### Community 208 - "Community 208"
+Cohesion: 0.25
+Nodes (7): Delta for Semantic Index, MODIFIED Requirements, Requirement: Observable and Resilient Embedding Generation, Scenario: Accurate Dependency Injection and Host Composition, Scenario: Enforcing timeout policies on prolonged generation, Scenario: Recovering from a transient rate limit, Scenario: Telemetry on successful batch generation
+
+### Community 209 - "Community 209"
+Cohesion: 0.39
+Nodes (5): IEmbeddingProvider, CancellationToken, IReadOnlyList, ReadOnlyMemory, Task
+
+### Community 210 - "Community 210"
+Cohesion: 0.39
+Nodes (5): IIngestionCheckpointStore, CancellationToken, CheckpointIdentity, IngestionCheckpoint, Task
+
+### Community 211 - "Community 211"
+Cohesion: 0.25
+Nodes (6): ISemanticChunkExtractor, CancellationToken, IReadOnlyList, SemanticChunk, SemanticCollectionType, Task
+
+### Community 212 - "Community 212"
+Cohesion: 0.25
+Nodes (6): ISemanticContextRetriever, CancellationToken, IReadOnlyList, ScoredSemanticChunk, SemanticQuery, Task
+
+### Community 213 - "Community 213"
+Cohesion: 0.32
+Nodes (5): ISemanticIndexWriter, CancellationToken, EmbeddedSemanticChunk, IReadOnlyList, Task
+
+### Community 214 - "Community 214"
+Cohesion: 0.25
+Nodes (7): commandName, dotnetRunMessages, environmentVariables, DOTNET_ENVIRONMENT, Aura.Workers, profiles, $schema
+
+### Community 215 - "Community 215"
+Cohesion: 0.29
+Nodes (6): Apply Progress: h7-graph-connector-config-status, Completed Tasks, Delivery, Deviations / Notes, TDD Cycle Evidence, Test Summary
+
+### Community 216 - "Community 216"
+Cohesion: 0.29
+Nodes (6): Apply Progress: W2-H1-T1, Completed Tasks, Delivery, Notes, TDD Cycle Evidence, Test Summary
+
+### Community 217 - "Community 217"
+Cohesion: 0.29
+Nodes (6): Archive Report: W2-H2-T2, Artifacts, Executive Summary, Risks / Warnings, Status, Traceability
+
+### Community 218 - "Community 218"
+Cohesion: 0.29
+Nodes (6): Aura — Visión general y flujos, Flujos end-to-end, Ingestión → Triáje, Observabilidad transversal, PR → Revisión inteligente, Siguientes ficheros
+
+### Community 219 - "Community 219"
+Cohesion: 0.42
+Nodes (3): ConnectorExecutionArchitectureTests, Fact, TestResult
+
+### Community 220 - "Community 220"
+Cohesion: 0.43
+Nodes (3): DashboardArchitectureTests, Fact, TestResult
+
+### Community 221 - "Community 221"
+Cohesion: 0.43
+Nodes (3): GraphConnectorArchitectureTests, Fact, TestResult
+
+### Community 222 - "Community 222"
+Cohesion: 0.38
+Nodes (3): InfrastructureOrganizationTests, Fact, string
+
+### Community 223 - "Community 223"
+Cohesion: 0.43
+Nodes (3): IngestionArchitectureTests, Fact, TestResult
+
+### Community 224 - "Community 224"
+Cohesion: 0.29
+Nodes (5): AlwaysHealthyApiReadinessAdapter, IApiReadinessProvider, CancellationToken, ReadinessSignal, Task
+
+### Community 225 - "Community 225"
+Cohesion: 0.29
+Nodes (6): Delta for ingestion-checkpoint-store, MODIFIED Requirements, Requirement: Checkpoint Value Shape, Scenario: Both timestamps null with non-null cursor, Scenario: Both timestamps stored and returned unchanged, Scenario: Null fields are preserved independently
+
+### Community 226 - "Community 226"
+Cohesion: 0.12
+Nodes (16): Purpose, Requirement: Clean Architecture Boundary, Requirement: Metadata Traceability, Requirement: Partial Payload Tolerance, Requirement: Teams Field Mapping, Requirements, Scenario: Absent field recorded in Metadata, Scenario: Adapter returns only canonical domain types (+8 more)
+
+### Community 227 - "Community 227"
+Cohesion: 0.33
+Nodes (5): Archive Report: w1-h6-dashboard-status-progress, Notes, Result, Specs Synced, Task Gate
+
+### Community 228 - "Community 228"
+Cohesion: 0.33
+Nodes (5): Archive Notes, Archive Report: W2-H2-T3 — Ingestion Checkpoint Persistence, Main Spec Sync, Outcome, Source Artifacts Reviewed
+
+### Community 229 - "Community 229"
+Cohesion: 0.33
+Nodes (5): Atomización de tareas, Cómo partir una tarea que es demasiado grande, Ejemplo de partición correcta, Qué hace atómica a una tarea, Señales de que una tarea no es atómica
+
+### Community 230 - "Community 230"
+Cohesion: 0.33
+Nodes (4): DependencyInjection, IConfiguration, IHostEnvironment, IServiceCollection
+
+### Community 231 - "Community 231"
+Cohesion: 0.33
+Nodes (4): DependencyInjection, IConfiguration, IHostEnvironment, IServiceCollection
+
+### Community 232 - "Community 232"
 Cohesion: 0.47
 Nodes (3): InitialDashboardReaderTests, Fact, Task
 
-### Community 383 - "Community 383"
+### Community 233 - "Community 233"
 Cohesion: 0.47
 Nodes (3): ModuleProgressReaderTests, Fact, Task
 
-### Community 384 - "Community 384"
-Cohesion: 0.22
-Nodes (7): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, ConnectorExecutionWorkerTests, SuccessAdapter
+### Community 234 - "Community 234"
+Cohesion: 0.33
+Nodes (3): DependencyInjectionTests, Fact, Task
 
-### Community 385 - "Community 385"
-Cohesion: 0.08
-Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
-
-### Community 386 - "Community 386"
-Cohesion: 0.08
-Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
-
-### Community 387 - "Community 387"
+### Community 235 - "Community 235"
 Cohesion: 0.12
-Nodes (15): Apply Progress: W2-H4, Change, Command Log, Cumulative Task Status, Key Files Changed, Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD) (+7 more)
+Nodes (16): HasImpactSignal, HasPreliminaryScore, HasRiskSignal, IComparer, IMorningSummaryRankingPolicy, MorningSummaryRankingPolicy, SnapshotComparer, RankingExplanation (+8 more)
 
-### Community 388 - "Community 388"
+### Community 236 - "Community 236"
+Cohesion: 0.47
+Nodes (3): QdrantHealthCheckTests, Fact, Task
+
+### Community 237 - "Community 237"
+Cohesion: 0.33
+Nodes (4): ICurrentUserService, HttpContextCurrentUserService, AuraUser, IHttpContextAccessor
+
+### Community 238 - "Community 238"
+Cohesion: 0.09
+Nodes (18): DependencyInjection, MockJwtGenerator, OutlookWorkItemMapper, Dictionary, IDictionary, IEnumerable, IReadOnlyList, List (+10 more)
+
+### Community 239 - "Community 239"
+Cohesion: 0.25
+Nodes (7): Adaptadores implementados, Boundary contract with triage, Connector adapters implemented, Coverage, Ingestion — Overview, Open follow-ups, Quick path
+
+### Community 240 - "Community 240"
+Cohesion: 0.47
+Nodes (3): IngestionCheckpointFirstRunWindowTests, Fact, Task
+
+### Community 241 - "Community 241"
+Cohesion: 0.33
+Nodes (4): IPluginRegistry, CancellationToken, Task, WorkItem
+
+### Community 244 - "Community 244"
+Cohesion: 0.33
+Nodes (5): Requirement: WorkItem State Encapsulation, Scenario: Invalid state transition, Scenario: Valid state transition, Delta for Plugin Kernel, MODIFIED Requirements
+
+### Community 245 - "Community 245"
+Cohesion: 0.33
+Nodes (4): IApiReadinessProvider, CancellationToken, ReadinessSignal, Task
+
+### Community 246 - "Community 246"
+Cohesion: 0.33
+Nodes (4): IGraphConnectorStatusReader, CancellationToken, GraphConnectorStatusDto, Task
+
+### Community 247 - "Community 247"
+Cohesion: 0.33
+Nodes (4): IInitialDashboardReader, CancellationToken, InitialDashboardDto, Task
+
+### Community 248 - "Community 248"
+Cohesion: 0.33
+Nodes (4): IModuleProgressProvider, CancellationToken, ModuleProgressDto, Task
+
+### Community 249 - "Community 249"
+Cohesion: 0.33
+Nodes (4): IModuleProgressReader, CancellationToken, ModuleProgressDto, Task
+
+### Community 250 - "Community 250"
+Cohesion: 0.33
+Nodes (4): IQdrantReadinessProvider, CancellationToken, ReadinessSignal, Task
+
+### Community 251 - "Community 251"
+Cohesion: 0.33
+Nodes (4): ISystemStatusReader, CancellationToken, SystemStatusDto, Task
+
+### Community 252 - "Community 252"
+Cohesion: 0.33
+Nodes (4): IDashboardApiClient, CancellationToken, InitialDashboardResponse, Task
+
+### Community 253 - "Community 253"
+Cohesion: 0.33
+Nodes (4): IGraphConnectorApiClient, CancellationToken, GraphConnectorStatusResponse, Task
+
+### Community 254 - "Community 254"
+Cohesion: 0.33
+Nodes (4): IModuleProgressApiClient, CancellationToken, ModuleProgressResponse, Task
+
+### Community 255 - "Community 255"
+Cohesion: 0.33
+Nodes (4): ISystemStatusApiClient, CancellationToken, SystemStatusResponse, Task
+
+### Community 257 - "Community 257"
 Cohesion: 0.13
 Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
-### Community 389 - "Community 389"
-Cohesion: 0.14
-Nodes (13): Architecture Decisions, Data Flow, Deadline scan keywords (case-insensitive; subject first, body fallback), Design: W2-H4 — Outlook Plugin Mapping and Initial Classification, File Changes, Interfaces / Contracts, Log event IDs (sequential after Teams 3201–3202), Metadata key convention (`outlook.*`) (+5 more)
+### Community 258 - "Community 258"
+Cohesion: 0.40
+Nodes (4): FocusOnNavigate, Found, Router, RouteView
 
-### Community 390 - "Community 390"
+### Community 259 - "Community 259"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 260 - "Community 260"
+Cohesion: 0.40
+Nodes (3): AlwaysHealthyApiReadinessAdapterTests, Fact, Task
+
+### Community 261 - "Community 261"
+Cohesion: 0.14
+Nodes (13): Apply Progress: W2-H3, Change, Command Log (This Batch), Cumulative Task Status, Notes, Phase 1: RED — Contracts and Boundary Tests, Phase 2: GREEN — Ports, Mapper, Adapter, Store, Phase 3: GREEN — Use Case Wiring and DI Integration (+5 more)
+
+### Community 262 - "Community 262"
+Cohesion: 0.40
+Nodes (3): AuthEndpoints, IEndpointRouteBuilder, IHostEnvironment
+
+### Community 263 - "Community 263"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 264 - "Community 264"
+Cohesion: 0.33
+Nodes (5): Boundary with global triage, Connector responsibilities, Future work, Microsoft Graph — Teams Connector, Quick path
+
+### Community 265 - "Community 265"
+Cohesion: 0.29
+Nodes (6): Boundary with global triage, Connector responsibilities, Microsoft Graph — Outlook Connector, Open follow-up, Preliminary scoring note, Quick path
+
+### Community 266 - "Community 266"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Microsoft Graph — Calendar Connector, Pendiente, Quick path
+
+### Community 267 - "Community 267"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, GitHub SDK — Pull Requests Connector, Pendiente, Quick path
+
+### Community 268 - "Community 268"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 269 - "Community 269"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Observabilidad — Visión general, Pendiente, Quick path
+
+### Community 270 - "Community 270"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Observabilidad — OpenTelemetry y trazas distribuidas, Pendiente, Quick path
+
+### Community 271 - "Community 271"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Observabilidad — Dashboard de tokens y costo IA, Pendiente, Quick path
+
+### Community 272 - "Community 272"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Observabilidad — Dashboard de latencia por plugin, Pendiente, Quick path
+
+### Community 273 - "Community 273"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Observabilidad — Correlación de logs, métricas y traces, Pendiente, Quick path
+
+### Community 274 - "Community 274"
+Cohesion: 0.40
+Nodes (4): Calidad — Visión general, Debe cubrir, Pendiente, Quick path
+
+### Community 275 - "Community 275"
+Cohesion: 0.40
+Nodes (4): Calidad — Estrategia TDD con xUnit, Debe cubrir, Pendiente, Quick path
+
+### Community 276 - "Community 276"
+Cohesion: 0.40
+Nodes (4): Calidad — Tests E2E con Playwright, Debe cubrir, Pendiente, Quick path
+
+### Community 277 - "Community 277"
+Cohesion: 0.40
+Nodes (4): Calidad — Linters, EditorConfig y StyleCop, Debe cubrir, Pendiente, Quick path
+
+### Community 278 - "Community 278"
+Cohesion: 0.40
+Nodes (4): Calidad — Conventional Commits y ChangeLog automático, Debe cubrir, Pendiente, Quick path
+
+### Community 279 - "Community 279"
+Cohesion: 0.40
+Nodes (4): Calidad — Architecture Tests y quality gates, Debe cubrir, Pendiente, Quick path
+
+### Community 280 - "Community 280"
+Cohesion: 0.40
+Nodes (4): Artefactos en el repo, Comandos clave, Graphify CLI, References — aura-graphify-query
+
+### Community 281 - "Community 281"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Visión general
+
+### Community 282 - "Community 282"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Integración con SonarQube API
+
+### Community 283 - "Community 283"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Integración con Dependabot
+
+### Community 284 - "Community 284"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Auditoría OWASP y MITRE
+
+### Community 285 - "Community 285"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Validación semántica contra User Story
+
+### Community 286 - "Community 286"
+Cohesion: 0.40
+Nodes (4): Debe cubrir, Pendiente, Quick path, Reviewer — Modelo de evidencia y score de revisión
+
+### Community 287 - "Community 287"
+Cohesion: 0.40
+Nodes (3): QdrantOptions, SemanticCollectionType, string
+
+### Community 288 - "Community 288"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 289 - "Community 289"
+Cohesion: 0.33
+Nodes (5): Decision authority and governance, Quick path, Refinement model, Scope note, Triage — Overview
+
+### Community 290 - "Community 290"
+Cohesion: 0.29
+Nodes (6): Architecture boundary, Decision (final rule), Output contract, Quick path, Scope notes, Triage — Morning Summary
+
+### Community 291 - "Community 291"
+Cohesion: 0.29
+Nodes (6): Boundary and authority, Governance requirements, Observability contract, Policy inputs, Quick path, Triage — Proactive Interruption Policy
+
+### Community 292 - "Community 292"
+Cohesion: 0.40
+Nodes (4): Contract note, Status, Triage — Focus State Machine, Why deferred
+
+### Community 293 - "Community 293"
+Cohesion: 0.25
+Nodes (7): Governance requirements, Quick path, Refinement anchors (explicit only), Relationship to interruption policy, Relationship to Morning Summary, Triage — Priority Scoring and Cognitive Load, Two-stage scoring boundary
+
+### Community 298 - "Community 298"
+Cohesion: 0.50
+Nodes (3): Microsoft.Extensions.Hosting (9.0.12), Microsoft.NET.Sdk.Worker, net9.0
+
+### Community 299 - "Community 299"
+Cohesion: 0.50
+Nodes (3): FormatState, OnInitializedAsync, IModuleProgressApiClient
+
+### Community 300 - "Community 300"
+Cohesion: 0.50
+Nodes (3): GetIndicators, OnInitializedAsync, ISystemStatusApiClient
+
+### Community 349 - "Community 349"
 Cohesion: 0.14
 Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
 
-### Community 391 - "Community 391"
-Cohesion: 0.17
-Nodes (11): IDisposable, ILogger, NullScope, RecordingLogger, T, EventId, Exception, Func (+3 more)
+### Community 350 - "Community 350"
+Cohesion: 0.15
+Nodes (12): Architecture Decisions, Data Flow, Design: W2-H3 — Teams Plugin Mapping and Work Item Persistence, File Changes, In-memory store for W2-H3, Interfaces / Contracts, Migration / Rollout, Open Questions (+4 more)
 
-### Community 392 - "Community 392"
+### Community 351 - "Community 351"
+Cohesion: 0.15
+Nodes (12): Purpose, Requirement: Infrastructure Store Implementation, Requirement: Typed Persistence Result, Requirement: Work Item Persistence Port, Requirements, Scenario: Architecture test rejects store-technology leakage, Scenario: Persistence failure returns typed result with reason, Scenario: Port accepts canonical WorkItem and returns success (+4 more)
+
+### Community 352 - "Community 352"
+Cohesion: 0.15
+Nodes (12): Purpose, Requirement: Infrastructure Store Implementation, Requirement: Typed Persistence Result, Requirement: Work Item Persistence Port, Requirements, Scenario: Architecture test rejects store-technology leakage, Scenario: Persistence failure returns typed result with reason, Scenario: Port accepts canonical WorkItem and returns success (+4 more)
+
+### Community 353 - "Community 353"
+Cohesion: 0.18
+Nodes (10): Phase 1: RED — Contracts and Boundary Tests, Phase 2: GREEN — Ports, Mapper, Adapter, Store, Phase 3: GREEN — Use Case Wiring and DI Integration, Phase 4: REFACTOR / Verification / Cleanup, Phase 5: REMEDIATION RED — Verify Gaps, Phase 6: REMEDIATION GREEN — Implementation Fixes, Phase 7: REMEDIATION Verification & Evidence, Review Workload Forecast (+2 more)
+
+### Community 354 - "Community 354"
+Cohesion: 0.29
+Nodes (3): TeamsWorkItemMapperTests, Fact, TeamsWorkItemMapper
+
+### Community 355 - "Community 355"
+Cohesion: 0.20
+Nodes (8): ConcurrentDictionary, IWorkItemStore, CancellationToken, Lock, Task, WorkItem, WorkItemPersistenceResult, InMemoryWorkItemStore
+
+### Community 356 - "Community 356"
 Cohesion: 0.25
-Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H4 — Outlook Plugin Implementation, Ready for Proposal, Recommendation, Risks
+Nodes (6): IWorkItemBuffer, IReadOnlyList, List, Lock, WorkItem, InMemoryWorkItemBuffer
 
-### Community 393 - "Community 393"
+### Community 357 - "Community 357"
+Cohesion: 0.42
+Nodes (4): TeamsConnectorAdapterTests, ConnectorExecutionRequest, Fact, Task
+
+### Community 358 - "Community 358"
 Cohesion: 0.25
-Nodes (7): Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD), Phase 4: Verification and Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H4 — Outlook Plugin Mapping and Initial Classification
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H3 — Teams plugin mapping, Ready for Proposal, Recommendation, Risks
 
-### Community 394 - "Community 394"
+### Community 359 - "Community 359"
+Cohesion: 0.10
+Nodes (20): Morning Summary Contracts Specification, Purpose, Requirement: Composer Port, Requirement: Contract Purity, Requirement: Empty Window Handling, Requirement: Ranking Explanation Shape, Requirement: Scheduler Port, Requirement: Summary Payload Shape (+12 more)
+
+### Community 360 - "Community 360"
+Cohesion: 0.39
+Nodes (4): Fact, Task, WorkItem, InMemoryWorkItemStoreTests
+
+### Community 361 - "Community 361"
+Cohesion: 0.29
+Nodes (5): IWorkItemStore, CancellationToken, Task, WorkItem, WorkItemPersistenceResult
+
+### Community 362 - "Community 362"
+Cohesion: 0.43
+Nodes (3): Fact, WorkItem, InMemoryWorkItemBufferTests
+
+### Community 363 - "Community 363"
 Cohesion: 0.33
-Nodes (5): Archive Report: W2-H4, Notes, Summary, Synced Specs, Verification
+Nodes (5): Archive Report: W2-H3, Notes, Summary, Synced Specs, Verification
 
-### Community 395 - "Community 395"
+### Community 364 - "Community 364"
+Cohesion: 0.40
+Nodes (3): IWorkItemBuffer, IReadOnlyList, WorkItem
+
+### Community 365 - "Community 365"
+Cohesion: 0.08
+Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
+
+### Community 366 - "Community 366"
+Cohesion: 0.67
+Nodes (3): Failure(), Success(), WorkItemPersistenceResult
+
+### Community 370 - "Community 370"
+Cohesion: 0.08
+Nodes (23): Outlook Connector Mapping Specification, Purpose, Requirement: Clean Architecture Boundary, Requirement: Initial Classification, Requirement: Metadata Traceability, Requirement: Outlook Field Mapping, Requirement: Partial Payload Tolerance, Requirements (+15 more)
+
+### Community 371 - "Community 371"
+Cohesion: 0.23
+Nodes (4): OutlookWorkItemMapperTests, Fact, OutlookEmailDto, OutlookWorkItemMapper
+
+### Community 372 - "Community 372"
+Cohesion: 0.27
+Nodes (6): Dictionary, IDictionary, TeamsMessageDto, WorkItem, WorkItemPriority, TeamsWorkItemMapper
+
+### Community 373 - "Community 373"
+Cohesion: 0.10
+Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
+
+### Community 374 - "Community 374"
+Cohesion: 0.10
+Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
+
+### Community 375 - "Community 375"
+Cohesion: 0.13
+Nodes (14): Log, OutlookConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger (+6 more)
+
+### Community 376 - "Community 376"
+Cohesion: 0.18
+Nodes (11): CapturingHandler, DevAccessTokenHandlerTests, StubHttpClientFactory, IHttpClientFactory, CancellationToken, Fact, HttpClient, HttpRequestMessage (+3 more)
+
+### Community 377 - "Community 377"
+Cohesion: 0.10
+Nodes (20): Morning Summary Contracts Specification, Purpose, Requirement: Composer Port, Requirement: Contract Purity, Requirement: Empty Window Handling, Requirement: Ranking Explanation Shape, Requirement: Scheduler Port, Requirement: Summary Payload Shape (+12 more)
+
+### Community 378 - "Community 378"
+Cohesion: 0.12
+Nodes (15): Apply Progress: W2-H4, Change, Command Log, Cumulative Task Status, Key Files Changed, Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD) (+7 more)
+
+### Community 379 - "Community 379"
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+
+### Community 380 - "Community 380"
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+
+### Community 381 - "Community 381"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 382 - "Community 382"
+Cohesion: 0.14
+Nodes (13): Architecture Decisions, Data Flow, Deadline scan keywords (case-insensitive; subject first, body fallback), Design: W2-H4 — Outlook Plugin Mapping and Initial Classification, File Changes, Interfaces / Contracts, Log event IDs (sequential after Teams 3201–3202), Metadata key convention (`outlook.*`) (+5 more)
+
+### Community 383 - "Community 383"
+Cohesion: 0.14
+Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
+
+### Community 384 - "Community 384"
+Cohesion: 0.12
+Nodes (15): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+7 more)
+
+### Community 385 - "Community 385"
+Cohesion: 0.25
+Nodes (6): IWorkItemReader, CancellationToken, IReadOnlyList, MorningSummaryQuery, Task, WorkItem
+
+### Community 386 - "Community 386"
+Cohesion: 0.17
+Nodes (11): Apply Progress — triage-global-policy-foundation, Command Log, Completed Tasks, Deviations from Design, Execution Summary, Files Changed, Issues / Notes, Rollback Notes (+3 more)
+
+### Community 387 - "Community 387"
+Cohesion: 0.13
+Nodes (14): Assertion Quality, Build & Tests Execution, Changed File Coverage, Clean Architecture Guard, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found (+6 more)
+
+### Community 388 - "Community 388"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: Triage Global Policy Foundation, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 389 - "Community 389"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W2-H5-T1 Morning Summary Contracts, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 390 - "Community 390"
+Cohesion: 0.42
+Nodes (4): OutlookConnectorAdapterTests, ConnectorExecutionRequest, Fact, Task
+
+### Community 391 - "Community 391"
 Cohesion: 0.25
 Nodes (7): Affected Areas, Approaches, Current State, Exploration: triage global policy foundation, Ready for Proposal, Recommendation, Risks
 
-### Community 396 - "Community 396"
+### Community 392 - "Community 392"
 Cohesion: 0.25
 Nodes (7): Phase 1: Foundation / Boundary Framing, Phase 2: Core Documentation Updates, Phase 3: Specification Trace Verification, Phase 4: Cleanup / Delivery Guard, Review Workload Forecast, Suggested Work Units, Tasks: Triage Global Policy Foundation
 
-### Community 397 - "Community 397"
+### Community 393 - "Community 393"
 Cohesion: 0.25
-Nodes (3): Program, UiMarker, Services
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H4 — Outlook Plugin Implementation, Ready for Proposal, Recommendation, Risks
 
-### Community 398 - "Community 398"
+### Community 394 - "Community 394"
 Cohesion: 0.25
-Nodes (6): StubHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+Nodes (7): Phase 1: Foundation and Architecture Guard, Phase 2: Mapper Multi-Signal Scoring (TDD), Phase 3: Adapter, Telemetry, and Wiring (TDD), Phase 4: Verification and Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W2-H4 — Outlook Plugin Mapping and Initial Classification
 
-### Community 399 - "Community 399"
-Cohesion: 0.33
-Nodes (4): CancellationToken, IEmbeddingProvider, ReadOnlyMemory, DeterministicEmbeddingProvider
+### Community 395 - "Community 395"
+Cohesion: 0.43
+Nodes (3): OutlookConnectorBoundaryTests, Fact, TestResult
 
-### Community 400 - "Community 400"
+### Community 396 - "Community 396"
 Cohesion: 0.33
 Nodes (5): Archive Report: triage-global-policy-foundation, Notes, Source of Truth, Status, Summary
 
+### Community 397 - "Community 397"
+Cohesion: 0.33
+Nodes (5): Archive Report: W2-H4, Notes, Summary, Synced Specs, Verification
+
+### Community 398 - "Community 398"
+Cohesion: 0.25
+Nodes (7): Affected Areas, Approaches, Current State, Exploration: W2-H5-T1 Morning Summary Contracts, Ready for Proposal, Recommendation, Risks
+
+### Community 401 - "Community 401"
+Cohesion: 0.25
+Nodes (7): Phase 1: DTO Contracts (Foundation), Phase 2: Ports, Phase 3: Testing (TDD — write RED first, before Phases 1–2 compile), Phase 4: Verification, Review Workload Forecast, Suggested Work Units, Tasks: W2-H5-T1 Morning Summary Contracts
+
+### Community 402 - "Community 402"
+Cohesion: 0.42
+Nodes (3): MorningSummaryArchitectureTests, Fact, TestResult
+
+### Community 403 - "Community 403"
+Cohesion: 0.08
+Nodes (23): Morning Summary Ranking Specification, Purpose, Requirement: AI-Assisted Prioritization Boundary, Requirement: Application Layer Ownership, Requirement: Deterministic Tiebreak Chain, Requirement: Insufficient Signals Handling, Requirement: Preliminary Score as Decision Input, Requirement: Primary Ranking Order (+15 more)
+
+### Community 404 - "Community 404"
+Cohesion: 0.18
+Nodes (8): StubHandler, CapturingInnerHandler, HttpMessageHandler, CancellationToken, HttpRequestMessage, HttpResponseMessage, HttpStatusCode, string
+
+### Community 405 - "Community 405"
+Cohesion: 0.17
+Nodes (12): IWorkItemReader, CancellationToken, Fact, IReadOnlyDictionary, IReadOnlyList, MorningSummaryQuery, MorningSummaryWindow, Task (+4 more)
+
+### Community 414 - "Community 414"
+Cohesion: 0.11
+Nodes (17): AI extension point — explicitly out of scope, design-only, Architecture Decisions, Current signal availability, Data Flow, Design: W2-H5-T2 Morning Summary Ranking Rule, File Changes, In-scope (this change — documentation only), Interfaces / Contracts (+9 more)
+
+### Community 415 - "Community 415"
+Cohesion: 0.26
+Nodes (6): DateTimeOffset, Fact, IReadOnlyDictionary, WorkItem, WorkItemPriority, MorningSummaryRankingPolicyTests
+
+### Community 416 - "Community 416"
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
+
+### Community 417 - "Community 417"
+Cohesion: 0.15
+Nodes (12): Apply Progress: W2-H5-T2 Morning Summary Ranking Policy Implementation, Files Changed, Notes / Deviations, Phase 1: Foundation (TDD RED), Phase 2: Core Policy Implementation (TDD GREEN), Phase 3: Composer Wiring & DI (TDD GREEN), Phase 4: Architecture Guard & Verification (TDD REFACTOR), Task Status (+4 more)
+
+### Community 418 - "Community 418"
+Cohesion: 0.22
+Nodes (8): Affected Areas, Clarification (important), Current State, Exploration: W2-H5-T2 Morning Summary ranking, Final Decision to Document, Ready for Proposal, Recommendation, Risks
+
+### Community 419 - "Community 419"
+Cohesion: 0.25
+Nodes (7): Phase 1: Foundation (TDD RED), Phase 2: Core Policy Implementation (TDD GREEN), Phase 3: Composer Wiring & DI (TDD GREEN), Phase 4: Architecture Guard & Verification (TDD REFACTOR), Review Workload Forecast, Suggested Work Units, Tasks: W2-H5-T2 Morning Summary Ranking Policy Implementation
+
+### Community 420 - "Community 420"
+Cohesion: 0.40
+Nodes (4): EmbeddingProviderOptionsValidator, IValidateOptions, EmbeddingProviderOptions, ValidateOptionsResult
+
+### Community 421 - "Community 421"
+Cohesion: 0.33
+Nodes (4): EmbeddingResiliencePolicyBuilder, EmbeddingProviderOptions, IServiceCollection, string
+
+### Community 422 - "Community 422"
+Cohesion: 0.33
+Nodes (4): IMorningSummaryRankingPolicy, IReadOnlyList, RankedWorkItem, WorkItem
+
 ## Knowledge Gaps
-- **2194 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2189 more)
+- **2367 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2362 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `options` connect `Community 31` to `Community 32`, `Community 195`, `Community 198`, `Community 9`, `Community 399`, `Community 16`, `Community 19`, `Community 84`, `Community 245`, `Community 117`, `Community 85`, `Community 58`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `Services` connect `Community 397` to `Community 318`, `Community 1`, `Community 3`, `Community 324`, `Community 330`, `Community 31`, `Community 398`, `Community 117`, `Community 378`, `Community 348`, `Community 382`, `Community 383`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `InitialDashboardSmokeTests` connect `Community 3` to `Community 1`?**
+- **Why does `Services` connect `Community 46` to `Community 32`, `Community 2`, `Community 3`, `Community 69`, `Community 70`, `Community 232`, `Community 233`, `Community 42`, `Community 41`, `Community 404`, `Community 376`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `options` connect `Community 42` to `Community 32`, `Community 420`, `Community 421`, `Community 37`, `Community 72`, `Community 106`, `Community 107`, `Community 238`, `Community 18`, `Community 19`, `Community 23`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `InitialDashboardSmokeTests` connect `Community 3` to `Community 2`?**
   _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
-  _2194 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2367 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.0672316384180791 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.10884353741496598 - nodes in this community are weakly interconnected._

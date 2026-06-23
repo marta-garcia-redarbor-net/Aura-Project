@@ -3,6 +3,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.Services;
 using Aura.Application.UseCases.ConnectorExecution;
+using Aura.Application.UseCases.MorningSummary;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -80,6 +81,45 @@ public class DependencyInjectionTests
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ExecuteConnectorUseCase));
         Assert.NotNull(descriptor);
         Assert.Equal(ServiceLifetime.Scoped, descriptor!.Lifetime);
+    }
+
+    [Fact]
+    public void AddAuraApplication_RegistersMorningSummaryRankingPolicy_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IMorningSummaryRankingPolicy));
+        Assert.NotNull(descriptor);
+        Assert.Equal(typeof(MorningSummaryRankingPolicy), descriptor!.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddAuraApplication_RegistersMorningSummaryComposer_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IMorningSummaryComposer));
+        Assert.NotNull(descriptor);
+        Assert.Equal(typeof(MorningSummaryComposer), descriptor!.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddAuraApplication_CanResolveMorningSummaryComposer_WithoutIWorkItemReaderRegistration()
+    {
+        var services = new ServiceCollection();
+        services.AddAuraApplication();
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var composer = scope.ServiceProvider.GetRequiredService<IMorningSummaryComposer>();
+        Assert.NotNull(composer);
     }
 
     [Fact]
