@@ -1,6 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
+using MorningSummaryPayload = Aura.Application.Models.MorningSummary;
 
 namespace Aura.UnitTests.Triage;
 
@@ -37,7 +38,7 @@ public class MorningSummaryContractTests
                 new RankingFactorContribution(RankingFactor.Risk, 0.15, "Dependencies pending")
             ]));
 
-        var summary = new MorningSummary(
+        var summary = new MorningSummaryPayload(
             "user-123",
             window,
             new DateTimeOffset(2026, 6, 22, 7, 1, 0, TimeSpan.Zero),
@@ -104,7 +105,7 @@ public class MorningSummaryContractTests
     [Fact]
     public void MorningSummary_WithNoEntries_IsValidAndUsesEmptyNonNullCollection()
     {
-        var summary = new MorningSummary(
+        var summary = new MorningSummaryPayload(
             "user-123",
             new MorningSummaryWindow(
                 new DateOnly(2026, 6, 22),
@@ -170,39 +171,16 @@ public class MorningSummaryContractTests
     }
 
     [Fact]
-    public void SchedulerContract_ResolvesAWindow_CarryingDateAndTimezone()
+    public async Task SchedulerContract_ResolveAsync_ReturnsDueStateShape()
     {
-        var context = new MorningSummaryScheduleContext(
-            "user-123",
-            "Europe/Madrid",
-            new TimeOnly(9, 0),
-            new DateOnly(2026, 6, 22));
-
         IMorningSummaryScheduler scheduler = new FakeMorningSummaryScheduler();
 
-        var window = scheduler.ResolveWindow(context);
+        var due = await scheduler.ResolveAsync("user-123", CancellationToken.None);
 
-        Assert.Equal(context.WindowDate, window.WindowDate);
-        Assert.Equal(context.UserTimeZoneId, window.UserTimeZoneId);
-        Assert.Equal(context.TargetLocalTime, window.ScheduledLocalTime);
-    }
-
-    [Fact]
-    public void SchedulerContract_EvaluatesDueState_AsBoolean()
-    {
-        var window = new MorningSummaryWindow(
-            new DateOnly(2026, 6, 22),
-            "Europe/Madrid",
-            new TimeOnly(9, 0),
-            new DateTimeOffset(2026, 6, 22, 7, 0, 0, TimeSpan.Zero));
-
-        IMorningSummaryScheduler scheduler = new FakeMorningSummaryScheduler();
-
-        var beforeDue = scheduler.IsWindowDue(window, new DateTimeOffset(2026, 6, 22, 6, 59, 0, TimeSpan.Zero));
-        var atDue = scheduler.IsWindowDue(window, new DateTimeOffset(2026, 6, 22, 7, 0, 0, TimeSpan.Zero));
-
-        Assert.False(beforeDue);
-        Assert.True(atDue);
+        Assert.False(due.IsDue);
+        Assert.Equal("Europe/Madrid", due.ResolvedTimezoneId);
+        Assert.Equal(new DateOnly(2026, 6, 22), due.LocalDate);
+        Assert.Equal(new TimeOnly(9, 0), due.TargetLocalTime);
     }
 
     [Fact]
@@ -240,7 +218,7 @@ public class MorningSummaryContractTests
 
     private sealed class FakeMorningSummaryComposer : IMorningSummaryComposer
     {
-        public Task<MorningSummary> ComposeAsync(MorningSummaryRequest request, CancellationToken ct)
+        public Task<MorningSummaryPayload> ComposeAsync(MorningSummaryRequest request, CancellationToken ct)
         {
             var rankedEntry = new RankedWorkItem(
                 1,
@@ -251,7 +229,7 @@ public class MorningSummaryContractTests
                     new RankingFactorContribution(RankingFactor.Impact, 0.60, "High impact")
                 ]));
 
-            var payload = new MorningSummary(
+            var payload = new MorningSummaryPayload(
                 request.UserId,
                 request.Window,
                 new DateTimeOffset(2026, 6, 22, 7, 1, 0, TimeSpan.Zero),
@@ -263,27 +241,13 @@ public class MorningSummaryContractTests
 
     private sealed class FakeMorningSummaryScheduler : IMorningSummaryScheduler
     {
-        public MorningSummaryWindow ResolveWindow(MorningSummaryScheduleContext context)
+        public Task<MorningSummaryDueState> ResolveAsync(string userId, CancellationToken ct)
         {
-            var scheduledInstant = new DateTimeOffset(
-                context.WindowDate.Year,
-                context.WindowDate.Month,
-                context.WindowDate.Day,
-                context.TargetLocalTime.Hour,
-                context.TargetLocalTime.Minute,
-                context.TargetLocalTime.Second,
-                TimeSpan.Zero);
-
-            return new MorningSummaryWindow(
-                context.WindowDate,
-                context.UserTimeZoneId,
-                context.TargetLocalTime,
-                scheduledInstant);
-        }
-
-        public bool IsWindowDue(MorningSummaryWindow window, DateTimeOffset evaluationInstant)
-        {
-            return evaluationInstant >= window.ScheduledInstantUtc;
+            return Task.FromResult(new MorningSummaryDueState(
+                false,
+                "Europe/Madrid",
+                new DateOnly(2026, 6, 22),
+                new TimeOnly(9, 0)));
         }
     }
 }
