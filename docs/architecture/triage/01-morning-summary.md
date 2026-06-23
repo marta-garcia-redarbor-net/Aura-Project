@@ -1,21 +1,30 @@
 # Triáje — Morning Summary
 
-> Placeholder. Este documento debe definir el resumen ejecutivo diario de las 09:00 AM con foco en impacto, urgencia y claridad.
+Contrato operativo para emisión del Morning Summary diario según `Project/System Settings`, con reglas explícitas de timezone, hora objetivo configurable, idempotencia y observabilidad.
 
 ## Quick path
 
-1. Definir inputs: calendario, correos, PRs, bloqueos y prioridades.
-2. Diseñar composición del resumen por usuario y timezone.
-3. Validar formato, ranking y señales de seguimiento.
+1. Resolver `Project/System Settings` y obtener `timezoneId` y `targetLocalTime`.
+2. Resolver timezone efectiva (configurada en settings; fallback al sistema y luego UTC).
+3. Determinar due-state para `targetLocalTime` (wall-clock) usando reglas IANA/DST.
+4. Emitir como máximo un Morning Summary por usuario y día local.
 
-## Debe cubrir
+## Contrato de scheduling (W2-H5-T3)
 
-- Contratos `IMorningSummaryScheduler` y `IMorningSummaryComposer`.
-- Reglas de priorización y agrupación.
-- Generación idempotente por ventana diaria.
-- Telemetría de entrega, lectura y utilidad.
-- Tests de composición y edge cases temporales.
+| Tema | Regla |
+| --- | --- |
+| Fuente de verdad de scheduling | Objeto único `Project/System Settings` compartido por el proyecto/sistema. |
+| Campos mínimos de settings | `timezoneId` configurado y `targetLocalTime` configurado (por defecto esperado: `09:00`). |
+| Fallback de timezone | Si falta o es inválida, usar timezone del sistema. |
+| Falla resolviendo timezone del sistema | Usar `UTC` como fallback final. |
+| Semántica de hora objetivo | `targetLocalTime` significa hora local (wall-clock) en la timezone resuelta; es configurable y no hardcodeada. |
+| DST / horario de verano | Se aplica automáticamente por reglas de timezone; nunca usar offsets UTC fijos. |
+| Idempotencia diaria | Máximo un Morning Summary por usuario por día local. |
+| Reejecución del scheduler el mismo día | Las ejecuciones posteriores deben tratarlo como “ya emitido”. |
+| Cambio de timezone del proyecto/sistema durante el día | Sigue contando como “ya emitido”; no generar un segundo summary. |
+| Resultado del scheduler | Debe exponer `resolvedTimezoneId`, `localDate`, `targetLocalTime` (configurada; por defecto esperado `09:00`) y `isDue`. Si no está vencido, basta con `isDue = false`. |
 
-## Pendiente
+## Alcance de este corte
 
-- [ ] Completar formato final, ranking y condiciones de envío del resumen.
+- Incluido: scheduling + timezone + idempotencia de emisión diaria.
+- Excluido: interpretación timezone-aware de ventanas de datos, ranking o semántica de composición del contenido.

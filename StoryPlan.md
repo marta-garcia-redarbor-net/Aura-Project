@@ -96,7 +96,8 @@ Implementar el flujo de ingestión inicial para Teams y Outlook, normalizar even
 
 5. **Motor inicial de Morning Summary**  
    **[Prioridad: P0]**  
-   **DoD:** composición diaria a las 09:00 con ranking por impacto, deadline, dependencia y riesgo; salida serializable; tests de composición y timezone.  
+   **DoD:** composición diaria según `Project/System Settings` (incluye `timezoneId` y `targetLocalTime`, configurable; default esperado `09:00`), resolución de timezone con cadena configurada -> sistema -> UTC, emisión idempotente de un único summary por usuario/día local y salida serializable; tests de composición y scheduling/timezone.  
+   **Alcance del slice inicial de timezone:** scheduling/due-state e idempotencia; no abarca semántica timezone-aware de ventanas de datos o ranking.  
    **Riesgo:** producir un resumen plano, ruidoso y sin valor ejecutivo.
 
 6. **Vista UI de bandeja de ingestión y preview del Morning Summary**  
