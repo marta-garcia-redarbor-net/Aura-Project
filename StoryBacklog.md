@@ -211,6 +211,32 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** prueba E2E cubre aparición de items y summary.  
   **Riesgo:** integración rota entre backend y UI.
 
+### Épica W2-E4 — Calendar y notificaciones
+
+#### Historia W2-H7 — Reuniones próximas y alertas de calendario
+
+**Resultado esperado:** las reuniones del día aparecen en el dashboard y el sistema avisa con sonido y notificación de browser a los 60, 10 y 5 minutos antes del inicio, sin duplicar avisos entre tabs.
+
+- [ ] **W2-H7-T1** Configurar Graph shared client y User Secrets.  
+  **DoD:** `GraphServiceClient` registrado como singleton en Infrastructure con `ClientSecretCredential`; credenciales en User Secrets (no en appsettings); permiso `Calendars.Read` (Application) documentado.  
+  **Riesgo:** credenciales filtradas al repo si se usan appsettings.
+
+- [ ] **W2-H7-T2** Implementar dominio Calendar y adapter de Graph.  
+  **DoD:** `CalendarEvent`, `MeetingAlertTrigger`, `MeetingAlert` en Domain; puertos `ICalendarEventProvider`, `IMeetingAlertStore`, `IMeetingAlertDispatcher` en Application; `GraphCalendarEventProvider` llamando `/me/calendarView` en Infrastructure; tests unitarios con mock del provider.  
+  **Riesgo:** timezone incorrecta en eventos si no se normaliza a UTC en el adapter.
+
+- [ ] **W2-H7-T3** Implementar alert store, SignalR hub y worker.  
+  **DoD:** `SqliteMeetingAlertStore` en `aura.db` con PK `(EventId, Trigger, LocalDate)`; `MeetingAlertHub` con grupos por UserId y método `AcknowledgeAlert`; `MeetingAlertWorker` con polling cada 2 min; use cases `CheckAndDispatchMeetingAlertsUseCase` y `GetUpcomingMeetingsUseCase`; tests del store y del use case.  
+  **Riesgo:** doble disparo si el worker hace polling concurrente; mitigado por `MarkSentAsync` previo al dispatch.
+
+- [ ] **W2-H7-T4** Implementar notificaciones browser con sonido.  
+  **DoD:** `meetingAlert.js` con Web Notification API + `Audio.play()`; `MeetingAlertToast.razor` recibe push de SignalR y llama JS interop; deduplicación: el primer tab en llamar `AcknowledgeAlert` gana, los demás descartan; funciona con el tab minimizado.  
+  **Riesgo:** browser puede bloquear notificaciones si el usuario no concedió permiso; el JS debe pedir permiso al cargar.
+
+- [ ] **W2-H7-T5** Mostrar reuniones del día en el dashboard.  
+  **DoD:** `UpcomingMeetingsPanel.razor` agregado al dashboard; muestra título, hora de inicio, duración y link de Teams si existe; se refresca cada 5 min; vacío elegante si no hay reuniones.  
+  **Riesgo:** panel vacío si `ICalendarEventProvider` falla; debe degradar con mensaje de error, no pantalla rota.
+
 ---
 
 ## Semana 3 — Deep Work & PRs
