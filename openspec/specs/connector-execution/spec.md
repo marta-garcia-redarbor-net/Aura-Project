@@ -21,7 +21,8 @@ Teams is the first connector in this slice.
 |---|---|---|
 | Connector Execution Port | Provider-neutral; all types MUST be Aura.Application or BCL | MUST |
 | Connector Execution Use Case | Invokes the port; no Infrastructure or SDK type references | MUST |
-| Canonical Execution Result | identity + item count + status + max-processed-item timestamp; failure MUST include reason | MUST |
+| Canonical Execution Result | identity + item count + status + max-processed-item timestamp + partial degradation details; failure MUST include reason | MUST |
+| Partial Degradation Handling | If one connector fails, remaining connectors MUST continue executing independently | MUST |
 | Telemetry Emission | Trace span + item-count metric + log; share one correlation ID | MUST |
 | Clean Architecture Boundary | No SDK types above Infrastructure; enforced by arch tests | MUST NOT violate |
 | Checkpoint Read-Only Integration | Read checkpoint to bound fetch window; read-then-persist with four-outcome policy | MUST |
@@ -60,11 +61,24 @@ Teams is the first connector in this slice.
 
 ---
 
+### Requirement: Partial Degradation Handling
+
+The execution orchestration MUST support partial degradation across multiple sources. If one connector fails (e.g., Teams), the remaining connectors (e.g., Outlook) MUST continue to execute and sync their data independently.
+
+#### Scenario: One connector fails while others succeed
+
+- GIVEN multiple connectors are orchestrated to run
+- WHEN the Teams connector fails to sync
+- THEN the Outlook connector continues to run and completes successfully
+- AND the system reports the overall status as partially degraded
+
+---
+
 ### Requirement: Canonical Execution Result
 
-The canonical execution result MUST contain: connector identity, item count, status, and a
+The canonical execution result MUST contain: connector identity, item count, status, a
 max-processed-item timestamp (the highest timestamp among successfully processed items, or
-null if no items were processed successfully). Status MUST be one of: success, failure, or
+null if no items were processed successfully), and partial degradation details per source if applicable. Status MUST be one of: success, failure, or
 partial-failure. A failure result MUST include a non-empty reason string. Failed items MUST
 be excluded from the max-processed-item timestamp computation.
 

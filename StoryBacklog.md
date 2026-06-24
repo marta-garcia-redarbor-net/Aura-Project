@@ -189,10 +189,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H5 — Construir el motor de summary
 
-- [ ] **W2-H5-T1** Definir contrato `IMorningSummaryComposer`.  
+- [x] **W2-H5-T1** Definir contrato `IMorningSummaryComposer`.  
   **DoD:** puerto de composición definido.  
   **Riesgo:** lógica acoplada a UI o transporte.
-- [ ] **W2-H5-T2** Implementar ranking por impacto, deadline y riesgo.  
+- [x] **W2-H5-T2** Implementar ranking por impacto, deadline y riesgo.  
   **DoD:** output priorizado y testeado.  
   **Riesgo:** resumen plano sin criterio ejecutivo.
 - [x] **W2-H5-T3** Añadir soporte inicial de timezone.  
@@ -237,6 +237,112 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - [ ] **W2-H7-T5** Mostrar reuniones del día en el dashboard.  
   **DoD:** `UpcomingMeetingsPanel.razor` agregado al dashboard; muestra título, hora de inicio, duración y link de Teams si existe; se refresca cada 5 min; vacío elegante si no hay reuniones.  
   **Riesgo:** panel vacío si `ICalendarEventProvider` falla; debe degradar con mensaje de error, no pantalla rota.
+
+### Épica W2-E5 — Ingestión real con Graph API
+
+#### Historia W2-H8 — Conectar Teams y Outlook reales con Graph delegated
+
+**Resultado esperado:** el usuario se autentica en Microsoft desde la app, Aura lee sus mensajes de Teams y correos de Outlook reales, los normaliza a WorkItem con metadata enriquecida, y el dashboard muestra el resultado con degradación parcial visible por fuente.
+
+- [x] **W2-H8-T1** Crear puertos `IMessageSourceProvider<T>`, `ISyncStateStore`, `ITokenCacheStatus` en Application.  
+  **DoD:** interfaces definidas sin dependencias de SDK externo.  
+  **Riesgo:** acoplar Application a Graph/MSAL.
+
+- [x] **W2-H8-T2** Crear modelos `SyncResultDto`, `SourceSyncResult`, `SourceSyncState`, `TokenStatus`.  
+  **DoD:** records con tests de construcción y estado.  
+  **Riesgo:** contrato insuficiente para estados de sync parcial.
+
+- [x] **W2-H8-T3** Extender `GraphConnectorOptions` con `RedirectUri` y `Scopes[]`.  
+  **DoD:** opciones de Graph configurables desde appsettings/User Secrets.  
+  **Riesgo:** configuración inconsistente entre entornos.
+
+- [x] **W2-H8-T4** Extender `InboxItemPreviewDto` con campos aditivos init-only: `Sender`, `Snippet`, `DeepLink`, `PriorityHint`, `SyncState`.  
+  **DoD:** DTOs aditivos sin romper constructores posicionales existentes.  
+  **Riesgo:** romper compatibilidad con consumidores actuales del DTO.
+
+- [x] **W2-H8-T5** Implementar `SqliteWorkItemStore` con upsert por `ExternalId`.  
+  **DoD:** persistencia real en SQLite, tests de save/upsert/read-back.  
+  **Riesgo:** schema insuficiente para consultas por ventana temporal.
+
+- [x] **W2-H8-T6** Implementar `MsalSqliteTokenCache` para cache de tokens MSAL.  
+  **DoD:** tokens persistidos en SQLite, tests de persist/recuperación/overwrite.  
+  **Riesgo:** cache in-memory pierde tokens entre reinicios.
+
+- [x] **W2-H8-T7** Crear `GraphClientFactory` con `IGraphClientFactory` para `GraphServiceClient` delegado.  
+  **DoD:** factory crea cliente desde token cache de usuario, tests con mock.  
+  **Riesgo:** `AcquireTokenSilent` falla sin token válido.
+
+- [x] **W2-H8-T8** Registrar MSAL, token cache, y GraphClientFactory en DI bajo `GraphConnector:Enabled`.  
+  **DoD:** DI no rota cuando feature flag está deshabilitado.  
+  **Riesgo:** resolver de DI falla si opciones no están configuradas.
+
+- [x] **W2-H8-T9** Implementar `GraphTeamsSourceProvider` y `GraphOutlookSourceProvider`.  
+  **DoD:** providers leen de Graph API real con mocked HTTP handler, tests unitarios.  
+  **Riesgo:** scopes insuficientes o permisos requeridos por admin consent.
+
+- [x] **W2-H8-T10** Extender `TeamsMessageDto` y `OutlookEmailDto` con `Sender`, `BodyPreview`, `WebUrl`/`WebLink`.  
+  **DoD:** DTOs ampliados, mapeadores actualizan campos en WorkItem metadata.  
+  **Riesgo:** mapeo incorrecto de campos opcionales.
+
+- [x] **W2-H8-T11** Inyectar `IMessageSourceProvider<T>` opcional en `TeamsConnectorAdapter` y `OutlookConnectorAdapter`.  
+  **DoD:** adapter usa provider cuando existe, fallback a fixtures, tests de ambas ramas.  
+  **Riesgo:** lógica condicional dificulta testabilidad.
+
+- [x] **W2-H8-T12** Actualizar DI de conectores para registro condicional de Graph providers.  
+  **DoD:** providers solo se registran cuando Graph está habilitado y configurado.  
+  **Riesgo:** registro duplicado o conflicto de implementaciones.
+
+- [x] **W2-H8-T13** Implementar `TriggerSyncUseCase` con agregación multi-source y degradación parcial.  
+  **DoD:** un fallo por fuente no bloquea las demás, tests de escenarios parciales.  
+  **Riesgo:** propagación incorrecta de errores entre fuentes.
+
+- [x] **W2-H8-T14** Crear `InMemorySyncStateStore` para estado de sync por fuente.  
+  **DoD:** store registra timestamp y resultado por fuente.  
+  **Riesgo:** estado se pierde entre reinicios (aceptable para primer slice).
+
+- [x] **W2-H8-T15** Crear endpoints `POST /api/sync/now` y `GET /api/sync/status`.  
+  **DoD:** trigger manual funcional con feedback operativo, tests de integración.  
+  **Riesgo:** endpoint expone información sensible de tokens.
+
+- [x] **W2-H8-T16** Actualizar `ConnectorExecutionWorker` para iterar todos los conectores registrados.  
+  **DoD:** worker multi-connector con config-driven identity list.  
+  **Riesgo:** hardcoded identity list en lugar de resolución dinámica.
+
+- [x] **W2-H8-T17** Integrar persistencia en `TriggerSyncUseCase`: drain buffer + persistir a `IWorkItemStore`.  
+  **DoD:** items ingeridos quedan en SQLite, test de integración sync→preview.  
+  **Riesgo:** buffer no se dren correctamente entre ejecuciones.
+
+- [x] **W2-H8-T18** Actualizar `DashboardPreviewReader` para propagar metadata sincronizada a DTOs de preview.  
+  **DoD:** campos `Sender`, `Snippet`, `DeepLink`, `PriorityHint`, `SyncState` poblados desde `WorkItem.Metadata`.  
+  **Riesgo:** campos no poblados cuando metadata no existe.
+
+- [x] **W2-H8-T19** Actualizar `DashboardPreviewResponse.cs` en UI para reflejar campos opcionales.  
+  **DoD:** modelo de UI espejo del DTO de Application.  
+  **Riesgo:** desalineación entre DTO de API y modelo de UI.
+
+- [x] **W2-H8-T20** Modificar `InboxPreviewPanel.razor` para renderizar nuevos campos con `data-testid`.  
+  **DoD:** sender, snippet, deepLink, syncState visibles con selectores estables.  
+  **Riesgo:** selectores inestables rompen tests Playwright paralelos.
+
+- [x] **W2-H8-T21** Crear `SyncStatusPanel.razor` con botón sync-now, progreso por fuente, timestamp.  
+  **DoD:** panel operativo con feedback visual de sync.  
+  **Riesgo:** HandleSyncNow es placeholder sin wiring funcional.
+
+- [x] **W2-H8-T22** Verificar UX de estado vacío explícito: sync correcto sin datos → UI dice "no data", sin fallback a demo.  
+  **DoD:** test E2E valida ausencia de texto "demo" y presencia de mensaje de estado vacío.  
+  **Riesgo:** fallback automático a datos demo en ausencia de datos reales.
+
+- [x] **W2-H8-T23** Añadir reglas NetArchTest: `Microsoft.Graph` y `Microsoft.Identity.Client` prohibidos en Application, Domain, Workers, Api, UI.  
+  **DoD:** 7 reglas archunit pasando, aislamiento de SDK verificado.  
+  **Riesgo:** SDK se filtra a capas superiores por mistake.
+
+- [x] **W2-H8-T24** Scaffold Playwright real-data smoke test: dashboard shell, inbox panel, sync panel.  
+  **DoD:** tests compilan, scaffold listo para instalar navegadores y ejecutar.  
+  **Riesgo:** tests fallan sin app corriendo (ambiental, no de código).
+
+- [x] **W2-H8-T25** Añadir `data-testid` selectors para suite Playwright controlada/demo.  
+  **DoD:** selectores estables: `inbox-preview-item-sender`, `sync-now-button`, `sync-status-panel`, etc.  
+  **Riesgo:** selectores renombrados rompen suite paralela.
 
 ---
 

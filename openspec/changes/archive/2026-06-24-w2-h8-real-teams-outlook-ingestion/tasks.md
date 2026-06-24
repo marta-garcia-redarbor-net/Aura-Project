@@ -73,5 +73,5 @@ Chain strategy: feature-branch-chain
 ## Phase 6: Architecture Tests + E2E
 
 - [x] 6.1 Add NetArchTest rule: `Microsoft.Graph` types MUST NOT be referenced from Application or Domain
-- [ ] 6.2 Scaffold Playwright real-data smoke test in `tests/Aura.E2E/` — login → sync → verify items appear
+- [x] 6.2 Scaffold Playwright real-data smoke test in `tests/Aura.E2E/` — dashboard shell, inbox panel, sync panel rendered via Playwright; real-data login → sync flow deferred to `feat/playwright-e2e-bootstrap` branch
 - [x] 6.3 Add `data-testid` selectors to controlled-demo Playwright suite for new dashboard fields

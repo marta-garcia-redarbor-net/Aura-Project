@@ -27,13 +27,13 @@ are recorded in `WorkItem.Metadata` for explainability.
 
 The adapter MUST map a valid Outlook email payload to a canonical `WorkItem` with
 `SourceType = OutlookEmail`. All required `WorkItem` fields MUST be populated from
-corresponding email payload fields.
+corresponding email payload fields, including read-only metadata fields: deep link and snippet.
 
 #### Scenario: Valid email payload produces canonical WorkItem
 
 - GIVEN an Outlook payload with all required fields present
 - WHEN the adapter maps the payload
-- THEN a `WorkItem` is returned with `SourceType = OutlookEmail` and all required fields populated
+- THEN a `WorkItem` is returned with `SourceType = OutlookEmail` and all required fields populated, including deep link and snippet
 
 #### Scenario: WorkItem SourceType is always OutlookEmail
 

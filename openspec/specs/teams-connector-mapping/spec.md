@@ -22,13 +22,13 @@ Graph types escape this boundary.
 
 The adapter MUST map a valid Teams message payload to a canonical `WorkItem` with
 `SourceType = TeamsMessage`. All required `WorkItem` fields MUST be populated from
-the corresponding Teams payload fields.
+the corresponding Teams payload fields, including read-only metadata fields: deep link and snippet.
 
 #### Scenario: Valid Teams payload produces canonical WorkItem
 
 - GIVEN a Teams message payload with all required fields present
 - WHEN the adapter maps the payload
-- THEN a `WorkItem` is returned with `SourceType = TeamsMessage` and all fields populated
+- THEN a `WorkItem` is returned with `SourceType = TeamsMessage` and all fields populated, including deep link and snippet
 
 #### Scenario: WorkItem SourceType is always TeamsMessage
 
