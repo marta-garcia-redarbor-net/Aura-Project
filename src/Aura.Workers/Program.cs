@@ -23,6 +23,7 @@ else
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
     builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
+    builder.Services.AddHostedService<MeetingAlertWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
 }
 

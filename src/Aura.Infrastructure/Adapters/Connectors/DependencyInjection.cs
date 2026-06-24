@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.Calendar;
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
@@ -20,6 +21,7 @@ internal static class DependencyInjection
 
         services.AddWorkItems(configuration);
         services.AddGraphSourceProviders(configuration);
+        services.AddCalendar(configuration);
 
         // Register source providers for adapter injection when Graph is enabled
         var graphOptions = new GraphConnectorOptions();

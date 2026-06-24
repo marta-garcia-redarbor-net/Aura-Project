@@ -95,6 +95,36 @@ public class GraphConnectorArchitectureTests
             $"Domain references Microsoft.Identity.Client types: {FormatFailingTypes(result)}");
     }
 
+    [Fact]
+    public void IngestionSync_ShouldNotReference_DomainCalendar()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Application.UseCases.IngestionSync.TriggerSyncUseCase).Assembly)
+            .That()
+            .ResideInNamespaceContaining("Aura.Application.UseCases.IngestionSync")
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Domain.Calendar")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"IngestionSync references Aura.Domain.Calendar: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
+    public void WorkItemStore_ShouldNotStore_CalendarEvent()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Application.Ports.IWorkItemStore).Assembly)
+            .That()
+            .ImplementInterface(typeof(Aura.Application.Ports.IWorkItemStore))
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Domain.Calendar.CalendarEvent")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"WorkItemStore references CalendarEvent: {FormatFailingTypes(result)}");
+    }
+
     private static string FormatFailingTypes(TestResult result)
     {
         if (result.FailingTypes == null || !result.FailingTypes.Any())

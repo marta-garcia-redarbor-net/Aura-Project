@@ -1,5 +1,7 @@
 using Aura.UI.Components;
 using Aura.UI.Services;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Identity.Client;
 
 namespace Aura.UI;
 
@@ -20,6 +22,26 @@ public static class Program
         if (builder.Environment.IsDevelopment())
         {
             builder.Services.AddTransient<DevAccessTokenHandler>();
+            builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
+        }
+        else
+        {
+            // Register MSAL-based token acquisition for production
+            builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
+            
+            // Register MSAL PublicClientApplication for interactive browser auth
+            builder.Services.AddSingleton<IPublicClientApplication>(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
+                var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
+                
+                return PublicClientApplicationBuilder
+                    .Create(clientId)
+                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
+                    .WithRedirectUri("http://localhost:5000/authentication/login-callback")
+                    .Build();
+            });
         }
 
         var httpClientBuilder = builder.Services

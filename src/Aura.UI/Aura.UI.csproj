@@ -8,6 +8,17 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Aura.E2E" />
+    <InternalsVisibleTo Include="Aura.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.77.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aura.Application\Aura.Application.csproj" />
+    <ProjectReference Include="..\Aura.Domain\Aura.Domain.csproj" />
   </ItemGroup>
 
 </Project>

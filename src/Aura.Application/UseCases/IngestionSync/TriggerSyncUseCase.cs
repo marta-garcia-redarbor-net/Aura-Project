@@ -140,6 +140,7 @@ public sealed partial class TriggerSyncUseCase
         {
             "teams" => "messages",
             "outlook" => "inbox",
+            "calendar" => "calendar",
             _ => connectorName
         };
 

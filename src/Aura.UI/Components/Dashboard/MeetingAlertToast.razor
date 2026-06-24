@@ -1,0 +1,130 @@
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject ITokenAcquisitionService TokenService
+@implements IAsyncDisposable
+
+<div class="meeting-alert-toast" data-testid="meeting-alert-toast">
+    @if (_currentAlert is not null)
+    {
+        <div class="meeting-alert-toast__content" data-testid="meeting-alert-toast-content">
+            <div class="meeting-alert-toast__header">
+                <h3 data-testid="meeting-alert-title">@_currentAlert.Title</h3>
+                <button class="meeting-alert-toast__dismiss" 
+                        data-testid="meeting-alert-dismiss"
+                        @onclick="DismissAlert"
+                        aria-label="Dismiss alert">
+                    &times;
+                </button>
+            </div>
+            <p data-testid="meeting-alert-time">@_currentAlert.Time</p>
+            <button class="meeting-alert-toast__acknowledge" 
+                    data-testid="meeting-alert-acknowledge"
+                    @onclick="AcknowledgeAlert">
+                Acknowledge
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private HubConnection? _hubConnection;
+    private MeetingAlertInfo? _currentAlert;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await TokenService.AcquireTokenAsync();
+            
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("/hubs/meeting-alerts", options =>
+                {
+                    options.AccessTokenProvider = () => Task.FromResult(token)!;
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On<MeetingAlertInfo>("MeetingAlert", alert =>
+            {
+                _currentAlert = alert;
+                InvokeAsync(async () =>
+                {
+                    StateHasChanged();
+                    await ShowBrowserNotification(alert);
+                    await PlayAlertSound();
+                });
+            });
+
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
+        }
+    }
+
+    private async Task ShowBrowserNotification(MeetingAlertInfo alert)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("meetingAlert.showNotification", 
+                alert.Title, alert.Time);
+        }
+        catch (JSException)
+        {
+            // JS interop not available (e.g., during prerendering)
+        }
+    }
+
+    private async Task PlayAlertSound()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("meetingAlert.playSound");
+        }
+        catch (JSException)
+        {
+            // JS interop not available
+        }
+    }
+
+    private async Task AcknowledgeAlert()
+    {
+        if (_hubConnection is not null && _currentAlert is not null)
+        {
+            try
+            {
+                await _hubConnection.InvokeAsync("AcknowledgeAlert", _currentAlert.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to acknowledge alert: {ex.Message}");
+            }
+        }
+
+        _currentAlert = null;
+        StateHasChanged();
+    }
+
+    private void DismissAlert()
+    {
+        _currentAlert = null;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    public class MeetingAlertInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Time { get; set; } = string.Empty;
+    }
+}

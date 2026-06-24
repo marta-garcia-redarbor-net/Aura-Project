@@ -1,0 +1,78 @@
+@using Aura.Application.UseCases.Calendar
+@using Aura.Domain.Calendar
+@inject GetUpcomingMeetingsUseCase UseCase
+
+<section class="dashboard-panel" data-testid="upcoming-meetings-panel" aria-live="polite">
+    <h2>Upcoming meetings</h2>
+    <p>Calendar events for the next 8 hours.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="upcoming-meetings-error">@_loadError</p>
+    }
+    else if (_events is null)
+    {
+        <p data-testid="upcoming-meetings-loading">Loading upcoming meetings...</p>
+    }
+    else if (_events.Count == 0)
+    {
+        <p data-testid="upcoming-meetings-empty">No upcoming meetings.</p>
+    }
+    else
+    {
+        <div data-testid="upcoming-meetings-populated">
+            <ul data-testid="upcoming-meetings-list">
+                @foreach (var evt in _events)
+                {
+                    <li data-testid="upcoming-meeting-item">
+                        <strong data-testid="upcoming-meeting-title">@evt.Title</strong>
+                        <span data-testid="upcoming-meeting-start">@evt.StartUtc.ToString("HH:mm")</span>
+                        <span data-testid="upcoming-meeting-end">@evt.EndUtc.ToString("HH:mm")</span>
+                        <span data-testid="upcoming-meeting-duration">@($"{(evt.EndUtc - evt.StartUtc).TotalMinutes} min")</span>
+                        @if (evt.IsOnlineMeeting && evt.JoinUrl is not null)
+                        {
+                            <a href="@evt.JoinUrl" data-testid="upcoming-meeting-join" target="_blank" rel="noopener noreferrer">Join</a>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<CalendarEvent>? _events;
+    private string? _loadError;
+    private Timer? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventsAsync();
+
+        _refreshTimer = new Timer(async _ => await InvokeAsync(async () =>
+        {
+            await LoadEventsAsync();
+            StateHasChanged();
+        }), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+    }
+
+    private async Task LoadEventsAsync()
+    {
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var windowEnd = now.AddHours(8);
+            _events = await UseCase.ExecuteAsync(now, windowEnd, CancellationToken.None);
+            _loadError = null;
+        }
+        catch
+        {
+            _loadError = "Upcoming meetings are currently unavailable.";
+        }
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

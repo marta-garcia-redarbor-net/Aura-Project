@@ -79,6 +79,7 @@ public sealed partial class ConnectorExecutionWorker : BackgroundService
         {
             "teams" => "messages",
             "outlook" => "inbox",
+            "calendar" => "calendar",
             _ => connectorName
         };
 
