@@ -65,13 +65,13 @@ Chain strategy: feature-branch-chain
 
 ## Phase 5: UI + Presentation
 
-- [ ] 5.1 Update `src/Aura.UI/Models/DashboardPreviewResponse.cs` — mirror optional fields
-- [ ] 5.2 Modify `InboxPreviewPanel.razor` — render sender, snippet, deepLink, syncState with `data-testid` attributes
-- [ ] 5.3 Create `SyncStatusPanel.razor` — sync-now button, per-source progress/result, last-sync timestamp, re-auth prompt
-- [ ] 5.4 Verify explicit empty-state UX: sync succeeds with zero items → UI says so, no demo fallback
+- [x] 5.1 Update `src/Aura.UI/Models/DashboardPreviewResponse.cs` — mirror optional fields
+- [x] 5.2 Modify `InboxPreviewPanel.razor` — render sender, snippet, deepLink, syncState with `data-testid` attributes
+- [x] 5.3 Create `SyncStatusPanel.razor` — sync-now button, per-source progress/result, last-sync timestamp, re-auth prompt
+- [x] 5.4 Verify explicit empty-state UX: sync succeeds with zero items → UI says so, no demo fallback
 
 ## Phase 6: Architecture Tests + E2E
 
-- [ ] 6.1 Add NetArchTest rule: `Microsoft.Graph` types MUST NOT be referenced from Application or Domain
+- [x] 6.1 Add NetArchTest rule: `Microsoft.Graph` types MUST NOT be referenced from Application or Domain
 - [ ] 6.2 Scaffold Playwright real-data smoke test in `tests/Aura.E2E/` — login → sync → verify items appear
-- [ ] 6.3 Add `data-testid` selectors to controlled-demo Playwright suite for new dashboard fields
+- [x] 6.3 Add `data-testid` selectors to controlled-demo Playwright suite for new dashboard fields
