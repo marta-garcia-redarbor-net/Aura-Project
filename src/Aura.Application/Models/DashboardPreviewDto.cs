@@ -22,7 +22,14 @@ public sealed record InboxItemPreviewDto(
     string Source,
     string RelativeTimestamp,
     double Score,
-    string SuggestedAction);
+    string SuggestedAction)
+{
+    public string? Sender { get; init; }
+    public string? Snippet { get; init; }
+    public string? DeepLink { get; init; }
+    public string? PriorityHint { get; init; }
+    public string? SyncState { get; init; }
+}
 
 /// <summary>
 /// Slim morning summary preview entry.

@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Aura.Infrastructure.Adapters.WorkItems;
@@ -16,7 +17,8 @@ internal static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddWorkItems();
+        services.AddWorkItems(configuration);
+        services.AddGraphSourceProviders(configuration);
         services.AddScoped<IConnectorAdapter, TeamsConnectorAdapter>();
         services.AddScoped<IConnectorAdapter, OutlookConnectorAdapter>();
 
