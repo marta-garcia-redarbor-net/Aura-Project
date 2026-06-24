@@ -19,4 +19,13 @@ internal sealed record TeamsMessageDto
     public string? CorrelationId { get; init; }
 
     public DateTimeOffset? CapturedAtUtc { get; init; }
+
+    /// <summary>Display name of the message sender (from Graph API).</summary>
+    public string? Sender { get; init; }
+
+    /// <summary>Short body preview of the message.</summary>
+    public string? BodyPreview { get; init; }
+
+    /// <summary>Deep link URL to the message in Teams web client.</summary>
+    public string? WebUrl { get; init; }
 }

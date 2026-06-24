@@ -60,6 +60,7 @@ app.MapGet("/", () => "Hello World!");
 app.MapAuthEndpoints(app.Environment);
 app.MapDashboardEndpoints();
 app.MapGraphConnectorEndpoints();
+app.MapSyncEndpoints();
 
 app.Run();
 

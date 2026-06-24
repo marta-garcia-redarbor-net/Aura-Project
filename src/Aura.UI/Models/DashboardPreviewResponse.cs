@@ -13,7 +13,14 @@ public sealed record InboxItemPreviewResponse(
     string Source,
     string RelativeTimestamp,
     double Score,
-    string SuggestedAction);
+    string SuggestedAction)
+{
+    public string? Sender { get; init; }
+    public string? Snippet { get; init; }
+    public string? DeepLink { get; init; }
+    public string? PriorityHint { get; init; }
+    public string? SyncState { get; init; }
+}
 
 public sealed record SummaryPreviewEntryResponse(
     int Rank,

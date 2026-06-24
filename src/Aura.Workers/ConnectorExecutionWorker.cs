@@ -1,4 +1,5 @@
 using Aura.Application.Models;
+using Aura.Application.Ports;
 using Aura.Application.UseCases.ConnectorExecution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Aura.Workers;
 
 /// <summary>
-/// One-shot worker that runs the connector execution use case once and stops the host.
+/// One-shot worker that runs the connector execution use case for all registered connectors and stops the host.
 /// Uses lightweight strategy dispatch in the use case and relies on Application checkpoint policy.
 /// </summary>
 public sealed partial class ConnectorExecutionWorker : BackgroundService
@@ -32,23 +33,31 @@ public sealed partial class ConnectorExecutionWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var identity = new CheckpointIdentity("teams", "messages", "acme");
-
         try
         {
-            Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
-
             using var scope = _scopeFactory.CreateScope();
             var useCase = scope.ServiceProvider.GetRequiredService<ExecuteConnectorUseCase>();
-            var result = await useCase.ExecuteAsync(identity, stoppingToken);
+            var adapters = scope.ServiceProvider.GetServices<IConnectorAdapter>();
 
-            if (result.Status == ConnectorExecutionStatus.Success)
+            foreach (var adapter in adapters)
             {
-                Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
-            }
-            else
-            {
-                Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
+                var identity = new CheckpointIdentity(
+                    adapter.ConnectorName,
+                    GetSource(adapter.ConnectorName),
+                    "default");
+
+                Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
+
+                var result = await useCase.ExecuteAsync(identity, stoppingToken);
+
+                if (result.Status == ConnectorExecutionStatus.Success)
+                {
+                    Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
+                }
+                else
+                {
+                    Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
+                }
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -64,6 +73,14 @@ public sealed partial class ConnectorExecutionWorker : BackgroundService
             _lifetime.StopApplication();
         }
     }
+
+    private static string GetSource(string connectorName) =>
+        connectorName switch
+        {
+            "teams" => "messages",
+            "outlook" => "inbox",
+            _ => connectorName
+        };
 
     private static partial class Log
     {
