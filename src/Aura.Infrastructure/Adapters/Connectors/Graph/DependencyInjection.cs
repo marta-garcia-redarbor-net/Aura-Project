@@ -80,6 +80,7 @@ internal static class DependencyInjection
 
         // Graph client factory
         services.AddSingleton<GraphClientFactory>();
+        services.AddSingleton<IGraphClientFactory>(sp => sp.GetRequiredService<GraphClientFactory>());
 
         return services;
     }

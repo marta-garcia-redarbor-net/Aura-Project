@@ -15,7 +15,7 @@ internal static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IWorkItemStore>(sp =>
+        services.AddSingleton<SqliteWorkItemStore>(sp =>
         {
             var connectionString = configuration?.GetConnectionString("WorkItems")
                                    ?? "Data Source=workitems.db";
@@ -24,6 +24,8 @@ internal static class DependencyInjection
             SqliteWorkItemStore.InitializeSchema(connection);
             return new SqliteWorkItemStore(connection);
         });
+        services.AddSingleton<IWorkItemStore>(sp => sp.GetRequiredService<SqliteWorkItemStore>());
+        services.AddSingleton<IWorkItemReader>(sp => sp.GetRequiredService<SqliteWorkItemStore>());
         services.AddScoped<IWorkItemBuffer, InMemoryWorkItemBuffer>();
         services.AddSingleton<TeamsWorkItemMapper>();
         services.AddSingleton<OutlookWorkItemMapper>();

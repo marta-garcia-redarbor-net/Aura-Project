@@ -14,9 +14,8 @@ public class ConnectorExecutionWorkerTests
     [Fact]
     public async Task ExecuteAsync_OneShot_ExecutesUseCaseAndStopsApplication()
     {
-        var identity = new CheckpointIdentity("teams", "messages", "acme");
         var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
-        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
+        checkpointStore.GetAsync(Arg.Any<CheckpointIdentity>(), Arg.Any<CancellationToken>())
             .Returns((IngestionCheckpoint?)null);
 
         var adapter = new SuccessAdapter();
@@ -28,6 +27,7 @@ public class ConnectorExecutionWorkerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(useCase);
+        services.AddSingleton<IConnectorAdapter>(adapter);
         await using var provider = services.BuildServiceProvider();
 
         var scope = Substitute.For<IServiceScope>();
@@ -43,7 +43,7 @@ public class ConnectorExecutionWorkerTests
         await Task.Delay(100);
         await worker.StopAsync(CancellationToken.None);
 
-        await checkpointStore.Received(1).GetAsync(identity, Arg.Any<CancellationToken>());
+        await checkpointStore.Received(1).GetAsync(Arg.Any<CheckpointIdentity>(), Arg.Any<CancellationToken>());
         lifetime.Received(1).StopApplication();
     }
 

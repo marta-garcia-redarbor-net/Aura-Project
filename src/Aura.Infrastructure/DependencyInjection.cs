@@ -1,7 +1,10 @@
+using Aura.Application.Ports;
+using Aura.Application.UseCases.IngestionSync;
 using Aura.Infrastructure.Adapters.Identity;
 using Aura.Infrastructure.Adapters.Ingestion;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Connectors;
+using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.Dashboard;
 using Aura.Infrastructure.Adapters.MorningSummaryScheduling;
@@ -37,6 +40,15 @@ public static class DependencyInjection
         services.AddIdentityAdapter(configuration, environment);
         services.AddDashboardAdapters(configuration, environment);
         services.AddMorningSummarySchedulingAdapters(configuration);
+
+        // Sync infrastructure
+        services.AddSingleton<ISyncStateStore, InMemorySyncStateStore>();
+        services.AddScoped<TriggerSyncUseCase>(sp => new TriggerSyncUseCase(
+            sp.GetServices<IConnectorAdapter>(),
+            sp.GetRequiredService<ISyncStateStore>(),
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<TriggerSyncUseCase>>(),
+            sp.GetRequiredService<IWorkItemBuffer>(),
+            sp.GetRequiredService<IWorkItemStore>()));
 
         services.AddHealthChecks()
             .AddCheck<QdrantHealthCheck>("qdrant");

@@ -11,7 +11,7 @@ namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 /// The factory uses AcquireTokenSilent to get cached tokens; if silent acquisition fails,
 /// consumers should surface re-authentication need to the UI.
 /// </summary>
-internal sealed class GraphClientFactory
+internal sealed class GraphClientFactory : IGraphClientFactory
 {
     private readonly IConfidentialClientApplication _msalApp;
     private readonly string[] _scopes;

@@ -17,4 +17,7 @@ internal sealed record OutlookEmailDto
     public string? CorrelationId { get; init; }
 
     public string? ConversationId { get; init; }
+
+    /// <summary>Deep link URL to open the email in Outlook web.</summary>
+    public string? WebLink { get; init; }
 }

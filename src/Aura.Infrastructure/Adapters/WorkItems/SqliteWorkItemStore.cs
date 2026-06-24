@@ -8,8 +8,9 @@ namespace Aura.Infrastructure.Adapters.WorkItems;
 
 /// <summary>
 /// SQLite-backed work item store with idempotent upsert on ExternalId.
+/// Also provides read-back capability via <see cref="IWorkItemReader"/>.
 /// </summary>
-internal sealed class SqliteWorkItemStore : IWorkItemStore
+internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
 {
     private readonly SqliteConnection _connection;
 
@@ -40,6 +41,8 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore
             );
             CREATE INDEX IF NOT EXISTS IX_WorkItems_ExternalId
                 ON WorkItems (ExternalId);
+            CREATE INDEX IF NOT EXISTS IX_WorkItems_CapturedAtUtc
+                ON WorkItems (CapturedAtUtc);
             """;
         cmd.ExecuteNonQuery();
     }
@@ -81,5 +84,41 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore
         cmd.ExecuteNonQuery();
 
         return Task.FromResult(WorkItemPersistenceResult.Success());
+    }
+
+    public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            FROM WorkItems
+            WHERE CapturedAtUtc >= @FromUtc AND CapturedAtUtc <= @ToUtc
+            ORDER BY CapturedAtUtc DESC;
+            """;
+        cmd.Parameters.AddWithValue("@FromUtc", query.FromUtc.ToString("O"));
+        cmd.Parameters.AddWithValue("@ToUtc", query.ToUtc.ToString("O"));
+
+        var items = new List<WorkItem>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var externalId = reader.GetString(0);
+            var title = reader.GetString(1);
+            var source = reader.GetString(2);
+            var sourceType = Enum.Parse<WorkItemSourceType>(reader.GetString(3));
+            var priority = Enum.Parse<WorkItemPriority>(reader.GetString(4));
+            var metadataJson = reader.GetString(5);
+            var metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(metadataJson)
+                           ?? new Dictionary<string, string>();
+            var correlationId = reader.GetString(6);
+            var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(7));
+
+            items.Add(new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc));
+        }
+
+        return Task.FromResult<IReadOnlyList<WorkItem>>(items);
     }
 }

@@ -1,0 +1,46 @@
+<section class="dashboard-panel" data-testid="sync-status-panel" aria-live="polite">
+    <h2>Sync status</h2>
+    <p>Trigger manual sync and view per-source progress.</p>
+
+    <button data-testid="sync-now-button" @onclick="HandleSyncNow" disabled="@_isSyncing">
+        @(_isSyncing ? "Syncing..." : "Sync now")
+    </button>
+
+    <div data-testid="sync-source-progress-teams">
+        <span>Teams:</span>
+        @if (_isSyncing)
+        {
+            <span>Syncing...</span>
+        }
+        else
+        {
+            <span>Idle</span>
+        }
+    </div>
+
+    <div data-testid="sync-source-progress-outlook">
+        <span>Outlook:</span>
+        @if (_isSyncing)
+        {
+            <span>Syncing...</span>
+        }
+        else
+        {
+            <span>Idle</span>
+        }
+    </div>
+
+    <p data-testid="sync-last-timestamp">Last sync: not yet performed</p>
+</section>
+
+@code {
+    private bool _isSyncing;
+
+    private Task HandleSyncNow()
+    {
+        // Placeholder: will be wired to POST /api/sync/now in future slice
+        _isSyncing = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

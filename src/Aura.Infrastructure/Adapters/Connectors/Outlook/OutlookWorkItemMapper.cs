@@ -103,6 +103,17 @@ internal sealed class OutlookWorkItemMapper
             metadata["outlook.conversationId"] = email.ConversationId;
         }
 
+        // New Graph-sourced fields
+        if (!string.IsNullOrWhiteSpace(email.WebLink))
+        {
+            metadata["outlook.deepLink"] = email.WebLink;
+        }
+
+        if (!string.IsNullOrWhiteSpace(email.BodyPreview))
+        {
+            metadata["outlook.snippet"] = email.BodyPreview;
+        }
+
         return metadata;
     }
 

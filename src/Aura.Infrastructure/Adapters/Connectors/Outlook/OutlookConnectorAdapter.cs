@@ -12,12 +12,14 @@ internal sealed partial class OutlookConnectorAdapter : IConnectorAdapter
     private readonly IWorkItemBuffer _buffer;
     private readonly OutlookWorkItemMapper _mapper;
     private readonly Func<IReadOnlyList<OutlookEmailDto>> _fixtureProvider;
+    private readonly IMessageSourceProvider<OutlookEmailDto>? _sourceProvider;
 
     public OutlookConnectorAdapter(
         ILogger<OutlookConnectorAdapter> logger,
         IWorkItemBuffer buffer,
         OutlookWorkItemMapper mapper,
-        Func<IReadOnlyList<OutlookEmailDto>>? fixtureProvider = null)
+        Func<IReadOnlyList<OutlookEmailDto>>? fixtureProvider = null,
+        IMessageSourceProvider<OutlookEmailDto>? sourceProvider = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(buffer);
@@ -27,15 +29,25 @@ internal sealed partial class OutlookConnectorAdapter : IConnectorAdapter
         _buffer = buffer;
         _mapper = mapper;
         _fixtureProvider = fixtureProvider ?? DefaultFixtureProvider;
+        _sourceProvider = sourceProvider;
     }
 
     public string ConnectorName => "outlook";
 
-    public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
+    public async Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        var payloads = _fixtureProvider();
+        IReadOnlyList<OutlookEmailDto> payloads;
+
+        if (_sourceProvider is not null)
+        {
+            payloads = await _sourceProvider.FetchAsync(request, ct);
+        }
+        else
+        {
+            payloads = _fixtureProvider();
+        }
 
         var mappedCount = 0;
         var skippedCount = 0;
@@ -58,12 +70,12 @@ internal sealed partial class OutlookConnectorAdapter : IConnectorAdapter
 
         Log.OutlookExecutionMapped(_logger, request.Identity.Source, request.Identity.Tenant, request.WindowStart, request.WindowEnd, mappedCount, skippedCount);
 
-        return Task.FromResult(new ConnectorExecutionResult(
+        return new ConnectorExecutionResult(
             request.Identity,
             mappedCount,
             status,
             failureReason,
-            MaxProcessedAt: request.WindowEnd));
+            MaxProcessedAt: request.WindowEnd);
     }
 
     private static IReadOnlyList<OutlookEmailDto> LoadDefaultFixtures()

@@ -66,7 +66,14 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
                     entry.Item.Source,
                     ToRelativeTimestamp(entry.Item.CapturedAtUtc, now),
                     entry.Score,
-                    BuildSuggestedAction(entry.Item.Source)))
+                    BuildSuggestedAction(entry.Item.Source))
+                {
+                    Sender = ExtractMetadata(entry.Item, "sender"),
+                    Snippet = ExtractMetadata(entry.Item, "snippet"),
+                    DeepLink = ExtractMetadata(entry.Item, "deepLink"),
+                    PriorityHint = entry.Item.Priority.ToString(),
+                    SyncState = HasSyncedMetadata(entry.Item) ? "synced" : null
+                })
                 .ToArray()))
             .ToArray();
 
@@ -95,6 +102,31 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
             "github" => "Review and prioritize",
             _ => "Review and triage"
         };
+    }
+
+    /// <summary>
+    /// Extracts a metadata value using source-prefixed keys.
+    /// Tries "{source}.{field}" first (e.g. "teams.sender", "outlook.sender").
+    /// </summary>
+    private static string? ExtractMetadata(Domain.WorkItems.WorkItem item, string field)
+    {
+        var sourceKey = $"{item.Source.Trim().ToLowerInvariant()}.{field}";
+        if (item.Metadata.TryGetValue(sourceKey, out var value) && !string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Determines if a work item has synced metadata (sender, snippet, or deepLink present).
+    /// </summary>
+    private static bool HasSyncedMetadata(Domain.WorkItems.WorkItem item)
+    {
+        return ExtractMetadata(item, "sender") is not null
+            || ExtractMetadata(item, "snippet") is not null
+            || ExtractMetadata(item, "deepLink") is not null;
     }
 
     private static string ToRelativeTimestamp(DateTimeOffset capturedAtUtc, DateTimeOffset nowUtc)
