@@ -47,11 +47,12 @@ public class DashboardRootBrowserTests : IAsyncLifetime
         await _factory.StartAsync();
         _output.WriteLine($"Kestrel server started at {_factory.BaseUrl}");
 
-        // Launch Playwright Chromium in headless mode
+        // Launch Playwright Chromium — headless by default, set PLAYWRIGHT_HEADED=true to see UI
+        var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED") == "true";
         _playwright = await Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = true
+            Headless = !headed
         });
 
         // Create browser context with tracing enabled for failure diagnostics
