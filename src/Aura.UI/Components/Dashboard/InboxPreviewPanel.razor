@@ -32,6 +32,26 @@
                                 <span data-testid="inbox-preview-item-relative">@item.RelativeTimestamp</span>
                                 <span data-testid="inbox-preview-item-score">@item.Score.ToString("0.##")</span>
                                 <span data-testid="inbox-preview-item-action">@item.SuggestedAction</span>
+                                @if (item.Sender is not null)
+                                {
+                                    <span data-testid="inbox-preview-item-sender">@item.Sender</span>
+                                }
+                                @if (item.Snippet is not null)
+                                {
+                                    <span data-testid="inbox-preview-item-snippet">@item.Snippet</span>
+                                }
+                                @if (item.DeepLink is not null)
+                                {
+                                    <a href="@item.DeepLink" data-testid="inbox-preview-item-deeplink" target="_blank" rel="noopener noreferrer">Open</a>
+                                }
+                                @if (item.PriorityHint is not null)
+                                {
+                                    <span data-testid="inbox-preview-item-priority">@item.PriorityHint</span>
+                                }
+                                @if (item.SyncState is not null)
+                                {
+                                    <span data-testid="inbox-preview-item-sync-state">@item.SyncState</span>
+                                }
                             </li>
                         }
                     </ul>

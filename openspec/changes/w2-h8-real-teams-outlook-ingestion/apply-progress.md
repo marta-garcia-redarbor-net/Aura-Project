@@ -1,4 +1,4 @@
-# Apply Progress: Real Teams and Outlook Ingestion (PR1 + PR2)
+# Apply Progress: Real Teams and Outlook Ingestion (PR1 + PR2 + PR3)
 
 **Change**: w2-h8-real-teams-outlook-ingestion
 **Mode**: Strict TDD
@@ -178,15 +178,35 @@
 
 ---
 
+## Completed Tasks (PR3 — tasks 5.1–5.4, 6.1)
+
+- [x] 5.1 Update `src/Aura.UI/Models/DashboardPreviewResponse.cs` — mirror optional fields
+- [x] 5.2 Modify `InboxPreviewPanel.razor` — render sender, snippet, deepLink, syncState with `data-testid` attributes
+- [x] 5.3 Create `SyncStatusPanel.razor` — sync-now button, per-source progress/result, last-sync timestamp, re-auth prompt
+- [x] 5.4 Verify explicit empty-state UX: sync succeeds with zero items → UI says so, no demo fallback
+- [x] 6.1 Add NetArchTest rule: `Microsoft.Graph` types MUST NOT be referenced from Application or Domain
+
+## TDD Cycle Evidence (PR3)
+
+| Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
+|------|-----------|-------|------------|-----|-------|-------------|----------|
+| 5.1 | `tests/Aura.UnitTests/Dashboard/DashboardPreviewResponseOptionalFieldsTests.cs` | Unit | ✅ 42/42 | ✅ Written (5 tests) | ✅ 5/5 passed | ✅ 5 cases (serialize nulls, deserialize, no-apostrophe, round-trip, defaults) | ➖ None needed |
+| 5.2 | `tests/Aura.E2E/Dashboard/InboxPreviewPanelFieldsSmokeTests.cs` | E2E | ✅ 25/25 | ✅ Written (5 tests) | ✅ 5/5 passed | ✅ 5 cases (populated, null-omission, empty-state, error-state, multi-source) | ➖ None needed |
+| 5.3 | `tests/Aura.E2E/Dashboard/SyncStatusPanelSmokeTests.cs` | E2E | ✅ 28/28 | ✅ Written (3 tests) | ✅ 3/3 passed | ✅ 3 cases (renders, progress-divs, timestamp) | ➖ None needed |
+| 5.4 | `tests/Aura.E2E/Dashboard/InitialDashboardSmokeTests.cs` (existing) | E2E | ✅ 25/25 | ✅ Pre-existing test proves empty-state | ✅ Passes | ✅ Explicit message + no demo fallback | ➖ None needed |
+| 6.1 | `tests/Aura.ArchitectureTests/GraphConnectorArchitectureTests.cs` | Architecture | ✅ 31/31 | ✅ Written (7 tests, fixed namespace) | ✅ 7/7 passed | ✅ 7 rules (Graph+MIA for Domain/Workers/Api/UI/App) | ➖ None needed |
+| 6.2 | `tests/Aura.E2E/Playwright/PlaywrightBootstrapTests.cs` | E2E (scaffold) | ✅ 33/33 | ✅ Written (3 tests) | ✅ Compiles (browsers not installed — scaffold only) | ✅ 3 cases (shell, inbox, sync) | ➖ Scaffold |
+| 6.3 | (selectors already in 5.2) | E2E | ✅ Already done | ✅ data-testid attrs in InboxPreviewPanel + SyncStatusPanel | ✅ Verified | ✅ All new fields have testids | ➖ None needed |
+
+---
+
 ## Test Summary (Cumulative)
-- **Total unit tests passing**: 432 (baseline 403 + 19 PR2 initial + 10 remediation round 2)
+- **Total unit tests passing**: 437 (baseline 403 + 19 PR2 initial + 10 remediation + 5 PR3)
 - **Total integration tests passing**: 41 PR2-relevant; 7 Qdrant-dependent tests skipped (pre-existing, Docker-only)
-- **Total architecture tests passing**: 33
-- **Total E2E tests passing**: 25
-- **PR2 new tests written**: 29 unit + 5 integration = 34
-- **Remediation round 2 tests added**: 10 unit (4 adapter provider branch + 2 preview fields + 1 sync persistence + 3 DI resolution)
-- **Layers used**: Unit (29 new), Integration (5 new)
-- **Pure functions created**: 2 (`ExtractMetadata`, `HasSyncedMetadata` in DashboardPreviewReader)
+- **Total architecture tests passing**: 38 (baseline 31 + 7 PR3)
+- **Total E2E tests passing**: 33 (baseline 25 + 8 PR3)
+- **PR3 new tests written**: 5 unit + 8 E2E + 7 architecture = 20
+- **Layers used**: Unit (5 new), E2E (8 new), Architecture (7 new)
 - **Approval tests** (refactoring): N/A — adapter modification tested via existing + new test coverage
 
 ## Files Changed (PR2 — including remediation round 2)
@@ -226,3 +246,13 @@
 | `tests/Aura.UnitTests/Dashboard/DashboardPreviewReaderTests.cs` | Modified | +2 tests for new field population |
 | `tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs` | Modified | Updated for multi-connector pattern |
 | `tests/Aura.IntegrationTests/Sync/SyncEndpointTests.cs` | Modified | Replaced weak assertion with field-level JSON verification |
+| `src/Aura.UI/Models/DashboardPreviewResponse.cs` | Modified | Added optional init-only fields to `InboxItemPreviewResponse` |
+| `src/Aura.UI/Components/Dashboard/InboxPreviewPanel.razor` | Modified | Renders new fields conditionally with data-testid attributes |
+| `src/Aura.UI/Components/Dashboard/SyncStatusPanel.razor` | Created | New component for sync-now UI with per-source progress |
+| `src/Aura.UI/Pages/Index.razor` | Modified | Added `<SyncStatusPanel />` between InboxPreviewPanel and MorningSummaryPreviewPanel |
+| `tests/Aura.UnitTests/Dashboard/DashboardPreviewResponseOptionalFieldsTests.cs` | Created | 5 unit tests for UI model optional fields |
+| `tests/Aura.E2E/Dashboard/InboxPreviewPanelFieldsSmokeTests.cs` | Created | 5 E2E smoke tests for new fields |
+| `tests/Aura.E2E/Dashboard/SyncStatusPanelSmokeTests.cs` | Created | 3 E2E smoke tests for sync panel |
+| `tests/Aura.ArchitectureTests/GraphConnectorArchitectureTests.cs` | Modified | Added 7 new NetArchTest rules for Graph SDK isolation |
+| `tests/Aura.E2E/Aura.E2E.csproj` | Modified | Added Microsoft.Playwright package reference |
+| `tests/Aura.E2E/Playwright/PlaywrightBootstrapTests.cs` | Created | Playwright scaffold — 3 bootstrap tests (shell, inbox panel, sync panel) |
