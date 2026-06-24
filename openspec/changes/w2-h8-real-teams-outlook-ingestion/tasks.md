@@ -42,26 +42,26 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3: Graph Providers + Adapter Wiring
 
-- [ ] 3.1 RED: Write tests for `GraphTeamsSourceProvider` — mock `HttpMessageHandler`, verify DTO mapping from Graph shape
-- [ ] 3.2 GREEN: Create `Graph/GraphTeamsSourceProvider.cs` implementing `IMessageSourceProvider<TeamsMessageDto>`
-- [ ] 3.3 RED: Write tests for `GraphOutlookSourceProvider` — same mock pattern
-- [ ] 3.4 GREEN: Create `Graph/GraphOutlookSourceProvider.cs` implementing `IMessageSourceProvider<OutlookEmailDto>`
-- [ ] 3.5 Extend `TeamsMessageDto` (add `Sender`, `BodyPreview`, `WebUrl`) and `OutlookEmailDto` (add `WebLink`)
-- [ ] 3.6 RED: Write mapper tests verifying deepLink, snippet, sender land in WorkItem metadata
-- [ ] 3.7 GREEN: Update `TeamsWorkItemMapper.cs` and `OutlookWorkItemMapper.cs` to map new fields
-- [ ] 3.8 Modify `TeamsConnectorAdapter.cs` — inject optional `IMessageSourceProvider<TeamsMessageDto>`; use provider when non-null, else fixtures
-- [ ] 3.9 Modify `OutlookConnectorAdapter.cs` — same provider injection pattern
-- [ ] 3.10 Update `Connectors/DependencyInjection.cs` — conditionally register Graph source providers
+- [x] 3.1 RED: Write tests for `GraphTeamsSourceProvider` — mock `HttpMessageHandler`, verify DTO mapping from Graph shape
+- [x] 3.2 GREEN: Create `Graph/GraphTeamsSourceProvider.cs` implementing `IMessageSourceProvider<TeamsMessageDto>`
+- [x] 3.3 RED: Write tests for `GraphOutlookSourceProvider` — same mock pattern
+- [x] 3.4 GREEN: Create `Graph/GraphOutlookSourceProvider.cs` implementing `IMessageSourceProvider<OutlookEmailDto>`
+- [x] 3.5 Extend `TeamsMessageDto` (add `Sender`, `BodyPreview`, `WebUrl`) and `OutlookEmailDto` (add `WebLink`)
+- [x] 3.6 RED: Write mapper tests verifying deepLink, snippet, sender land in WorkItem metadata
+- [x] 3.7 GREEN: Update `TeamsWorkItemMapper.cs` and `OutlookWorkItemMapper.cs` to map new fields
+- [x] 3.8 Modify `TeamsConnectorAdapter.cs` — inject optional `IMessageSourceProvider<TeamsMessageDto>`; use provider when non-null, else fixtures
+- [x] 3.9 Modify `OutlookConnectorAdapter.cs` — same provider injection pattern
+- [x] 3.10 Update `Connectors/DependencyInjection.cs` — conditionally register Graph source providers
 
 ## Phase 4: Sync Use Case + API + Worker
 
-- [ ] 4.1 RED: Write `TriggerSyncUseCase` tests — per-source aggregation, partial degradation, `auth_required` status
-- [ ] 4.2 GREEN: Create `src/Aura.Application/UseCases/IngestionSync/TriggerSyncUseCase.cs`
-- [ ] 4.3 Create `Graph/InMemorySyncStateStore.cs` implementing `ISyncStateStore`
-- [ ] 4.4 Create `src/Aura.Api/Endpoints/SyncEndpoints.cs` — `POST /api/sync/now` + `GET /api/sync/status`
-- [ ] 4.5 Modify `ConnectorExecutionWorker.cs` — iterate all registered `IConnectorAdapter` instead of hardcoded teams identity
-- [ ] 4.6 Update `src/Aura.Infrastructure/DependencyInjection.cs` — wire Graph sub-registration
-- [ ] 4.7 RED/GREEN: Integration test — POST sync/now → GET dashboard/preview returns items with new fields
+- [x] 4.1 RED: Write `TriggerSyncUseCase` tests — per-source aggregation, partial degradation, `auth_required` status
+- [x] 4.2 GREEN: Create `src/Aura.Application/UseCases/IngestionSync/TriggerSyncUseCase.cs`
+- [x] 4.3 Create `Graph/InMemorySyncStateStore.cs` implementing `ISyncStateStore`
+- [x] 4.4 Create `src/Aura.Api/Endpoints/SyncEndpoints.cs` — `POST /api/sync/now` + `GET /api/sync/status`
+- [x] 4.5 Modify `ConnectorExecutionWorker.cs` — iterate all registered `IConnectorAdapter` instead of hardcoded teams identity
+- [x] 4.6 Update `src/Aura.Infrastructure/DependencyInjection.cs` — wire Graph sub-registration
+- [x] 4.7 RED/GREEN: Integration test — POST sync/now → GET dashboard/preview returns items with new fields
 
 ## Phase 5: UI + Presentation
 

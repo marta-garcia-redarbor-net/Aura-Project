@@ -12,12 +12,14 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
     private readonly IWorkItemBuffer _buffer;
     private readonly TeamsWorkItemMapper _mapper;
     private readonly Func<IReadOnlyList<TeamsMessageDto>> _fixtureProvider;
+    private readonly IMessageSourceProvider<TeamsMessageDto>? _sourceProvider;
 
     public TeamsConnectorAdapter(
         ILogger<TeamsConnectorAdapter> logger,
         IWorkItemBuffer buffer,
         TeamsWorkItemMapper mapper,
-        Func<IReadOnlyList<TeamsMessageDto>>? fixtureProvider = null)
+        Func<IReadOnlyList<TeamsMessageDto>>? fixtureProvider = null,
+        IMessageSourceProvider<TeamsMessageDto>? sourceProvider = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(buffer);
@@ -26,15 +28,25 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
         _buffer = buffer;
         _mapper = mapper;
         _fixtureProvider = fixtureProvider ?? DefaultFixtureProvider;
+        _sourceProvider = sourceProvider;
     }
 
     public string ConnectorName => "teams";
 
-    public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
+    public async Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        var payloads = _fixtureProvider();
+        IReadOnlyList<TeamsMessageDto> payloads;
+
+        if (_sourceProvider is not null)
+        {
+            payloads = await _sourceProvider.FetchAsync(request, ct);
+        }
+        else
+        {
+            payloads = _fixtureProvider();
+        }
 
         var mappedCount = 0;
         var skippedCount = 0;
@@ -57,12 +69,12 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
 
         Log.TeamsExecutionMapped(_logger, request.Identity.Source, request.Identity.Tenant, request.WindowStart, request.WindowEnd, mappedCount, skippedCount);
 
-        return Task.FromResult(new ConnectorExecutionResult(
+        return new ConnectorExecutionResult(
             request.Identity,
             mappedCount,
             status,
             failureReason,
-            MaxProcessedAt: request.WindowEnd));
+            MaxProcessedAt: request.WindowEnd);
     }
 
     private static IReadOnlyList<TeamsMessageDto> LoadDefaultFixtures()

@@ -5,12 +5,12 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5495 nodes · 6566 edges · 495 communities (452 shown, 43 thin omitted)
+- 5497 nodes · 6568 edges · 499 communities (455 shown, 44 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `11e30a48`
+- Built from commit: `19b45cde`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -466,6 +466,10 @@
 - [[_COMMUNITY_Community 488|Community 488]]
 - [[_COMMUNITY_Community 489|Community 489]]
 - [[_COMMUNITY_Community 490|Community 490]]
+- [[_COMMUNITY_Community 495|Community 495]]
+- [[_COMMUNITY_Community 496|Community 496]]
+- [[_COMMUNITY_Community 497|Community 497]]
+- [[_COMMUNITY_Community 498|Community 498]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Task` - 28 edges
@@ -484,21 +488,21 @@
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Api/Endpoints/DashboardEndpoints.cs
 - `StubAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
+- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `CapturingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 - `StubConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
-  tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
-- `ThrowingConnectorAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
   tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (495 total, 43 thin omitted)
+## Communities (499 total, 44 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.07
-Nodes (31): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CapturingConnectorAdapter, ExecuteConnectorUseCaseTests, GetTag(), StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter (+23 more)
+Cohesion: 0.33
+Nodes (3): ExecuteConnectorUseCaseTests, Fact, Task
 
 ### Community 1 - "Community 1"
 Cohesion: 0.05
@@ -573,8 +577,8 @@ Cohesion: 0.25
 Nodes (9): MeaiEmbeddingProviderTests, MeaiEmbeddingProvider, Embedding, EmbeddingProviderOptions, Fact, GeneratedEmbeddings, IEmbeddingGenerator, ResiliencePipeline (+1 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.13
-Nodes (20): QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, CancellationToken, DomainTag, EmbeddedSemanticChunk, Fact, IEmbeddingProvider, IOptions (+12 more)
+Cohesion: 0.17
+Nodes (16): QdrantSemanticContextAdapter, QdrantSemanticIndexAdapter, DomainTag, EmbeddedSemanticChunk, Fact, IOptions, IReadOnlyList, List (+8 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.09
@@ -665,8 +669,8 @@ Cohesion: 0.05
 Nodes (26): Program, UiMarker, BasicSemanticChunkExtractor, Config, InitialDashboardReaderTests, ModuleProgressReaderTests, SystemStatusReaderTests, GraphConnectorStatusReaderTests (+18 more)
 
 ### Community 42 - "Community 42"
-Cohesion: 0.12
-Nodes (10): MockJwtOptionsReadinessAdapter, DependencyInjection, DependencyInjection, IMockAuthReadinessProvider, options, IConfiguration, IServiceCollection, IOptionsMonitor (+2 more)
+Cohesion: 0.09
+Nodes (13): MockJwtOptionsReadinessAdapter, DependencyInjection, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IConfiguration, IServiceCollection (+5 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.06
@@ -925,7 +929,7 @@ Cohesion: 0.21
 Nodes (7): MockJwtOptionsReadinessAdapterTests, StubOptionsMonitor, IOptionsMonitor, Action, Fact, IDisposable, MockJwtOptions
 
 ### Community 107 - "Community 107"
-Cohesion: 0.24
+Cohesion: 0.27
 Nodes (8): ISemanticIndexWriter, QdrantSemanticIndexAdapter, CancellationToken, EmbeddedSemanticChunk, IReadOnlyList, QdrantClient, QdrantOptions, Task
 
 ### Community 108 - "Community 108"
@@ -957,8 +961,8 @@ Cohesion: 0.25
 Nodes (7): NetArchTest.Rules (1.3.2), net9.0, coverlet.collector (6.0.2), Microsoft.NET.Test.Sdk (17.12.0), xunit (2.9.2), xunit.runner.visualstudio (2.8.2), Microsoft.NET.Sdk
 
 ### Community 117 - "Community 117"
-Cohesion: 0.15
-Nodes (12): Microsoft.AspNetCore.Authentication.JwtBearer (9.0.6), Microsoft.Extensions.AI (10.6.0), Microsoft.Extensions.AI.OpenAI (10.6.0), Microsoft.Extensions.Options.ConfigurationExtensions (10.0.8), Microsoft.Extensions.Resilience (10.6.0), Microsoft.Graph (5.78.0), Microsoft.Identity.Client (4.68.0), Qdrant.Client (1.18.1) (+4 more)
+Cohesion: 0.13
+Nodes (12): net9.0, Microsoft.AspNetCore.Authentication.JwtBearer (9.0.6), Microsoft.Data.Sqlite (9.0.6), Microsoft.Extensions.AI (10.6.0), Microsoft.Extensions.AI.OpenAI (10.6.0), Microsoft.Extensions.Diagnostics.HealthChecks (10.0.8), Microsoft.Extensions.Options.ConfigurationExtensions (10.0.8), Microsoft.Extensions.Resilience (10.6.0) (+4 more)
 
 ### Community 118 - "Community 118"
 Cohesion: 0.18
@@ -1166,7 +1170,7 @@ Nodes (7): IPluginRegistry, PluginRegistry, CancellationToken, ILogger, IReadOnl
 
 ### Community 169 - "Community 169"
 Cohesion: 0.13
-Nodes (14): ADDED Requirements, Delta for Dashboard Inbox Preview, MODIFIED Requirements, Requirement: Manual Sync Trigger and Feedback, Scenario: Explicit empty state with no demo fallback, Scenario: User triggers manual sync, Requirement: Dashboard Panel UI States, Requirement: Preview Endpoint Contract (+6 more)
+Nodes (14): ADDED Requirements, Delta for Dashboard Inbox Preview, MODIFIED Requirements, Requirement: Dashboard Panel UI States, Requirement: Manual Sync Trigger and Feedback, Requirement: Preview Endpoint Contract, Scenario: Both sections empty, Scenario: Error state (+6 more)
 
 ### Community 170 - "Community 170"
 Cohesion: 0.28
@@ -1794,7 +1798,7 @@ Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, C
 
 ### Community 384 - "Community 384"
 Cohesion: 0.24
-Nodes (6): GraphClientFactory, GraphClientFactoryTests, Fact, IConfidentialClientApplication, IOptions, Task
+Nodes (6): GraphClientFactory, GraphClientFactoryTests, IOptions, Fact, IConfidentialClientApplication, Task
 
 ### Community 385 - "Community 385"
 Cohesion: 0.12
@@ -1870,7 +1874,7 @@ Nodes (10): SemanticIndexSyncWorker, CancellationToken, IEmbeddingProvider, ILog
 
 ### Community 405 - "Community 405"
 Cohesion: 0.15
-Nodes (12): ADDED Requirements, Requirement: Partial Degradation Handling, Scenario: One connector fails while others succeed, Delta for Connector Execution, MODIFIED Requirements, Requirement: Canonical Execution Result, Scenario: Failure result contains reason, Scenario: Full failure — reason present, max-processed-at is null (+4 more)
+Nodes (12): ADDED Requirements, Delta for Connector Execution, MODIFIED Requirements, Requirement: Canonical Execution Result, Requirement: Partial Degradation Handling, Scenario: Failure result contains reason, Scenario: Full failure — reason present, max-processed-at is null, Scenario: Full success with items — all fields present (+4 more)
 
 ### Community 406 - "Community 406"
 Cohesion: 0.20
@@ -1906,7 +1910,7 @@ Nodes (12): 8.2 Entorno local, Compilar solución, Configurar secrets para Azure
 
 ### Community 414 - "Community 414"
 Cohesion: 0.19
-Nodes (10): GraphClientFactory, StaticAccessTokenProvider, GraphServiceClient, IAccessTokenProvider, CancellationToken, Dictionary, IConfidentialClientApplication, string (+2 more)
+Nodes (10): Dictionary, GraphClientFactory, StaticAccessTokenProvider, GraphServiceClient, IAccessTokenProvider, CancellationToken, IConfidentialClientApplication, string (+2 more)
 
 ### Community 415 - "Community 415"
 Cohesion: 0.31
@@ -2070,7 +2074,7 @@ Nodes (5): StubMorningSummarySettingsProvider, IMorningSummarySettingsProvider, 
 
 ### Community 465 - "Community 465"
 Cohesion: 0.25
-Nodes (6): IMessageSourceProvider, CancellationToken, ConnectorExecutionRequest, IReadOnlyList, T, Task
+Nodes (6): ConnectorExecutionRequest, IMessageSourceProvider, CancellationToken, IReadOnlyList, Task, T
 
 ### Community 467 - "Community 467"
 Cohesion: 0.36
@@ -2090,11 +2094,11 @@ Nodes (6): 1.1 Domain (modelos y valores), 1.2 Application (casos de uso, servic
 
 ### Community 476 - "Community 476"
 Cohesion: 0.33
-Nodes (5): Requirement: Outlook Field Mapping, Scenario: Valid email payload produces canonical WorkItem, Scenario: WorkItem SourceType is always OutlookEmail, Delta for Outlook Connector Mapping, MODIFIED Requirements
+Nodes (5): Delta for Outlook Connector Mapping, MODIFIED Requirements, Requirement: Outlook Field Mapping, Scenario: Valid email payload produces canonical WorkItem, Scenario: WorkItem SourceType is always OutlookEmail
 
 ### Community 477 - "Community 477"
 Cohesion: 0.33
-Nodes (5): Requirement: Teams Field Mapping, Scenario: Valid Teams payload produces canonical WorkItem, Scenario: WorkItem SourceType is always TeamsMessage, Delta for Teams Connector Mapping, MODIFIED Requirements
+Nodes (5): Delta for Teams Connector Mapping, MODIFIED Requirements, Requirement: Teams Field Mapping, Scenario: Valid Teams payload produces canonical WorkItem, Scenario: WorkItem SourceType is always TeamsMessage
 
 ### Community 478 - "Community 478"
 Cohesion: 0.33
@@ -2113,8 +2117,8 @@ Cohesion: 0.40
 Nodes (5): 4.2 Pendientes (W3-W4), 4. CASOS DE USO — IMPLEMENTADOS vs. PENDIENTES, Deep Work & Focus Management, Observabilidad avanzada, Reviewer Técnico
 
 ### Community 484 - "Community 484"
-Cohesion: 0.40
-Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+Cohesion: 0.17
+Nodes (11): CapturingConnectorAdapter, StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Task (+3 more)
 
 ### Community 486 - "Community 486"
 Cohesion: 0.50
@@ -2128,25 +2132,37 @@ Nodes (4): 5.1 Bloques Técnicos, 5.2 Decisiones Arquitectónicas Finalizadas, 5
 Cohesion: 0.50
 Nodes (4): 6.1 Especificaciones (openspec/specs/), 6.2 Documentación (docs/), 6.3 Backlog y Planificación, 6. ESTADO DE ARCHIVOS POR COMPONENTE
 
+### Community 495 - "Community 495"
+Cohesion: 0.24
+Nodes (8): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, WorkItem
+
+### Community 496 - "Community 496"
+Cohesion: 0.22
+Nodes (7): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, ConnectorExecutionWorkerTests, SuccessAdapter
+
+### Community 497 - "Community 497"
+Cohesion: 0.33
+Nodes (4): CancellationToken, IEmbeddingProvider, ReadOnlyMemory, DeterministicEmbeddingProvider
+
 ## Knowledge Gaps
-- **2789 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `net9.0` (+2784 more)
+- **2789 isolated node(s):** `SUMARIO EJECUTIVO`, `1.1 Domain (modelos y valores)`, `1.2 Application (casos de uso, servicios, puertos)`, `1.3 Infrastructure (adaptadores y configuración)`, `1.4 API (Endpoints HTTP)` (+2784 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Services` connect `Community 41` to `Community 32`, `Community 2`, `Community 3`, `Community 163`, `Community 69`, `Community 70`, `Community 359`, `Community 410`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `options` connect `Community 42` to `Community 407`, `Community 384`, `Community 484`, `Community 421`, `Community 37`, `Community 72`, `Community 41`, `Community 106`, `Community 107`, `Community 237`, `Community 238`, `Community 18`, `Community 19`, `Community 23`, `Community 474`, `Community 414`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+- **Why does `options` connect `Community 42` to `Community 407`, `Community 384`, `Community 421`, `Community 37`, `Community 72`, `Community 41`, `Community 106`, `Community 237`, `Community 238`, `Community 497`, `Community 18`, `Community 19`, `Community 23`, `Community 474`, `Community 414`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
 - **Why does `MorningSummary` connect `Community 32` to `Community 410`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
+- **What connects `SUMARIO EJECUTIVO`, `1.1 Domain (modelos y valores)`, `1.2 Application (casos de uso, servicios, puertos)` to the rest of the system?**
   _2789 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06682692307692308 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.0672316384180791 - nodes in this community are weakly interconnected._
+- **Should `Community 3` be split into smaller, more focused modules?**
+  _Cohesion score 0.05329153605015674 - nodes in this community are weakly interconnected._

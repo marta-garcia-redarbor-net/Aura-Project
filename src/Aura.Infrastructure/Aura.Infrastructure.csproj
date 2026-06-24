@@ -31,6 +31,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Aura.UnitTests" />
     <InternalsVisibleTo Include="Aura.IntegrationTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>
