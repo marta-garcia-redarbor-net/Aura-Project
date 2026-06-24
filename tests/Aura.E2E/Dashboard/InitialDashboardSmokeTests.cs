@@ -343,10 +343,119 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("Module progress is currently unavailable.", html);
     }
 
+    [Fact]
+    public async Task GetRootWhenDashboardPreviewIsLoading_RendersBothPanelLoadingStates()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Preview User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
+            new DelayedDashboardPreviewApiClient(
+                TimeSpan.FromMilliseconds(120),
+                new DashboardPreviewResponse([], [])));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"inbox-preview-panel\"", html);
+        Assert.Contains("data-testid=\"inbox-preview-loading\"", html);
+        Assert.Contains("data-testid=\"morning-summary-preview-panel\"", html);
+        Assert.Contains("data-testid=\"morning-summary-preview-loading\"", html);
+    }
+
+    [Fact]
+    public async Task GetRootWhenDashboardPreviewIsEmpty_RendersBothPanelEmptyStates()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Preview User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
+            new StubDashboardPreviewApiClient(new DashboardPreviewResponse([], [])));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"inbox-preview-empty\"", html);
+        Assert.Contains("No inbox items are available right now.", html);
+        Assert.Contains("data-testid=\"morning-summary-preview-empty\"", html);
+        Assert.Contains("No morning summary entries are available yet.", html);
+    }
+
+    [Fact]
+    public async Task GetRootWhenDashboardPreviewFails_RendersBothPanelErrorStates()
+    {
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Preview User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
+            new ThrowingDashboardPreviewApiClient());
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"inbox-preview-error\"", html);
+        Assert.Contains("Inbox preview is currently unavailable.", html);
+        Assert.Contains("data-testid=\"morning-summary-preview-error\"", html);
+        Assert.Contains("Morning summary preview is currently unavailable.", html);
+    }
+
+    [Fact]
+    public async Task GetRootWhenDashboardPreviewIsPopulated_RendersInboxAndSummaryFields()
+    {
+        var preview = new DashboardPreviewResponse(
+            [
+                new InboxSourceGroupResponse(
+                    "outlook",
+                    [
+                        new InboxItemPreviewResponse("PR review", "outlook", "2h ago", 91.4, "Review and triage")
+                    ])
+            ],
+            [
+                new SummaryPreviewEntryResponse(1, "PR review", "outlook", 91.4)
+            ]);
+
+        var client = CreateClient(
+            new StubDashboardApiClient(new InitialDashboardResponse("Preview User", [])),
+            new StubSystemStatusApiClient(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+            new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
+            new StubDashboardPreviewApiClient(preview));
+
+        var response = await client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("data-testid=\"inbox-preview-populated\"", html);
+        Assert.Contains("data-testid=\"inbox-preview-item-title\"", html);
+        Assert.Contains("PR review", html);
+        Assert.Contains("outlook", html);
+        Assert.Contains("2h ago", html);
+        Assert.Contains("Review and triage", html);
+
+        Assert.Contains("data-testid=\"morning-summary-preview-populated\"", html);
+        Assert.Contains("data-testid=\"morning-summary-preview-rank\"", html);
+        Assert.Contains("#1", html);
+    }
+
     private HttpClient CreateClient(
         IDashboardApiClient dashboardApiClient,
         ISystemStatusApiClient? systemStatusApiClient = null,
-        IModuleProgressApiClient? moduleProgressApiClient = null)
+        IModuleProgressApiClient? moduleProgressApiClient = null,
+        IDashboardPreviewApiClient? dashboardPreviewApiClient = null)
     {
         var factory = _factory.WithWebHostBuilder(builder =>
         {
@@ -365,6 +474,12 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 {
                     services.RemoveAll<IModuleProgressApiClient>();
                     services.AddScoped(_ => moduleProgressApiClient);
+                }
+
+                if (dashboardPreviewApiClient is not null)
+                {
+                    services.RemoveAll<IDashboardPreviewApiClient>();
+                    services.AddScoped(_ => dashboardPreviewApiClient);
                 }
             });
         });
@@ -448,6 +563,43 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     {
         public Task<ModuleProgressResponse> GetAsync(CancellationToken cancellationToken)
             => Task.FromException<ModuleProgressResponse>(new HttpRequestException("Module progress unavailable"));
+    }
+
+    private sealed class StubDashboardPreviewApiClient : IDashboardPreviewApiClient
+    {
+        private readonly DashboardPreviewResponse _response;
+
+        public StubDashboardPreviewApiClient(DashboardPreviewResponse response)
+        {
+            _response = response;
+        }
+
+        public Task<DashboardPreviewResponse> GetPreviewAsync(CancellationToken cancellationToken)
+            => Task.FromResult(_response);
+    }
+
+    private sealed class DelayedDashboardPreviewApiClient : IDashboardPreviewApiClient
+    {
+        private readonly TimeSpan _delay;
+        private readonly DashboardPreviewResponse _response;
+
+        public DelayedDashboardPreviewApiClient(TimeSpan delay, DashboardPreviewResponse response)
+        {
+            _delay = delay;
+            _response = response;
+        }
+
+        public async Task<DashboardPreviewResponse> GetPreviewAsync(CancellationToken cancellationToken)
+        {
+            await Task.Delay(_delay, cancellationToken);
+            return _response;
+        }
+    }
+
+    private sealed class ThrowingDashboardPreviewApiClient : IDashboardPreviewApiClient
+    {
+        public Task<DashboardPreviewResponse> GetPreviewAsync(CancellationToken cancellationToken)
+            => Task.FromException<DashboardPreviewResponse>(new HttpRequestException("Dashboard preview unavailable"));
     }
 
     /// <summary>

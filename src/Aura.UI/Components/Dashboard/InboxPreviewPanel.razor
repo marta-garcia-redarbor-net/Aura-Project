@@ -1,0 +1,59 @@
+@inject IDashboardPreviewApiClient DashboardPreviewApiClient
+
+<section class="dashboard-panel" data-testid="inbox-preview-panel" aria-live="polite">
+    <h2>Inbox by source</h2>
+    <p>Preview of ranked inbox items grouped by source.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="inbox-preview-error">@_loadError</p>
+    }
+    else if (_preview is null)
+    {
+        <p data-testid="inbox-preview-loading">Loading inbox preview...</p>
+    }
+    else if (_preview.InboxGroups.Count == 0)
+    {
+        <p data-testid="inbox-preview-empty">No inbox items are available right now.</p>
+    }
+    else
+    {
+        <div data-testid="inbox-preview-populated">
+            @foreach (var group in _preview.InboxGroups)
+            {
+                <section class="dashboard-preview-source-group" data-testid="inbox-preview-group">
+                    <h3 data-testid="inbox-preview-group-source">@group.Source</h3>
+                    <ul data-testid="inbox-preview-items">
+                        @foreach (var item in group.Items)
+                        {
+                            <li data-testid="inbox-preview-item">
+                                <strong data-testid="inbox-preview-item-title">@item.Title</strong>
+                                <span data-testid="inbox-preview-item-source">@item.Source</span>
+                                <span data-testid="inbox-preview-item-relative">@item.RelativeTimestamp</span>
+                                <span data-testid="inbox-preview-item-score">@item.Score.ToString("0.##")</span>
+                                <span data-testid="inbox-preview-item-action">@item.SuggestedAction</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private DashboardPreviewResponse? _preview;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _preview = await DashboardPreviewApiClient.GetPreviewAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _loadError = "Inbox preview is currently unavailable.";
+        }
+    }
+}

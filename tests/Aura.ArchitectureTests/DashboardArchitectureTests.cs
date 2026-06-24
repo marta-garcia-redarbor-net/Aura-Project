@@ -30,6 +30,38 @@ public class DashboardArchitectureTests
             $"UI references dashboard infrastructure adapters: {FormatFailingTypes(result)}");
     }
 
+    [Fact]
+    public void UiModels_ShouldNotReference_AuraDomain()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.UI.Program).Assembly)
+            .That()
+            .ResideInNamespace("Aura.UI.Models")
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Domain")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"UI model types reference Aura.Domain: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
+    public void DashboardEndpointTypes_ShouldNotReference_AuraDomain()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.Api.Endpoints.DashboardEndpoints).Assembly)
+            .That()
+            .ResideInNamespace("Aura.Api.Endpoints")
+            .And()
+            .HaveNameStartingWith("Dashboard")
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Domain")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"Dashboard endpoint types reference Aura.Domain: {FormatFailingTypes(result)}");
+    }
+
     private static string FormatFailingTypes(TestResult result)
     {
         if (result.FailingTypes == null || !result.FailingTypes.Any())

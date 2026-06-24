@@ -280,7 +280,7 @@ public class ExecuteConnectorUseCaseTests
     [Fact]
     public async Task ExecuteAsync_Success_EmitsCorrelatedTraceMetricAndInfoLog()
     {
-        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var identity = new CheckpointIdentity("teams", "messages-success-correlation", "acme-success-correlation");
         var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
         checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
             .Returns((IngestionCheckpoint?)null);
@@ -313,27 +313,51 @@ public class ExecuteConnectorUseCaseTests
         });
         meterListener.Start();
 
+        EmitNoiseActivityForConnectorExecutionSource();
+
         await useCase.ExecuteAsync(identity, CancellationToken.None);
 
-        Assert.Single(activities);
-        Assert.Single(measurements);
-        Assert.Single(logger.Entries.Where(e => e.Level == LogLevel.Information));
+        var correlatedActivities = activities
+            .Where(activity =>
+                string.Equals(GetActivityTag(activity, "connector.name"), identity.Connector, StringComparison.Ordinal) &&
+                string.Equals(GetActivityTag(activity, "connector.source"), identity.Source, StringComparison.Ordinal) &&
+                string.Equals(GetActivityTag(activity, "connector.tenant"), identity.Tenant, StringComparison.Ordinal))
+            .ToList();
 
-        var correlationFromActivity = activities[0].Id;
-        var correlationFromMetric = measurements[0].GetTag("correlation.id");
-        var correlationFromLog = logger.Entries.Single(e => e.Level == LogLevel.Information).Message;
+        var correlatedInfoLogs = logger.Entries
+            .Where(e =>
+                e.Level == LogLevel.Information &&
+                e.Message.Contains(identity.Connector, StringComparison.Ordinal) &&
+                e.Message.Contains(identity.Source, StringComparison.Ordinal) &&
+                e.Message.Contains(identity.Tenant, StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Single(correlatedActivities);
+        var correlationFromActivity = correlatedActivities[0].Id;
+
+        var correlatedMeasurements = measurements
+            .Where(sample =>
+                string.Equals(sample.GetTag("correlation.id"), correlationFromActivity, StringComparison.Ordinal) &&
+                string.Equals(sample.GetTag("execution.status"), "success", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Single(correlatedMeasurements);
+        Assert.Single(correlatedInfoLogs);
+
+        var correlationFromMetric = correlatedMeasurements[0].GetTag("correlation.id");
+        var correlationFromLog = correlatedInfoLogs[0].Message;
 
         Assert.False(string.IsNullOrWhiteSpace(correlationFromActivity));
         Assert.False(string.IsNullOrWhiteSpace(correlationFromMetric));
         Assert.Contains(correlationFromActivity!, correlationFromLog, StringComparison.Ordinal);
         Assert.Equal(correlationFromActivity, correlationFromMetric);
-        Assert.Equal(3, measurements[0].Value);
+        Assert.Equal(3, correlatedMeasurements[0].Value);
     }
 
     [Fact]
     public async Task ExecuteAsync_Failure_EmitsCorrelatedTraceMetricZeroAndErrorLog()
     {
-        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var identity = new CheckpointIdentity("teams", "messages-failure-correlation", "acme-failure-correlation");
         var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
         checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>())
             .Returns((IngestionCheckpoint?)null);
@@ -366,21 +390,45 @@ public class ExecuteConnectorUseCaseTests
         });
         meterListener.Start();
 
+        EmitNoiseActivityForConnectorExecutionSource();
+
         await useCase.ExecuteAsync(identity, CancellationToken.None);
 
-        Assert.Single(activities);
-        Assert.Single(measurements);
-        Assert.Single(logger.Entries.Where(e => e.Level == LogLevel.Error));
+        var correlatedActivities = activities
+            .Where(activity =>
+                string.Equals(GetActivityTag(activity, "connector.name"), identity.Connector, StringComparison.Ordinal) &&
+                string.Equals(GetActivityTag(activity, "connector.source"), identity.Source, StringComparison.Ordinal) &&
+                string.Equals(GetActivityTag(activity, "connector.tenant"), identity.Tenant, StringComparison.Ordinal))
+            .ToList();
 
-        var correlationFromActivity = activities[0].Id;
-        var correlationFromMetric = measurements[0].GetTag("correlation.id");
-        var correlationFromLog = logger.Entries.Single(e => e.Level == LogLevel.Error).Message;
+        var correlatedErrorLogs = logger.Entries
+            .Where(e =>
+                e.Level == LogLevel.Error &&
+                e.Message.Contains(identity.Connector, StringComparison.Ordinal) &&
+                e.Message.Contains(identity.Source, StringComparison.Ordinal) &&
+                e.Message.Contains(identity.Tenant, StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Single(correlatedActivities);
+        var correlationFromActivity = correlatedActivities[0].Id;
+
+        var correlatedMeasurements = measurements
+            .Where(sample =>
+                string.Equals(sample.GetTag("correlation.id"), correlationFromActivity, StringComparison.Ordinal) &&
+                string.Equals(sample.GetTag("execution.status"), "failure", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Single(correlatedMeasurements);
+        Assert.Single(correlatedErrorLogs);
+
+        var correlationFromMetric = correlatedMeasurements[0].GetTag("correlation.id");
+        var correlationFromLog = correlatedErrorLogs[0].Message;
 
         Assert.False(string.IsNullOrWhiteSpace(correlationFromActivity));
         Assert.False(string.IsNullOrWhiteSpace(correlationFromMetric));
         Assert.Contains(correlationFromActivity!, correlationFromLog, StringComparison.Ordinal);
         Assert.Equal(correlationFromActivity, correlationFromMetric);
-        Assert.Equal(0, measurements[0].Value);
+        Assert.Equal(0, correlatedMeasurements[0].Value);
     }
 
     [Fact]
@@ -578,6 +626,15 @@ public class ExecuteConnectorUseCaseTests
         public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
             => Task.FromException<ConnectorExecutionResult>(exception);
     }
+
+    private static void EmitNoiseActivityForConnectorExecutionSource()
+    {
+        using var noiseSource = new ActivitySource("Aura.Application.ConnectorExecution");
+        using var _ = noiseSource.StartActivity("connector.execution.noise", ActivityKind.Internal);
+    }
+
+    private static string? GetActivityTag(Activity activity, string name)
+        => activity.Tags.FirstOrDefault(tag => string.Equals(tag.Key, name, StringComparison.Ordinal)).Value;
 
     private sealed class RecordingLogger<T> : ILogger<T>
     {

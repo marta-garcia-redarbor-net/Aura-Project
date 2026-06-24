@@ -110,6 +110,33 @@ public class DependencyInjectionTests
     }
 
     [Fact]
+    public void AddAuraApplication_RegistersDashboardPreviewReader_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IDashboardPreviewReader));
+        Assert.NotNull(descriptor);
+        Assert.Equal(typeof(DashboardPreviewReader), descriptor!.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddAuraApplication_CanResolveDashboardPreviewReader_WithoutIWorkItemReaderRegistration()
+    {
+        var services = new ServiceCollection();
+        services.AddAuraApplication();
+        services.AddSingleton<ICurrentUserService>(new StubCurrentUserService());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var reader = scope.ServiceProvider.GetRequiredService<IDashboardPreviewReader>();
+        Assert.NotNull(reader);
+    }
+
+    [Fact]
     public void AddAuraApplication_CanResolveMorningSummaryComposer_WithoutIWorkItemReaderRegistration()
     {
         var services = new ServiceCollection();
@@ -162,5 +189,15 @@ public class DependencyInjectionTests
 
         public Task ResetAsync(string userId, DateOnly localDate, CancellationToken ct)
             => Task.CompletedTask;
+    }
+
+    private sealed class StubCurrentUserService : ICurrentUserService
+    {
+        public AuraUser GetCurrentUser() => new()
+        {
+            UserId = "system",
+            DisplayName = "System User",
+            Email = "system@aura.test"
+        };
     }
 }
