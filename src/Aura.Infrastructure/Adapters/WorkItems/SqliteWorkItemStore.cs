@@ -1,0 +1,124 @@
+using System.Text.Json;
+using Aura.Application.Models;
+using Aura.Application.Ports;
+using Aura.Domain.WorkItems;
+using Microsoft.Data.Sqlite;
+
+namespace Aura.Infrastructure.Adapters.WorkItems;
+
+/// <summary>
+/// SQLite-backed work item store with idempotent upsert on ExternalId.
+/// Also provides read-back capability via <see cref="IWorkItemReader"/>.
+/// </summary>
+internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
+{
+    private readonly SqliteConnection _connection;
+
+    public SqliteWorkItemStore(SqliteConnection connection)
+    {
+        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+    }
+
+    /// <summary>Creates the WorkItems table if it doesn't exist.</summary>
+    public static void InitializeSchema(SqliteConnection connection)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            CREATE TABLE IF NOT EXISTS WorkItems (
+                Id TEXT PRIMARY KEY,
+                ExternalId TEXT NOT NULL UNIQUE,
+                Title TEXT NOT NULL,
+                Source TEXT NOT NULL,
+                SourceType TEXT NOT NULL,
+                Priority TEXT NOT NULL,
+                MetadataJson TEXT NOT NULL,
+                CorrelationId TEXT NOT NULL,
+                CapturedAtUtc TEXT NOT NULL,
+                SchemaVersion TEXT NOT NULL,
+                Status TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL,
+                FaultReason TEXT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_WorkItems_ExternalId
+                ON WorkItems (ExternalId);
+            CREATE INDEX IF NOT EXISTS IX_WorkItems_CapturedAtUtc
+                ON WorkItems (CapturedAtUtc);
+            """;
+        cmd.ExecuteNonQuery();
+    }
+
+    public Task<WorkItemPersistenceResult> SaveAsync(WorkItem item, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ct.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO WorkItems (Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
+                                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason)
+            VALUES (@Id, @ExternalId, @Title, @Source, @SourceType, @Priority, @MetadataJson,
+                    @CorrelationId, @CapturedAtUtc, @SchemaVersion, @Status, @CreatedAt, @FaultReason)
+            ON CONFLICT(ExternalId) DO UPDATE SET
+                Title = excluded.Title,
+                Source = excluded.Source,
+                SourceType = excluded.SourceType,
+                Priority = excluded.Priority,
+                MetadataJson = excluded.MetadataJson,
+                CapturedAtUtc = excluded.CapturedAtUtc,
+                Status = excluded.Status,
+                FaultReason = excluded.FaultReason;
+            """;
+        cmd.Parameters.AddWithValue("@Id", item.Id.ToString());
+        cmd.Parameters.AddWithValue("@ExternalId", item.ExternalId);
+        cmd.Parameters.AddWithValue("@Title", item.Title);
+        cmd.Parameters.AddWithValue("@Source", item.Source);
+        cmd.Parameters.AddWithValue("@SourceType", item.SourceType.ToString());
+        cmd.Parameters.AddWithValue("@Priority", item.Priority.ToString());
+        cmd.Parameters.AddWithValue("@MetadataJson", JsonSerializer.Serialize(item.Metadata));
+        cmd.Parameters.AddWithValue("@CorrelationId", item.CorrelationId);
+        cmd.Parameters.AddWithValue("@CapturedAtUtc", item.CapturedAtUtc.ToString("O"));
+        cmd.Parameters.AddWithValue("@SchemaVersion", item.SchemaVersion);
+        cmd.Parameters.AddWithValue("@Status", item.Status.ToString());
+        cmd.Parameters.AddWithValue("@CreatedAt", item.CreatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@FaultReason", (object?)item.FaultReason ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+
+        return Task.FromResult(WorkItemPersistenceResult.Success());
+    }
+
+    public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            FROM WorkItems
+            WHERE CapturedAtUtc >= @FromUtc AND CapturedAtUtc <= @ToUtc
+            ORDER BY CapturedAtUtc DESC;
+            """;
+        cmd.Parameters.AddWithValue("@FromUtc", query.FromUtc.ToString("O"));
+        cmd.Parameters.AddWithValue("@ToUtc", query.ToUtc.ToString("O"));
+
+        var items = new List<WorkItem>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var externalId = reader.GetString(0);
+            var title = reader.GetString(1);
+            var source = reader.GetString(2);
+            var sourceType = Enum.Parse<WorkItemSourceType>(reader.GetString(3));
+            var priority = Enum.Parse<WorkItemPriority>(reader.GetString(4));
+            var metadataJson = reader.GetString(5);
+            var metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(metadataJson)
+                           ?? new Dictionary<string, string>();
+            var correlationId = reader.GetString(6);
+            var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(7));
+
+            items.Add(new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc));
+        }
+
+        return Task.FromResult<IReadOnlyList<WorkItem>>(items);
+    }
+}

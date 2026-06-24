@@ -1,6 +1,8 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
+using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.WorkItems;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +18,19 @@ internal static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddWorkItems();
+        services.AddWorkItems(configuration);
+        services.AddGraphSourceProviders(configuration);
+
+        // Register source providers for adapter injection when Graph is enabled
+        var graphOptions = new GraphConnectorOptions();
+        configuration.GetSection(GraphConnectorOptions.SectionName).Bind(graphOptions);
+
+        if (graphOptions.Enabled)
+        {
+            services.AddScoped<IMessageSourceProvider<TeamsMessageDto>, GraphTeamsSourceProvider>();
+            services.AddScoped<IMessageSourceProvider<OutlookEmailDto>, GraphOutlookSourceProvider>();
+        }
+
         services.AddScoped<IConnectorAdapter, TeamsConnectorAdapter>();
         services.AddScoped<IConnectorAdapter, OutlookConnectorAdapter>();
 

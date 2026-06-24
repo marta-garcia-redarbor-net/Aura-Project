@@ -67,6 +67,76 @@ public class TeamsConnectorAdapterTests
         Assert.False(string.IsNullOrWhiteSpace(result.FailureReason));
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WithSourceProvider_UsesProviderInsteadOfFixtures()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var provider = Substitute.For<IMessageSourceProvider<TeamsMessageDto>>();
+        var providerPayloads = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "graph-msg-1", Title = "From Graph provider", Source = "messages",
+                Priority = "high", Sender = "John Doe", BodyPreview = "Hello team", WebUrl = "https://teams.microsoft.com/msg/1"
+            },
+            new TeamsMessageDto
+            {
+                ExternalId = "graph-msg-2", Title = "Another Graph message", Source = "messages",
+                Priority = "medium", Sender = "Jane Smith", BodyPreview = "FYI", WebUrl = "https://teams.microsoft.com/msg/2"
+            }
+        };
+        var request = CreateRequest();
+        provider.FetchAsync(request, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<TeamsMessageDto>>(providerPayloads));
+
+        // Fixture is also provided, but should NOT be used when sourceProvider is non-null
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(),
+            fixtureProvider: () => throw new InvalidOperationException("Fixture must not be called when provider exists"),
+            sourceProvider: provider);
+
+        var result = await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        await provider.Received(1).FetchAsync(request, Arg.Any<CancellationToken>());
+        buffer.Received(2).Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>());
+        Assert.Equal(2, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSourceProvider_MapsMetadataFieldsCorrectly()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<Aura.Domain.WorkItems.WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<Aura.Domain.WorkItems.WorkItem>()));
+
+        var provider = Substitute.For<IMessageSourceProvider<TeamsMessageDto>>();
+        var providerPayloads = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "graph-msg-1", Title = "PR Review needed", Source = "messages",
+                Priority = "high", Sender = "Alice", BodyPreview = "Please review PR #42", WebUrl = "https://teams.microsoft.com/msg/42"
+            }
+        };
+        var request = CreateRequest();
+        provider.FetchAsync(request, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<TeamsMessageDto>>(providerPayloads));
+
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(),
+            sourceProvider: provider);
+
+        await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal("Alice", item.Metadata["teams.sender"]);
+        Assert.Equal("Please review PR #42", item.Metadata["teams.snippet"]);
+        Assert.Equal("https://teams.microsoft.com/msg/42", item.Metadata["teams.deepLink"]);
+    }
+
     private static ConnectorExecutionRequest CreateRequest() =>
         new(
             new CheckpointIdentity("teams", "messages", "acme"),

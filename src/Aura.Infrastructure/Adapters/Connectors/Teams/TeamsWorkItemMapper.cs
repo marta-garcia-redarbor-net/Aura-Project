@@ -75,6 +75,22 @@ internal sealed class TeamsWorkItemMapper
             metadata["teams.messageUrl"] = message.MessageUrl;
         }
 
+        // New Graph-sourced fields
+        if (!string.IsNullOrWhiteSpace(message.Sender))
+        {
+            metadata["teams.sender"] = message.Sender;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.BodyPreview))
+        {
+            metadata["teams.snippet"] = message.BodyPreview;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.WebUrl))
+        {
+            metadata["teams.deepLink"] = message.WebUrl;
+        }
+
         return metadata;
     }
 
