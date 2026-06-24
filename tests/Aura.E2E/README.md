@@ -34,10 +34,11 @@ Before running browser tests for the first time, install Chromium:
 pwsh tests/Aura.E2E/bin/Debug/net9.0/playwright.ps1 install chromium
 ```
 
-### Port 5555
+### No Port Conflicts
 
-Browser tests start a Kestrel server on `http://127.0.0.1:5555`. Ensure this port
-is free before running.
+Browser tests use port 0 (OS-assigned) for Kestrel. The actual port is discovered
+automatically after startup, so there are no hardcoded port conflicts even when
+running tests consecutively.
 
 ## Running All Tests
 
@@ -58,5 +59,5 @@ When a browser test fails, the following artifacts are captured to `TestResults/
   because .NET 9's minimal hosting forces TestServer as the transport
 - All external API clients are stubbed with deterministic responses
 - Tests run headless Chromium by default
-- Port 5555 is hardcoded for MVP simplicity
+- Port is dynamically assigned (port 0) to avoid conflicts on consecutive runs
 - Browser tests are local-only — not yet configured for CI
