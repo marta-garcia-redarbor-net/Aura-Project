@@ -1,3 +1,6 @@
+using Aura.Application.Ports;
+using Aura.Application.UseCases.Calendar;
+using Aura.Domain.Calendar;
 using Aura.UI.Components;
 using Aura.UI.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -119,6 +122,10 @@ public static class Program
                 client.Timeout = TimeSpan.FromSeconds(10);
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+
+        // Calendar use case — dashboard display only
+        builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
+        builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
 
         if (builder.Environment.IsDevelopment())
         {

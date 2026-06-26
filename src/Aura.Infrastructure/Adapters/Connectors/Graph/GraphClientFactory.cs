@@ -13,10 +13,10 @@ namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 /// </summary>
 internal sealed class GraphClientFactory : IGraphClientFactory
 {
-    private readonly IConfidentialClientApplication _msalApp;
+    private readonly IPublicClientApplication _msalApp;
     private readonly string[] _scopes;
 
-    public GraphClientFactory(IConfidentialClientApplication msalApp, IOptions<GraphConnectorOptions> options)
+    public GraphClientFactory(IPublicClientApplication msalApp, IOptions<GraphConnectorOptions> options)
     {
         ArgumentNullException.ThrowIfNull(msalApp);
         ArgumentNullException.ThrowIfNull(options);
@@ -27,18 +27,19 @@ internal sealed class GraphClientFactory : IGraphClientFactory
     }
 
     /// <summary>
-    /// Creates a <see cref="GraphServiceClient"/> using cached delegated tokens.
+    /// Creates a <see cref="GraphServiceClient"/> using cached delegated tokens for the specified user.
     /// </summary>
-    /// <exception cref="MsalUiRequiredException">When no valid cached token is available.</exception>
-    public async Task<GraphServiceClient> CreateClientAsync(CancellationToken ct)
+    /// <param name="oid">The Azure AD object ID of the authenticated user.</param>
+    /// <exception cref="MsalUiRequiredException">When no valid cached token is available for the given oid.</exception>
+    public async Task<GraphServiceClient> CreateClientAsync(string oid, CancellationToken ct)
     {
         var accounts = await _msalApp.GetAccountsAsync();
-        var account = accounts.FirstOrDefault();
+        var account = accounts.FirstOrDefault(a => a.HomeAccountId.ObjectId == oid);
 
         if (account is null)
         {
             throw new MsalUiRequiredException("no_account",
-                "No cached account found. User must authenticate via UI first.");
+                $"No cached account found for oid={oid}. User must authenticate via UI first.");
         }
 
         var result = await _msalApp.AcquireTokenSilent(_scopes, account)

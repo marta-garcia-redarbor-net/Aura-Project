@@ -5,6 +5,7 @@ using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Graph;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Identity.Client;
 using Microsoft.Kiota.Abstractions.Authentication;
 using NSubstitute;
@@ -50,7 +51,7 @@ public class GraphOutlookSourceProviderTests
     public async Task FetchAsync_MsalUiRequired_PropagatesException()
     {
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>())
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns<GraphServiceClient>(x => throw new MsalUiRequiredException("no_account", "Re-auth needed."));
 
         var provider = new GraphOutlookSourceProvider(factory, NullLogger<GraphOutlookSourceProvider>.Instance);
@@ -73,6 +74,69 @@ public class GraphOutlookSourceProviderTests
         Assert.Equal("https://outlook.office.com/mail/x", results[0].WebLink);
     }
 
+    [Fact]
+    public async Task FetchAsync_PassesOidToFactory()
+    {
+        // Arrange
+        var factory = Substitute.For<IGraphClientFactory>();
+        var responseJson = """{"value":[]}""";
+        var handler = new FakeGraphHttpHandler(responseJson);
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var adapter = new Microsoft.Kiota.Http.HttpClientLibrary.HttpClientRequestAdapter(
+            new AnonymousAuthenticationProvider(), httpClient: httpClient);
+        var graphClient = new GraphServiceClient(adapter);
+
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(graphClient));
+
+        var provider = new GraphOutlookSourceProvider(factory, NullLogger<GraphOutlookSourceProvider>.Instance);
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("outlook", "inbox", "acme", userOid: "oid-outlook-42"),
+            DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow);
+
+        // Act
+        await provider.FetchAsync(request, CancellationToken.None);
+
+        // Assert
+        await factory.Received(1).CreateClientAsync("oid-outlook-42", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp4xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 403
+            });
+
+        var provider = new GraphOutlookSourceProvider(factory, NullLogger<GraphOutlookSourceProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(403, ex.ResponseStatusCode);
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp5xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 503
+            });
+
+        var provider = new GraphOutlookSourceProvider(factory, NullLogger<GraphOutlookSourceProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(503, ex.ResponseStatusCode);
+    }
+
     private static GraphOutlookSourceProvider CreateProvider(string responseJson)
     {
         var handler = new FakeGraphHttpHandler(responseJson);
@@ -82,7 +146,7 @@ public class GraphOutlookSourceProviderTests
         var graphClient = new GraphServiceClient(adapter);
 
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
 
         return new GraphOutlookSourceProvider(factory, NullLogger<GraphOutlookSourceProvider>.Instance);
     }

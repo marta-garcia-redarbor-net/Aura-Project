@@ -49,7 +49,7 @@ public sealed partial class GraphConnectorStatusReader : IGraphConnectorStatusRe
             return GraphConnectorState.MissingConfig;
         }
 
-        if (!hasTenant || !hasClient || !settings.HasValidCredentialsBlock)
+        if (!hasTenant || !hasClient)
         {
             return GraphConnectorState.PartialConfig;
         }

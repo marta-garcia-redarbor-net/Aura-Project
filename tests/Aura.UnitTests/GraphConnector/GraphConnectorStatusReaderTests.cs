@@ -45,7 +45,8 @@ public class GraphConnectorStatusReaderTests
     [Theory]
     [InlineData("tenant", null, true)]
     [InlineData(null, "client", true)]
-    [InlineData("tenant", "client", false)]
+    [InlineData("tenant", null, false)]
+    [InlineData(null, "client", false)]
     public async Task GetStatusAsync_WhenEnabledWithPartialRequiredFields_ReturnsPartialConfig(
         string? tenantId,
         string? clientId,
@@ -74,6 +75,24 @@ public class GraphConnectorStatusReaderTests
             TenantId: "tenant-1",
             ClientId: "client-1",
             HasValidCredentialsBlock: true));
+
+        var reader = new GraphConnectorStatusReader(settingsProvider, NullLogger<GraphConnectorStatusReader>.Instance);
+
+        var result = await reader.GetStatusAsync(CancellationToken.None);
+
+        Assert.Equal(GraphConnectorState.ValidConfig, result.State);
+    }
+
+    [Fact]
+    public async Task GetStatusAsync_WhenEnabledWithAllFields_ButNoCredentialsBlock_ReturnsValidConfig()
+    {
+        // Delegated flow: ClientId + TenantId is sufficient, no credentials block needed
+        var settingsProvider = Substitute.For<IGraphConnectorSettingsProvider>();
+        settingsProvider.GetSettings().Returns(new GraphConnectorSettings(
+            Enabled: true,
+            TenantId: "tenant-1",
+            ClientId: "client-1",
+            HasValidCredentialsBlock: false));
 
         var reader = new GraphConnectorStatusReader(settingsProvider, NullLogger<GraphConnectorStatusReader>.Instance);
 

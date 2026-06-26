@@ -50,21 +50,28 @@ All datetime fields MUST be stored in UTC. The model MUST NOT inherit from or re
 
 The system MUST implement an `IConnectorAdapter` named `"calendar"` that fetches events
 from `GET /me/calendarView` using the existing `IGraphClientFactory`. The adapter MUST
-reuse the same `GraphServiceClient` creation pattern as Teams/Outlook adapters. Scope
-`Calendars.Read` MUST be added to `GraphConnectorOptions.Scopes[]` via configuration.
-The adapter MUST normalize all datetime values to UTC before returning results.
+propagate the user `oid` from the `ConnectorExecutionRequest` when calling
+`IGraphClientFactory.CreateClientAsync(oid, ct)`. Scope `Calendars.Read` MUST be added
+to `GraphConnectorOptions.Scopes[]` via configuration. The adapter MUST normalize all
+datetime values to UTC before returning results.
 
 #### Scenario: Adapter fetches today's calendar events
 
-- GIVEN the calendar adapter is invoked for today's date window
+- GIVEN the calendar adapter is invoked for today's date window with a valid user oid
 - WHEN `IConnectorAdapter.ExecuteAsync` is called
 - THEN events from `GET /me/calendarView` with `startDateTime` and `endDateTime` are returned
+
+#### Scenario: Adapter passes oid to Graph client factory
+
+- GIVEN the adapter receives a `ConnectorExecutionRequest` with `UserOid` = "oid-A"
+- WHEN the adapter creates a `GraphServiceClient`
+- THEN `IGraphClientFactory.CreateClientAsync("oid-A", ct)` is called
 
 #### Scenario: Adapter uses shared Graph client factory
 
 - GIVEN the calendar adapter is registered in DI
 - WHEN the adapter needs a `GraphServiceClient`
-- THEN it calls `IGraphClientFactory.CreateClientAsync()` — the same factory used by Teams/Outlook
+- THEN it calls `IGraphClientFactory.CreateClientAsync(oid, ct)` — the same factory used by Teams/Outlook
 
 #### Scenario: Adapter gracefully handles Graph API failure
 
@@ -72,6 +79,20 @@ The adapter MUST normalize all datetime values to UTC before returning results.
 - WHEN the adapter attempts to fetch calendar events
 - THEN a failure result is returned with a non-empty reason string
 - AND no exception propagates to the worker
+
+#### Scenario: Adapter surfaces token expiration as re-auth requirement
+
+- GIVEN `IGraphClientFactory.CreateClientAsync` throws `MsalUiRequiredException` for oid "oid-A"
+- WHEN the adapter attempts to fetch calendar events
+- THEN a failure result is returned with reason indicating re-authentication is required
+- AND a structured log entry is emitted with oid = "oid-A", connector = "calendar", and event type = "token_expired"
+
+#### Scenario: Adapter surfaces Graph HTTP failures with telemetry
+
+- GIVEN the Graph API returns HTTP 500 Internal Server Error
+- WHEN the adapter attempts to fetch calendar events
+- THEN a failure result is returned with a non-empty reason string
+- AND a structured log entry is emitted with status code = 500, endpoint URL, and connector = "calendar"
 
 ---
 

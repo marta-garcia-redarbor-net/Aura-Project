@@ -17,8 +17,8 @@ The system MUST derive connector status from configuration presence using these 
 |----------|-------|------|
 | 1 | Disabled | Enable flag = false — overrides all other checks |
 | 2 | MissingConfig | Enabled + TenantId absent + ClientId absent |
-| 3 | PartialConfig | Enabled + some but not all required fields present |
-| 4 | ValidConfig | Enabled + TenantId + ClientId + ≥1 valid credentials block |
+| 3 | PartialConfig | Enabled + some but not all of (TenantId, ClientId) present |
+| 4 | ValidConfig | Enabled + TenantId + ClientId present |
 
 #### Scenario: Disabled takes precedence
 
@@ -34,15 +34,23 @@ The system MUST derive connector status from configuration presence using these 
 
 #### Scenario: PartialConfig when some required fields are present
 
-- GIVEN the enable flag is true AND at least one but not all of (TenantId, ClientId, a valid credentials block) is present
+- GIVEN the enable flag is true AND exactly one of (TenantId, ClientId) is present
 - WHEN the connector status is evaluated
 - THEN the derived state is PartialConfig
 
-#### Scenario: ValidConfig when all required fields are present
+#### Scenario: ValidConfig with delegated auth fields only
 
-- GIVEN the enable flag is true, TenantId is present, ClientId is present, and at least one valid credentials block is present
+- GIVEN the enable flag is true, TenantId is present, and ClientId is present
 - WHEN the connector status is evaluated
 - THEN the derived state is ValidConfig
+- AND no ClientSecret or credentials block is required
+
+#### Scenario: ClientSecret presence is ignored
+
+- GIVEN the enable flag is true, TenantId is present, ClientId is present, and ClientSecret is also present
+- WHEN the connector status is evaluated
+- THEN the derived state is ValidConfig
+- AND the ClientSecret value does not affect the status derivation
 
 ---
 
