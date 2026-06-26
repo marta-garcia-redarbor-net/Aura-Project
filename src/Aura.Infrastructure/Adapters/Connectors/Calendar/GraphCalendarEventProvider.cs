@@ -1,12 +1,21 @@
+using System.Diagnostics.Metrics;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Calendar;
 
 internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvider<CalendarEventDto>
 {
+    private static readonly Meter s_meter = new("Aura.Infrastructure.GraphConnector");
+    private static readonly Counter<long> s_tokenAcquired = s_meter.CreateCounter<long>("graph.token.acquired");
+    private static readonly Counter<long> s_tokenExpired = s_meter.CreateCounter<long>("graph.token.expired");
+    private static readonly Counter<long> s_graphHttpError = s_meter.CreateCounter<long>("graph.http.error");
+
     private readonly IGraphClientFactory _clientFactory;
     private readonly ILogger<GraphCalendarEventProvider> _logger;
 
@@ -23,14 +32,40 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var client = await _clientFactory.CreateClientAsync(ct);
-
-        var events = await client.Me.CalendarView.GetAsync(requestConfig =>
+        GraphServiceClient client;
+        try
         {
-            requestConfig.QueryParameters.StartDateTime = request.WindowStart.ToString("o");
-            requestConfig.QueryParameters.EndDateTime = request.WindowEnd.ToString("o");
-            requestConfig.QueryParameters.Top = 50;
-        }, ct);
+            client = await _clientFactory.CreateClientAsync(request.Identity.UserOid ?? "default", ct);
+            s_tokenAcquired.Add(1, new KeyValuePair<string, object?>("connector", "calendar"));
+        }
+        catch (Microsoft.Identity.Client.MsalUiRequiredException)
+        {
+            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown");
+            s_tokenExpired.Add(1,
+                new KeyValuePair<string, object?>("connector", "calendar"),
+                new KeyValuePair<string, object?>("oid", request.Identity.UserOid ?? "unknown"));
+            throw;
+        }
+
+        EventCollectionResponse events;
+        try
+        {
+            events = await client.Me.CalendarView.GetAsync(requestConfig =>
+            {
+                requestConfig.QueryParameters.StartDateTime = request.WindowStart.ToString("o");
+                requestConfig.QueryParameters.EndDateTime = request.WindowEnd.ToString("o");
+                requestConfig.QueryParameters.Top = 50;
+            }, ct);
+        }
+        catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+        {
+            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/calendarView");
+            s_graphHttpError.Add(1,
+                new KeyValuePair<string, object?>("connector", "calendar"),
+                new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
+                new KeyValuePair<string, object?>("endpoint", "me/calendarView"));
+            throw;
+        }
 
         if (events?.Value is null || events.Value.Count == 0)
         {
@@ -87,5 +122,13 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
         [LoggerMessage(EventId = 3402, Level = LogLevel.Information,
             Message = "GraphCalendarEventProvider returned zero calendar events from Graph API")]
         public static partial void NoCalendarEvents(ILogger logger);
+
+        [LoggerMessage(EventId = 3403, Level = LogLevel.Warning,
+            Message = "GraphCalendarEventProvider token expired for oid={Oid}. Re-authentication required.")]
+        public static partial void TokenExpired(ILogger logger, string oid);
+
+        [LoggerMessage(EventId = 3404, Level = LogLevel.Warning,
+            Message = "GraphCalendarEventProvider HTTP {StatusCode} from {Endpoint}")]
+        public static partial void GraphHttpError(ILogger logger, int statusCode, string endpoint);
     }
 }

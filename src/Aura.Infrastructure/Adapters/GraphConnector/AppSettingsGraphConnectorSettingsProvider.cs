@@ -27,6 +27,8 @@ internal sealed class AppSettingsGraphConnectorSettingsProvider : IGraphConnecto
 
     private static bool HasValidCredentials(GraphConnectorOptions options)
     {
-        return !string.IsNullOrWhiteSpace(options.ClientSecret);
+        // Delegated flow needs no client secret — ClientId + TenantId is sufficient
+        return !string.IsNullOrWhiteSpace(options.ClientId)
+               && !string.IsNullOrWhiteSpace(options.TenantId);
     }
 }

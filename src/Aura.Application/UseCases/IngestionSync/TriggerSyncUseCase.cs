@@ -50,12 +50,17 @@ public sealed partial class TriggerSyncUseCase
 
     public async Task<SyncResultDto> ExecuteAsync(CancellationToken ct)
     {
+        return await ExecuteAsync(userOid: null, ct);
+    }
+
+    public async Task<SyncResultDto> ExecuteAsync(string? userOid, CancellationToken ct)
+    {
         var results = new List<SourceSyncResult>(_adapters.Count);
         var now = _utcNow();
 
         foreach (var adapter in _adapters)
         {
-            var sourceResult = await ExecuteSingleAdapterAsync(adapter, now, ct);
+            var sourceResult = await ExecuteSingleAdapterAsync(adapter, now, userOid, ct);
             results.Add(sourceResult);
 
             var state = new SourceSyncState(
@@ -87,9 +92,9 @@ public sealed partial class TriggerSyncUseCase
     }
 
     private async Task<SourceSyncResult> ExecuteSingleAdapterAsync(
-        IConnectorAdapter adapter, DateTimeOffset now, CancellationToken ct)
+        IConnectorAdapter adapter, DateTimeOffset now, string? userOid, CancellationToken ct)
     {
-        var identity = new CheckpointIdentity(adapter.ConnectorName, GetSource(adapter.ConnectorName), "default");
+        var identity = new CheckpointIdentity(adapter.ConnectorName, GetSource(adapter.ConnectorName), "default", userOid);
         var request = new ConnectorExecutionRequest(identity, now.AddHours(-1), now);
 
         try

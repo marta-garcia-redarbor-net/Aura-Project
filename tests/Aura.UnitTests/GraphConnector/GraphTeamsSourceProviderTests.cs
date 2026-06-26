@@ -6,6 +6,7 @@ using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Graph;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Identity.Client;
 using Microsoft.Kiota.Abstractions.Authentication;
 using NSubstitute;
@@ -58,7 +59,7 @@ public class GraphTeamsSourceProviderTests
     public async Task FetchAsync_MsalUiRequired_PropagatesException()
     {
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>())
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns<GraphServiceClient>(x => throw new MsalUiRequiredException("no_account", "No cached account."));
 
         var provider = new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
@@ -81,6 +82,89 @@ public class GraphTeamsSourceProviderTests
         Assert.Equal("Teams chat chat-x", results[0].Title);
     }
 
+    [Fact]
+    public async Task FetchAsync_PassesOidToFactory()
+    {
+        // Arrange
+        var factory = Substitute.For<IGraphClientFactory>();
+        var responseJson = """{"value":[]}""";
+        var handler = new FakeGraphHttpHandler(responseJson);
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var adapter = new Microsoft.Kiota.Http.HttpClientLibrary.HttpClientRequestAdapter(
+            new AnonymousAuthenticationProvider(), httpClient: httpClient);
+        var graphClient = new GraphServiceClient(adapter);
+
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(graphClient));
+
+        var provider = new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("teams", "messages", "acme", userOid: "oid-test-123"),
+            DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow);
+
+        // Act
+        await provider.FetchAsync(request, CancellationToken.None);
+
+        // Assert: verify factory was called with the correct oid
+        await factory.Received(1).CreateClientAsync("oid-test-123", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAsync_MsalUiRequired_ReturnsExceptionWithOidInMessage()
+    {
+        // Arrange: factory throws MsalUiRequiredException
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync("oid-expired", Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new MsalUiRequiredException("interaction_required", "Token expired."));
+
+        var provider = new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("teams", "messages", "acme", userOid: "oid-expired"),
+            DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<MsalUiRequiredException>(
+            () => provider.FetchAsync(request, CancellationToken.None));
+
+        Assert.Equal("interaction_required", ex.ErrorCode);
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp4xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 403
+            });
+
+        var provider = new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(403, ex.ResponseStatusCode);
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp5xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 503
+            });
+
+        var provider = new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(503, ex.ResponseStatusCode);
+    }
+
     private static GraphTeamsSourceProvider CreateProvider(string responseJson)
     {
         var handler = new FakeGraphHttpHandler(responseJson);
@@ -90,7 +174,7 @@ public class GraphTeamsSourceProviderTests
         var graphClient = new GraphServiceClient(adapter);
 
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
 
         return new GraphTeamsSourceProvider(factory, NullLogger<GraphTeamsSourceProvider>.Instance);
     }

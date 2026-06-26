@@ -1,3 +1,6 @@
+using Aura.Application.Ports;
+using Aura.Application.UseCases.Calendar;
+using Aura.Domain.Calendar;
 using Aura.UI.Components;
 using Aura.UI.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -34,6 +37,21 @@ public static class Program
                 .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 
             builder.Services.AddAuthorization();
+
+            // Register ITokenAcquisitionService for components that need it (e.g. MeetingAlertToast)
+            builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
+            builder.Services.AddSingleton<IPublicClientApplication>(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
+                var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
+
+                return PublicClientApplicationBuilder
+                    .Create(clientId)
+                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
+                    .WithRedirectUri("http://localhost:5000/authentication/login-callback")
+                    .Build();
+            });
         }
         else
         {
@@ -120,7 +138,11 @@ public static class Program
             })
             .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
-        if (builder.Environment.IsDevelopment())
+        // Calendar use case — dashboard display only
+        builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
+        builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
+
+        if (!useEntraId && builder.Environment.IsDevelopment())
         {
             httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             graphHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();

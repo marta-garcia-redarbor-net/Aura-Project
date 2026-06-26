@@ -1,0 +1,15 @@
+tests/
+docs/
+openspec/
+.git/
+**/bin/
+**/obj/
+*.md
+.env
+.env.*
+qdrant_storage/
+data/
+.vs/
+.vscode/
+*.user
+*.suo

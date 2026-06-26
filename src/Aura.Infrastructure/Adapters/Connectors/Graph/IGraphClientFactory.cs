@@ -8,5 +8,6 @@ namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 /// </summary>
 internal interface IGraphClientFactory
 {
-    Task<GraphServiceClient> CreateClientAsync(CancellationToken ct);
+    /// <exception cref="MsalUiRequiredException">When no valid cached token for the given oid.</exception>
+    Task<GraphServiceClient> CreateClientAsync(string oid, CancellationToken ct);
 }
