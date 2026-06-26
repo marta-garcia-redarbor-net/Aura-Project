@@ -1,7 +1,9 @@
 using Aura.UI.Components;
 using Aura.UI.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
 
 namespace Aura.UI;
 
@@ -17,31 +19,50 @@ public static class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();
 
-        // DEV-ONLY: auto-acquire a mock JWT so the UI can call protected API endpoints
-        // without a real browser token. Remove when real auth (e.g. MSAL) is wired up.
-        if (builder.Environment.IsDevelopment())
+        var useEntraId = builder.Configuration.GetValue<bool>("UseEntraId");
+
+        // Always register CascadingAuthenticationState so App.razor's wrapper works in all modes.
+        // The backing AuthenticationStateProvider varies by mode:
+        // - UseEntraId=true: OIDC-backed provider from AddMicrosoftIdentityWebApp
+        // - UseEntraId=false (dev): cookie-based provider (anonymous by default)
+        builder.Services.AddCascadingAuthenticationState();
+
+        if (useEntraId)
         {
-            builder.Services.AddTransient<DevAccessTokenHandler>();
-            builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
+            // OIDC pipeline: Entra ID interactive browser auth via Microsoft.Identity.Web
+            builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+
+            builder.Services.AddAuthorization();
         }
         else
         {
-            // Register MSAL-based token acquisition for production
-            builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
-            
-            // Register MSAL PublicClientApplication for interactive browser auth
-            builder.Services.AddSingleton<IPublicClientApplication>(provider =>
+            // DEV-ONLY: auto-acquire a mock JWT so the UI can call protected API endpoints
+            // without a real browser token. Remove when real auth (e.g. MSAL) is wired up.
+            if (builder.Environment.IsDevelopment())
             {
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
-                var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
+                builder.Services.AddTransient<DevAccessTokenHandler>();
+                builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
+            }
+            else
+            {
+                // Register MSAL-based token acquisition for production
+                builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
                 
-                return PublicClientApplicationBuilder
-                    .Create(clientId)
-                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
-                    .WithRedirectUri("http://localhost:5000/authentication/login-callback")
-                    .Build();
-            });
+                // Register MSAL PublicClientApplication for interactive browser auth
+                builder.Services.AddSingleton<IPublicClientApplication>(provider =>
+                {
+                    var configuration = provider.GetRequiredService<IConfiguration>();
+                    var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
+                    var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
+                    
+                    return PublicClientApplicationBuilder
+                        .Create(clientId)
+                        .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
+                        .WithRedirectUri("http://localhost:5000/authentication/login-callback")
+                        .Build();
+                });
+            }
         }
 
         var httpClientBuilder = builder.Services
@@ -119,6 +140,12 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseAntiforgery();
+
+        if (useEntraId)
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

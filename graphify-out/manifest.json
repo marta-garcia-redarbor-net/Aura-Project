@@ -60,13 +60,13 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/appsettings.Development.json": {
-    "mtime": 1781681200.8792074,
-    "ast_hash": "12c6b1d6941aa31d4429658213701bad",
+    "mtime": 1782453277.0219934,
+    "ast_hash": "aa9367ef835b7d4dadd988f663f94952",
     "semantic_hash": ""
   },
   "src/Aura.Api/appsettings.json": {
-    "mtime": 1780334093.781956,
-    "ast_hash": "f7e65dde4e5533740a0d57ac9355c0e8",
+    "mtime": 1782453277.02724,
+    "ast_hash": "73dbee2483faa3388c87683fcb1a8d4b",
     "semantic_hash": ""
   },
   "src/Aura.Application/Aura.Application.csproj": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/AuraUser.cs": {
-    "mtime": 1781072166.9370592,
-    "ast_hash": "c582d377c1133f908216efec900bf008",
+    "mtime": 1782453277.031234,
+    "ast_hash": "1ab1feef911b28015f26f8c1ef5855ca",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/EmbeddedSemanticChunk.cs": {
@@ -360,18 +360,18 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Identity/DependencyInjection.cs": {
-    "mtime": 1781072166.9550674,
-    "ast_hash": "f93ffb09507b7389eb4bedcb0dd5d5a3",
+    "mtime": 1782453277.036232,
+    "ast_hash": "f33101c7bd9fb839dd91d7d0350effb9",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Identity/HttpContextCurrentUserService.cs": {
-    "mtime": 1781072166.9590678,
-    "ast_hash": "66762bb1c487884170b1fb6e8499e238",
+    "mtime": 1782454157.096068,
+    "ast_hash": "7e2e70c1941fad4b14bf268a8a001f78",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Identity/MockJwtGenerator.cs": {
-    "mtime": 1781072166.9630787,
-    "ast_hash": "05d38216e426f1454d8f11f49394114a",
+    "mtime": 1782454134.4499624,
+    "ast_hash": "25e7791e70f2727c5be192504f0937ba",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Identity/MockJwtOptions.cs": {
@@ -435,13 +435,13 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Aura.UI.csproj": {
-    "mtime": 1782334513.7148132,
-    "ast_hash": "42352b498011883b8183b1ea452daf8e",
+    "mtime": 1782453277.0480287,
+    "ast_hash": "2f01c21afd8d6aceef75cc8cb6134888",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/App.razor": {
-    "mtime": 1782334433.4502175,
-    "ast_hash": "fc542e7422041e1e9720c43297097893",
+    "mtime": 1782453277.053032,
+    "ast_hash": "510fe341a95ec4364cfef08100f4e226",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Dashboard/DashboardCards.razor": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Routes.razor": {
-    "mtime": 1781276421.6002264,
-    "ast_hash": "c4fcecd75a10ddf2c10b3f2d60147346",
+    "mtime": 1782453704.8326647,
+    "ast_hash": "033be30cdc78d5f8103a16e001e15bb3",
     "semantic_hash": ""
   },
   "src/Aura.UI/Models/DashboardViewState.cs": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Program.cs": {
-    "mtime": 1782334973.7269292,
-    "ast_hash": "ee8298f4d742928dd174466e8a3ed1bd",
+    "mtime": 1782453679.3212605,
+    "ast_hash": "024cc6746b8af8c1e9bb4b83e65f3e2e",
     "semantic_hash": ""
   },
   "src/Aura.UI/Properties/launchSettings.json": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/appsettings.json": {
-    "mtime": 1781276421.631392,
-    "ast_hash": "d48c636f521df9716cd0ea59a895c435",
+    "mtime": 1782453277.0627077,
+    "ast_hash": "27d53933d25bacb63000611445cdd077",
     "semantic_hash": ""
   },
   "src/Aura.Workers/Aura.Workers.csproj": {
@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Identity/HttpContextCurrentUserServiceTests.cs": {
-    "mtime": 1781072167.005622,
-    "ast_hash": "aded695db47aa074ce3858ea6eebffaa",
+    "mtime": 1782453277.0655048,
+    "ast_hash": "64bdb58d98cd542993c7c9bb3476ec7f",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Infrastructure/EmbeddingDependencyInjectionTests.cs": {
@@ -950,13 +950,13 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1782336822.019355,
-    "ast_hash": "4053e0d05273ece6b7f9add03fda2a83",
+    "mtime": 1782453276.9886954,
+    "ast_hash": "7a1c8e8950178bd478161719e36223d5",
     "semantic_hash": ""
   },
   "StoryPlan.md": {
-    "mtime": 1782230264.3458898,
-    "ast_hash": "d7bdc6f8ff96da07289db30a404eabc6",
+    "mtime": 1782453276.9925213,
+    "ast_hash": "51622b55010db3cfa28807c5d366d075",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -965,8 +965,8 @@
     "semantic_hash": ""
   },
   "docs/ai/00-overview.md": {
-    "mtime": 1780951622.249135,
-    "ast_hash": "90861f65bf895b7efb10ad826058ce73",
+    "mtime": 1782453276.9972422,
+    "ast_hash": "01efb7949e3641aeb5c224ca24ab01e6",
     "semantic_hash": ""
   },
   "docs/ai/01-operating-rules.md": {
@@ -975,8 +975,8 @@
     "semantic_hash": ""
   },
   "docs/ai/02-architecture-map.md": {
-    "mtime": 1782073520.316829,
-    "ast_hash": "cc9e44c720224782eecd6bd7eabac1b6",
+    "mtime": 1782453276.999895,
+    "ast_hash": "4343285f5bbdeb7497d8eb9971494790",
     "semantic_hash": ""
   },
   "docs/ai/03-delivery-rules.md": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/03-microsoft-graph-calendar.md": {
-    "mtime": 1782230165.19882,
-    "ast_hash": "77e00ef7576520fca9c0294badc1274a",
+    "mtime": 1782453277.0043411,
+    "ast_hash": "96cf9018a3f9f66cb3c6880f139db360",
     "semantic_hash": ""
   },
   "docs/architecture/ingestion/04-github-pull-requests.md": {
@@ -1510,8 +1510,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/api-authentication/spec.md": {
-    "mtime": 1781072166.8970773,
-    "ast_hash": "a28416dc95bdad361316e68ba0d6435d",
+    "mtime": 1782366879.1862397,
+    "ast_hash": "f793cd14378576ccf628a58e6b83717e",
     "semantic_hash": ""
   },
   "openspec/specs/dashboard-module-progress/spec.md": {
@@ -2525,8 +2525,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/dashboard-inbox-preview/spec.md": {
-    "mtime": 1782321004.2848086,
-    "ast_hash": "84586d04251ed179c80cfe2daeceec1c",
+    "mtime": 1782366860.2452552,
+    "ast_hash": "aab5ded90af767fc146ba7a060733950",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/SyncResultDto.cs": {
@@ -2989,81 +2989,6 @@
     "ast_hash": "4907ee6f7ecd2d2b81f7572cc24fee96",
     "semantic_hash": ""
   },
-  "openspec/changes/w2-h7-calendar-browser-notifications/apply-progress.md": {
-    "mtime": 1782336652.4815488,
-    "ast_hash": "b5d24a377ea13f62e699ba1b48641cca",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/design.md": {
-    "mtime": 1782336615.8429015,
-    "ast_hash": "02777c4960eea99cbd7a8dfa7774e2c4",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/proposal.md": {
-    "mtime": 1782331921.2925086,
-    "ast_hash": "05bedb5f348d79897fedad601695195e",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/specs/api-authentication/spec.md": {
-    "mtime": 1782332341.8270028,
-    "ast_hash": "3dcfbeab2b07bd8709392488ae4005b3",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/specs/browser-notifications/spec.md": {
-    "mtime": 1782332341.8259976,
-    "ast_hash": "ed39022eaddd921f6b61b3dd756bcb10",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/tasks.md": {
-    "mtime": 1782336632.504662,
-    "ast_hash": "97e397de974f216245292eb3200fd476",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-calendar-browser-notifications/verify-report.md": {
-    "mtime": 1782336742.5662642,
-    "ast_hash": "97f79f739cacfd829961c8ca94a74da2",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/apply-progress.md": {
-    "mtime": 1782327555.1065867,
-    "ast_hash": "ba292e174559c6ca61c3f2395bfb50c7",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/design.md": {
-    "mtime": 1782322405.3370576,
-    "ast_hash": "37c21e5ee8007366df758b30060c5913",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/exploration.md": {
-    "mtime": 1782321716.5551007,
-    "ast_hash": "30b0ce9ef1b3afbd852458f80c248d85",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/proposal.md": {
-    "mtime": 1782321898.1456163,
-    "ast_hash": "860bacb12b1f96425caca4cfbaacfe98",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/specs/calendar-ingestion/spec.md": {
-    "mtime": 1782322158.2607756,
-    "ast_hash": "ada8aba262a53fc36b2d09cc4642c398",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/specs/dashboard-inbox-preview/spec.md": {
-    "mtime": 1782322158.2607756,
-    "ast_hash": "ae105ebea928a88cb7b34fc59377ff6a",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/tasks.md": {
-    "mtime": 1782327495.2193506,
-    "ast_hash": "bd12a29f81112950ddb8a28db3d20f47",
-    "semantic_hash": ""
-  },
-  "openspec/changes/w2-h7-real-calendar-ingestion/verify-report.md": {
-    "mtime": 1782327984.964685,
-    "ast_hash": "08d40b670aac1b75c90da344d8a34019",
-    "semantic_hash": ""
-  },
   "openspec/specs/playwright-e2e-bootstrap-design.md": {
     "mtime": 1782319906.210557,
     "ast_hash": "5ce5f6c84030691b8abae7f501bb844f",
@@ -3087,6 +3012,151 @@
   "src/Aura.UI/wwwroot/meeting-alert.wav": {
     "mtime": 1711956172.091252,
     "ast_hash": "372c9cbc244b648821ba689afba1171b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/apply-progress.md": {
+    "mtime": 1782336652.4815488,
+    "ast_hash": "b5d24a377ea13f62e699ba1b48641cca",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/design.md": {
+    "mtime": 1782336615.8429015,
+    "ast_hash": "02777c4960eea99cbd7a8dfa7774e2c4",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/proposal.md": {
+    "mtime": 1782331921.2925086,
+    "ast_hash": "05bedb5f348d79897fedad601695195e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/specs/api-authentication/spec.md": {
+    "mtime": 1782332341.8270028,
+    "ast_hash": "3dcfbeab2b07bd8709392488ae4005b3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/specs/browser-notifications/spec.md": {
+    "mtime": 1782332341.8259976,
+    "ast_hash": "ed39022eaddd921f6b61b3dd756bcb10",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/tasks.md": {
+    "mtime": 1782336632.504662,
+    "ast_hash": "97e397de974f216245292eb3200fd476",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-calendar-browser-notifications/verify-report.md": {
+    "mtime": 1782336742.5662642,
+    "ast_hash": "97f79f739cacfd829961c8ca94a74da2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/apply-progress.md": {
+    "mtime": 1782327555.1065867,
+    "ast_hash": "ba292e174559c6ca61c3f2395bfb50c7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/design.md": {
+    "mtime": 1782322405.3370576,
+    "ast_hash": "37c21e5ee8007366df758b30060c5913",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/exploration.md": {
+    "mtime": 1782321716.5551007,
+    "ast_hash": "30b0ce9ef1b3afbd852458f80c248d85",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/proposal.md": {
+    "mtime": 1782321898.1456163,
+    "ast_hash": "860bacb12b1f96425caca4cfbaacfe98",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/specs/calendar-ingestion/spec.md": {
+    "mtime": 1782322158.2607756,
+    "ast_hash": "ada8aba262a53fc36b2d09cc4642c398",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/specs/dashboard-inbox-preview/spec.md": {
+    "mtime": 1782322158.2607756,
+    "ast_hash": "ae105ebea928a88cb7b34fc59377ff6a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/tasks.md": {
+    "mtime": 1782327495.2193506,
+    "ast_hash": "bd12a29f81112950ddb8a28db3d20f47",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-25-w2-h7-real-calendar-ingestion/verify-report.md": {
+    "mtime": 1782327984.964685,
+    "ast_hash": "08d40b670aac1b75c90da344d8a34019",
+    "semantic_hash": ""
+  },
+  "openspec/specs/browser-notifications/spec.md": {
+    "mtime": 1782366905.621899,
+    "ast_hash": "7579578983228d789048c6c5721a0101",
+    "semantic_hash": ""
+  },
+  "openspec/specs/calendar-ingestion/spec.md": {
+    "mtime": 1782322158.2607756,
+    "ast_hash": "ada8aba262a53fc36b2d09cc4642c398",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Identity/EntraIdClaims.cs": {
+    "mtime": 1782454121.198273,
+    "ast_hash": "962abc3abe4a816adcebad18ab1fc6e2",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Identity/EntraIdOptions.cs": {
+    "mtime": 1782424681.448411,
+    "ast_hash": "c0323a5be8124e5d4acc39579d19ea0b",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Components/RedirectToLogin.razor": {
+    "mtime": 1782425379.349841,
+    "ast_hash": "821523f73f9eaaf6ef42e10b575a4af5",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/appsettings.Development.json": {
+    "mtime": 1782424718.725221,
+    "ast_hash": "5dc15143d6e3521b13a448d1f00a9d78",
+    "semantic_hash": ""
+  },
+  "tests/Aura.IntegrationTests/Identity/DependencyInjectionTests.cs": {
+    "mtime": 1782453753.0143476,
+    "ast_hash": "4268c74e609b36f8a00820362b1b40e2",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Identity/AuraUserTests.cs": {
+    "mtime": 1782424610.9137287,
+    "ast_hash": "665670bf92a5f8b822bf9df282ebe7cb",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Identity/MockJwtGeneratorTests.cs": {
+    "mtime": 1782424735.367265,
+    "ast_hash": "c195f27f9575e9b9ff32196fda5fdf00",
+    "semantic_hash": ""
+  },
+  "docs/architecture/auth/00-overview.md": {
+    "mtime": 1782421323.8872359,
+    "ast_hash": "612ace8b9f4496a6bee89b006f4a79ec",
+    "semantic_hash": ""
+  },
+  "docs/architecture/auth/01-entra-id-configuration.md": {
+    "mtime": 1782421323.8973076,
+    "ast_hash": "6ac30f2d3dfe39f692c1e32d89c7082d",
+    "semantic_hash": ""
+  },
+  "docs/architecture/auth/02-token-lifecycle.md": {
+    "mtime": 1782420960.9110565,
+    "ast_hash": "19b69b7c8722f1e80e277cb45e5891ff",
+    "semantic_hash": ""
+  },
+  "docs/architecture/deployment/00-overview.md": {
+    "mtime": 1782420960.92458,
+    "ast_hash": "e3e145aac38e5c6a09818257927348a3",
+    "semantic_hash": ""
+  },
+  "docs/architecture/deployment/01-docker-local-deployment.md": {
+    "mtime": 1782421323.8992398,
+    "ast_hash": "956be0b430eed0935d482d7ef4ad1817",
     "semantic_hash": ""
   }
 }

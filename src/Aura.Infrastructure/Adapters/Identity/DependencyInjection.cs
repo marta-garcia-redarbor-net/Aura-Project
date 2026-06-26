@@ -33,26 +33,57 @@ internal static class DependencyInjection
         services.Configure<MockJwtOptions>(
             configuration.GetSection(MockJwtOptions.SectionName));
 
-        var jwtOptions = configuration
-            .GetSection(MockJwtOptions.SectionName)
-            .Get<MockJwtOptions>() ?? new MockJwtOptions();
+        services.Configure<EntraIdOptions>(
+            configuration.GetSection(EntraIdOptions.SectionName));
 
-        // JWT Bearer authentication
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+        var useEntraId = configuration.GetValue<bool>("UseEntraId");
+
+        // JWT Bearer authentication — feature-flagged dual pipeline
+        if (useEntraId)
+        {
+            // OIDC pipeline: validate against Entra ID metadata endpoint
+            var entraIdOptions = configuration
+                .GetSection(EntraIdOptions.SectionName)
+                .Get<EntraIdOptions>() ?? new EntraIdOptions();
+
+            var metadataAddress = $"https://login.microsoftonline.com/{entraIdOptions.TenantId}/v2.0/.well-known/openid-configuration";
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.Key))
-                };
-            });
+                    options.MetadataAddress = metadataAddress;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = $"https://login.microsoftonline.com/{entraIdOptions.TenantId}/v2.0"
+                    };
+                });
+        }
+        else
+        {
+            // Mock pipeline: symmetric key validation
+            var jwtOptions = configuration
+                .GetSection(MockJwtOptions.SectionName)
+                .Get<MockJwtOptions>() ?? new MockJwtOptions();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtOptions.Issuer,
+                        ValidAudience = jwtOptions.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtOptions.Key))
+                    };
+                });
+        }
 
         services.AddAuthorization();
         services.AddHttpContextAccessor();

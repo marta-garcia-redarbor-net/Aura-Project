@@ -15,6 +15,8 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - Si una subtarea toca demasiados frentes, se vuelve a partir.
 - Ninguna historia se considera terminada sin UI visible o evidencia verificable.
 - Toda historia nueva debe respetar Clean Architecture, observabilidad y testabilidad.
+- El target vigente de auth/Graph es Entra ID delegated-first; no se planifica app-only como camino competidor.
+- El target vigente de despliegue es local Docker-first con `Aura.UI`, `Aura.Api` y `Aura.Workers` separados.
 
 ---
 
@@ -97,22 +99,24 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** existe una ruta/flujo ejecutable de punta a punta.  
   **Riesgo:** kernel definido pero no ejecutable.
 
-#### Historia W1-H5 — Preparar autenticación desacoplada de Graph
+#### Historia W1-H5 — Preparar autenticación delegada desacoplada de Graph
 
-**Resultado esperado:** login local mockeado y arquitectura lista para proveedor real.
+**Resultado esperado:** contratos de autenticación/autorización listos para el modelo delegado de Entra ID, con scaffolding temporal de desarrollo sin convertir el mock en arquitectura objetivo.
 
 - [x] **W1-H5-T1** Definir puerto de autenticación/autorización.  
-  **DoD:** contrato base ubicado fuera de infraestructura.  
-  **Riesgo:** atar seguridad a SDK externo.
-- [x] **W1-H5-T2** Implementar proveedor mock de identidad.  
-  **DoD:** devuelve usuario/sesión simulada para desarrollo.  
-  **Riesgo:** frenar el avance por falta de credenciales reales.
-- [x] **W1-H5-T3** Integrar login mock en API.  
-  **DoD:** endpoint o flujo web funcional en local.  
+   **DoD:** contrato base ubicado fuera de infraestructura.  
+   **Riesgo:** atar seguridad a SDK externo.
+- [x] **W1-H5-T2** Implementar proveedor temporal de identidad para desarrollo.  
+  **DoD:** devuelve usuario/sesión simulada para desarrollo sin redefinir el target delegado de Entra ID.  
+  **Riesgo:** confundir scaffolding local con arquitectura final.
+- [x] **W1-H5-T3** Integrar login temporal en API.  
+  **DoD:** endpoint o flujo web funcional en local mientras se completa el ingreso interactivo real con Entra ID.  
   **Riesgo:** auth no demostrable desde UI.
 - [x] **W1-H5-T4** Crear pruebas de autorización mínima.  
   **DoD:** acceso permitido/denegado cubierto por tests.  
   **Riesgo:** seguridad simulada sin reglas verificadas.
+
+**Nota:** este slice histórico preparó contratos y scaffolding. El objetivo vigente de implementación real pasa por **W2-H9**, **W2-H10** y **W2-H11**.
 
 ### Épica W1-E4 — UI visible desde el día 1
 
@@ -123,8 +127,8 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 - [x] **W1-H6-T1** Crear layout base del dashboard.  
   **DoD:** existe una vista inicial navegable.  
   **Riesgo:** no tener punto central de demostración.
-- [x] **W1-H6-T2** Mostrar estado de API, Qdrant y auth mock.  
-  **DoD:** indicadores visibles y entendibles.  
+- [x] **W1-H6-T2** Mostrar estado de API, Qdrant y auth/scaffolding local.  
+  **DoD:** indicadores visibles y entendibles sobre el estado del entorno y la preparación del flujo de identidad.  
   **Riesgo:** backend operativo pero invisible.
 - [x] **W1-H6-T3** Añadir panel de progreso por módulo.  
   **DoD:** se ven módulos pendientes/en curso/hechos.  
@@ -216,11 +220,11 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H7 — Reuniones próximas y alertas de calendario
 
-**Resultado esperado:** las reuniones del día aparecen en el dashboard y el sistema avisa con sonido y notificación de browser a los 60, 10 y 5 minutos antes del inicio, sin duplicar avisos entre tabs.
+**Resultado esperado:** las reuniones del usuario autenticado con Entra ID aparecen en el dashboard y el sistema avisa con sonido y notificación de browser a los 60, 10 y 5 minutos antes del inicio, sin duplicar avisos entre tabs.
 
-- [x] **W2-H7-T1** Configurar Graph shared client y User Secrets.  
-  **DoD:** `GraphServiceClient` registrado como singleton en Infrastructure con delegated-first auth (MSAL); credenciales en User Secrets; permiso `Calendars.Read` (Delegated) configurado.  
-  **Riesgo:** credenciales filtradas al repo si se usan appsettings.
+- [x] **W2-H7-T1** Configurar Graph delegated client y bootstrap de auth.  
+  **DoD:** `GraphServiceClient` registrado en Infrastructure con auth delegated-first (MSAL); `ClientId` y `TenantId` salen de la App Registration; permiso `Calendars.Read` (Delegated) configurado; sin requerir `ClientSecret`; preparado para cache persistente en SQLite.  
+  **Riesgo:** mezclar configuración de usuario con configuración de aplicación o dejar abierta una ruta app-only competidora.
 
 - [x] **W2-H7-T2** Implementar dominio Calendar y adapter de Graph.  
   **DoD:** `CalendarEvent`, `MeetingAlertTrigger`, `MeetingAlert` en Domain; puertos `IMeetingAlertStore`, `IMeetingAlertDispatcher` en Application; `GraphCalendarEventProvider` llamando `/me/calendarView` en Infrastructure; tests unitarios con mock del provider.  
@@ -231,12 +235,65 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **Riesgo:** doble disparo si el worker hace polling concurrente; mitigado por `MarkSentAsync` previo al dispatch.
 
 - [x] **W2-H7-T4** Implementar notificaciones browser con sonido.  
-  **DoD:** `meetingAlert.js` con Web Notification API + `Audio.play()`; `MeetingAlertToast.razor` recibe push de SignalR y llama JS interop; deduplicación: el primer tab en llamar `AcknowledgeAlert` gana, los demás descartan; funciona con el tab minimizado. MSAL real para SignalR auth con mock JWT fallback en dev.  
+  **DoD:** `meetingAlert.js` con Web Notification API + `Audio.play()`; `MeetingAlertToast.razor` recibe push de SignalR y llama JS interop; deduplicación: el primer tab en llamar `AcknowledgeAlert` gana, los demás descartan; funciona con el tab minimizado. SignalR comparte el contexto bearer del usuario y, si la renovación silent falla, la UX exige re-auth.  
   **Riesgo:** browser puede bloquear notificaciones si el usuario no concedió permiso; el JS debe pedir permiso al cargar.
 
 - [x] **W2-H7-T5** Mostrar reuniones del día en el dashboard.  
   **DoD:** `UpcomingMeetingsPanel.razor` agregado al dashboard; muestra título, hora de inicio, duración y link de Teams si existe; se refresca cada 5 min; vacío elegante si no hay reuniones.  
   **Riesgo:** panel vacío si `ICalendarEventProvider` falla; debe degradar con mensaje de error, no pantalla rota.
+
+### Épica W2-E5 — Realineación a autenticación delegada y despliegue local
+
+#### Historia W2-H9 — Completar autenticación delegada end-to-end
+
+**Resultado esperado:** el primer login ocurre de forma interactiva contra Entra ID, `Aura.Api` valida el JWT real y `oid` queda como identidad canónica del usuario.
+
+- [ ] **W2-H9-T1** Configurar `Aura.UI` para login interactivo con Entra ID.  
+  **DoD:** el usuario inicia sesión desde `Aura.UI`; `ClientId`, `TenantId` y scopes provienen de la App Registration; no se exige `ClientSecret`.  
+  **Riesgo:** mantener un flujo de entrada ambiguo entre login real y scaffolding temporal.
+- [ ] **W2-H9-T2** Validar JWT real en `Aura.Api` y resolver identidad por `oid`.  
+  **DoD:** API y SignalR aceptan bearer real, validan issuer/audience y usan `oid` como `UserId` interno.  
+  **Riesgo:** identidades inconsistentes entre UI, API y workers.
+- [ ] **W2-H9-T3** Persistir cache MSAL en SQLite y habilitar renovación silent.  
+  **DoD:** el estado de tokens sobrevive reinicios locales y MSAL intenta `AcquireTokenSilent` antes de pedir nuevo login.  
+  **Riesgo:** pérdida de sesión o reautenticaciones innecesarias en cada reinicio.
+- [ ] **W2-H9-T4** Exigir re-auth cuando falle la renovación silent.  
+  **DoD:** si MSAL no puede renovar en silencio, la UX redirige a re-login en vez de caer a identidad mock o credenciales app-only.  
+  **Riesgo:** dejar rutas de fallback que contradigan el modelo delegado acordado.
+
+#### Historia W2-H10 — Alinear el flujo de Microsoft Graph al contexto delegado del usuario
+
+**Resultado esperado:** Teams, Outlook y Calendar consumen Microsoft Graph exclusivamente con tokens delegados del usuario autenticado.
+
+- [ ] **W2-H10-T1** Centralizar adquisición de tokens delegados para Graph.  
+  **DoD:** existe un servicio/adapter común para obtener tokens Graph del usuario autenticado reutilizable por API, SignalR y workers.  
+  **Riesgo:** duplicar lógica de token o abrir comportamientos distintos por host.
+- [ ] **W2-H10-T2** Propagar `oid` como clave de correlación de usuario hacia Graph y Calendar.  
+  **DoD:** los adapters de Graph reciben el contexto del usuario autenticado y no inventan identidades paralelas.  
+  **Riesgo:** mezclar identidad de app registration con identidad humana.
+- [ ] **W2-H10-T3** Eliminar supuestos de app-only o User Secrets del flujo objetivo.  
+  **DoD:** backlog, configuración y adapters apuntan sólo a delegated auth; `ClientSecret` no forma parte del camino nominal.  
+  **Riesgo:** documentación y código compitiendo entre sí.
+- [ ] **W2-H10-T4** Cubrir fallos de Graph y expiración de token con tests y telemetría.  
+  **DoD:** hay evidencia de reintento silent, error controlado y re-auth requerida cuando corresponde.  
+  **Riesgo:** fallos opacos de Graph imposibles de diagnosticar en local.
+
+#### Historia W2-H11 — Consolidar despliegue local Docker-first con hosts separados
+
+**Resultado esperado:** `Aura.UI`, `Aura.Api` y `Aura.Workers` corren separados en local con Docker Compose, persistencia SQLite y configuración coherente con Entra ID.
+
+- [ ] **W2-H11-T1** Definir servicios Compose para `Aura.UI`, `Aura.Api` y `Aura.Workers`.  
+  **DoD:** los tres hosts mantienen sus responsabilidades separadas y pueden levantarse juntos en local.  
+  **Riesgo:** colapsar procesos en un host único y perder la frontera arquitectónica.
+- [ ] **W2-H11-T2** Configurar volúmenes para `aura.db` y cache SQLite de MSAL.  
+  **DoD:** la persistencia local sobrevive reinicios de contenedores y sirve a API/workers según corresponda.  
+  **Riesgo:** perder estado local en cada restart y falsear el comportamiento real de auth.
+- [ ] **W2-H11-T3** Externalizar variables de entorno de App Registration y Graph.  
+  **DoD:** `ClientId`, `TenantId`, scopes y paths SQLite se inyectan por entorno local; no se depende de secretos de usuario como objetivo operativo.  
+  **Riesgo:** configuración manual frágil e inconsistente entre hosts.
+- [ ] **W2-H11-T4** Añadir smoke de arranque Docker local.  
+  **DoD:** existe evidencia verificable de que UI, API, workers y Qdrant arrancan juntos con el flujo auth/delegated Graph esperado.  
+  **Riesgo:** descubrir integración rota recién en la demo.
 
 ---
 
@@ -412,4 +469,4 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 ## Siguiente paso recomendado
 
-Empezar por **W1-H4-T1** y no abrir más de una historia a la vez hasta cerrar el skeleton del kernel. Esa disciplina es la que mantiene el control del proyecto.
+Empezar por **W2-H9-T1** y cerrar **W2-H9** completo antes de abrir **W2-H10** o **W2-H11**. Esa secuencia evita seguir construyendo features sobre una identidad o un despliegue que ya sabemos que cambiaron.

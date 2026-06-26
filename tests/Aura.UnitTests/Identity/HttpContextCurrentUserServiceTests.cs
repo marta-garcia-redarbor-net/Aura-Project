@@ -127,4 +127,91 @@ public class HttpContextCurrentUserServiceTests
         Assert.Equal("", user.DisplayName);
         Assert.Equal("", user.Email);
     }
+
+    [Fact]
+    public void GetCurrentUser_WithOidClaim_OidPopulated()
+    {
+        // Arrange — JWT with oid claim
+        const string oidClaimType = "http://schemas.microsoft.com/identity/claims/objectidentifier";
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "user-789"),
+            new Claim(ClaimTypes.Name, "OID User"),
+            new Claim(ClaimTypes.Email, "oid@test.com"),
+            new Claim(oidClaimType, "entra-oid-abc-123")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext { User = principal };
+        var accessor = Substitute.For<IHttpContextAccessor>();
+        accessor.HttpContext.Returns(httpContext);
+
+        var service = new HttpContextCurrentUserService(accessor);
+
+        // Act
+        var user = service.GetCurrentUser();
+
+        // Assert
+        Assert.NotNull(user);
+        Assert.Equal("entra-oid-abc-123", user.Oid);
+        Assert.Equal("user-789", user.UserId);
+    }
+
+    [Fact]
+    public void GetCurrentUser_WithOidAndTidClaims_BothPopulated()
+    {
+        // Arrange
+        const string oidClaimType = "http://schemas.microsoft.com/identity/claims/objectidentifier";
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "user-999"),
+            new Claim(oidClaimType, "oid-xyz"),
+            new Claim("http://schemas.microsoft.com/identity/claims/tenantid", "tenant-abc")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext { User = principal };
+        var accessor = Substitute.For<IHttpContextAccessor>();
+        accessor.HttpContext.Returns(httpContext);
+
+        var service = new HttpContextCurrentUserService(accessor);
+
+        // Act
+        var user = service.GetCurrentUser();
+
+        // Assert
+        Assert.NotNull(user);
+        Assert.Equal("oid-xyz", user.Oid);
+        Assert.Equal("tenant-abc", user.TenantId);
+    }
+
+    [Fact]
+    public void GetCurrentUser_WithoutOidClaim_OidIsNull()
+    {
+        // Arrange — mock token without oid claim
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "mock-user"),
+            new Claim(ClaimTypes.Name, "Mock")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext { User = principal };
+        var accessor = Substitute.For<IHttpContextAccessor>();
+        accessor.HttpContext.Returns(httpContext);
+
+        var service = new HttpContextCurrentUserService(accessor);
+
+        // Act
+        var user = service.GetCurrentUser();
+
+        // Assert
+        Assert.NotNull(user);
+        Assert.Null(user.Oid);
+        Assert.Null(user.TenantId);
+        Assert.Equal("mock-user", user.UserId);
+    }
 }
