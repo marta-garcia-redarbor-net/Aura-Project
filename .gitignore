@@ -34,6 +34,9 @@ test-results/
 # Qdrant local storage
 qdrant_storage/
 
+# Local database files (SQLite, runtime data)
+data/
+
 # AI / local tooling indexes
 .atl/
 

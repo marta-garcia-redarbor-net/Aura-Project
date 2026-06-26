@@ -21,6 +21,19 @@ internal static class DependencyInjection
         var graphOptions = new GraphConnectorOptions();
         configuration.GetSection(GraphConnectorOptions.SectionName).Bind(graphOptions);
 
+        // Meeting alert infrastructure — independent of Graph Connector
+        services.AddSingleton<SqliteConnection>(sp =>
+        {
+            var connection = new SqliteConnection("Data Source=aura.db");
+            connection.Open();
+            SqliteMeetingAlertStore.InitializeSchema(connection);
+            return connection;
+        });
+        services.AddSingleton<IMeetingAlertStore, SqliteMeetingAlertStore>();
+        services.AddSingleton<IMeetingAlertDispatcher, LoggingMeetingAlertDispatcher>();
+        services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
+        services.AddScoped<CheckAndDispatchMeetingAlertsUseCase>();
+
         if (!graphOptions.Enabled)
         {
             return services;
@@ -32,18 +45,6 @@ internal static class DependencyInjection
         services.AddScoped<IMessageSourceProvider<CalendarEventDto>, GraphCalendarEventProvider>();
         services.AddScoped<CalendarConnectorAdapter>();
         services.AddScoped<IConnectorAdapter>(sp => sp.GetRequiredService<CalendarConnectorAdapter>());
-
-        // Meeting alert infrastructure
-        services.AddSingleton<SqliteConnection>(sp =>
-        {
-            var connection = new SqliteConnection("Data Source=aura.db");
-            connection.Open();
-            SqliteMeetingAlertStore.InitializeSchema(connection);
-            return connection;
-        });
-        services.AddSingleton<IMeetingAlertStore, SqliteMeetingAlertStore>();
-        services.AddSingleton<IMeetingAlertDispatcher, LoggingMeetingAlertDispatcher>();
-        services.AddScoped<CheckAndDispatchMeetingAlertsUseCase>();
 
         return services;
     }

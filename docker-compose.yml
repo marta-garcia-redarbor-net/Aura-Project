@@ -8,3 +8,77 @@ services:
     volumes:
       - ./qdrant_storage:/qdrant/storage
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - aura-network
+
+  aura-api:
+    build:
+      context: .
+      dockerfile: src/Aura.Api/Dockerfile
+    container_name: aura-api
+    ports:
+      - "${API_PORT:-5190}:8080"
+    volumes:
+      - ./data:/data
+    env_file:
+      - .env
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - aura-network
+
+  aura-ui:
+    build:
+      context: .
+      dockerfile: src/Aura.UI/Dockerfile
+    container_name: aura-ui
+    ports:
+      - "${UI_PORT:-5180}:8080"
+    env_file:
+      - .env
+    depends_on:
+      aura-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - aura-network
+
+  aura-workers:
+    build:
+      context: .
+      dockerfile: src/Aura.Workers/Dockerfile
+    container_name: aura-workers
+    volumes:
+      - ./data:/data
+    env_file:
+      - .env
+    depends_on:
+      aura-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aura-network
+
+networks:
+  aura-network:
+    driver: bridge
