@@ -248,16 +248,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** el primer login ocurre de forma interactiva contra Entra ID, `Aura.Api` valida el JWT real y `oid` queda como identidad canónica del usuario.
 
-- [ ] **W2-H9-T1** Configurar `Aura.UI` para login interactivo con Entra ID.  
+- [x] **W2-H9-T1** Configurar `Aura.UI` para login interactivo con Entra ID.  
   **DoD:** el usuario inicia sesión desde `Aura.UI`; `ClientId`, `TenantId` y scopes provienen de la App Registration; no se exige `ClientSecret`.  
   **Riesgo:** mantener un flujo de entrada ambiguo entre login real y scaffolding temporal.
-- [ ] **W2-H9-T2** Validar JWT real en `Aura.Api` y resolver identidad por `oid`.  
+- [x] **W2-H9-T2** Validar JWT real en `Aura.Api` y resolver identidad por `oid`.  
   **DoD:** API y SignalR aceptan bearer real, validan issuer/audience y usan `oid` como `UserId` interno.  
   **Riesgo:** identidades inconsistentes entre UI, API y workers.
-- [ ] **W2-H9-T3** Persistir cache MSAL en SQLite y habilitar renovación silent.  
+- [x] **W2-H9-T3** Persistir cache MSAL en SQLite y habilitar renovación silent.  
   **DoD:** el estado de tokens sobrevive reinicios locales y MSAL intenta `AcquireTokenSilent` antes de pedir nuevo login.  
   **Riesgo:** pérdida de sesión o reautenticaciones innecesarias en cada reinicio.
-- [ ] **W2-H9-T4** Exigir re-auth cuando falle la renovación silent.  
+- [x] **W2-H9-T4** Exigir re-auth cuando falle la renovación silent.  
   **DoD:** si MSAL no puede renovar en silencio, la UX redirige a re-login en vez de caer a identidad mock o credenciales app-only.  
   **Riesgo:** dejar rutas de fallback que contradigan el modelo delegado acordado.
 
@@ -265,16 +265,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** Teams, Outlook y Calendar consumen Microsoft Graph exclusivamente con tokens delegados del usuario autenticado.
 
-- [ ] **W2-H10-T1** Centralizar adquisición de tokens delegados para Graph.  
+- [x] **W2-H10-T1** Centralizar adquisición de tokens delegados para Graph.  
   **DoD:** existe un servicio/adapter común para obtener tokens Graph del usuario autenticado reutilizable por API, SignalR y workers.  
   **Riesgo:** duplicar lógica de token o abrir comportamientos distintos por host.
-- [ ] **W2-H10-T2** Propagar `oid` como clave de correlación de usuario hacia Graph y Calendar.  
+- [x] **W2-H10-T2** Propagar `oid` como clave de correlación de usuario hacia Graph y Calendar.  
   **DoD:** los adapters de Graph reciben el contexto del usuario autenticado y no inventan identidades paralelas.  
   **Riesgo:** mezclar identidad de app registration con identidad humana.
-- [ ] **W2-H10-T3** Eliminar supuestos de app-only o User Secrets del flujo objetivo.  
+- [x] **W2-H10-T3** Eliminar supuestos de app-only o User Secrets del flujo objetivo.  
   **DoD:** backlog, configuración y adapters apuntan sólo a delegated auth; `ClientSecret` no forma parte del camino nominal.  
   **Riesgo:** documentación y código compitiendo entre sí.
-- [ ] **W2-H10-T4** Cubrir fallos de Graph y expiración de token con tests y telemetría.  
+- [x] **W2-H10-T4** Cubrir fallos de Graph y expiración de token con tests y telemetría.  
   **DoD:** hay evidencia de reintento silent, error controlado y re-auth requerida cuando corresponde.  
   **Riesgo:** fallos opacos de Graph imposibles de diagnosticar en local.
 
@@ -282,16 +282,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** `Aura.UI`, `Aura.Api` y `Aura.Workers` corren separados en local con Docker Compose, persistencia SQLite y configuración coherente con Entra ID.
 
-- [ ] **W2-H11-T1** Definir servicios Compose para `Aura.UI`, `Aura.Api` y `Aura.Workers`.  
+- [x] **W2-H11-T1** Definir servicios Compose para `Aura.UI`, `Aura.Api` y `Aura.Workers`.  
   **DoD:** los tres hosts mantienen sus responsabilidades separadas y pueden levantarse juntos en local.  
   **Riesgo:** colapsar procesos en un host único y perder la frontera arquitectónica.
-- [ ] **W2-H11-T2** Configurar volúmenes para `aura.db` y cache SQLite de MSAL.  
+- [x] **W2-H11-T2** Configurar volúmenes para `aura.db` y cache SQLite de MSAL.  
   **DoD:** la persistencia local sobrevive reinicios de contenedores y sirve a API/workers según corresponda.  
   **Riesgo:** perder estado local en cada restart y falsear el comportamiento real de auth.
-- [ ] **W2-H11-T3** Externalizar variables de entorno de App Registration y Graph.  
+- [x] **W2-H11-T3** Externalizar variables de entorno de App Registration y Graph.  
   **DoD:** `ClientId`, `TenantId`, scopes y paths SQLite se inyectan por entorno local; no se depende de secretos de usuario como objetivo operativo.  
   **Riesgo:** configuración manual frágil e inconsistente entre hosts.
-- [ ] **W2-H11-T4** Añadir smoke de arranque Docker local.  
+- [x] **W2-H11-T4** Añadir smoke de arranque Docker local.  
   **DoD:** existe evidencia verificable de que UI, API, workers y Qdrant arrancan juntos con el flujo auth/delegated Graph esperado.  
   **Riesgo:** descubrir integración rota recién en la demo.
 

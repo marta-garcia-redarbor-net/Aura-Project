@@ -1,6 +1,7 @@
 using Aura.Application;
 using Aura.Infrastructure;
 using Aura.Workers;
+using Microsoft.Identity.Client;
 
 var kernelOnly = args.Contains("--kernel-only");
 
@@ -25,6 +26,20 @@ else
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
     builder.Services.AddHostedService<MeetingAlertWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
+
+    // MSAL for delegated token cache access (Workers need to resolve user oid)
+    var azureAd = builder.Configuration.GetSection("AzureAd");
+    var clientId = azureAd["ClientId"];
+    var tenantId = azureAd["TenantId"];
+    if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(tenantId))
+    {
+        builder.Services.AddSingleton<IPublicClientApplication>(sp =>
+            PublicClientApplicationBuilder
+                .Create(clientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
+                .WithRedirectUri("http://localhost:5000/authentication/login-callback")
+                .Build());
+    }
 }
 
 var host = builder.Build();
