@@ -1,3 +1,6 @@
+using Aura.Application.Ports;
+using Aura.Application.UseCases.Calendar;
+using Aura.Domain.Calendar;
 using Aura.UI.Components;
 using Aura.UI.Models;
 using Aura.UI.Services;
@@ -91,6 +94,10 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         builder.Services.AddScoped<IGraphConnectorApiClient>(_ =>
             new StubGraphConnectorApiClient(
                 new GraphConnectorStatusResponse("connected")));
+
+        // Calendar use case — dashboard display only
+        builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
+        builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
 
         _app = builder.Build();
 

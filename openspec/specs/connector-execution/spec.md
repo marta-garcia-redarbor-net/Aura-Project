@@ -46,11 +46,20 @@ Teams is the first connector in this slice.
 
 ### Requirement: Connector Execution Use Case
 
-#### Scenario: Use case executes and returns result
+The use case MUST receive a `CheckpointIdentity` that carries an optional `UserOid` field. Before invoking the connector adapter, the use case MUST verify that `UserOid` is populated. If `UserOid` is null, the use case MUST return a failure result with reason "no cached user identity" and MUST NOT invoke the adapter.
 
-- GIVEN a valid connector identity is provided
+#### Scenario: Use case executes with valid oid
+
+- GIVEN a valid connector identity with `UserOid` populated
 - WHEN the use case is invoked
 - THEN the port's result is returned to the caller unchanged
+
+#### Scenario: Use case skips connector when no oid
+
+- GIVEN a connector identity with `UserOid` = null
+- WHEN the use case is invoked
+- THEN a failure result is returned with reason "no cached user identity"
+- AND the adapter is NOT invoked
 
 #### Scenario: Use case propagates typed failure
 
@@ -109,6 +118,13 @@ be excluded from the max-processed-item timestamp computation.
 
 ### Requirement: Telemetry Emission
 
+Telemetry MUST additionally include:
+- Structured log for `MsalUiRequiredException` with oid correlation
+- Structured log for Graph HTTP failures including status code, endpoint URL, and connector name
+- Metric `graph.token.acquired` emitted on successful token acquisition
+- Metric `graph.token.expired` emitted when `MsalUiRequiredException` is caught
+- Metric `graph.http.error` emitted on 4xx/5xx Graph responses, tagged by status code
+
 #### Scenario: Successful run emits correlated telemetry
 
 - GIVEN execution completes
@@ -120,6 +136,30 @@ be excluded from the max-processed-item timestamp computation.
 - GIVEN execution fails
 - WHEN telemetry is inspected
 - THEN a trace span, metric (count = 0), and error-level log share the same correlation identifier
+
+#### Scenario: MsalUiRequiredException emits re-auth telemetry
+
+- GIVEN a Graph call fails with `MsalUiRequiredException` for user oid "abc-123"
+- WHEN telemetry is inspected
+- THEN a structured log entry with level Warning is emitted
+- AND the log contains oid = "abc-123" and connector name
+- AND metric `graph.token.expired` is incremented
+
+#### Scenario: Graph HTTP 4xx emits error telemetry
+
+- GIVEN a Graph API call returns HTTP 403 Forbidden
+- WHEN telemetry is inspected
+- THEN a structured log entry with level Warning is emitted
+- AND the log contains status code = 403, endpoint URL, and connector name
+- AND metric `graph.http.error` is incremented with status_code = 403
+
+#### Scenario: Graph HTTP 5xx emits error telemetry
+
+- GIVEN a Graph API call returns HTTP 503 Service Unavailable
+- WHEN telemetry is inspected
+- THEN a structured log entry with level Error is emitted
+- AND the log contains status code = 503, endpoint URL, and connector name
+- AND metric `graph.http.error` is incremented with status_code = 503
 
 ---
 
@@ -198,3 +238,53 @@ policy.
 - GIVEN a checkpoint exists with max-processed-at = T1 and a re-run fetches the identical window
 - WHEN the second run completes successfully with the same items
 - THEN max-processed-at is not set to a value earlier than T1
+
+---
+
+## New requirement: Delegated Token Acquisition
+
+The system MUST acquire Graph tokens exclusively via delegated flows using `IPublicClientApplication`. The factory MUST filter cached accounts by `oid` match on `HomeAccountId.ObjectId` rather than using `FirstOrDefault()`.
+
+#### Scenario: Oid-based account selection returns correct account
+
+- GIVEN two cached accounts with oids "oid-A" and "oid-B"
+- WHEN `CreateClientAsync("oid-B", ct)` is called
+- THEN the account with oid "oid-B" is selected for token acquisition
+
+#### Scenario: No matching account throws MsalUiRequiredException
+
+- GIVEN no cached account matches the requested oid "oid-unknown"
+- WHEN `CreateClientAsync("oid-unknown", ct)` is called
+- THEN `MsalUiRequiredException` is thrown (no silent token available)
+
+#### Scenario: Public client application uses no client secret
+
+- GIVEN `IPublicClientApplication` is registered in DI
+- WHEN a Graph client is created
+- THEN no client secret is used in the token acquisition flow
+
+---
+
+## New requirement: Worker Oid Resolution
+
+Workers MUST resolve the user oid from the persisted token cache before invoking the connector use case. If no account is cached (user has never logged in via API), the worker MUST log a warning and skip that connector execution.
+
+#### Scenario: Worker resolves oid from token cache
+
+- GIVEN a user account with oid "oid-A" exists in the SQLite token cache
+- WHEN the worker prepares to execute a connector for that user
+- THEN `CheckpointIdentity.UserOid` is set to "oid-A"
+
+#### Scenario: Worker skips connector when no cached user
+
+- GIVEN the token cache is empty (no accounts)
+- WHEN the worker prepares to execute a connector
+- THEN a warning log is emitted
+- AND the connector execution is skipped
+- AND no Graph call is attempted
+
+#### Scenario: Worker propagates oid to all three providers
+
+- GIVEN a connector identity with `UserOid` = "oid-A"
+- WHEN Teams, Outlook, or Calendar providers invoke `IGraphClientFactory.CreateClientAsync`
+- THEN each receives `oid = "oid-A"` as the first parameter

@@ -8,6 +8,7 @@ namespace Aura.Infrastructure.Adapters.Identity;
 /// <summary>
 /// Maps the ASP.NET Core <see cref="ClaimsPrincipal"/> from the current HTTP context
 /// to the domain-neutral <see cref="AuraUser"/> model.
+/// Extracts Entra ID <c>oid</c> and <c>tid</c> claims when present.
 /// </summary>
 internal sealed class HttpContextCurrentUserService : ICurrentUserService
 {
@@ -34,7 +35,9 @@ internal sealed class HttpContextCurrentUserService : ICurrentUserService
         {
             UserId = userId,
             DisplayName = principal.FindFirstValue(ClaimTypes.Name) ?? "",
-            Email = principal.FindFirstValue(ClaimTypes.Email) ?? ""
+            Email = principal.FindFirstValue(ClaimTypes.Email) ?? "",
+            Oid = principal.FindFirstValue(EntraIdClaims.ObjectId),
+            TenantId = principal.FindFirstValue(EntraIdClaims.TenantId)
         };
     }
 }

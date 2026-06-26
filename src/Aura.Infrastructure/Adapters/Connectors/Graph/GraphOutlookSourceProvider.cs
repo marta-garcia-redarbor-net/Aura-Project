@@ -1,7 +1,11 @@
+using System.Diagnostics.Metrics;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 
@@ -11,6 +15,11 @@ namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 /// </summary>
 internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvider<OutlookEmailDto>
 {
+    private static readonly Meter s_meter = new("Aura.Infrastructure.GraphConnector");
+    private static readonly Counter<long> s_tokenAcquired = s_meter.CreateCounter<long>("graph.token.acquired");
+    private static readonly Counter<long> s_tokenExpired = s_meter.CreateCounter<long>("graph.token.expired");
+    private static readonly Counter<long> s_graphHttpError = s_meter.CreateCounter<long>("graph.http.error");
+
     private readonly IGraphClientFactory _clientFactory;
     private readonly ILogger<GraphOutlookSourceProvider> _logger;
 
@@ -27,14 +36,40 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var client = await _clientFactory.CreateClientAsync(ct);
-
-        var messages = await client.Me.Messages.GetAsync(requestConfig =>
+        GraphServiceClient client;
+        try
         {
-            requestConfig.QueryParameters.Top = 50;
-            requestConfig.QueryParameters.Orderby = ["receivedDateTime desc"];
-            requestConfig.QueryParameters.Select = ["id", "subject", "importance", "sender", "bodyPreview", "webLink", "receivedDateTime", "conversationId"];
-        }, ct);
+            client = await _clientFactory.CreateClientAsync(request.Identity.UserOid ?? "default", ct);
+            s_tokenAcquired.Add(1, new KeyValuePair<string, object?>("connector", "outlook"));
+        }
+        catch (Microsoft.Identity.Client.MsalUiRequiredException)
+        {
+            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown");
+            s_tokenExpired.Add(1,
+                new KeyValuePair<string, object?>("connector", "outlook"),
+                new KeyValuePair<string, object?>("oid", request.Identity.UserOid ?? "unknown"));
+            throw;
+        }
+
+        MessageCollectionResponse messages;
+        try
+        {
+            messages = await client.Me.Messages.GetAsync(requestConfig =>
+            {
+                requestConfig.QueryParameters.Top = 50;
+                requestConfig.QueryParameters.Orderby = ["receivedDateTime desc"];
+                requestConfig.QueryParameters.Select = ["id", "subject", "importance", "sender", "bodyPreview", "webLink", "receivedDateTime", "conversationId"];
+            }, ct);
+        }
+        catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+        {
+            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/messages");
+            s_graphHttpError.Add(1,
+                new KeyValuePair<string, object?>("connector", "outlook"),
+                new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
+                new KeyValuePair<string, object?>("endpoint", "me/messages"));
+            throw;
+        }
 
         if (messages?.Value is null || messages.Value.Count == 0)
         {
@@ -75,5 +110,13 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
         [LoggerMessage(EventId = 3304, Level = LogLevel.Information,
             Message = "GraphOutlookSourceProvider returned zero emails from Graph API")]
         public static partial void NoOutlookMessages(ILogger logger);
+
+        [LoggerMessage(EventId = 3307, Level = LogLevel.Warning,
+            Message = "GraphOutlookSourceProvider token expired for oid={Oid}. Re-authentication required.")]
+        public static partial void TokenExpired(ILogger logger, string oid);
+
+        [LoggerMessage(EventId = 3308, Level = LogLevel.Warning,
+            Message = "GraphOutlookSourceProvider HTTP {StatusCode} from {Endpoint}")]
+        public static partial void GraphHttpError(ILogger logger, int statusCode, string endpoint);
     }
 }

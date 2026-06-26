@@ -9,19 +9,18 @@ namespace Aura.UnitTests.GraphConnector;
 
 public class GraphClientFactoryTests
 {
-    private readonly IConfidentialClientApplication _msalApp;
+    private readonly IPublicClientApplication _msalApp;
     private readonly IOptions<GraphConnectorOptions> _options;
     private readonly GraphClientFactory _factory;
 
     public GraphClientFactoryTests()
     {
-        _msalApp = Substitute.For<IConfidentialClientApplication>();
+        _msalApp = Substitute.For<IPublicClientApplication>();
         _options = Options.Create(new GraphConnectorOptions
         {
             Enabled = true,
             TenantId = "test-tenant",
             ClientId = "test-client",
-            ClientSecret = "test-secret",
             Scopes = ["Mail.Read", "Chat.Read"]
         });
         _factory = new GraphClientFactory(_msalApp, _options);
@@ -38,7 +37,7 @@ public class GraphClientFactoryTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<MsalUiRequiredException>(
-            () => _factory.CreateClientAsync(CancellationToken.None));
+            () => _factory.CreateClientAsync("oid-test", CancellationToken.None));
 
         Assert.Equal("no_account", ex.ErrorCode);
         Assert.Contains("No cached account", ex.Message);
@@ -49,7 +48,7 @@ public class GraphClientFactoryTests
     {
         // Arrange: account exists but AcquireTokenSilent fails (expired/invalid token)
         var fakeAccount = Substitute.For<IAccount>();
-        fakeAccount.Username.Returns("user@contoso.com");
+        fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
 
 #pragma warning disable CS0618
         _msalApp.GetAccountsAsync()
@@ -63,7 +62,7 @@ public class GraphClientFactoryTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<MsalUiRequiredException>(
-            () => _factory.CreateClientAsync(CancellationToken.None));
+            () => _factory.CreateClientAsync("oid-A", CancellationToken.None));
 
         Assert.Equal("interaction_required", ex.ErrorCode);
     }
@@ -91,7 +90,6 @@ public class GraphClientFactoryTests
             Enabled = true,
             TenantId = "test-tenant",
             ClientId = "test-client",
-            ClientSecret = "test-secret",
             Scopes = null
         });
 
@@ -107,7 +105,7 @@ public class GraphClientFactoryTests
     {
         // Arrange: account exists — verify scopes are passed correctly
         var fakeAccount = Substitute.For<IAccount>();
-        fakeAccount.Username.Returns("user@contoso.com");
+        fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
 
 #pragma warning disable CS0618
         _msalApp.GetAccountsAsync()
@@ -115,8 +113,6 @@ public class GraphClientFactoryTests
 #pragma warning restore CS0618
 
         // AcquireTokenSilent will be called — capture the scopes argument
-        // Even though we can't mock ExecuteAsync on the builder,
-        // we verify the method is called with correct scopes by checking what throws
         IEnumerable<string>? capturedScopes = null;
         _msalApp.AcquireTokenSilent(
                 Arg.Do<IEnumerable<string>>(s => capturedScopes = s),
@@ -126,7 +122,7 @@ public class GraphClientFactoryTests
         // Act
         try
         {
-            await _factory.CreateClientAsync(CancellationToken.None);
+            await _factory.CreateClientAsync("oid-A", CancellationToken.None);
         }
         catch (MsalUiRequiredException)
         {
@@ -148,12 +144,12 @@ public class GraphClientFactoryTests
         {
             Enabled = true,
             ClientId = "test-client",
-            ClientSecret = "test-secret",
             Scopes = null
         });
         var factory = new GraphClientFactory(_msalApp, optionsNoScopes);
 
         var fakeAccount = Substitute.For<IAccount>();
+        fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
 #pragma warning disable CS0618
         _msalApp.GetAccountsAsync()
             .Returns(Task.FromResult((IEnumerable<IAccount>)[fakeAccount]));
@@ -168,7 +164,7 @@ public class GraphClientFactoryTests
         // Act
         try
         {
-            await factory.CreateClientAsync(CancellationToken.None);
+            await factory.CreateClientAsync("oid-A", CancellationToken.None);
         }
         catch (MsalUiRequiredException)
         {
@@ -181,5 +177,80 @@ public class GraphClientFactoryTests
         Assert.Contains("Mail.Read", scopeArray);
         Assert.Contains("Chat.Read", scopeArray);
         Assert.Contains("User.Read", scopeArray);
+    }
+
+    [Fact]
+    public async Task CreateClientAsync_OidMatch_SelectsCorrectAccount()
+    {
+        // Arrange: two accounts with different oids
+        var accountA = Substitute.For<IAccount>();
+        accountA.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
+        accountA.Username.Returns("alice@contoso.com");
+
+        var accountB = Substitute.For<IAccount>();
+        accountB.HomeAccountId.Returns(new AccountId("oid-B", "oid-B", null));
+        accountB.Username.Returns("bob@contoso.com");
+
+#pragma warning disable CS0618
+        _msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult((IEnumerable<IAccount>)[accountA, accountB]));
+#pragma warning restore CS0618
+
+        IAccount? capturedAccount = null;
+        _msalApp.AcquireTokenSilent(Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>())
+            .Returns(ci =>
+            {
+                capturedAccount = ci.ArgAt<IAccount>(1);
+                throw new MsalUiRequiredException("test", "test");
+            });
+
+        // Act
+        try
+        {
+            await _factory.CreateClientAsync("oid-B", CancellationToken.None);
+        }
+        catch (MsalUiRequiredException)
+        {
+            // Expected
+        }
+
+        // Assert: correct account was selected
+        Assert.NotNull(capturedAccount);
+        Assert.Equal("oid-B", capturedAccount!.HomeAccountId.ObjectId);
+    }
+
+    [Fact]
+    public async Task CreateClientAsync_NoMatchingOid_ThrowsMsalUiRequiredException()
+    {
+        // Arrange: one account with oid-A, request with oid-C
+        var accountA = Substitute.For<IAccount>();
+        accountA.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
+
+#pragma warning disable CS0618
+        _msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult((IEnumerable<IAccount>)[accountA]));
+#pragma warning restore CS0618
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<MsalUiRequiredException>(
+            () => _factory.CreateClientAsync("oid-C", CancellationToken.None));
+
+        Assert.Equal("no_account", ex.ErrorCode);
+    }
+
+    [Fact]
+    public async Task CreateClientAsync_EmptyCache_ThrowsMsalUiRequiredException()
+    {
+        // Arrange: no accounts at all
+#pragma warning disable CS0618
+        _msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult(Enumerable.Empty<IAccount>()));
+#pragma warning restore CS0618
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<MsalUiRequiredException>(
+            () => _factory.CreateClientAsync("oid-unknown", CancellationToken.None));
+
+        Assert.Equal("no_account", ex.ErrorCode);
     }
 }

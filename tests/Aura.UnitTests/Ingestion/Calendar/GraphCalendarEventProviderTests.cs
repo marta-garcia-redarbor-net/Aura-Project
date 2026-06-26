@@ -6,6 +6,7 @@ using Aura.Infrastructure.Adapters.Connectors.Calendar;
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Graph;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Kiota.Abstractions.Authentication;
 using NSubstitute;
 
@@ -60,7 +61,7 @@ public class GraphCalendarEventProviderTests
     public async Task FetchAsync_MsalUiRequired_PropagatesException()
     {
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>())
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns<GraphServiceClient>(x => throw new Microsoft.Identity.Client.MsalUiRequiredException("no_account", "No cached account."));
 
         var provider = new GraphCalendarEventProvider(factory, NullLogger<GraphCalendarEventProvider>.Instance);
@@ -90,6 +91,69 @@ public class GraphCalendarEventProviderTests
         Assert.Null(results[0].OriginalTimeZone);
     }
 
+    [Fact]
+    public async Task FetchAsync_PassesOidToFactory()
+    {
+        // Arrange
+        var factory = Substitute.For<IGraphClientFactory>();
+        var responseJson = """{"value":[]}""";
+        var handler = new FakeGraphHttpHandler(responseJson);
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://graph.microsoft.com/v1.0/") };
+        var adapter = new Microsoft.Kiota.Http.HttpClientLibrary.HttpClientRequestAdapter(
+            new AnonymousAuthenticationProvider(), httpClient: httpClient);
+        var graphClient = new GraphServiceClient(adapter);
+
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(graphClient));
+
+        var provider = new GraphCalendarEventProvider(factory, NullLogger<GraphCalendarEventProvider>.Instance);
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("calendar", "calendar", "acme", userOid: "oid-cal-99"),
+            DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow);
+
+        // Act
+        await provider.FetchAsync(request, CancellationToken.None);
+
+        // Assert
+        await factory.Received(1).CreateClientAsync("oid-cal-99", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp4xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 403
+            });
+
+        var provider = new GraphCalendarEventProvider(factory, NullLogger<GraphCalendarEventProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(403, ex.ResponseStatusCode);
+    }
+
+    [Fact]
+    public async Task FetchAsync_GraphHttp5xx_ReturnsFailureWithStatusCode()
+    {
+        var factory = Substitute.For<IGraphClientFactory>();
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns<GraphServiceClient>(x => throw new ODataError
+            {
+                ResponseStatusCode = 503
+            });
+
+        var provider = new GraphCalendarEventProvider(factory, NullLogger<GraphCalendarEventProvider>.Instance);
+
+        var ex = await Assert.ThrowsAsync<ODataError>(
+            () => provider.FetchAsync(CreateRequest(), CancellationToken.None));
+
+        Assert.Equal(503, ex.ResponseStatusCode);
+    }
+
     private static GraphCalendarEventProvider CreateProvider(string responseJson)
     {
         var handler = new FakeGraphHttpHandler(responseJson);
@@ -99,7 +163,7 @@ public class GraphCalendarEventProviderTests
         var graphClient = new GraphServiceClient(adapter);
 
         var factory = Substitute.For<IGraphClientFactory>();
-        factory.CreateClientAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
+        factory.CreateClientAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(graphClient));
 
         return new GraphCalendarEventProvider(factory, NullLogger<GraphCalendarEventProvider>.Instance);
     }

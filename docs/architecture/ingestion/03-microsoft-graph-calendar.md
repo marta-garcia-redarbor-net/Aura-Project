@@ -1,109 +1,95 @@
-# Calendar — Reuniones y notificaciones
+# Calendar — Meetings and notifications
 
-Calendar no es ingestión de triaje. Es un dominio de contexto temporal con dos responsabilidades:
-visualizar las reuniones del día en el dashboard y avisar al usuario antes de que empiecen.
-
-## Decisiones de dominio
-
-- Los `CalendarEvent` NO son `WorkItem`. No entran al triage ni al pipeline de ingestión.
-- Calendar es un dominio propio en `Aura.Domain/Calendar/`.
-- Las alertas se almacenan en `aura.db` (SQLite compartido), tabla `meeting_alerts`.
-- Avisos a los **60, 10 y 5 minutos** antes del inicio de cada reunión.
-- Si hay múltiples tabs abiertos, solo uno dispara la notificación (deduplicación via SignalR + JS).
+Calendar is not a triage-ingestion work-item stream. It is a separate bounded context focused on showing the signed-in user's meetings and warning before they start.
 
 ## Quick path
 
-1. `MeetingAlertWorker` hace polling cada 2 minutos.
-2. `CheckAndDispatchMeetingAlertsUseCase` obtiene eventos del día via `ICalendarEventProvider`.
-3. Por cada evento × trigger (60/10/5 min): si es due y no fue enviado → marcar → despachar.
-4. `SignalRMeetingAlertDispatcher` envía al grupo SignalR del usuario.
-5. El browser recibe la notificación, reproduce sonido y muestra toast.
+1. `MeetingAlertWorker` polls on a schedule.
+2. `CheckAndDispatchMeetingAlertsUseCase` loads the user's meetings through `ICalendarEventProvider`.
+3. Due alerts are marked in SQLite before dispatch.
+4. `SignalRMeetingAlertDispatcher` pushes alerts through the API SignalR host.
+5. The UI shows a toast, browser notification, and audio cue.
 
-## Modelo de dominio
+## Core decisions
 
-```
+| Topic | Decision |
+|-------|----------|
+| Domain boundary | Calendar is its own bounded context |
+| Triage relationship | `CalendarEvent` is not a `WorkItem` |
+| Graph access | Use delegated Microsoft Graph user tokens |
+| Identity | Use the token `oid` to correlate calendar data and notifications per user |
+| Alert persistence | Store sent-alert state in shared SQLite |
+| Real-time delivery | Use SignalR between `Aura.Api` and `Aura.UI` |
+
+## Domain model
+
+```text
 CalendarEvent        — Id, Title, StartUtc, EndUtc, IsOnlineMeeting, JoinUrl?
 MeetingAlertTrigger  — SixtyMinutes | TenMinutes | FiveMinutes
 MeetingAlert         — EventId, Title, Trigger, StartsAtUtc, JoinUrl?
 ```
 
-## Puertos (Application)
+## Application ports
 
-| Puerto | Responsabilidad |
-|--------|----------------|
-| `ICalendarEventProvider` | `GetEventsAsync(date, userId)` → eventos del día |
-| `IMeetingAlertStore` | `HasBeenSentAsync` / `MarkSentAsync` — idempotencia |
-| `IMeetingAlertDispatcher` | `DispatchAsync(alert)` — salida hacia SignalR |
+| Port | Responsibility |
+|------|----------------|
+| `ICalendarEventProvider` | `GetEventsAsync(date, userId)` returns the user's meetings for the day |
+| `IMeetingAlertStore` | `HasBeenSentAsync` / `MarkSentAsync` for idempotency |
+| `IMeetingAlertDispatcher` | `DispatchAsync(alert)` sends alerts to SignalR |
 
-## Use Cases (Application)
+## Application use cases
 
-| Use Case | Responsabilidad |
+| Use case | Responsibility |
 |----------|----------------|
-| `GetUpcomingMeetingsUseCase` | Para el dashboard — devuelve reuniones del día |
-| `CheckAndDispatchMeetingAlertsUseCase` | Para el worker — detecta alertas due y las despacha |
+| `GetUpcomingMeetingsUseCase` | Returns upcoming meetings for the dashboard |
+| `CheckAndDispatchMeetingAlertsUseCase` | Detects due alerts and dispatches them |
 
-## Adaptadores (Infrastructure)
+## Infrastructure adapters
 
-| Adaptador | Path | Detalle |
-|-----------|------|---------|
-| `GraphCalendarEventProvider` | `Adapters/Calendar/` | Llama `/me/calendarView` via `GraphServiceClient` |
-| `SqliteMeetingAlertStore` | `Adapters/Calendar/` | PK `(EventId, Trigger, LocalDate)` en `aura.db` |
-| `SignalRMeetingAlertDispatcher` | `Adapters/Calendar/` | Envía al hub `MeetingAlertHub` |
-| `GraphClientFactory` | `Adapters/Graph/` | `GraphServiceClient` singleton compartido |
+| Adapter | Path | Detail |
+|---------|------|--------|
+| `GraphCalendarEventProvider` | `Adapters/Calendar/` | Calls `/me/calendarView` through `GraphServiceClient` |
+| `SqliteMeetingAlertStore` | `Adapters/Calendar/` | Uses a SQLite table for alert idempotency |
+| `SignalRMeetingAlertDispatcher` | `Aura.Api/Adapters/` | Pushes alerts to the `MeetingAlertHub` |
+| `GraphClientFactory` | `Adapters/Connectors/Graph/` | Creates delegated Graph clients |
 
-## Graph auth
+## Graph authentication
 
-- Credencial: `ClientSecretCredential` (permiso Application, no Delegated).
-- Permiso requerido: `Calendars.Read` con admin consent en Entra ID.
-- Secrets: User Secrets en desarrollo (`dotnet user-secrets`), variables de entorno en CI/CD.
-- **Nunca en appsettings.** La sección `GraphConnector` en `appsettings.Development.json` solo contiene claves vacías como referencia de estructura.
-- Proyectos que necesitan User Secrets: `Aura.Api` y `Aura.Workers`.
+- Calendar uses **delegated** Microsoft Graph permissions.
+- The signed-in user grants Aura access according to tenant consent policy.
+- Required scopes are configured as delegated scopes in the Entra ID App Registration.
+- A `ClientSecret` is **not required** for the delegated Graph flow documented for Aura.
+- Token lifecycle behavior follows the shared auth model: persistent SQLite token cache, silent renewal through MSAL, and re-authentication when silent renewal fails.
+- Worker-side calendar processing reuses the delegated token cache; it does not switch to app-only Graph credentials.
 
 ## SignalR hub
 
-```
+```text
 Aura.Api/Hubs/MeetingAlertHub.cs
-  — Grupos por UserId
-  — Método AcknowledgeAlert(eventId, trigger) para deduplicación entre tabs
+  — user-scoped delivery groups
+  — acknowledgment path for browser-tab coordination
 ```
 
-## Deduplicación entre tabs
+## Multi-tab behavior
 
-```
-Worker detecta alerta due
-  → IMeetingAlertStore.MarkSentAsync()      ← escribe ANTES de enviar
+```text
+Worker detects a due alert
+  → IMeetingAlertStore.MarkSentAsync()      ← write before dispatch
   → IMeetingAlertDispatcher.DispatchAsync()
-      → SignalR → todos los tabs del usuario
-          → JS: Web Notification API + Audio.play()
-          → Tab llama AcknowledgeAlert() en el Hub
-          → Los demás tabs ignoran (flag local en JS)
+      → SignalR → all user tabs
+          → browser notification + audio
+          → one tab acknowledges
+          → other tabs suppress duplicate UX
 ```
 
-La deduplicación real la garantiza `IMeetingAlertStore`: si el worker ya marcó la alerta como enviada, no vuelve a disparar en el siguiente ciclo de polling aunque haya lag.
+`IMeetingAlertStore` remains the real idempotency boundary. If the alert has already been marked as sent, the worker must not dispatch it again on the next polling cycle.
 
-## UI
+If delegated token renewal cannot complete silently, calendar features must pause behind re-authentication rather than presenting a second Graph auth model.
 
-| Componente | Responsabilidad |
-|------------|----------------|
-| `UpcomingMeetingsPanel.razor` | Lista reuniones del día: título, hora, duración, link de Teams si existe. Refresco cada 5 min. Degrada con mensaje si falla el provider. |
-| `MeetingAlertToast.razor` | Recibe push de SignalR, llama JS interop para notification + sonido |
-| `wwwroot/js/meetingAlert.js` | Web Notification API + `Audio.play()`. Solicita permiso al cargar. |
+## UI responsibilities
 
-## Slices de implementación
-
-| Slice | Contenido |
-|-------|-----------|
-| W2-H7-T1 | Graph shared client (`GraphClientFactory`, DI) + User Secrets setup en Api y Workers |
-| W2-H7-T2 | Domain (`CalendarEvent`, `MeetingAlertTrigger`, `MeetingAlert`) + puertos + use cases + `GraphCalendarEventProvider` |
-| W2-H7-T3 | `SqliteMeetingAlertStore` + `MeetingAlertHub` + `MeetingAlertWorker` |
-| W2-H7-T4 | `meetingAlert.js` + `MeetingAlertToast.razor` + deduplicación JS |
-| W2-H7-T5 | `UpcomingMeetingsPanel.razor` en dashboard |
-
-## Dependencias entre slices
-
-```
-T1 → T2 → T3 → T4
-               T3 → T5
-```
-
-T4 y T5 dependen de T3 (hub + store listos) pero son independientes entre sí y pueden implementarse en paralelo.
+| Component | Responsibility |
+|-----------|----------------|
+| `UpcomingMeetingsPanel.razor` | Shows the signed-in user's meetings for the day |
+| `MeetingAlertToast.razor` | Receives SignalR pushes and triggers notification UX |
+| `wwwroot/js/meetingAlert.js` | Browser notification and audio behavior |

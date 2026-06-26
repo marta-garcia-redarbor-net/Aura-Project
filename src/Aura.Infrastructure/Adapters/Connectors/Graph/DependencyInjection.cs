@@ -39,14 +39,13 @@ internal static class DependencyInjection
             return new MsalSqliteTokenCache(connection);
         });
 
-        // MSAL confidential client application
-        services.AddSingleton<IConfidentialClientApplication>(sp =>
+        // MSAL public client application (delegated flow — no client secret)
+        services.AddSingleton<IPublicClientApplication>(sp =>
         {
             var opts = sp.GetRequiredService<IOptions<GraphConnectorOptions>>().Value;
 
-            var app = ConfidentialClientApplicationBuilder
+            var app = PublicClientApplicationBuilder
                 .Create(opts.ClientId)
-                .WithClientSecret(opts.ClientSecret)
                 .WithTenantId(opts.TenantId)
                 .WithRedirectUri(opts.RedirectUri ?? "https://localhost:5001/signin-oidc")
                 .Build();

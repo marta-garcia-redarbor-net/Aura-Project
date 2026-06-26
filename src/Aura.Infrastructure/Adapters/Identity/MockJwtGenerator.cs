@@ -21,20 +21,24 @@ public sealed class MockJwtGenerator
 
     /// <summary>
     /// Generates a signed JWT containing the specified user claims.
+    /// When <paramref name="oid"/> is provided, it is used as the Entra ID object identifier claim;
+    /// otherwise the <paramref name="userId"/> is used as the oid value for backward compatibility.
     /// </summary>
     public string GenerateToken(
         string userId = "mock-user-001",
         string displayName = "Mock User",
-        string email = "mock@aura.dev")
+        string email = "mock@aura.dev",
+        string? oid = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Name, displayName),
-            new Claim(ClaimTypes.Email, email)
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Name, displayName),
+            new(ClaimTypes.Email, email),
+            new(EntraIdClaims.ObjectId, oid ?? userId)
         };
 
         var token = new JwtSecurityToken(

@@ -1,6 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph.Models.ODataErrors;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Outlook;
 
@@ -42,7 +43,22 @@ internal sealed partial class OutlookConnectorAdapter : IConnectorAdapter
 
         if (_sourceProvider is not null)
         {
-            payloads = await _sourceProvider.FetchAsync(request, ct);
+            try
+            {
+                payloads = await _sourceProvider.FetchAsync(request, ct);
+            }
+            catch (Microsoft.Identity.Client.MsalUiRequiredException)
+            {
+                return new ConnectorExecutionResult(
+                    request.Identity, 0, ConnectorExecutionStatus.Failure,
+                    "re-authentication required");
+            }
+            catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+            {
+                return new ConnectorExecutionResult(
+                    request.Identity, 0, ConnectorExecutionStatus.Failure,
+                    $"Graph HTTP {ex.ResponseStatusCode}");
+            }
         }
         else
         {

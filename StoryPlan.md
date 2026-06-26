@@ -13,8 +13,8 @@ Este plan organiza Aura en 4 sprints de 7 días con foco en control técnico, vi
 
 | Semana | Objetivo | Resultado visible |
 | --- | --- | --- |
-| 1. Cimientos | Base técnica y arquitectura ejecutable | Dashboard inicial, auth mockeada, kernel esqueleto, entorno listo |
-| 2. Ingestión | Entradas reales/mock de Teams y Outlook + summary | Bandeja de ingestión y tarjeta de Morning Summary |
+| 1. Cimientos | Base técnica y arquitectura ejecutable | Dashboard inicial, scaffolding auth, kernel esqueleto, entorno listo |
+| 2. Ingestión | Entradas reales/mock de Teams y Outlook + summary + realineación delegated auth | Bandeja de ingestión, tarjeta de Morning Summary y flujo base de Entra ID/Graph |
 | 3. Deep Work & PRs | Decisión de interrupciones + reviewer técnico | Vista de foco, cola priorizada y panel de revisión PR |
 | 4. Cierre | Observabilidad, E2E, documentación y demo | Logs trazables, flujos Playwright, demo end-to-end |
 
@@ -24,7 +24,7 @@ Este plan organiza Aura en 4 sprints de 7 días con foco en control técnico, vi
 
 ### Objetivo
 
-Dejar una base ejecutable sobre .NET 9 con Docker, Qdrant, autenticación preparada para Graph API mediante mocks y skeleton del kernel para que la semana 2 no empiece sobre arena.
+Dejar una base ejecutable sobre .NET 9 con Docker, Qdrant, contratos de autenticación listos para el modelo delegado de Entra ID y skeleton del kernel para que la semana 2 no empiece sobre arena.
 
 ### Tareas
 
@@ -43,14 +43,14 @@ Dejar una base ejecutable sobre .NET 9 con Docker, Qdrant, autenticación prepar
    **DoD:** contratos base definidos para plugins, work items normalizados, pipeline de ejecución, scheduler y puertos principales; existe un flujo “hello kernel” ejecutable de punta a punta.  
    **Riesgo:** diseñar un kernel demasiado abstracto o demasiado acoplado a Graph/Teams.
 
-4. **Auth con Microsoft Graph API usando mocks listos para desarrollo**  
+4. **Auth desacoplada con scaffolding temporal para desarrollo**  
    **[Prioridad: P0]**  
-   **DoD:** autenticación y autorización desacopladas por puerto/adaptador; proveedor mock disponible; login local funcional para desarrollo; contratos preparados para reemplazo posterior por integración real.  
-   **Riesgo:** acoplar la API a Graph demasiado pronto y frenar desarrollo por credenciales o tenants.
+   **DoD:** autenticación y autorización desacopladas por puerto/adaptador; existe scaffolding temporal para avanzar en local; los contratos quedan preparados para el flujo real delegado de Entra ID sin redefinir el target.  
+   **Riesgo:** convertir el scaffolding local en arquitectura de destino y generar deuda de identidad.
 
 5. **Dashboard inicial de progreso técnico**  
    **[Prioridad: P1]**  
-   **DoD:** pantalla inicial con estado de servicios, estado de auth mock, estado de Qdrant y módulos pendientes/en curso/completados.  
+   **DoD:** pantalla inicial con estado de servicios, estado del scaffolding/auth local, estado de Qdrant y módulos pendientes/en curso/completados.  
    **Riesgo:** dejar la UI para el final y perder visibilidad del avance real.
 
 6. **Pipeline base de calidad y observabilidad mínima**  
@@ -61,7 +61,7 @@ Dejar una base ejecutable sobre .NET 9 con Docker, Qdrant, autenticación prepar
 ### Entregable visible de la semana
 
 - Dashboard arrancando con indicadores de entorno.
-- Login/local auth mock funcionando.
+- Login/scaffolding local funcionando sin competir con el target delegado real.
 - Kernel mínimo aceptando un plugin dummy.
 
 ---
@@ -70,7 +70,7 @@ Dejar una base ejecutable sobre .NET 9 con Docker, Qdrant, autenticación prepar
 
 ### Objetivo
 
-Implementar el flujo de ingestión inicial para Teams y Outlook, normalizar eventos y materializar el sistema de Morning Summary con primera experiencia visible en UI.
+Implementar el flujo de ingestión inicial para Teams y Outlook, normalizar eventos, materializar el sistema de Morning Summary y aterrizar el flujo real de autenticación delegada + Graph sobre el despliegue local Docker-first.
 
 ### Tareas
 
@@ -110,11 +110,27 @@ Implementar el flujo de ingestión inicial para Teams y Outlook, normalizar even
    **DoD:** logs y métricas mínimas para tiempo de sync, items procesados, duplicados evitados y summaries generados.  
    **Riesgo:** operar a ciegas ante fallos de polling, ranking o checkpoints.
 
+8. **Autenticación delegada end-to-end con Entra ID**  
+   **[Prioridad: P0]**  
+   **DoD:** primer login interactivo en `Aura.UI`; `Aura.Api` valida JWT real; `oid` se usa como identidad canónica; cache MSAL persistida en SQLite; renovación silent antes de re-login; re-auth requerida si la renovación falla.  
+   **Riesgo:** seguir construyendo sobre auth mock o identidades inconsistentes entre hosts.
+
+9. **Integración de Microsoft Graph con tokens delegados del usuario**  
+   **[Prioridad: P0]**  
+   **DoD:** Calendar/Teams/Outlook usan tokens delegados; `ClientId` y `TenantId` salen de la App Registration; no se requiere `ClientSecret`; workers reutilizan cache delegada en vez de credenciales app-only.  
+   **Riesgo:** documentar una cosa e implementar otra, especialmente alrededor de renovación de token y contexto de usuario.
+
+10. **Despliegue local Docker-first con hosts separados**  
+    **[Prioridad: P0]**  
+    **DoD:** `Aura.UI`, `Aura.Api` y `Aura.Workers` corren separados con Docker Compose, comparten configuración coherente de Entra ID/Graph y persisten SQLite en volúmenes locales.  
+    **Riesgo:** colapsar la topología de hosts o inventar infraestructura que todavía no forma parte del alcance.
+
 ### Entregable visible de la semana
 
 - Dashboard mostrando feed de Teams/Outlook.
 - Preview del Morning Summary.
 - Estado de último sync y errores visibles.
+- Flujo base de Entra ID + Graph delegado funcionando sobre el entorno local Docker-first.
 
 ---
 
@@ -184,7 +200,7 @@ Cerrar el ciclo con observabilidad útil, validación E2E desde UI, documentaci�
 
 2. **Playwright E2E para flujo principal desde dashboard**  
    **[Prioridad: P0]**  
-   **DoD:** suite valida login mock, estado del entorno, ingestión, preview del morning summary, decisión de foco y consulta del reviewer; artifacts de screenshots/traces disponibles.  
+   **DoD:** suite valida login delegado, estado del entorno, ingestión, preview del morning summary, decisión de foco y consulta del reviewer; artifacts de screenshots/traces disponibles.  
    **Riesgo:** flujos rotos en integración final pese a tener tests unitarios verdes.
 
 3. **Demo Mode con datos coherentes de punta a punta**  
@@ -227,15 +243,30 @@ Aura se construirá con TDD por capas: primero dominio y contratos, después int
 2. **Integration Tests:** adaptadores Graph/Sonar/Qdrant mockeados o en sandbox, checkpoints, persistencia y orquestación.
 3. **E2E con Playwright:** validación del flujo visible del dashboard como prueba de que el sistema realmente entrega valor usable.
 
+## Decisiones arquitectónicas vigentes para este plan
+
+| Área | Decisión vigente |
+| --- | --- |
+| Auth objetivo | Microsoft Entra ID delegated auth |
+| Primer login | Interactivo desde `Aura.UI` |
+| Identidad de usuario | `oid` del token validado |
+| Ciclo de token | Cache persistente en SQLite + renovación silent con MSAL |
+| Falla de renovación | Re-auth obligatoria |
+| Graph | Tokens delegados del usuario; no app-only |
+| App Registration | `ClientId` y `TenantId` pertenecen a la App Registration de Aura |
+| `ClientSecret` | No requerido para este flujo delegado |
+| Topología | `Aura.Api`, `Aura.UI` y `Aura.Workers` separados |
+| Alcance de entrega | Despliegue local Docker-first |
+
 ### Cómo Playwright validará el flujo de usuario desde el dashboard
 
 Playwright validará journeys completos, no widgets aislados:
 
 1. **Arranque y salud del sistema**  
-   Verifica que el dashboard muestre API activa, Qdrant disponible, auth mock habilitada y módulos cargados.
+   Verifica que el dashboard muestre API activa, Qdrant disponible, configuración auth delegated disponible y módulos cargados.
 
 2. **Autenticación y contexto de usuario**  
-   Simula acceso con identidad mock y comprueba que el dashboard cambie a estado autenticado.
+   Ejecuta login interactivo con Entra ID en entorno controlado y comprueba que el dashboard cambie a estado autenticado usando `oid` como identidad.
 
 3. **Ingestión visible**  
    Dispara o consume datos semilla de Teams/Outlook y verifica que los items aparezcan en la bandeja con origen, prioridad y timestamp.
@@ -243,13 +274,16 @@ Playwright validará journeys completos, no widgets aislados:
 4. **Morning Summary visible**  
    Comprueba que el summary generado muestre ranking, riesgos y acciones sugeridas en pantalla.
 
-5. **Deep Work / Window of Opportunity**  
+5. **Calendar y Graph delegados**  
+   Verifica que las reuniones visibles y alertas usen el contexto delegado del usuario autenticado y que una falla de renovación silent derive en re-auth.
+
+6. **Deep Work / Window of Opportunity**  
    Fuerza escenarios controlados y valida que el dashboard explique si un item fue interrumpido o diferido según política.
 
-6. **Reviewer de PRs**  
+7. **Reviewer de PRs**  
    Carga un PR de demo y valida que el panel muestre findings de SonarQube/OWASP y una decisión final trazable.
 
-7. **Trazabilidad de fallo**  
+8. **Trazabilidad de fallo**  
    Ante error, Playwright debe guardar screenshot, trace y evidencia para diagnóstico rápido.
 
 ### Regla práctica de implementación
@@ -270,8 +304,8 @@ ESO es lo que evita construir “backend invisible” que después nadie puede i
 
 La UI no será una fase final; será un tablero de control incremental.
 
-- **Semana 1:** estado del entorno, auth, kernel, servicios.
-- **Semana 2:** feed de ingestión + preview de Morning Summary.
+- **Semana 1:** estado del entorno, scaffolding auth, kernel, servicios.
+- **Semana 2:** feed de ingestión + preview de Morning Summary + auth delegada real + Graph delegado.
 - **Semana 3:** estado de foco + cola priorizada + reviewer panel.
 - **Semana 4:** demo guiada, observabilidad visible y hardening de experiencia.
 
@@ -311,4 +345,4 @@ Eso NO son tareas. Son épicas mal cortadas.
 
 ## Resultado esperado al final de las 4 semanas
 
-Un Aura navegable, demostrable y trazable, con backend modular, UI incremental, flujo de usuario validado por Playwright y suficiente documentación para sostener desarrollo técnico y presentación de TFM.
+Un Aura navegable, demostrable y trazable, con backend modular, UI incremental, autenticación delegada real con Entra ID, Graph consumido con contexto de usuario, despliegue local Docker-first y suficiente documentación para sostener desarrollo técnico y presentación de TFM.

@@ -14,4 +14,10 @@ public sealed record AuraUser
 
     /// <summary>User email address.</summary>
     public required string Email { get; init; }
+
+    /// <summary>Entra ID object identifier (immutable across tenants and email changes).</summary>
+    public string? Oid { get; init; }
+
+    /// <summary>Entra ID tenant identifier.</summary>
+    public string? TenantId { get; init; }
 }

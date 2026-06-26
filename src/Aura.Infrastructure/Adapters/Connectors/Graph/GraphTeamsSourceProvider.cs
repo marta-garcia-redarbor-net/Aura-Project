@@ -1,7 +1,11 @@
+using System.Diagnostics.Metrics;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 
@@ -11,6 +15,11 @@ namespace Aura.Infrastructure.Adapters.Connectors.Graph;
 /// </summary>
 internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<TeamsMessageDto>
 {
+    private static readonly Meter s_meter = new("Aura.Infrastructure.GraphConnector");
+    private static readonly Counter<long> s_tokenAcquired = s_meter.CreateCounter<long>("graph.token.acquired");
+    private static readonly Counter<long> s_tokenExpired = s_meter.CreateCounter<long>("graph.token.expired");
+    private static readonly Counter<long> s_graphHttpError = s_meter.CreateCounter<long>("graph.http.error");
+
     private readonly IGraphClientFactory _clientFactory;
     private readonly ILogger<GraphTeamsSourceProvider> _logger;
 
@@ -27,12 +36,38 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var client = await _clientFactory.CreateClientAsync(ct);
-
-        var messages = await client.Me.Chats.GetAsync(requestConfig =>
+        GraphServiceClient client;
+        try
         {
-            requestConfig.QueryParameters.Top = 50;
-        }, ct);
+            client = await _clientFactory.CreateClientAsync(request.Identity.UserOid ?? "default", ct);
+            s_tokenAcquired.Add(1, new KeyValuePair<string, object?>("connector", "teams"));
+        }
+        catch (Microsoft.Identity.Client.MsalUiRequiredException)
+        {
+            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown");
+            s_tokenExpired.Add(1,
+                new KeyValuePair<string, object?>("connector", "teams"),
+                new KeyValuePair<string, object?>("oid", request.Identity.UserOid ?? "unknown"));
+            throw;
+        }
+
+        ChatCollectionResponse messages;
+        try
+        {
+            messages = await client.Me.Chats.GetAsync(requestConfig =>
+            {
+                requestConfig.QueryParameters.Top = 50;
+            }, ct);
+        }
+        catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+        {
+            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/chats");
+            s_graphHttpError.Add(1,
+                new KeyValuePair<string, object?>("connector", "teams"),
+                new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
+                new KeyValuePair<string, object?>("endpoint", "me/chats"));
+            throw;
+        }
 
         if (messages?.Value is null || messages.Value.Count == 0)
         {
@@ -75,5 +110,13 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
         [LoggerMessage(EventId = 3302, Level = LogLevel.Information,
             Message = "GraphTeamsSourceProvider returned zero messages from Graph API")]
         public static partial void NoTeamsMessages(ILogger logger);
+
+        [LoggerMessage(EventId = 3305, Level = LogLevel.Warning,
+            Message = "GraphTeamsSourceProvider token expired for oid={Oid}. Re-authentication required.")]
+        public static partial void TokenExpired(ILogger logger, string oid);
+
+        [LoggerMessage(EventId = 3306, Level = LogLevel.Warning,
+            Message = "GraphTeamsSourceProvider HTTP {StatusCode} from {Endpoint}")]
+        public static partial void GraphHttpError(ILogger logger, int statusCode, string endpoint);
     }
 }
