@@ -21,6 +21,7 @@ public class SyncEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
+            builder.UseSetting("GraphConnector:Enabled", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
         });
@@ -74,7 +75,8 @@ public class SyncEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
         var client = await CreateAuthenticatedClientAsync();
 
         // Trigger sync
-        await client.PostAsync("/api/sync/now", null);
+        var syncResponse = await client.PostAsync("/api/sync/now", null);
+        var syncContent = await syncResponse.Content.ReadAsStringAsync();
 
         // Get dashboard preview
         var previewResponse = await client.GetAsync("/api/dashboard/preview");
@@ -88,9 +90,9 @@ public class SyncEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
         using var doc = JsonDocument.Parse(content);
         var root = doc.RootElement;
         Assert.True(root.TryGetProperty("inboxGroups", out var inboxGroups),
-            "Response must contain inboxGroups property");
+            $"Response must contain inboxGroups property. Sync result: {syncContent}");
         Assert.True(inboxGroups.GetArrayLength() >= 1,
-            "At least one inbox group expected after sync");
+            $"At least one inbox group expected after sync. Sync result: {syncContent}. Preview: {content}");
 
         // Check that preview items carry the new fields (from fixture data the adapter uses)
         var foundPriorityHint = false;

@@ -48,7 +48,7 @@ public class CalendarDependencyInjectionTests
     }
 
     [Fact]
-    public void AddCalendar_WhenGraphDisabled_DoesNotRegister()
+    public void AddCalendar_WhenGraphDisabled_DoesNotRegisterGraphSpecificServices()
     {
         var services = new ServiceCollection();
         var configuration = new ConfigurationBuilder()
@@ -61,8 +61,13 @@ public class CalendarDependencyInjectionTests
         services.AddCalendar(configuration);
 
         var provider = services.BuildServiceProvider();
-        var store = provider.GetService<ICalendarEventStore>();
 
-        Assert.Null(store);
+        // ICalendarEventStore IS registered (used for meeting alerts, independent of Graph)
+        var store = provider.GetService<ICalendarEventStore>();
+        Assert.NotNull(store);
+
+        // But Graph-specific services should NOT be registered
+        var mapper = provider.GetService<CalendarEventMapper>();
+        Assert.Null(mapper);
     }
 }

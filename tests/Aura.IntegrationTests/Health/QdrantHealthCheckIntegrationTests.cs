@@ -33,8 +33,23 @@ public class QdrantHealthCheckIntegrationTests
     [Fact]
     public async Task HealthEndpoint_WhenQdrantIsDown_Returns503()
     {
-        // Arrange: config points to localhost:6334 — no container running
-        await using var factory = CreateFactory();
+        // Arrange: replace health check with an unhealthy probe to verify HTTP pipeline
+        await using var factory = CreateFactory()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.Configure<HealthCheckServiceOptions>(options =>
+                    {
+                        options.Registrations.Clear();
+                        options.Registrations.Add(new HealthCheckRegistration(
+                            "qdrant",
+                            _ => new AlwaysUnhealthyCheck(),
+                            failureStatus: null,
+                            tags: null));
+                    });
+                });
+            });
         var client = factory.CreateClient();
 
         // Act
@@ -82,6 +97,16 @@ public class QdrantHealthCheckIntegrationTests
         public Task<HealthCheckResult> CheckHealthAsync(
             HealthCheckContext context, CancellationToken cancellationToken = default)
             => Task.FromResult(HealthCheckResult.Healthy("Fake healthy"));
+    }
+
+    /// <summary>
+    /// Stub health check that always returns Unhealthy for testing the HTTP pipeline.
+    /// </summary>
+    private sealed class AlwaysUnhealthyCheck : IHealthCheck
+    {
+        public Task<HealthCheckResult> CheckHealthAsync(
+            HealthCheckContext context, CancellationToken cancellationToken = default)
+            => Task.FromResult(HealthCheckResult.Unhealthy("Fake unhealthy"));
     }
 }
 
