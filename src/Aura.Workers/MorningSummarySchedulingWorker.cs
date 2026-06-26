@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Application.Ports;
 using Microsoft.Extensions.Logging;
 
@@ -10,19 +11,23 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
 
     private readonly IMorningSummaryScheduler _scheduler;
     private readonly IMorningSummaryEmissionStore _emissionStore;
+    private readonly IMorningSummaryComposer _composer;
     private readonly ILogger<MorningSummarySchedulingWorker> _logger;
 
     public MorningSummarySchedulingWorker(
         IMorningSummaryScheduler scheduler,
         IMorningSummaryEmissionStore emissionStore,
+        IMorningSummaryComposer composer,
         ILogger<MorningSummarySchedulingWorker> logger)
     {
         ArgumentNullException.ThrowIfNull(scheduler);
         ArgumentNullException.ThrowIfNull(emissionStore);
+        ArgumentNullException.ThrowIfNull(composer);
         ArgumentNullException.ThrowIfNull(logger);
 
         _scheduler = scheduler;
         _emissionStore = emissionStore;
+        _composer = composer;
         _logger = logger;
     }
 
@@ -63,6 +68,23 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
 
         await _emissionStore.MarkEmittedAsync(SystemUserId, due.LocalDate, ct);
         Log.MarkedEmitted(_logger, SystemUserId, due.LocalDate, due.ResolvedTimezoneId);
+
+        try
+        {
+            var window = new MorningSummaryWindow(
+                due.LocalDate,
+                due.ResolvedTimezoneId,
+                due.TargetLocalTime,
+                DateTimeOffset.UtcNow);
+
+            var request = new MorningSummaryRequest(SystemUserId, window);
+            await _composer.ComposeAsync(request, ct);
+            Log.CompositionSucceeded(_logger, SystemUserId, due.LocalDate);
+        }
+        catch (Exception ex)
+        {
+            Log.CompositionFailed(_logger, ex);
+        }
     }
 
     private static partial class Log
@@ -96,5 +118,17 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
             Level = LogLevel.Information,
             Message = "MorningSummarySchedulingWorker stopped")]
         public static partial void WorkerStopped(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 4306,
+            Level = LogLevel.Information,
+            Message = "Morning Summary composition succeeded for {UserId} on {LocalDate}")]
+        public static partial void CompositionSucceeded(ILogger logger, string userId, DateOnly localDate);
+
+        [LoggerMessage(
+            EventId = 4307,
+            Level = LogLevel.Error,
+            Message = "Morning Summary composition failed")]
+        public static partial void CompositionFailed(ILogger logger, Exception exception);
     }
 }

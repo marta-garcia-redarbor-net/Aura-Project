@@ -4,101 +4,112 @@ using Aura.Application.UseCases.ConnectorExecution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Aura.Workers;
 
 /// <summary>
-/// One-shot worker that runs the connector execution use case for all registered connectors and stops the host.
+/// Continuous polling worker that runs the connector execution use case for all registered connectors.
 /// Uses lightweight strategy dispatch in the use case and relies on Application checkpoint policy.
 /// Resolves user oid from MSAL token cache for delegated Graph operations.
 /// </summary>
 public sealed partial class ConnectorExecutionWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IHostApplicationLifetime _lifetime;
+    private readonly IOptions<ConnectorExecutionOptions> _options;
     private readonly ILogger<ConnectorExecutionWorker> _logger;
 
     public ConnectorExecutionWorker(
         IServiceScopeFactory scopeFactory,
-        IHostApplicationLifetime lifetime,
+        IOptions<ConnectorExecutionOptions> options,
         ILogger<ConnectorExecutionWorker> logger)
     {
         ArgumentNullException.ThrowIfNull(scopeFactory);
-        ArgumentNullException.ThrowIfNull(lifetime);
+        ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
         _scopeFactory = scopeFactory;
-        _lifetime = lifetime;
+        _options = options;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var useCase = scope.ServiceProvider.GetRequiredService<ExecuteConnectorUseCase>();
-            var adapters = scope.ServiceProvider.GetServices<IConnectorAdapter>();
+        var pollingInterval = TimeSpan.FromSeconds(_options.Value.PollingIntervalSeconds);
 
-            // Resolve user oid from MSAL token cache (delegated flow).
-            // Workers cannot use ICurrentUserService (no HTTP context).
-            string? oid = null;
+        while (!stoppingToken.IsCancellationRequested)
+        {
             try
             {
-                var msalApp = scope.ServiceProvider.GetRequiredService<IPublicClientApplication>();
-                var accounts = await msalApp.GetAccountsAsync();
-                var account = accounts.FirstOrDefault();
-                if (account is not null)
+                using var scope = _scopeFactory.CreateScope();
+                var useCase = scope.ServiceProvider.GetRequiredService<ExecuteConnectorUseCase>();
+                var adapters = scope.ServiceProvider.GetServices<IConnectorAdapter>();
+
+                // Resolve user oid from MSAL token cache (delegated flow).
+                // Workers cannot use ICurrentUserService (no HTTP context).
+                string? oid = null;
+                try
                 {
-                    oid = account.HomeAccountId.ObjectId;
+                    var msalApp = scope.ServiceProvider.GetRequiredService<IPublicClientApplication>();
+                    var accounts = await msalApp.GetAccountsAsync();
+                    var account = accounts.FirstOrDefault();
+                    if (account is not null)
+                    {
+                        oid = account.HomeAccountId.ObjectId;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Log.TokenCacheReadFailed(_logger, ex);
+                }
+
+                foreach (var adapter in adapters)
+                {
+                    if (oid is null)
+                    {
+                        Log.NoCachedUser(_logger, adapter.ConnectorName);
+                        continue;
+                    }
+
+                    var identity = new CheckpointIdentity(
+                        adapter.ConnectorName,
+                        GetSource(adapter.ConnectorName),
+                        "default",
+                        userOid: oid);
+
+                    Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
+
+                    var result = await useCase.ExecuteAsync(identity, stoppingToken);
+
+                    if (result.Status == ConnectorExecutionStatus.Success)
+                    {
+                        Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
+                    }
+                    else
+                    {
+                        Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                Log.WorkerCancelled(_logger);
             }
             catch (Exception ex)
             {
-                Log.TokenCacheReadFailed(_logger, ex);
+                Log.WorkerCrashed(_logger, ex);
             }
 
-            foreach (var adapter in adapters)
+            try
             {
-                if (oid is null)
-                {
-                    Log.NoCachedUser(_logger, adapter.ConnectorName);
-                    continue;
-                }
-
-                var identity = new CheckpointIdentity(
-                    adapter.ConnectorName,
-                    GetSource(adapter.ConnectorName),
-                    "default",
-                    userOid: oid);
-
-                Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
-
-                var result = await useCase.ExecuteAsync(identity, stoppingToken);
-
-                if (result.Status == ConnectorExecutionStatus.Success)
-                {
-                    Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
-                }
-                else
-                {
-                    Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
-                }
+                await Task.Delay(pollingInterval, stoppingToken);
             }
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-            Log.WorkerCancelled(_logger);
-        }
-        catch (Exception ex)
-        {
-            Log.WorkerCrashed(_logger, ex);
-        }
-        finally
-        {
-            _lifetime.StopApplication();
+            catch (OperationCanceledException)
+            {
+                break;
+            }
         }
     }
 

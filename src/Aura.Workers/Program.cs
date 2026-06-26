@@ -1,6 +1,7 @@
 using Aura.Application;
 using Aura.Infrastructure;
 using Aura.Workers;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 var kernelOnly = args.Contains("--kernel-only");
@@ -19,6 +20,7 @@ if (kernelOnly)
 else
 {
     // Full mode: all infrastructure adapters + background workers
+    builder.Services.Configure<ConnectorExecutionOptions>(builder.Configuration.GetSection("ConnectorExecution"));
     builder.Services.AddHostedService<Worker>();
     builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
