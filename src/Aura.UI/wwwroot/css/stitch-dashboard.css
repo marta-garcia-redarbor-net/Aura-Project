@@ -609,3 +609,148 @@ a {
         padding: var(--aura-margin-mobile);
     }
 }
+
+/* ==========================================================================
+   Restricted Access View — Login overlay for unauthenticated users
+   ========================================================================== */
+
+.restricted-access {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--aura-bg-deep);
+}
+
+.blur-restricted {
+    position: absolute;
+    inset: 0;
+    filter: blur(8px);
+    pointer-events: none;
+    opacity: 0.6;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.login-card {
+    position: relative;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 48px 40px;
+    min-width: 360px;
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-xl, 24px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: card-enter 0.4s ease-out;
+}
+
+.login-card__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--aura-on-surface);
+    margin: 0;
+}
+
+.login-card__subtitle {
+    font-size: 0.95rem;
+    color: var(--aura-on-surface-variant);
+    margin: 0;
+}
+
+.login-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.login-card__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.login-card__button:hover {
+    transform: translateY(-1px);
+}
+
+.login-card__button:active {
+    transform: translateY(0);
+}
+
+.login-card__button--microsoft {
+    background: var(--aura-primary-container);
+    color: var(--aura-on-primary-container);
+}
+
+.login-card__button--microsoft:hover {
+    background: var(--aura-primary);
+}
+
+.login-card__button--dev {
+    background: var(--aura-surface-container-high);
+    color: var(--aura-on-surface);
+}
+
+.login-card__button--dev:hover {
+    background: var(--aura-surface-container-highest);
+}
+
+.login-card__error {
+    padding: 12px 16px;
+    background: rgba(255, 180, 171, 0.1);
+    border: 1px solid var(--aura-error);
+    border-radius: 8px;
+    color: var(--aura-error);
+    font-size: 0.875rem;
+    width: 100%;
+    text-align: center;
+}
+
+.login-card__blocked-message {
+    padding: 16px;
+    background: var(--aura-surface-container);
+    border-radius: 8px;
+    color: var(--aura-on-surface-variant);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.login-card__blocked-message a {
+    color: var(--aura-primary);
+    text-decoration: underline;
+}
+
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        background-position: -200% 0;
+    }
+    50% {
+        background-position: 200% 0;
+    }
+}

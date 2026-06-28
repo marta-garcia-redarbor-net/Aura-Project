@@ -1,0 +1,77 @@
+@using Microsoft.AspNetCore.Authorization
+
+<div class="restricted-access" data-testid="restricted-access-view">
+    <!-- Blurred dashboard shell skeleton -->
+    <div class="blur-restricted">
+        <aside class="dashboard-sidebar" data-testid="blurred-sidebar">
+            <div class="dashboard-sidebar__brand">
+                <h2 class="dashboard-sidebar__title">Aura Core</h2>
+                <p class="dashboard-sidebar__version">v2.4.0-stable</p>
+            </div>
+            <nav>
+                <ul class="dashboard-sidebar__nav">
+                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">dashboard</span>Dashboard</span></li>
+                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">monitor_heart</span>Health</span></li>
+                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">account_tree</span>Modules</span></li>
+                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">checklist</span>Tasks</span></li>
+                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">terminal</span>Logs</span></li>
+                </ul>
+            </nav>
+        </aside>
+        <header class="dashboard-header" data-testid="blurred-header">
+            <div class="dashboard-header__left">
+                <h1 class="dashboard-header__title">Dashboard</h1>
+            </div>
+        </header>
+    </div>
+
+    <!-- Login card overlay -->
+    <div class="login-card" data-testid="login-card">
+        <h1 class="login-card__title">Aura</h1>
+        <p class="login-card__subtitle">Sign in to continue</p>
+
+        <div class="login-card__actions">
+            <button class="login-card__button login-card__button--microsoft"
+                    data-testid="login-microsoft-btn"
+                    @onclick="HandleMicrosoftLogin">
+                <span class="material-symbols-outlined">login</span>
+                Sign in with Microsoft
+            </button>
+
+            @if (!_useEntraId)
+            {
+                <button class="login-card__button login-card__button--dev"
+                        data-testid="login-dev-btn"
+                        @onclick="HandleDevLogin">
+                    <span class="material-symbols-outlined">developer_mode</span>
+                    Login with Entra ID
+                </button>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="login-card__error" data-testid="login-error">
+                @_errorMessage
+            </div>
+        }
+
+        @if (_popupBlocked)
+        {
+            <div class="login-card__blocked-message" data-testid="popup-blocked-message">
+                <p>Pop-ups blocked. Allow pop-ups for this site, or
+                    <a href="javascript:void(0)" @onclick="HandleFallbackRedirect" data-testid="fallback-redirect-link">
+                        click here to sign in directly
+                    </a>.
+                </p>
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_blockedToastMessage))
+    {
+        <div class="login-card__error" data-testid="blocked-toast" style="position:fixed;bottom:24px;right:24px;z-index:1002;">
+            @_blockedToastMessage
+        </div>
+    }
+</div>
