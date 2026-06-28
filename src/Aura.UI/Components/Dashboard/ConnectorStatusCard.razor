@@ -1,0 +1,26 @@
+<div class="connector-card" data-testid="connector-status-card">
+    <div class="connector-card__header">
+        <span class="connector-card__name" data-testid="connector-name">@Name</span>
+        <span class="connector-card__status-dot @StatusDotClass()" data-testid="connector-status-dot"></span>
+    </div>
+    <div class="connector-card__body">
+        <span class="connector-card__item-count" data-testid="connector-item-count">@ItemCount</span>
+        <span class="connector-card__last-sync" data-testid="connector-last-sync">@LastSyncTime</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string Status { get; set; } = "";
+    [Parameter] public int ItemCount { get; set; }
+    [Parameter] public string LastSyncTime { get; set; } = "";
+
+    private string StatusDotClass() => Status.ToLowerInvariant() switch
+    {
+        "healthy" => "connector-card__status-dot--healthy",
+        "warning" or "partial_config" => "connector-card__status-dot--warning",
+        "disabled" or "offline" => "connector-card__status-dot--offline",
+        "failure" or "error" => "connector-card__status-dot--error",
+        _ => ""
+    };
+}

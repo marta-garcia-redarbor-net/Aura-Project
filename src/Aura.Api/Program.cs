@@ -11,6 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuraApplication();
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddSignalR();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 builder.Services.AddSingleton<IMeetingAlertDispatcher, SignalRMeetingAlertDispatcher>();
 
 builder.Services.AddCors(options =>
