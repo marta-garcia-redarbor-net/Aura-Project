@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -27,6 +31,7 @@
     <ProjectReference Include="..\..\src\Aura.Infrastructure\Aura.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Aura.Api\Aura.Api.csproj" />
     <ProjectReference Include="..\..\src\Aura.Workers\Aura.Workers.csproj" />
+    <ProjectReference Include="..\..\src\Aura.UI\Aura.UI.csproj" />
   </ItemGroup>
 
 </Project>

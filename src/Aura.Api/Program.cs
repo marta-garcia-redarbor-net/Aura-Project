@@ -13,10 +13,23 @@ builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environmen
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IMeetingAlertDispatcher, SignalRMeetingAlertDispatcher>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowUiOrigin", policy =>
+    {
+        var uiOrigin = builder.Configuration["Cors:UiOrigin"] ?? "http://localhost:5190";
+        policy.WithOrigins(uiOrigin)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.Api.DashboardPipeline");
 
+app.UseCors("AllowUiOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 

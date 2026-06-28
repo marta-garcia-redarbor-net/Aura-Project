@@ -3,10 +3,11 @@ using Aura.Application.UseCases.Calendar;
 using Aura.Domain.Calendar;
 using Aura.UI.Components;
 using Aura.UI.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Identity.Client;
-using Microsoft.Identity.Web;
 
 namespace Aura.UI;
 
@@ -20,6 +21,7 @@ public static class Program
             .AddInteractiveServerComponents();
 
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddHttpClient();
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();
 
         var useEntraId = builder.Configuration.GetValue<bool>("UseEntraId");
@@ -29,32 +31,77 @@ public static class Program
         // - UseEntraId=true: OIDC-backed provider from AddMicrosoftIdentityWebApp
         // - UseEntraId=false (dev): cookie-based provider (anonymous by default)
         builder.Services.AddCascadingAuthenticationState();
+        builder.Services.AddScoped<IAuthPopupService, AuthPopupService>();
 
         if (useEntraId)
         {
-            // OIDC pipeline: Entra ID interactive browser auth via Microsoft.Identity.Web
-            builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+            // OIDC pipeline: Authorization Code flow via challenge endpoint.
+            // The middleware owns state/nonce/correlation — no manual URL construction.
+            var azureAd = builder.Configuration.GetSection("AzureAd");
+            var clientId = azureAd["ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
+            var tenantId = azureAd["TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
+            var clientSecret = azureAd["ClientSecret"] ?? throw new InvalidOperationException("AzureAd:ClientSecret not configured");
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Events.OnRedirectToAccessDenied = ctx =>
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    };
+                })
+                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+                {
+                    options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
+                    // Force v2.0 metadata discovery to avoid v1.0 fallback
+                    options.MetadataAddress = $"https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration";
+                    options.ClientId = clientId;
+                    options.ClientSecret = clientSecret;
+                    options.ResponseType = "code";
+                    options.CallbackPath = "/signin-oidc";
+                    options.SaveTokens = true;
+                    options.Scope.Clear();
+                    options.Scope.Add("openid");
+                    options.Scope.Add("profile");
+                    options.Scope.Add("email");
+                    // Request the API scope so the access_token saved by SaveTokens
+                    // has audience api://{clientId} — required by the API JWT Bearer validator.
+                    options.Scope.Add($"api://{clientId}/MeetingAlerts");
+
+                    // Add resource parameter so Entra ID returns an access_token
+                    // for our API instead of the default Microsoft Graph token.
+                    options.Events.OnRedirectToIdentityProvider = context =>
+                    {
+                        context.ProtocolMessage.SetParameter("resource", $"api://{clientId}");
+                        return Task.CompletedTask;
+                    };
+                });
 
             builder.Services.AddAuthorization();
 
+            // Register IConfidentialClientApplication for client-credentials fallback.
+            // When SaveTokens=true doesn't produce an access_token (e.g. MeetingAlerts scope
+            // not yet registered in Entra ID), ForwardedAccessTokenHandler falls back to
+            // client credentials to obtain a valid bearer token for the API.
+            builder.Services.AddSingleton<IConfidentialClientApplication>(
+                ConfidentialClientApplicationBuilder
+                    .Create(clientId)
+                    .WithClientSecret(clientSecret)
+                    .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
+                    .Build());
+
             // Register ITokenAcquisitionService for components that need it (e.g. MeetingAlertToast)
             builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
-            builder.Services.AddSingleton<IPublicClientApplication>(provider =>
-            {
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
-                var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
-
-                return PublicClientApplicationBuilder
-                    .Create(clientId)
-                    .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
-                    .WithRedirectUri("http://localhost:5000/authentication/login-callback")
-                    .Build();
-            });
         }
         else
         {
+            // CRITICAL-01: Register cookie authentication so HttpContext.SignInAsync("Cookies", ...)
+            // works in RestrictedAccessView.HandleDevLogin(). Without this, the sign-in call silently
+            // fails because no "Cookies" authentication scheme is registered.
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie();
+
             // DEV-ONLY: auto-acquire a mock JWT so the UI can call protected API endpoints
             // without a real browser token. Remove when real auth (e.g. MSAL) is wired up.
             if (builder.Environment.IsDevelopment())
@@ -66,77 +113,26 @@ public static class Program
             {
                 // Register MSAL-based token acquisition for production
                 builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
-                
-                // Register MSAL PublicClientApplication for interactive browser auth
-                builder.Services.AddSingleton<IPublicClientApplication>(provider =>
-                {
-                    var configuration = provider.GetRequiredService<IConfiguration>();
-                    var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
-                    var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
-                    
-                    return PublicClientApplicationBuilder
-                        .Create(clientId)
-                        .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
-                        .WithRedirectUri("http://localhost:5000/authentication/login-callback")
-                        .Build();
-                });
             }
         }
 
-        var httpClientBuilder = builder.Services
-            .AddHttpClient<IDashboardApiClient, DashboardApiClient>((serviceProvider, client) =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+        var apiBaseUrl = builder.Configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
 
+        static IHttpClientBuilder AddApiHttpClient<TClient, TInterface>(
+            IServiceCollection services, string baseUrl)
+            where TClient : class, TInterface
+            where TInterface : class
+            => services.AddHttpClient<TInterface, TClient>((_, client) =>
+            {
                 client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
                 client.Timeout = TimeSpan.FromSeconds(10);
-            })
-            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+            }).AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
-        var graphHttpClientBuilder = builder.Services
-            .AddHttpClient<IGraphConnectorApiClient, GraphConnectorApiClient>((serviceProvider, client) =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
-
-                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
-                client.Timeout = TimeSpan.FromSeconds(10);
-            })
-            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
-
-        var dashboardPreviewHttpClientBuilder = builder.Services
-            .AddHttpClient<IDashboardPreviewApiClient, DashboardPreviewApiClient>((serviceProvider, client) =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
-
-                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
-                client.Timeout = TimeSpan.FromSeconds(10);
-            })
-            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
-
-        var systemStatusHttpClientBuilder = builder.Services
-            .AddHttpClient<ISystemStatusApiClient, SystemStatusApiClient>((serviceProvider, client) =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
-
-                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
-                client.Timeout = TimeSpan.FromSeconds(10);
-            })
-            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
-
-        var moduleProgressHttpClientBuilder = builder.Services
-            .AddHttpClient<IModuleProgressApiClient, ModuleProgressApiClient>((serviceProvider, client) =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var baseUrl = configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
-
-                client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
-                client.Timeout = TimeSpan.FromSeconds(10);
-            })
-            .AddHttpMessageHandler<ForwardedAccessTokenHandler>();
+        var httpClientBuilder = AddApiHttpClient<DashboardApiClient, IDashboardApiClient>(builder.Services, apiBaseUrl);
+        var graphHttpClientBuilder = AddApiHttpClient<GraphConnectorApiClient, IGraphConnectorApiClient>(builder.Services, apiBaseUrl);
+        var dashboardPreviewHttpClientBuilder = AddApiHttpClient<DashboardPreviewApiClient, IDashboardPreviewApiClient>(builder.Services, apiBaseUrl);
+        var systemStatusHttpClientBuilder = AddApiHttpClient<SystemStatusApiClient, ISystemStatusApiClient>(builder.Services, apiBaseUrl);
+        var moduleProgressHttpClientBuilder = AddApiHttpClient<ModuleProgressApiClient, IModuleProgressApiClient>(builder.Services, apiBaseUrl);
 
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
@@ -163,11 +159,20 @@ public static class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
-        if (useEntraId)
-        {
-            app.UseAuthentication();
-            app.UseAuthorization();
-        }
+        // CRITICAL-03: Authentication/Authorization middleware must always be registered,
+        // regardless of UseEntraId. When UseEntraId=false, cookie authentication is registered
+        // in the else block above, and the middleware is required for cookie sign-in/claims
+        // population to work. Without it, [Authorize] attributes fail even after successful sign-in.
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        // OIDC challenge endpoint: opens the popup flow by triggering an OIDC challenge.
+        // The OIDC middleware owns state/nonce/correlation — no manual URL construction needed.
+        app.MapGet("/login/challenge", async (HttpContext ctx) =>
+            await ctx.ChallengeAsync(
+                OpenIdConnectDefaults.AuthenticationScheme,
+                new AuthenticationProperties { RedirectUri = "/authentication/callback" }))
+            .AllowAnonymous();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

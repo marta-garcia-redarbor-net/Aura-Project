@@ -2,14 +2,7 @@
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-            <NotAuthorized>
-                @* AllowAnonymous pages should be accessible to everyone.
-                   If we reach here on an AllowAnonymous page, it means auth is misconfigured.
-                   Redirect to login as a safe fallback. *@
-                <RedirectToLogin />
-            </NotAuthorized>
-        </AuthorizeRouteView>
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
