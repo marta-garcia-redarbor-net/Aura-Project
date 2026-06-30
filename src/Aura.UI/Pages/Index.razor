@@ -1,28 +1,38 @@
-@page "/"
+@page "/test-dashboard"
 @using Aura.UI.Components.Dashboard
+@using Microsoft.AspNetCore.Components.Authorization
+@using Aura.UI.Components.Auth
 
-<PageTitle>Aura Dashboard</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura Dashboard</PageTitle>
 
-<div class="dashboard-page-header">
-    <div>
-        <h1 class="dashboard-page-header__title">System Status</h1>
-        <p class="dashboard-page-header__subtitle">Real-time telemetry and service heartbeat.</p>
-    </div>
-    <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
-        <span class="dashboard-page-header__badge-dot"></span>
-        Live Sync
-    </span>
-</div>
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">System Status</h1>
+                <p class="dashboard-page-header__subtitle">Real-time telemetry and service heartbeat.</p>
+            </div>
+            <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                <span class="dashboard-page-header__badge-dot"></span>
+                Live Sync
+            </span>
+        </div>
 
-<DashboardStatePanel State="@State" />
-<GraphConnectorStatusPanel />
-<SystemStatusPanel />
-<ModuleProgressPanel />
-<DashboardCards Cards="@State.Cards" />
-<InboxPreviewPanel />
-<UpcomingMeetingsPanel />
-<SyncStatusPanel />
-<MorningSummaryPreviewPanel />
+        <DashboardStatePanel State="@State" />
+        <GraphConnectorStatusPanel />
+        <SystemStatusPanel />
+        <ModuleProgressPanel />
+        <DashboardCards Cards="@State.Cards" />
+        <InboxPreviewPanel />
+        <UpcomingMeetingsPanel />
+        <SyncStatusPanel />
+        <MorningSummaryPreviewPanel />
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private DashboardViewState _state = DashboardViewState.Loading();

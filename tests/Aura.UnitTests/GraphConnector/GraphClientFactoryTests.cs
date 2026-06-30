@@ -177,6 +177,7 @@ public class GraphClientFactoryTests
         Assert.Contains("Mail.Read", scopeArray);
         Assert.Contains("Chat.Read", scopeArray);
         Assert.Contains("User.Read", scopeArray);
+        Assert.Contains("Calendars.Read", scopeArray);
     }
 
     [Fact]
@@ -252,5 +253,50 @@ public class GraphClientFactoryTests
             () => _factory.CreateClientAsync("oid-unknown", CancellationToken.None));
 
         Assert.Equal("no_account", ex.ErrorCode);
+    }
+
+    [Fact]
+    public async Task DefaultScopes_IncludeCalendarsRead()
+    {
+        // Arrange: factory created with null scopes (uses defaults)
+        var optionsNoScopes = Options.Create(new GraphConnectorOptions
+        {
+            Enabled = true,
+            TenantId = "test-tenant",
+            ClientId = "test-client",
+            Scopes = null
+        });
+        var factory = new GraphClientFactory(_msalApp, optionsNoScopes);
+
+        var fakeAccount = Substitute.For<IAccount>();
+        fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
+#pragma warning disable CS0618
+        _msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult((IEnumerable<IAccount>)[fakeAccount]));
+#pragma warning restore CS0618
+
+        IEnumerable<string>? capturedScopes = null;
+        _msalApp.AcquireTokenSilent(
+                Arg.Do<IEnumerable<string>>(s => capturedScopes = s),
+                Arg.Any<IAccount>())
+            .Throws(new MsalUiRequiredException("test", "test"));
+
+        // Act
+        try
+        {
+            await factory.CreateClientAsync("oid-A", CancellationToken.None);
+        }
+        catch (MsalUiRequiredException)
+        {
+            // Expected — we're testing the scopes argument
+        }
+
+        // Assert: Calendars.Read is present in default scopes
+        Assert.NotNull(capturedScopes);
+        var scopeArray = capturedScopes.ToArray();
+        Assert.Contains("Calendars.Read", scopeArray);
+        Assert.Contains("Mail.Read", scopeArray);
+        Assert.Contains("Chat.Read", scopeArray);
+        Assert.Contains("User.Read", scopeArray);
     }
 }

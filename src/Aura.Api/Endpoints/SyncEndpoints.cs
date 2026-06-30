@@ -28,6 +28,7 @@ public static partial class SyncEndpoints
 
     private static async Task<IResult> PostSyncNowAsync(
         TriggerSyncUseCase useCase,
+        Microsoft.Identity.Client.IPublicClientApplication? msalApp,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -38,7 +39,31 @@ public static partial class SyncEndpoints
 
         try
         {
-            var result = await useCase.ExecuteAsync(cancellationToken);
+            // Resolve user oid from MSAL token cache for delegated Graph operations
+            string? userOid = null;
+            if (msalApp is not null)
+            {
+                try
+                {
+                    var accounts = await msalApp.GetAccountsAsync();
+                    var account = accounts.FirstOrDefault();
+                    if (account is not null)
+                    {
+                        userOid = account.HomeAccountId.ObjectId;
+                        Log.UserOidResolved(logger, userOid);
+                    }
+                    else
+                    {
+                        Log.NoCachedAccount(logger);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.MsalCacheReadFailed(logger, ex);
+                }
+            }
+
+            var result = await useCase.ExecuteAsync(userOid, cancellationToken);
             activity?.SetTag("sync.source_count", result.Results.Count);
 
             Log.SyncNowCompleted(logger, result.Results.Count);
@@ -115,5 +140,17 @@ public static partial class SyncEndpoints
         [LoggerMessage(EventId = 6006, Level = LogLevel.Error,
             Message = "Sync status request failed")]
         public static partial void SyncStatusFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 6007, Level = LogLevel.Information,
+            Message = "Resolved user oid from MSAL cache: {UserOid}")]
+        public static partial void UserOidResolved(ILogger logger, string userOid);
+
+        [LoggerMessage(EventId = 6008, Level = LogLevel.Warning,
+            Message = "No cached account found in MSAL — sync will run without user identity")]
+        public static partial void NoCachedAccount(ILogger logger);
+
+        [LoggerMessage(EventId = 6009, Level = LogLevel.Warning,
+            Message = "Failed to read MSAL token cache for sync")]
+        public static partial void MsalCacheReadFailed(ILogger logger, Exception exception);
     }
 }

@@ -1,79 +1,116 @@
 # Authentication — Token Lifecycle
 
-Aura uses delegated user tokens with a persistent SQLite-backed token cache.
+Aura uses delegated user tokens with cookie-based persistence (`SaveTokens = true`) and a 3-tier token forwarding strategy.
 
 ## Quick path
 
-1. The user signs in through Entra ID.
-2. MSAL stores token state in the persistent SQLite cache.
-3. Aura reuses cached state and attempts silent token renewal.
-4. If silent renewal succeeds, the session continues without user interruption.
-5. If silent renewal fails, Aura requires the user to authenticate again.
+1. The user signs in through the OIDC popup flow.
+2. The OIDC middleware exchanges the authorization code for tokens.
+3. `SaveTokens = true` stores the `access_token` in cookie authentication properties.
+4. `ForwardedAccessTokenHandler` reads the token from the cookie and attaches it as Bearer.
+5. If no `access_token` is available, client-credentials fallback obtains one.
 
 ## Lifecycle decisions
 
 | Topic | Decision |
 |-------|----------|
 | Token type | Delegated user tokens |
-| Cache storage | Persistent SQLite-backed token cache |
-| Renewal strategy | Silent renewal first via MSAL |
-| Failure behavior | Re-authenticate when silent renewal fails |
+| Cache storage | Cookie authentication properties (`SaveTokens = true`) |
+| Renewal strategy | OIDC middleware handles token lifecycle; no manual MSAL renewal |
+| Token forwarding | `ForwardedAccessTokenHandler` with 3-tier resolution |
+| Client-credentials fallback | `IConfidentialClientApplication.AcquireTokenForClient` when OIDC session has no access_token |
 | Graph usage | Reuse the delegated user token context for Graph calls |
 
 ## Happy path
 
 ```text
 First login
-  → user signs in with Entra ID
-  → token contains oid
-  → MSAL persists token cache state in SQLite
+  → user opens popup via /login/challenge
+  → OIDC middleware triggers Entra ID challenge (ResponseType = "code")
+  → Entra ID returns authorization code
+  → middleware exchanges code for tokens (access_token, id_token, refresh_token)
+  → SaveTokens=true stores tokens in cookie authentication properties
 
-Later request
-  → Aura loads cached account/token state
-  → MSAL tries AcquireTokenSilent
-  → success: Graph/API calls continue
-  → failure: Aura prompts the user to sign in again
+API request
+  → ForwardedAccessTokenHandler reads access_token from cookie
+  → Bearer token attached to outbound HTTP request
+  → API validates JWT (dual issuers, dual audiences)
+  → oid used as current user identity
 ```
+
+## Token resolution order
+
+`ForwardedAccessTokenHandler` resolves tokens in this order:
+
+| Priority | Source | Log level | Condition |
+|----------|--------|-----------|-----------|
+| 1 | Existing `Authorization` header | `Debug` | Dev mode / mock JWT forwarding |
+| 2 | OIDC session `access_token` via `GetTokenAsync("access_token")` | `Debug` | `SaveTokens = true` produced a token |
+| 3 | Client-credentials fallback via `AcquireTokenForClient` | `Information` | No token in OIDC session |
+| — | No token attached | `Warning` | `IConfidentialClientApplication` not available or acquisition failed |
 
 ## Runtime responsibilities
 
 | Runtime part | Responsibility |
 |--------------|----------------|
-| `Aura.UI` | Starts the interactive login flow and forwards bearer tokens to API and SignalR |
-| `Aura.Api` | Validates JWTs and resolves the current user from token claims |
-| `Aura.Workers` | Runs background work as a separate process; it does not collapse user auth into the worker host |
-| Token cache storage | Persists MSAL token cache state in SQLite for reuse across local restarts |
+| `Aura.UI` | Hosts OIDC middleware, stores tokens in cookie, exposes `/login/challenge` |
+| `ForwardedAccessTokenHandler` | Reads tokens from cookie, forwards as Bearer to API |
+| `Aura.Api` | Validates JWTs (dual issuers: v1.0 + v2.0, dual audiences) |
+| `IConfidentialClientApplication` | Client-credentials fallback for token acquisition |
+| `Aura.Workers` | Runs background work as a separate process |
 
-## First login flow
+## Cookie-based token storage
 
-The first login flow is intentionally simple:
+Tokens are persisted via `SaveTokens = true` in the OpenIdConnect options:
 
-1. User opens Aura.
-2. User authenticates with Entra ID.
-3. Aura receives a token with `oid`.
-4. Aura uses `oid` as the internal user identity key.
+- The OIDC middleware stores `access_token`, `id_token`, and `refresh_token` in the cookie authentication properties.
+- No SQLite database or external token cache is used.
+- The cookie is encrypted and signed by the ASP.NET Core data protection stack.
+- Token lifetime is bounded by the cookie expiration and Entra ID token lifetimes.
+
+## Client-credentials fallback
+
+When the OIDC session has no `access_token` (e.g., the `MeetingAlerts` scope is not yet registered in Entra ID):
+
+1. `ForwardedAccessTokenHandler` logs at `Information` level.
+2. It resolves `IConfidentialClientApplication` from the request services.
+3. It calls `AcquireTokenForClient` with scope `api://{clientId}/.default`.
+4. The resulting token is attached as Bearer.
+5. If `IConfidentialClientApplication` is not available, it logs at `Warning` and sends the request without a token.
+6. If acquisition fails, it logs the exception at `Warning` and sends the request without a token.
 
 ## Failure path
 
 | Failure | Expected behavior |
 |---------|-------------------|
-| Token expired but refreshable | MSAL silently renews it |
-| Silent renewal fails | Aura requests interactive re-authentication |
-| Missing or invalid bearer token at API | API rejects the request |
-| Invalid JWT in production | API rejects the request after real JWT validation |
+| No `access_token` in OIDC session | Client-credentials fallback acquires token |
+| Client-credentials acquisition fails | Warning logged, request sent without token, API may reject |
+| `IConfidentialClientApplication` not registered | Warning logged, request sent without token |
+| Missing or invalid bearer at API | API rejects the request |
+| Invalid JWT in production | API rejects the request after JWT validation |
+| Cookie expired | User must re-authenticate via OIDC popup |
 
-## Persistence notes
+## API JWT validation
 
-- The token cache is persistent, not in-memory only.
-- SQLite is the local persistence mechanism for this phase.
-- Local deployment should preserve the SQLite file across container restarts with a mounted volume.
+The API validates inbound JWTs with:
+
+| Parameter | Value |
+|-----------|-------|
+| Metadata address | v2.0 OpenID configuration |
+| Valid issuers | `https://login.microsoftonline.com/{tenant}/v2.0`, `https://sts.windows.net/{tenant}/` |
+| Valid audiences | `api://{clientId}`, `{clientId}` |
+| `OnAuthenticationFailed` | LogWarning with token details |
+| `OnChallenge` | LogDebug |
+| `OnTokenValidated` | No-op |
 
 ## Checklist
 
-- [x] SQLite persistence is documented for token cache state.
-- [x] Silent renewal is documented as the default renewal path.
-- [x] Re-authentication is documented as the fallback path.
+- [x] Cookie-based token storage is documented (no SQLite).
+- [x] OIDC middleware handles token lifecycle (no manual MSAL renewal).
+- [x] 3-tier token resolution is documented.
+- [x] Client-credentials fallback is documented.
 - [x] `oid` is documented as the identity claim Aura relies on.
+- [x] API JWT validation with dual issuers is documented.
 
 ## Next step
 

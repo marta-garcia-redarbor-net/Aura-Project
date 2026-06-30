@@ -1,6 +1,9 @@
 using System.Net;
 using Aura.UI.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Aura.UnitTests.Dashboard;
@@ -69,7 +72,17 @@ public class ForwardedAccessTokenHandlerTests
 
     private static IHttpContextAccessor CreateHttpContextAccessor(string? authorizationHeader)
     {
-        var httpContext = new DefaultHttpContext();
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddAuthentication("Cookies")
+            .AddCookie()
+            .Services
+            .BuildServiceProvider();
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = services
+        };
         if (authorizationHeader is not null)
         {
             httpContext.Request.Headers.Authorization = authorizationHeader;
@@ -85,7 +98,17 @@ public class ForwardedAccessTokenHandlerTests
         out CapturingInnerHandler innerHandler)
     {
         innerHandler = new CapturingInnerHandler();
-        var handler = new ForwardedAccessTokenHandler(httpContextAccessor)
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "test-client-id"
+            })
+            .Build();
+
+        var logger = Substitute.For<ILogger<ForwardedAccessTokenHandler>>();
+
+        var handler = new ForwardedAccessTokenHandler(httpContextAccessor, configuration, logger)
         {
             InnerHandler = innerHandler
         };

@@ -39,7 +39,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         _output.WriteLine(html);
@@ -58,7 +58,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -75,7 +75,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -101,6 +101,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
                 services.AddScoped(_ => systemStatusApiClient);
                 services.AddScoped(_ => moduleProgressApiClient);
                 services.AddScoped(_ => dashboardPreviewApiClient);
+                services.AddScoped<ISyncApiClient>(_ => new StubSyncClient());
             });
         });
 
@@ -136,5 +137,17 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
         private readonly DashboardPreviewResponse _response;
         public StubPreviewClient(DashboardPreviewResponse response) => _response = response;
         public Task<DashboardPreviewResponse> GetPreviewAsync(CancellationToken ct) => Task.FromResult(_response);
+    }
+
+    private sealed class StubSyncClient : ISyncApiClient
+    {
+        public Task<List<SourceSyncStateDto>> GetSyncStatusAsync(CancellationToken ct)
+            => Task.FromResult(new List<SourceSyncStateDto>
+            {
+                new() { Source = "teams", Status = "success", ItemCount = 3, LastSyncTimestamp = DateTimeOffset.UtcNow },
+                new() { Source = "outlook", Status = "success", ItemCount = 5, LastSyncTimestamp = DateTimeOffset.UtcNow }
+            });
+
+        public Task TriggerSyncAsync(CancellationToken ct) => Task.CompletedTask;
     }
 }

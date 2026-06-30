@@ -6,7 +6,10 @@ namespace Aura.UI.Services;
 
 public sealed class GraphConnectorApiClient : IGraphConnectorApiClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
     private readonly HttpClient _httpClient;
 
     public GraphConnectorApiClient(HttpClient httpClient)

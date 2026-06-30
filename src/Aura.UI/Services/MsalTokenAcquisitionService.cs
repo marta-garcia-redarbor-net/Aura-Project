@@ -1,35 +1,33 @@
-using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Aura.UI.Services;
 
 /// <summary>
-/// MSAL implementation of <see cref="ITokenAcquisitionService"/> using interactive browser flow.
-/// Uses the same Entra ID App Registration as the Graph API connector with an additional
-/// MeetingAlerts scope. Falls back to dev mock JWT when MSAL config is absent.
+/// Cookie-session implementation of <see cref="ITokenAcquisitionService"/>.
+/// Reads the access token stored by the OIDC middleware (SaveTokens=true) from the HTTP
+/// session cookie. Does NOT use AcquireTokenInteractive — that is a desktop primitive
+/// incompatible with server-side Blazor.
 /// </summary>
 internal sealed class MsalTokenAcquisitionService : ITokenAcquisitionService
 {
-    private readonly IPublicClientApplication _msalApp;
-    private static readonly string[] MeetingAlertsScope = ["api://<app-id>/MeetingAlerts"];
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public MsalTokenAcquisitionService(IPublicClientApplication msalApp)
+    public MsalTokenAcquisitionService(IHttpContextAccessor httpContextAccessor)
     {
-        _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
+        _httpContextAccessor = httpContextAccessor
+            ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
 
     public async Task<string> AcquireTokenAsync(CancellationToken cancellationToken = default)
     {
-        var accounts = await _msalApp.GetAccountsAsync();
-        var account = accounts.FirstOrDefault();
+        HttpContext httpContext = _httpContextAccessor.HttpContext
+            ?? throw new InvalidOperationException("No active HttpContext. Ensure IHttpContextAccessor is registered and the request is in scope.");
 
-        var builder = _msalApp.AcquireTokenInteractive(MeetingAlertsScope);
-        if (account is not null)
-        {
-            builder = builder.WithAccount(account);
-        }
+        string accessToken = await httpContext.GetTokenAsync("access_token")
+            ?? throw new InvalidOperationException(
+                "No access_token in session. Ensure SaveTokens=true is configured and the user is authenticated via the OIDC popup flow.");
 
-        var result = await builder.ExecuteAsync(cancellationToken);
-
-        return result.AccessToken;
+        return accessToken;
     }
 }

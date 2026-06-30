@@ -1,0 +1,26 @@
+@page "/health"
+@using Aura.UI.Components.Dashboard
+@using Aura.UI.Components.GraphConnector
+@using Aura.UI.Components.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Health</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">System Health</h1>
+                <p class="dashboard-page-header__subtitle">Connector status, system indicators, and module progress.</p>
+            </div>
+        </div>
+
+        <GraphConnectorStatusPanel />
+        <SystemStatusPanel />
+        <ModuleProgressPanel />
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>

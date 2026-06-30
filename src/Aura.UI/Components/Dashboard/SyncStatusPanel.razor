@@ -1,3 +1,6 @@
+@using Aura.UI.Services
+@inject ISyncApiClient SyncApi
+
 <section class="dashboard-panel" data-testid="sync-status-panel" aria-live="polite">
     <h2>Sync status</h2>
     <p>Trigger manual sync and view per-source progress.</p>
@@ -6,41 +9,95 @@
         @(_isSyncing ? "Syncing..." : "Sync now")
     </button>
 
-    <div data-testid="sync-source-progress-teams">
-        <span>Teams:</span>
-        @if (_isSyncing)
-        {
-            <span>Syncing...</span>
-        }
-        else
-        {
-            <span>Idle</span>
-        }
-    </div>
+    @if (_error is not null)
+    {
+        <p data-testid="sync-error-message" class="dashboard-panel--error" style="color: var(--aura-error); margin-top: 0.5rem;">
+            @_error
+        </p>
+    }
 
-    <div data-testid="sync-source-progress-outlook">
-        <span>Outlook:</span>
-        @if (_isSyncing)
-        {
-            <span>Syncing...</span>
-        }
-        else
-        {
-            <span>Idle</span>
-        }
-    </div>
+    @if (_syncStatus is not null)
+    {
+        <ul class="dashboard-status-list" style="margin-top: 1rem;">
+            @foreach (var source in _syncStatus)
+            {
+                <li class="dashboard-status-item" data-testid="sync-source-@source.Source.ToLowerInvariant()">
+                    <span class="dashboard-status-item__name">@source.Source</span>
+                    <span class="dashboard-status-item__state @StatusClass(source.Status)">
+                        @source.Status
+                    </span>
+                    <span class="dashboard-status-item__microcopy">
+                        Items: @(source.ItemCount > 0 ? source.ItemCount.ToString() : "--")
+                    </span>
+                    <span class="dashboard-status-item__microcopy">
+                        Last sync: @(source.LastSyncTimestamp?.ToString("yyyy-MM-dd HH:mm") ?? "Never")
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p data-testid="sync-status-loading" style="margin-top: 0.5rem; color: var(--aura-on-surface-variant);">
+            Loading sync status...
+        </p>
+    }
 
-    <p data-testid="sync-last-timestamp">Last sync: not yet performed</p>
+    <p data-testid="sync-last-timestamp">Last sync: @( _lastSyncTime ?? "not yet performed")</p>
 </section>
 
 @code {
     private bool _isSyncing;
+    private string? _error;
+    private string? _lastSyncTime;
+    private List<SourceSyncStateDto>? _syncStatus;
 
-    private Task HandleSyncNow()
+    protected override async Task OnInitializedAsync()
     {
-        // Placeholder: will be wired to POST /api/sync/now in future slice
-        _isSyncing = true;
-        StateHasChanged();
-        return Task.CompletedTask;
+        await LoadSyncStatusAsync();
     }
+
+    private async Task HandleSyncNow()
+    {
+        _isSyncing = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            await SyncApi.TriggerSyncAsync(CancellationToken.None);
+
+            _lastSyncTime = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC");
+            await LoadSyncStatusAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Sync failed: {ex.Message}";
+        }
+        finally
+        {
+            _isSyncing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadSyncStatusAsync()
+    {
+        try
+        {
+            _syncStatus = await SyncApi.GetSyncStatusAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _syncStatus = new List<SourceSyncStateDto>();
+        }
+    }
+
+    private static string StatusClass(string? status) => status?.ToLowerInvariant() switch
+    {
+        "success" => "dashboard-status-item__state--ok",
+        "partial_failure" => "dashboard-status-item__state--warning",
+        "failure" or "auth_required" => "dashboard-status-item__state--error",
+        _ => ""
+    };
 }

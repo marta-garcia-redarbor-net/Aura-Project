@@ -71,6 +71,11 @@
     --aura-radius-lg: 0.25rem;
     --aura-radius-xl: 0.5rem;
     --aura-radius-full: 0.75rem;
+
+    /* Connector card tokens */
+    --aura-radius-card: 0.25rem;
+    --aura-glow-size: 8px;
+    --aura-font-mono: 'JetBrains Mono', 'Courier New', monospace;
 }
 
 /* Material symbols baseline */
@@ -608,4 +613,361 @@ a {
     .dashboard-shell__main {
         padding: var(--aura-margin-mobile);
     }
+}
+
+/* ==========================================================================
+   Restricted Access View — Login overlay for unauthenticated users
+   ========================================================================== */
+
+.restricted-access {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--aura-bg-deep);
+}
+
+.blur-restricted {
+    position: absolute;
+    inset: 0;
+    filter: blur(8px);
+    pointer-events: none;
+    opacity: 0.6;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.login-card {
+    position: relative;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 48px 40px;
+    min-width: 360px;
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-xl, 24px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: card-enter 0.4s ease-out;
+}
+
+.login-card__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--aura-on-surface);
+    margin: 0;
+}
+
+.login-card__subtitle {
+    font-size: 0.95rem;
+    color: var(--aura-on-surface-variant);
+    margin: 0;
+}
+
+.login-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.login-card__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.login-card__button:hover {
+    transform: translateY(-1px);
+}
+
+.login-card__button:active {
+    transform: translateY(0);
+}
+
+.login-card__button--microsoft {
+    background: var(--aura-primary-container);
+    color: var(--aura-on-primary-container);
+}
+
+.login-card__button--microsoft:hover {
+    background: var(--aura-primary);
+}
+
+.login-card__button--dev {
+    background: var(--aura-surface-container-high);
+    color: var(--aura-on-surface);
+}
+
+.login-card__button--dev:hover {
+    background: var(--aura-surface-container-highest);
+}
+
+.login-card__error {
+    padding: 12px 16px;
+    background: rgba(255, 180, 171, 0.1);
+    border: 1px solid var(--aura-error);
+    border-radius: 8px;
+    color: var(--aura-error);
+    font-size: 0.875rem;
+    width: 100%;
+    text-align: center;
+}
+
+.login-card__blocked-message {
+    padding: 16px;
+    background: var(--aura-surface-container);
+    border-radius: 8px;
+    color: var(--aura-on-surface-variant);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.login-card__blocked-message a {
+    color: var(--aura-primary);
+    text-decoration: underline;
+}
+
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        background-position: -200% 0;
+    }
+    50% {
+        background-position: 200% 0;
+    }
+}
+
+/* ==========================================================================
+   Connector Status Cards (Priority Dashboard)
+   ========================================================================== */
+
+.connector-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1rem;
+    margin-bottom: var(--aura-gutter);
+}
+
+.connector-card {
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-card);
+    padding: 1.25rem;
+    transition: border-color 0.15s, transform 0.2s;
+}
+
+.connector-card:hover {
+    border-color: var(--aura-outline);
+    transform: translateY(-2px);
+}
+
+.connector-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.connector-card__name {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--aura-on-surface-variant);
+}
+
+.connector-card__status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.connector-card__status-dot--healthy {
+    background: var(--aura-status-healthy);
+    box-shadow: 0 0 var(--aura-glow-size) var(--aura-status-healthy);
+}
+
+.connector-card__status-dot--warning {
+    background: var(--aura-status-warning);
+    box-shadow: 0 0 var(--aura-glow-size) var(--aura-status-warning);
+}
+
+.connector-card__status-dot--offline {
+    background: var(--aura-status-offline);
+}
+
+.connector-card__status-dot--error {
+    background: var(--aura-error);
+    box-shadow: 0 0 var(--aura-glow-size) var(--aura-error);
+}
+
+.connector-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.connector-card__item-count {
+    font-family: var(--aura-font-mono);
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: var(--aura-on-surface);
+}
+
+.connector-card__last-sync {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--aura-on-surface-variant);
+}
+
+/* ==========================================================================
+   Sync Button
+   ========================================================================== */
+
+.sync-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--aura-primary-container);
+    color: var(--aura-on-primary-container);
+    border: 1px solid transparent;
+    border-radius: var(--aura-radius-xl);
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    margin-bottom: var(--aura-gutter);
+}
+
+.sync-button:hover:not(:disabled) {
+    background: var(--aura-primary);
+}
+
+.sync-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sync-button--syncing {
+    background: var(--aura-surface-container-high);
+}
+
+.sync-button__spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--aura-border-subtle);
+    border-top-color: var(--aura-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Ranked Summary List
+   ========================================================================== */
+
+.ranked-summary-list {
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-xl);
+    padding: 1.5rem;
+}
+
+.ranked-summary-list__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: var(--aura-on-surface-variant);
+}
+
+.ranked-summary-list__empty .material-symbols-outlined {
+    font-size: 32px;
+    opacity: 0.5;
+}
+
+.ranked-summary-list__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.ranked-summary-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+}
+
+.ranked-summary-item__source {
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--aura-primary);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.ranked-summary-item__title {
+    font-weight: 600;
+    color: var(--aura-on-surface);
+    font-size: 14px;
+}
+
+.ranked-summary-item__snippet {
+    grid-column: 2;
+    font-size: 13px;
+    color: var(--aura-on-surface-variant);
+}
+
+.ranked-summary-item__score {
+    font-family: var(--aura-font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aura-primary);
 }

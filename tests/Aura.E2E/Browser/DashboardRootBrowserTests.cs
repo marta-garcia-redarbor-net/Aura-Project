@@ -147,8 +147,8 @@ public class DashboardRootBrowserTests : IAsyncLifetime
             };
 
             // Navigate to the real Kestrel endpoint
-            _output.WriteLine($"Navigating to {_factory.BaseUrl}...");
-            var response = await _page.GotoAsync(_factory.BaseUrl, new PageGotoOptions
+            _output.WriteLine($"Navigating to {_factory.BaseUrl}/test-dashboard...");
+            var response = await _page.GotoAsync($"{_factory.BaseUrl}/test-dashboard", new PageGotoOptions
             {
                 WaitUntil = WaitUntilState.NetworkIdle
             });

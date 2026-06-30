@@ -29,7 +29,8 @@ public static class AuthEndpoints
                 var token = generator.GenerateToken();
                 return Results.Ok(new { token });
             })
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireCors("AllowUiOrigin");
         }
 
         // Protected endpoint — returns the current authenticated user

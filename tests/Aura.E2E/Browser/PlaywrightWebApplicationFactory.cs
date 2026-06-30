@@ -95,6 +95,9 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
             new StubGraphConnectorApiClient(
                 new GraphConnectorStatusResponse("connected")));
 
+        builder.Services.AddScoped<ISyncApiClient>(_ =>
+            new StubSyncApiClient());
+
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
@@ -183,6 +186,19 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
     {
         public Task<GraphConnectorStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
             => Task.FromResult(response);
+    }
+
+    private sealed class StubSyncApiClient : ISyncApiClient
+    {
+        public Task<List<SourceSyncStateDto>> GetSyncStatusAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new List<SourceSyncStateDto>
+            {
+                new() { Source = "outlook", Status = "success", ItemCount = 5, LastSyncTimestamp = DateTimeOffset.UtcNow },
+                new() { Source = "teams", Status = "success", ItemCount = 3, LastSyncTimestamp = DateTimeOffset.UtcNow }
+            });
+
+        public Task TriggerSyncAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
     }
 
     #endregion

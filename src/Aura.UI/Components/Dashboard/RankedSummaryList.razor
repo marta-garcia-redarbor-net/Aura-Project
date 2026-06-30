@@ -1,0 +1,39 @@
+<div class="ranked-summary-list" data-testid="ranked-summary-list">
+    @if (Items is null || Items.Count == 0)
+    {
+        <div class="ranked-summary-list__empty" data-testid="ranked-summary-empty">
+            <span class="material-symbols-outlined">inbox</span>
+            <p>No pending items across connectors</p>
+        </div>
+    }
+    else
+    {
+        <ul class="ranked-summary-list__items">
+            @foreach (var item in Items)
+            {
+                <li class="ranked-summary-item" data-testid="ranked-summary-item">
+                    <span class="ranked-summary-item__source badge badge--@item.Source.ToLowerInvariant()">
+                        @item.Source
+                    </span>
+                    <span class="ranked-summary-item__title">@item.Title</span>
+                    <span class="ranked-summary-item__snippet">@item.Snippet</span>
+                    <span class="ranked-summary-item__score" data-testid="summary-score">
+                        @item.Score
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public List<SummaryItem>? Items { get; set; }
+
+    public class SummaryItem
+    {
+        public string Source { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Snippet { get; set; } = "";
+        public int Score { get; set; }
+    }
+}

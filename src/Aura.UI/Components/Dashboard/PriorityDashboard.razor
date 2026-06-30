@@ -1,0 +1,185 @@
+@page "/"
+@using Aura.UI.Components.Dashboard
+@using Aura.UI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Aura.UI.Components.Auth
+
+<AuthorizeView>
+    <Authorized>
+        
+        <PageTitle>Aura - Priority Dashboard</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Priority Dashboard</h1>
+            </div>
+            <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                <span class="dashboard-page-header__badge-dot"></span>
+                Live Sync
+            </span>
+        </div>
+        
+        <RankedSummaryList Items="_summaryItems" />
+
+        @* --- Connector status cards --- *@
+        @if (_connectorsLoading)
+        {
+            <div class="dashboard-panel dashboard-panel--loading" data-testid="connector-cards-loading">
+                <p>Loading connector status...</p>
+            </div>
+        }
+        else if (_connectorError is not null)
+        {
+            <div class="dashboard-panel dashboard-panel--error" data-testid="connector-cards-error">
+                <p style="color: var(--aura-error);">@_connectorError</p>
+                <button @onclick="LoadConnectorData" data-testid="connector-retry">Retry</button>
+            </div>
+        }
+        else
+        {
+            <div class="connector-cards-grid" data-testid="connector-cards">
+                @foreach (var connector in _connectors)
+                {
+                    <ConnectorStatusCard Name="@connector.Name"
+                                         Status="@connector.Status"
+                                         ItemCount="@connector.ItemCount"
+                                         LastSyncTime="@connector.LastSyncTime" />
+                }
+            </div>
+
+            <SyncButton OnSync="HandleSync" />
+        }
+
+        @* --- Existing dashboard panels (preserved from original) --- *@
+        <DashboardStatePanel State="@State" />
+        <DashboardCards Cards="@State.Cards" />
+        <InboxPreviewPanel />
+        <UpcomingMeetingsPanel />
+        <SyncStatusPanel />
+        <MorningSummaryPreviewPanel />
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool _connectorsLoading = true;
+    private string? _connectorError;
+    private List<ConnectorInfo> _connectors = new();
+    private List<RankedSummaryList.SummaryItem>? _summaryItems;
+
+    private DashboardViewState _state = DashboardViewState.Loading();
+
+    [CascadingParameter]
+    public DashboardViewState State { get; set; } = DashboardViewState.Loading();
+
+    [Inject] private ISyncApiClient SyncApi { get; set; } = default!;
+    [Inject] private IGraphConnectorApiClient GraphApi { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadConnectorData();
+    }
+
+    private async Task LoadConnectorData()
+    {
+        _connectorsLoading = true;
+        _connectorError = null;
+        StateHasChanged();
+
+        try
+        {
+            var syncStatus = await SyncApi.GetSyncStatusAsync(CancellationToken.None);
+            var graphStatus = await GraphApi.GetStatusAsync(CancellationToken.None);
+
+            _connectors = BuildConnectorList(syncStatus, graphStatus);
+            _summaryItems = BuildSummaryItems(syncStatus);
+        }
+        catch (Exception ex)
+        {
+            _connectorError = $"Failed to load connector status: {ex.Message}";
+        }
+        finally
+        {
+            _connectorsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSync()
+    {
+        try
+        {
+            await SyncApi.TriggerSyncAsync(CancellationToken.None);
+            await LoadConnectorData();
+        }
+        catch
+        {
+            // Sync failed — data will remain stale
+        }
+    }
+
+    private static List<ConnectorInfo> BuildConnectorList(
+        List<SourceSyncStateDto> syncStatus,
+        Aura.UI.Models.GraphConnectorStatusResponse graphStatus)
+    {
+        var connectors = new List<ConnectorInfo>();
+        var graphState = graphStatus?.State ?? "Unknown";
+
+        var sourceMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["outlook"] = "Outlook",
+            ["teams"] = "Teams",
+            ["calendar"] = "Calendar"
+        };
+
+        foreach (var (key, displayName) in sourceMap)
+        {
+            var source = syncStatus.FirstOrDefault(s =>
+                string.Equals(s.Source, key, StringComparison.OrdinalIgnoreCase));
+
+            var status = graphState switch
+            {
+                "Disabled" => "Disabled",
+                "ValidConfig" => source?.Status ?? "Offline",
+                "PartialConfig" or "MissingConfig" => "Warning",
+                _ => "Offline"
+            };
+
+            connectors.Add(new ConnectorInfo
+            {
+                Name = displayName,
+                Status = status,
+                ItemCount = source?.ItemCount ?? 0,
+                LastSyncTime = source?.LastSyncTimestamp?.ToString("yyyy-MM-dd HH:mm") ?? "Never"
+            });
+        }
+
+        return connectors;
+    }
+
+    private static List<RankedSummaryList.SummaryItem> BuildSummaryItems(List<SourceSyncStateDto> syncStatus)
+    {
+        return syncStatus
+            .Where(s => s.ItemCount > 0)
+            .OrderByDescending(s => s.ItemCount)
+            .Select(s => new RankedSummaryList.SummaryItem
+            {
+                Source = s.Source,
+                Title = $"{s.Source} sync complete",
+                Snippet = $"{s.ItemCount} items ingested",
+                Score = s.ItemCount
+            })
+            .ToList();
+    }
+
+    private class ConnectorInfo
+    {
+        public string Name { get; set; } = "";
+        public string Status { get; set; } = "";
+        public int ItemCount { get; set; }
+        public string LastSyncTime { get; set; } = "";
+    }
+}
