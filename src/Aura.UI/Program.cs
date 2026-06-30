@@ -72,7 +72,7 @@ public static class Program
                     // The access token for Graph is acquired separately via refresh token
                     // in OnTokenValidated and cached in the MSAL SQLite user token cache.
                     //options.Scope.Add("Mail.Read");
-                    options.Scope.Add("Chat.Read");
+                    //options.Scope.Add("Chat.Read");
                     //options.Scope.Add("Calendars.Read");
                     options.Scope.Add("User.Read");
 
@@ -229,6 +229,35 @@ public static class Program
                 OpenIdConnectDefaults.AuthenticationScheme,
                 new AuthenticationProperties { RedirectUri = "/authentication/callback" }))
             .AllowAnonymous();
+
+        // Sign-out endpoint: performs server-side sign-out then redirects home.
+        // Blazor Server components cannot call SignOutAsync directly because the HTTP
+        // response has already started (SignalR circuit). This minimal endpoint runs
+        // in a fresh HTTP request where redirect is valid.
+        app.MapGet("/logout", async (HttpContext ctx, bool? useEntraId) =>
+        {
+            if (useEntraId == true)
+            {
+                // OIDC scheme triggers Entra ID end-session redirect.
+                // Wrap in try-catch: if the OIDC config is incomplete or
+                // the end-session endpoint is unreachable, fall through
+                // to cookie-only sign-out so the user is still logged out locally.
+                try
+                {
+                    await ctx.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                }
+                catch (InvalidOperationException)
+                {
+                    // OIDC end-session redirect failed — proceed with cookie clear.
+                }
+            }
+
+            // Cookie scheme clears the local session cookie.
+            // Always sign out from cookie regardless of mode.
+            await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            ctx.Response.Redirect("/");
+        }).AllowAnonymous();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

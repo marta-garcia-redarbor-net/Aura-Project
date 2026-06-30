@@ -6,20 +6,22 @@
 
 <AuthorizeView>
     <Authorized>
+        
         <PageTitle>Aura - Priority Dashboard</PageTitle>
 
         <div class="dashboard-page-header">
             <div>
                 <h1 class="dashboard-page-header__title">Priority Dashboard</h1>
-                <p class="dashboard-page-header__subtitle">Connector status, sync overview, and ranked summary items.</p>
             </div>
             <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
                 <span class="dashboard-page-header__badge-dot"></span>
                 Live Sync
             </span>
         </div>
+        
+        <RankedSummaryList Items="_summaryItems" />
 
-        @* --- Connector status cards (new priority section) --- *@
+        @* --- Connector status cards --- *@
         @if (_connectorsLoading)
         {
             <div class="dashboard-panel dashboard-panel--loading" data-testid="connector-cards-loading">
@@ -46,15 +48,10 @@
             </div>
 
             <SyncButton OnSync="HandleSync" />
-
-            <RankedSummaryList Items="_summaryItems" />
         }
 
         @* --- Existing dashboard panels (preserved from original) --- *@
         <DashboardStatePanel State="@State" />
-        <GraphConnectorStatusPanel />
-        <SystemStatusPanel />
-        <ModuleProgressPanel />
         <DashboardCards Cards="@State.Cards" />
         <InboxPreviewPanel />
         <UpcomingMeetingsPanel />
