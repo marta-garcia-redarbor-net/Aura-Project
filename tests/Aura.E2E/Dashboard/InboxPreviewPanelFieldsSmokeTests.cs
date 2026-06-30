@@ -53,7 +53,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         // Debug: output HTML for diagnosis
@@ -88,7 +88,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -109,7 +109,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -123,7 +123,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
     {
         var client = CreateClient(new ThrowingPreviewClient());
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -163,7 +163,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -202,6 +202,8 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
                 services.AddScoped<ISystemStatusApiClient>(_ => new StubSystemStatusClient());
                 services.AddScoped<IModuleProgressApiClient>(_ => new StubModuleProgressClient());
                 services.AddScoped(_ => previewApiClient);
+                services.AddScoped<ISyncApiClient>(_ => new StubSyncClient());
+                services.AddScoped<IGraphConnectorApiClient>(_ => new StubGraphConnectorClient());
             });
         });
 
@@ -243,5 +245,19 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
     {
         public Task<ModuleProgressResponse> GetAsync(CancellationToken ct)
             => Task.FromResult(new ModuleProgressResponse([], IsSeeded: true));
+    }
+
+    private sealed class StubSyncClient : ISyncApiClient
+    {
+        public Task<List<SourceSyncStateDto>> GetSyncStatusAsync(CancellationToken ct)
+            => Task.FromResult(new List<SourceSyncStateDto>());
+
+        public Task TriggerSyncAsync(CancellationToken ct) => Task.CompletedTask;
+    }
+
+    private sealed class StubGraphConnectorClient : IGraphConnectorApiClient
+    {
+        public Task<GraphConnectorStatusResponse> GetStatusAsync(CancellationToken ct)
+            => Task.FromResult(new GraphConnectorStatusResponse("Disabled"));
     }
 }

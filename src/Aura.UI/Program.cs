@@ -68,6 +68,13 @@ public static class Program
                     // Request the API scope so the access_token saved by SaveTokens
                     // has audience api://{clientId} — required by the API JWT Bearer validator.
                     options.Scope.Add($"api://{clientId}/MeetingAlerts");
+                    // Graph delegated scopes — consented during OIDC login.
+                    // The access token for Graph is acquired separately via refresh token
+                    // in OnTokenValidated and cached in the MSAL SQLite user token cache.
+                    //options.Scope.Add("Mail.Read");
+                    //options.Scope.Add("Chat.Read");
+                    //options.Scope.Add("Calendars.Read");
+                    options.Scope.Add("User.Read");
 
                     // Add resource parameter so Entra ID returns an access_token
                     // for our API instead of the default Microsoft Graph token.
@@ -75,6 +82,53 @@ public static class Program
                     {
                         context.ProtocolMessage.SetParameter("resource", $"api://{clientId}");
                         return Task.CompletedTask;
+                    };
+
+                    // After OIDC login, acquire Graph tokens using the refresh token
+                    // and cache them in the MSAL SQLite user token cache.
+                    // This allows GraphClientFactory.AcquireTokenSilent to find cached
+                    // tokens for delegated Graph operations (sync, workers, etc.).
+                    options.Events.OnTokenValidated = async context =>
+                    {
+                        var refreshToken = context.TokenEndpointResponse?.RefreshToken;
+                        if (string.IsNullOrEmpty(refreshToken))
+                            return;
+
+                        try
+                        {
+                            var msalApp = context.HttpContext.RequestServices
+                                .GetRequiredService<IPublicClientApplication>();
+
+                            var graphScopes = new[]
+                            {
+                                "Mail.Read", "Chat.Read", "Calendars.Read", "User.Read"
+                            };
+
+                            // AcquireTokenByRefreshToken is an explicit interface
+                            // implementation on IByRefreshToken. The refresh token is
+                            // a direct parameter, not chained via WithRefreshToken.
+                            var byRefreshToken = (IByRefreshToken)msalApp;
+                            var result = await byRefreshToken
+                                .AcquireTokenByRefreshToken(graphScopes, refreshToken)
+                                .ExecuteAsync();
+
+                            var loggerFactory = context.HttpContext.RequestServices
+                                .GetRequiredService<ILoggerFactory>();
+                            var logger = loggerFactory.CreateLogger("Aura.UI.OidcGraph");
+                            logger.LogInformation(
+                                "Graph tokens cached in MSAL user token cache " +
+                                "(account={AccountId})",
+                                result.Account?.HomeAccountId.ObjectId);
+                        }
+                        catch (Exception ex)
+                        {
+                            var loggerFactory = context.HttpContext.RequestServices
+                                .GetRequiredService<ILoggerFactory>();
+                            var logger = loggerFactory.CreateLogger("Aura.UI.OidcGraph");
+                            logger.LogWarning(ex,
+                                "Failed to acquire Graph tokens via refresh token. " +
+                                "Sync will fail until Graph tokens are cached.");
+                        }
                     };
                 });
 
@@ -133,6 +187,7 @@ public static class Program
         var dashboardPreviewHttpClientBuilder = AddApiHttpClient<DashboardPreviewApiClient, IDashboardPreviewApiClient>(builder.Services, apiBaseUrl);
         var systemStatusHttpClientBuilder = AddApiHttpClient<SystemStatusApiClient, ISystemStatusApiClient>(builder.Services, apiBaseUrl);
         var moduleProgressHttpClientBuilder = AddApiHttpClient<ModuleProgressApiClient, IModuleProgressApiClient>(builder.Services, apiBaseUrl);
+        var syncHttpClientBuilder = AddApiHttpClient<SyncApiClient, ISyncApiClient>(builder.Services, apiBaseUrl);
 
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
@@ -145,6 +200,7 @@ public static class Program
             dashboardPreviewHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             systemStatusHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             moduleProgressHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            syncHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();
@@ -173,6 +229,35 @@ public static class Program
                 OpenIdConnectDefaults.AuthenticationScheme,
                 new AuthenticationProperties { RedirectUri = "/authentication/callback" }))
             .AllowAnonymous();
+
+        // Sign-out endpoint: performs server-side sign-out then redirects home.
+        // Blazor Server components cannot call SignOutAsync directly because the HTTP
+        // response has already started (SignalR circuit). This minimal endpoint runs
+        // in a fresh HTTP request where redirect is valid.
+        app.MapGet("/logout", async (HttpContext ctx, bool? useEntraId) =>
+        {
+            if (useEntraId == true)
+            {
+                // OIDC scheme triggers Entra ID end-session redirect.
+                // Wrap in try-catch: if the OIDC config is incomplete or
+                // the end-session endpoint is unreachable, fall through
+                // to cookie-only sign-out so the user is still logged out locally.
+                try
+                {
+                    await ctx.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                }
+                catch (InvalidOperationException)
+                {
+                    // OIDC end-session redirect failed — proceed with cookie clear.
+                }
+            }
+
+            // Cookie scheme clears the local session cookie.
+            // Always sign out from cookie regardless of mode.
+            await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            ctx.Response.Redirect("/");
+        }).AllowAnonymous();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

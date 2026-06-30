@@ -32,7 +32,7 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
     {
         var client = CreateClient(new StubGraphConnectorApiClient(new GraphConnectorStatusResponse(state)));
 
-        var response = await client.GetAsync("/");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -49,6 +49,7 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
             {
                 services.RemoveAll<IGraphConnectorApiClient>();
                 services.AddScoped(_ => graphConnectorApiClient);
+                services.AddScoped<ISyncApiClient>(_ => new StubSyncClient());
             });
         });
 
@@ -69,5 +70,14 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
 
         public Task<GraphConnectorStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
             => Task.FromResult(_response);
+    }
+
+    private sealed class StubSyncClient : ISyncApiClient
+    {
+        public Task<List<SourceSyncStateDto>> GetSyncStatusAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new List<SourceSyncStateDto>());
+
+        public Task TriggerSyncAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
     }
 }

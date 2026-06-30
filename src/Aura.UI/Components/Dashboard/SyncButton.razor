@@ -1,0 +1,34 @@
+<button data-testid="sync-button"
+        class="sync-button @(_isSyncing ? "sync-button--syncing" : "")"
+        @onclick="HandleClick"
+        disabled="@_isSyncing">
+    @if (_isSyncing)
+    {
+        <span class="sync-button__spinner" data-testid="sync-spinner"></span>
+        <span>Syncing...</span>
+    }
+    else
+    {
+        <span class="material-symbols-outlined">sync</span>
+        <span>Sync Now</span>
+    }
+</button>
+
+@code {
+    private bool _isSyncing;
+
+    [Parameter] public EventCallback OnSync { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (_isSyncing) return;
+
+        _isSyncing = true;
+        StateHasChanged();
+
+        await OnSync.InvokeAsync();
+
+        _isSyncing = false;
+        StateHasChanged();
+    }
+}

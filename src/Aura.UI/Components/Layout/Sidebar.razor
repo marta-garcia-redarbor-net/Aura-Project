@@ -7,16 +7,16 @@
     <nav>
         <ul class="dashboard-sidebar__nav">
             <li>
-                <a class="dashboard-sidebar__nav-item dashboard-sidebar__nav-item--active" href="/" aria-current="page">
+                <NavLink class="dashboard-sidebar__nav-item" href="/" Match="NavLinkMatch.All" ActiveClass="dashboard-sidebar__nav-item--active" aria-current="page">
                     <span class="material-symbols-outlined dashboard-sidebar__nav-icon">dashboard</span>
                     Dashboard
-                </a>
+                </NavLink>
             </li>
             <li>
-                <span class="dashboard-sidebar__nav-item">
+                <NavLink class="dashboard-sidebar__nav-item" href="/health" ActiveClass="dashboard-sidebar__nav-item--active">
                     <span class="material-symbols-outlined dashboard-sidebar__nav-icon">monitor_heart</span>
                     Health
-                </span>
+                </NavLink>
             </li>
             <li>
                 <span class="dashboard-sidebar__nav-item">
