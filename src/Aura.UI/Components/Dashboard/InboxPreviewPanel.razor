@@ -46,7 +46,7 @@
                                 }
                                 @if (item.PriorityHint is not null)
                                 {
-                                    <span data-testid="inbox-preview-item-priority">@item.PriorityHint</span>
+                                    <PriorityBadge Level="@item.PriorityHint" />
                                 }
                                 @if (item.SyncState is not null)
                                 {

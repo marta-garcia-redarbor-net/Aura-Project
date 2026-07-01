@@ -24,5 +24,6 @@ public interface IWorkItemReader
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Read-only list of work items matching the filter for the requested window.</returns>
     Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
+        WorkItemSourceType sourceType,
         MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
 }

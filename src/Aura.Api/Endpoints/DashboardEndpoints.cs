@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Aura.Application.Ports;
+using Aura.Application.UseCases.Calendar;
+using Aura.Domain.Calendar;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -26,6 +28,8 @@ public static partial class DashboardEndpoints
         group.MapGet("/preview", GetDashboardPreviewAsync);
         group.MapGet("/system-status", GetSystemStatusAsync);
         group.MapGet("/module-progress", GetModuleProgressAsync);
+        group.MapGet("/upcoming-meetings", GetUpcomingMeetingsAsync);
+        group.MapGet("/today-calendar", GetTodayCalendarAsync);
 
         return endpoints;
     }
@@ -167,6 +171,108 @@ public static partial class DashboardEndpoints
         }
     }
 
+    private static async Task<IResult> GetUpcomingMeetingsAsync(
+        GetUpcomingMeetingsUseCase useCase,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger("Aura.Api.Dashboard");
+
+        using var activity = ActivitySource.StartActivity("dashboard.upcoming-meetings.read", ActivityKind.Server);
+        activity?.SetTag("dashboard.endpoint", "/api/dashboard/upcoming-meetings");
+
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var events = await useCase.ExecuteAsync(now, now.AddHours(12), cancellationToken);
+
+            var dtos = events.Select(e => new UpcomingMeetingDto(
+                e.Id,
+                e.Title,
+                e.StartUtc,
+                e.EndUtc,
+                e.IsOnlineMeeting,
+                e.JoinUrl,
+                e.Organizer,
+                e.Location)).ToArray();
+
+            activity?.SetTag("dashboard.upcoming_meetings.count", dtos.Length);
+
+            Log.UpcomingMeetingsSucceeded(logger, dtos.Length);
+
+            return Results.Ok(dtos);
+        }
+        catch (OperationCanceledException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Request cancelled");
+            Log.UpcomingMeetingsCancelled(logger);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Log.UpcomingMeetingsFailed(logger, ex);
+            return Results.Problem(title: "Upcoming meetings request failed", statusCode: StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    private static async Task<IResult> GetTodayCalendarAsync(
+        GetUpcomingMeetingsUseCase useCase,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger("Aura.Api.Dashboard");
+
+        using var activity = ActivitySource.StartActivity("dashboard.today-calendar.read", ActivityKind.Server);
+        activity?.SetTag("dashboard.endpoint", "/api/dashboard/today-calendar");
+
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var dayStart = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero);
+            var dayEnd = dayStart.AddDays(1);
+            var events = await useCase.ExecuteAsync(dayStart, dayEnd, cancellationToken);
+
+            var dtos = events.Select(e => new UpcomingMeetingDto(
+                e.Id,
+                e.Title,
+                e.StartUtc,
+                e.EndUtc,
+                e.IsOnlineMeeting,
+                e.JoinUrl,
+                e.Organizer,
+                e.Location)).ToArray();
+
+            activity?.SetTag("dashboard.today_calendar.count", dtos.Length);
+
+            Log.TodayCalendarSucceeded(logger, dtos.Length);
+
+            return Results.Ok(dtos);
+        }
+        catch (OperationCanceledException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Request cancelled");
+            Log.TodayCalendarCancelled(logger);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Log.TodayCalendarFailed(logger, ex);
+            return Results.Problem(title: "Today calendar request failed", statusCode: StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    private sealed record UpcomingMeetingDto(
+        string Id,
+        string Title,
+        DateTimeOffset StartUtc,
+        DateTimeOffset EndUtc,
+        bool IsOnlineMeeting,
+        string? JoinUrl,
+        string? Organizer,
+        string? Location);
+
     private static partial class Log
     {
         [LoggerMessage(EventId = 1001, Level = LogLevel.Information,
@@ -220,5 +326,29 @@ public static partial class DashboardEndpoints
         [LoggerMessage(EventId = 1012, Level = LogLevel.Error,
             Message = "Dashboard preview request failed")]
         public static partial void DashboardPreviewFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 1013, Level = LogLevel.Information,
+            Message = "Upcoming meetings returned {MeetingCount} meetings")]
+        public static partial void UpcomingMeetingsSucceeded(ILogger logger, int meetingCount);
+
+        [LoggerMessage(EventId = 1014, Level = LogLevel.Warning,
+            Message = "Upcoming meetings request was cancelled")]
+        public static partial void UpcomingMeetingsCancelled(ILogger logger);
+
+        [LoggerMessage(EventId = 1015, Level = LogLevel.Error,
+            Message = "Upcoming meetings request failed")]
+        public static partial void UpcomingMeetingsFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 1016, Level = LogLevel.Information,
+            Message = "Today calendar returned {MeetingCount} events")]
+        public static partial void TodayCalendarSucceeded(ILogger logger, int meetingCount);
+
+        [LoggerMessage(EventId = 1017, Level = LogLevel.Warning,
+            Message = "Today calendar request was cancelled")]
+        public static partial void TodayCalendarCancelled(ILogger logger);
+
+        [LoggerMessage(EventId = 1018, Level = LogLevel.Error,
+            Message = "Today calendar request failed")]
+        public static partial void TodayCalendarFailed(ILogger logger, Exception exception);
     }
 }

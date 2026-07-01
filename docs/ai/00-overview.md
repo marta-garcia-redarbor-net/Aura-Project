@@ -39,6 +39,22 @@ Graph Calendar data for the signed-in user
   → SignalR pushes meeting alerts to the UI
 ```
 
+### Priority Dashboard (source-based cards)
+
+```text
+User opens /
+  → PriorityDashboard.razor renders PrioritySummaryCards
+  → IPrioritySummaryService.GetCardsAsync() orchestrates two API calls in parallel:
+      GET /api/dashboard/preview  → preview items from Teams + Outlook
+      GET /api/calendar/upcoming  → upcoming calendar events
+  → BuildCards() filters by source ("messages" → Teams, "inbox" → Outlook)
+  → Renders 3 source-based cards:
+      Teams Mentions  — top 3 items, sender/snippet/suggested action
+      Outlook         — top 3 items, sender/snippet/suggested action
+      Schedule Today  — top 3 events, timeline indicator, time/title/location/join link
+  → Footer shows "View all X items" + source link when >3 items
+```
+
 ### PR → Intelligent review
 
 ```text

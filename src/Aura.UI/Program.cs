@@ -188,10 +188,16 @@ public static class Program
         var systemStatusHttpClientBuilder = AddApiHttpClient<SystemStatusApiClient, ISystemStatusApiClient>(builder.Services, apiBaseUrl);
         var moduleProgressHttpClientBuilder = AddApiHttpClient<ModuleProgressApiClient, IModuleProgressApiClient>(builder.Services, apiBaseUrl);
         var syncHttpClientBuilder = AddApiHttpClient<SyncApiClient, ISyncApiClient>(builder.Services, apiBaseUrl);
+        var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
+        calendarHttpClientBuilder.AddStandardResilienceHandler();
+        var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
 
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
+
+        // Priority Summary — composes preview + calendar into source-based cards
+        builder.Services.AddScoped<IPrioritySummaryService, PrioritySummaryService>();
 
         if (!useEntraId && builder.Environment.IsDevelopment())
         {
@@ -201,6 +207,8 @@ public static class Program
             systemStatusHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             moduleProgressHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             syncHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            calendarHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            workItemsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();

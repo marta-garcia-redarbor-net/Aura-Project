@@ -26,4 +26,7 @@ public sealed record SummaryPreviewEntryResponse(
     int Rank,
     string Title,
     string Source,
-    double Score);
+    double Score)
+{
+    public string? PriorityHint { get; init; }
+}

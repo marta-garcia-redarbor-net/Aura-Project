@@ -83,7 +83,10 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
                 entry.Rank,
                 entry.Item.Title,
                 entry.Item.Source,
-                entry.Score))
+                entry.Score)
+            {
+                PriorityHint = entry.Item.Priority.ToString()
+            })
             .ToArray();
 
         return new DashboardPreviewDto(groups, summary);
@@ -98,20 +101,35 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
 
         return source.Trim().ToLowerInvariant() switch
         {
-            "outlook" => "Review and reply",
-            "teams" => "Review and respond",
+            "outlook" or "inbox" => "Review and reply",
+            "teams" or "messages" => "Review and respond",
             "github" => "Review and prioritize",
             _ => "Review and triage"
         };
     }
 
     /// <summary>
+    /// Resolves the metadata key prefix from the work item source.
+    /// Maps source values ("messages", "inbox") to the metadata prefix ("teams", "outlook").
+    /// </summary>
+    private static string ResolveMetadataPrefix(string source)
+    {
+        return source.Trim().ToLowerInvariant() switch
+        {
+            "messages" => "teams",
+            "inbox" => "outlook",
+            _ => source.Trim().ToLowerInvariant()
+        };
+    }
+
+    /// <summary>
     /// Extracts a metadata value using source-prefixed keys.
-    /// Tries "{source}.{field}" first (e.g. "teams.sender", "outlook.sender").
+    /// Tries "{metadataPrefix}.{field}" (e.g. "teams.sender", "outlook.sender").
     /// </summary>
     private static string? ExtractMetadata(Domain.WorkItems.WorkItem item, string field)
     {
-        var sourceKey = $"{item.Source.Trim().ToLowerInvariant()}.{field}";
+        var prefix = ResolveMetadataPrefix(item.Source);
+        var sourceKey = $"{prefix}.{field}";
         if (item.Metadata.TryGetValue(sourceKey, out var value) && !string.IsNullOrWhiteSpace(value))
         {
             return value;
