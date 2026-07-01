@@ -46,3 +46,4 @@ graphify-out/*.html
 graphify-out/cache/
 graphify-out/cost.json
 /src/Aura.Api/workitems.db
+/src/Aura.Api/workitems.db
