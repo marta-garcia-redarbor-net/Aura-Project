@@ -23,7 +23,10 @@ internal sealed class GraphClientFactory : IGraphClientFactory
 
         var opts = options.Value;
         _msalApp = msalApp;
-        _scopes = opts.Scopes ?? ["Mail.Read", "Chat.Read", "User.Read"];
+        // Always include required scopes (User.Read for sign-in, Calendars.Read for meetings),
+        // merged with feature-specific scopes from configuration.
+        var configuredScopes = opts.Scopes ?? ["Mail.Read", "Chat.Read"];
+        _scopes = configuredScopes.Concat(["User.Read", "Calendars.Read"]).Distinct().ToArray();
     }
 
     /// <summary>

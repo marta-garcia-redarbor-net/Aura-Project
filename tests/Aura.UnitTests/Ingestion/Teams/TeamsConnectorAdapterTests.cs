@@ -1,5 +1,6 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Aura.Domain.WorkItems;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -61,10 +62,9 @@ public class TeamsConnectorAdapterTests
 
         var result = await adapter.ExecuteAsync(request, CancellationToken.None);
 
-        buffer.Received(2).Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>());
-        Assert.Equal(2, result.ItemCount);
-        Assert.Equal(ConnectorExecutionStatus.PartialFailure, result.Status);
-        Assert.False(string.IsNullOrWhiteSpace(result.FailureReason));
+        buffer.Received(3).Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>());
+        Assert.Equal(3, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
     }
 
     [Fact]
@@ -135,6 +135,141 @@ public class TeamsConnectorAdapterTests
         Assert.Equal("Alice", item.Metadata["teams.sender"]);
         Assert.Equal("Please review PR #42", item.Metadata["teams.snippet"]);
         Assert.Equal("https://teams.microsoft.com/msg/42", item.Metadata["teams.deepLink"]);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ChatFullyRead_CallsMarkAutoCompleted()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<WorkItem>()));
+
+        var readAt = new DateTimeOffset(2026, 06, 30, 15, 00, 00, TimeSpan.Zero);
+        var msgAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
+        var fixtures = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "chat-read-1",
+                Title = "Fully read chat",
+                Source = "chats",
+                Priority = "medium",
+                LastMessageReadAt = readAt,
+                LastMessageAt = msgAt,
+                UnreadCount = 0
+            }
+        };
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(), () => fixtures);
+        var request = CreateRequest();
+
+        var result = await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal(WorkItemStatus.Completed, item.Status);
+        Assert.Equal(WorkItemSourceType.TeamsChat, item.SourceType);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ChatNullLastMessageReadAt_TreatedAsUnread()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<WorkItem>()));
+
+        var fixtures = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "chat-unread-1",
+                Title = "Unread chat",
+                Source = "chats",
+                Priority = "high",
+                LastMessageReadAt = null,
+                LastMessageAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero),
+                UnreadCount = 3
+            }
+        };
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(), () => fixtures);
+        var request = CreateRequest();
+
+        await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal(WorkItemStatus.Pending, item.Status);
+        Assert.Equal(WorkItemSourceType.TeamsChat, item.SourceType);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ChatPartiallyRead_StaysPending()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<WorkItem>()));
+
+        var readAt = new DateTimeOffset(2026, 06, 30, 13, 00, 00, TimeSpan.Zero);
+        var msgAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
+        var fixtures = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "chat-partial-1",
+                Title = "Partially read chat",
+                Source = "chats",
+                Priority = "medium",
+                LastMessageReadAt = readAt,
+                LastMessageAt = msgAt,
+                UnreadCount = 2
+            }
+        };
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(), () => fixtures);
+        var request = CreateRequest();
+
+        await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal(WorkItemStatus.Pending, item.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NonChatSource_DoesNotAutoDismiss()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<WorkItem>()));
+
+        var fixtures = new[]
+        {
+            new TeamsMessageDto
+            {
+                ExternalId = "msg-10",
+                Title = "Regular message",
+                Source = "messages",
+                Priority = "medium",
+                LastMessageReadAt = DateTimeOffset.UtcNow,
+                LastMessageAt = DateTimeOffset.UtcNow.AddHours(-1),
+                UnreadCount = 0
+            }
+        };
+        var adapter = new TeamsConnectorAdapter(
+            NullLogger<TeamsConnectorAdapter>.Instance, buffer, new TeamsWorkItemMapper(), () => fixtures);
+        var request = CreateRequest();
+
+        await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal(WorkItemStatus.Pending, item.Status);
+        Assert.Equal(WorkItemSourceType.TeamsMessage, item.SourceType);
     }
 
     private static ConnectorExecutionRequest CreateRequest() =>

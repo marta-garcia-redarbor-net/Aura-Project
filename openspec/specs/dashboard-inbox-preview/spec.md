@@ -10,31 +10,28 @@ UI/API boundary.
 
 ### Requirement: Preview Endpoint Contract
 
-`GET /dashboard/preview` MUST return inbox-by-source groups and a Morning Summary preview as
-slim DTOs. Each inbox item MUST include: title/subject, source, relative timestamp, relevance
-score, and brief suggested action. The Morning Summary preview MUST contain summarized ranking
-only — no drill-down, expanded detail, or scoring internals. `WorkItem` and domain aggregates
-MUST NOT appear in any response type.
+`GET /dashboard/preview` MUST return inbox-by-source groups filtered to `Status = Pending` items only. Each inbox item MUST include: title/subject, source, relative timestamp, relevance score, unread count, and brief suggested action. `WorkItem` and domain aggregates MUST NOT appear in any response type.
+(Previously: no status filter; no unread count in inbox items)
 
-#### Scenario: Inbox items populated
+#### Scenario: Only Pending items returned
 
-- GIVEN ranked inbox items exist across multiple sources
+- GIVEN completed and pending WorkItems exist across sources
 - WHEN `GET /dashboard/preview` is called
-- THEN the response contains source-keyed groups, each with items carrying title, source,
-  relative timestamp, score, and suggested action
+- THEN the response contains only items with Pending status
+- AND no Completed or Faulted items are present
 
-#### Scenario: Morning summary populated
+#### Scenario: Inbox items include UnreadCount
 
-- GIVEN morning-summary-ranking output is available
+- GIVEN multiple pending inbox items with varying unread counts
 - WHEN `GET /dashboard/preview` is called
-- THEN the response contains a non-empty summarized ranking list
-- AND no raw source data, domain type, or expanded detail is present
+- THEN each inbox item DTO carries an `UnreadCount` property matching the source metadata
 
-#### Scenario: Both sections empty
+#### Scenario: All items completed returns empty inbox
 
-- GIVEN no ranked items and no summary output are available
+- GIVEN all WorkItems have been read and marked Completed
 - WHEN `GET /dashboard/preview` is called
-- THEN the response returns HTTP 200 with empty inbox groups and empty summary list
+- THEN the inbox groups are empty
+- AND the response is HTTP 200
 
 ### Requirement: Dashboard Panel UI States
 
@@ -128,3 +125,21 @@ as existing dashboard panels.
 - GIVEN the calendar data fetch fails
 - WHEN `UpcomingMeetingsPanel` renders
 - THEN an explicit error message is displayed and the panel remains visible
+
+---
+
+### Requirement: UnreadCount on InboxItemPreviewDto
+
+`InboxItemPreviewDto` MUST expose an `UnreadCount` property as `{ get; init; }`. This property SHALL NOT be part of the positional constructor — it is added via init-only setter to avoid breaking the existing positional record contract.
+
+#### Scenario: UnreadCount populated from Metadata
+
+- GIVEN a WorkItem with `Metadata["unreadCount"] = "5"`
+- WHEN the DTO projection runs
+- THEN `InboxItemPreviewDto.UnreadCount` equals `5`
+
+#### Scenario: UnreadCount absent defaults to zero
+
+- GIVEN a WorkItem without `unreadCount` in Metadata
+- WHEN the DTO projection runs
+- THEN `InboxItemPreviewDto.UnreadCount` equals `0`

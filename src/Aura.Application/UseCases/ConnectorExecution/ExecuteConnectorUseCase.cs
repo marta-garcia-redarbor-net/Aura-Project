@@ -70,6 +70,9 @@ public sealed partial class ExecuteConnectorUseCase
     {
         public Task<WorkItemPersistenceResult> SaveAsync(Aura.Domain.WorkItems.WorkItem item, CancellationToken ct)
             => Task.FromResult(WorkItemPersistenceResult.Success());
+
+        public Task<Aura.Domain.WorkItems.WorkItem?> FindByExternalIdAsync(string externalId, CancellationToken ct)
+            => Task.FromResult<Aura.Domain.WorkItems.WorkItem?>(null);
     }
 
     public async Task<ConnectorExecutionResult> ExecuteAsync(CheckpointIdentity identity, CancellationToken ct)

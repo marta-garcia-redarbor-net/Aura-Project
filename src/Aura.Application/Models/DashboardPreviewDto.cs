@@ -29,6 +29,9 @@ public sealed record InboxItemPreviewDto(
     public string? DeepLink { get; init; }
     public string? PriorityHint { get; init; }
     public string? SyncState { get; init; }
+
+    /// <summary>Number of unread messages (applicable to chat-based sources).</summary>
+    public int? UnreadCount { get; init; }
 }
 
 /// <summary>

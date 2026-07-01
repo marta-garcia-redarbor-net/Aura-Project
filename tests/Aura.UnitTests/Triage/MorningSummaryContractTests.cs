@@ -186,15 +186,20 @@ public class MorningSummaryContractTests
     [Fact]
     public void ReaderContract_IsDefinedWithoutImplementation_WithExpectedSignature()
     {
-        var method = typeof(IWorkItemReader).GetMethod(nameof(IWorkItemReader.ReadForWindowAsync));
+        // Find the 3-parameter overload with the status filter
+        var method = typeof(IWorkItemReader)
+            .GetMethods()
+            .FirstOrDefault(m => m.Name == nameof(IWorkItemReader.ReadForWindowAsync)
+                && m.GetParameters().Length == 3);
 
         Assert.NotNull(method);
         Assert.Equal(typeof(Task<IReadOnlyList<WorkItem>>), method.ReturnType);
 
         var parameters = method.GetParameters();
-        Assert.Equal(2, parameters.Length);
+        Assert.Equal(3, parameters.Length);
         Assert.Equal(typeof(MorningSummaryQuery), parameters[0].ParameterType);
-        Assert.Equal(typeof(CancellationToken), parameters[1].ParameterType);
+        Assert.Equal(typeof(WorkItemStatus?), parameters[1].ParameterType);
+        Assert.Equal(typeof(CancellationToken), parameters[2].ParameterType);
 
         var applicationImplementations = typeof(IWorkItemReader)
             .Assembly

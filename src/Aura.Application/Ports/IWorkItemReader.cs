@@ -17,14 +17,22 @@ public interface IWorkItemReader
     Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Reads work items filtered by source type and optional status.
+    /// Reads work items for the provided query window, optionally filtered by status.
+    /// When statusFilter is null, returns all statuses.
     /// </summary>
-    /// <param name="sourceType">Source type filter (TeamsMessage, OutlookEmail, etc.).</param>
-    /// <param name="statusFilter">Optional status filter. When null, returns all statuses.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Read-only list of matching work items, sorted by priority then capture date descending.</returns>
-    Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
+    Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
+        MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reads work items for the provided query window, optionally filtered by source type and status.
+    /// </summary>
+    Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
         WorkItemSourceType sourceType,
-        WorkItemStatus? statusFilter,
-        CancellationToken cancellationToken);
+        MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reads work items filtered by source type, optionally filtered by status.
+    /// </summary>
+    Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
+        WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
 }

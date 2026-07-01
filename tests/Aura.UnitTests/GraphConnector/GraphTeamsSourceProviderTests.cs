@@ -183,34 +183,114 @@ public class GraphTeamsSourceProviderTests
         => new(new CheckpointIdentity("teams", "messages", "acme"),
                DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow);
 
+    [Fact]
+    public async Task FetchAsync_MapsLastMessageReadDateTime()
+    {
+        var readAt = new DateTimeOffset(2026, 6, 30, 14, 0, 0, TimeSpan.Zero);
+        var responseJson = BuildChatsResponse(
+            new FakeChat("chat-1", "Sprint planning", "Alice", "Preview", "https://teams.microsoft.com/chat-1",
+                LastMessageReadAt: readAt)
+        );
+        var provider = CreateProvider(responseJson);
+
+        var results = await provider.FetchAsync(CreateRequest(), CancellationToken.None);
+
+        var dto = Assert.Single(results);
+        Assert.Equal(readAt, dto.LastMessageReadAt);
+    }
+
+    [Fact]
+    public async Task FetchAsync_NullLastMessageReadAt_IsNull()
+    {
+        var responseJson = BuildChatsResponse(
+            new FakeChat("chat-2", "Chat", "Bob", "Preview", "https://teams.microsoft.com/chat-2")
+        );
+        var provider = CreateProvider(responseJson);
+
+        var results = await provider.FetchAsync(CreateRequest(), CancellationToken.None);
+
+        var dto = Assert.Single(results);
+        Assert.Null(dto.LastMessageReadAt);
+    }
+
+    [Fact]
+    public async Task FetchAsync_LastMessageAt_EqualsLastUpdatedDateTime()
+    {
+        var responseJson = BuildChatsResponse(
+            new FakeChat("chat-3", "Meeting", "Carlos", "Preview", "https://teams.microsoft.com/chat-3")
+        );
+        var provider = CreateProvider(responseJson);
+
+        var results = await provider.FetchAsync(CreateRequest(), CancellationToken.None);
+
+        var dto = Assert.Single(results);
+        Assert.NotNull(dto.LastMessageAt);
+        // LastMessageAt maps to chat.LastUpdatedDateTime — should be a recent timestamp
+        Assert.True(dto.LastMessageAt > DateTimeOffset.UtcNow.AddMinutes(-1));
+    }
+
+    [Fact]
+    public async Task FetchAsync_UnreadCount_IsZero()
+    {
+        var responseJson = BuildChatsResponse(
+            new FakeChat("chat-4", "Support", "Diana", "Preview", "https://teams.microsoft.com/chat-4")
+        );
+        var provider = CreateProvider(responseJson);
+
+        var results = await provider.FetchAsync(CreateRequest(), CancellationToken.None);
+
+        var dto = Assert.Single(results);
+        Assert.Equal(0, dto.UnreadCount);
+    }
+
     private static string BuildChatsResponse(params FakeChat[] chats)
     {
-        var items = chats.Select(c => new Dictionary<string, object?>
+        var items = chats.Select(c =>
         {
-            ["id"] = c.Id,
-            ["topic"] = c.Topic,
-            ["webUrl"] = c.WebUrl,
-            ["lastUpdatedDateTime"] = DateTimeOffset.UtcNow.ToString("o"),
-            ["lastMessagePreview"] = new Dictionary<string, object?>
+            var dict = new Dictionary<string, object?>
             {
-                ["from"] = new Dictionary<string, object?>
+                ["id"] = c.Id,
+                ["topic"] = c.Topic,
+                ["webUrl"] = c.WebUrl,
+                ["lastUpdatedDateTime"] = DateTimeOffset.UtcNow.ToString("o"),
+                ["lastMessagePreview"] = new Dictionary<string, object?>
                 {
-                    ["user"] = new Dictionary<string, object?>
+                    ["from"] = new Dictionary<string, object?>
                     {
-                        ["displayName"] = c.Sender
+                        ["user"] = new Dictionary<string, object?>
+                        {
+                            ["displayName"] = c.Sender
+                        }
+                    },
+                    ["body"] = new Dictionary<string, object?>
+                    {
+                        ["content"] = c.BodyPreview
                     }
-                },
-                ["body"] = new Dictionary<string, object?>
-                {
-                    ["content"] = c.BodyPreview
                 }
+            };
+            if (c.LastMessageReadAt is not null)
+            {
+                dict["viewpoint"] = new Dictionary<string, object?>
+                {
+                    ["lastMessageReadDateTime"] = c.LastMessageReadAt.Value.ToString("o")
+                };
             }
+            if (c.LastMessageAt is not null)
+                dict["lastMessageDateTime"] = c.LastMessageAt.Value.ToString("o");
+            return dict;
         });
 
         return JsonSerializer.Serialize(new { value = items });
     }
 
-    private sealed record FakeChat(string Id, string? Topic, string Sender, string BodyPreview, string WebUrl);
+    private sealed record FakeChat(
+        string Id,
+        string? Topic,
+        string Sender,
+        string BodyPreview,
+        string WebUrl,
+        DateTimeOffset? LastMessageReadAt = null,
+        DateTimeOffset? LastMessageAt = null);
 }
 
 internal sealed class FakeGraphHttpHandler : HttpMessageHandler

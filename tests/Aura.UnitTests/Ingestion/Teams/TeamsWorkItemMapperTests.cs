@@ -157,4 +157,102 @@ public class TeamsWorkItemMapperTests
         Assert.False(mapped);
         Assert.Null(workItem);
     }
+
+    [Fact]
+    public void TryMap_ChatSource_MapsTeamsChatSourceType()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "chat-1",
+            Title = "General discussion",
+            Source = "chats",
+            Priority = "medium",
+            CapturedAtUtc = new DateTimeOffset(2026, 06, 30, 12, 00, 00, TimeSpan.Zero)
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("chats", workItem!.Source);
+        Assert.Equal(WorkItemSourceType.TeamsChat, workItem.SourceType);
+    }
+
+    [Fact]
+    public void TryMap_ChatSource_MapsChatMetadataFields()
+    {
+        var lastMsgAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
+        var lastMsgReadAt = new DateTimeOffset(2026, 06, 30, 13, 30, 00, TimeSpan.Zero);
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "chat-2",
+            Title = "Support ticket #42",
+            Source = "chats",
+            Priority = "high",
+            LastMessageAt = lastMsgAt,
+            LastMessageReadAt = lastMsgReadAt,
+            UnreadCount = 3,
+            CapturedAtUtc = new DateTimeOffset(2026, 06, 30, 12, 00, 00, TimeSpan.Zero)
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal(WorkItemSourceType.TeamsChat, workItem!.SourceType);
+        Assert.Equal(lastMsgAt.ToString("o"), workItem.Metadata["chats.lastMessageAt"]);
+        Assert.Equal(lastMsgReadAt.ToString("o"), workItem.Metadata["chats.lastMessageReadAt"]);
+        Assert.Equal("3", workItem.Metadata["chats.unreadCount"]);
+    }
+
+    [Fact]
+    public void TryMap_ChatSource_NullChatFields_OmittedFromMetadata()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "chat-3",
+            Title = "Quiet channel",
+            Source = "chats",
+            Priority = "low",
+            LastMessageAt = null,
+            LastMessageReadAt = null,
+            UnreadCount = 0,
+            CapturedAtUtc = new DateTimeOffset(2026, 06, 30, 12, 00, 00, TimeSpan.Zero)
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal(WorkItemSourceType.TeamsChat, workItem!.SourceType);
+        Assert.False(workItem.Metadata.ContainsKey("chats.lastMessageAt"));
+        Assert.False(workItem.Metadata.ContainsKey("chats.lastMessageReadAt"));
+        Assert.Equal("0", workItem.Metadata["chats.unreadCount"]);
+    }
+
+    [Fact]
+    public void TryMap_MessageSource_StillMapsTeamsMessageSourceType()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "msg-10",
+            Title = "Regular message",
+            Source = "messages",
+            Priority = "medium",
+            LastMessageAt = DateTimeOffset.UtcNow,
+            LastMessageReadAt = DateTimeOffset.UtcNow,
+            UnreadCount = 5,
+            CapturedAtUtc = new DateTimeOffset(2026, 06, 30, 12, 00, 00, TimeSpan.Zero)
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal(WorkItemSourceType.TeamsMessage, workItem!.SourceType);
+        // Chat fields present but source is "messages" — should NOT add chat metadata
+        Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageAt"));
+        Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageReadAt"));
+        Assert.False(workItem.Metadata.ContainsKey("messages.unreadCount"));
+    }
 }

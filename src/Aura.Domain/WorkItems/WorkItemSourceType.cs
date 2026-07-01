@@ -10,5 +10,6 @@ public enum WorkItemSourceType
     OutlookEmail,
     CalendarAppointment,
     PrReview,
-    TodoTask
+    TodoTask,
+    TeamsChat = 14
 }

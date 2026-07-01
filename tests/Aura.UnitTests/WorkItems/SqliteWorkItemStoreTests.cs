@@ -101,14 +101,110 @@ public class SqliteWorkItemStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadForWindowAsync_WithPendingFilter_ReturnsOnlyPendingItems()
+    {
+        var item1 = CreateWorkItem("ext-pending", "Pending Item", WorkItemStatus.Pending);
+        var item2 = CreateWorkItem("ext-completed", "Completed Item", WorkItemStatus.Completed);
+
+        await _store.SaveAsync(item1, CancellationToken.None);
+        await _store.SaveAsync(item2, CancellationToken.None);
+
+        var query = new MorningSummaryQuery("user",
+            DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+        var results = await _store.ReadForWindowAsync(query, WorkItemStatus.Pending, CancellationToken.None);
+
+        Assert.Single(results);
+        Assert.All(results, item => Assert.Equal(WorkItemStatus.Pending, item.Status));
+    }
+
+    [Fact]
+    public async Task ReadForWindowAsync_WithFilterNoMatch_ReturnsEmpty()
+    {
+        var item = CreateWorkItem("ext-pending", "Pending Item", WorkItemStatus.Pending);
+        await _store.SaveAsync(item, CancellationToken.None);
+
+        var query = new MorningSummaryQuery("user",
+            DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+        var results = await _store.ReadForWindowAsync(query, WorkItemStatus.Processing, CancellationToken.None);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
     public async Task SaveAsync_NullItem_ThrowsArgumentNullException()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(
             () => _store.SaveAsync(null!, CancellationToken.None));
     }
 
+    [Fact]
+    public async Task FindByExternalIdAsync_ExistingId_ReturnsWorkItem()
+    {
+        var item = CreateWorkItem("ext-find", "Findable Item");
+        await _store.SaveAsync(item, CancellationToken.None);
+
+        var found = await _store.FindByExternalIdAsync("ext-find", CancellationToken.None);
+
+        Assert.NotNull(found);
+        Assert.Equal("ext-find", found!.ExternalId);
+        Assert.Equal("Findable Item", found.Title);
+    }
+
+    [Fact]
+    public async Task FindByExternalIdAsync_NonExistentId_ReturnsNull()
+    {
+        var found = await _store.FindByExternalIdAsync("nonexistent", CancellationToken.None);
+
+        Assert.Null(found);
+    }
+
+    [Fact]
+    public async Task SaveAsync_UpsertRetainsOriginalPriority()
+    {
+        var item1 = new WorkItem("ext-pri", "First Priority", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            new Dictionary<string, string>());
+        var item2 = new WorkItem("ext-pri", "Second Priority", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Low,
+            new Dictionary<string, string>());
+
+        await _store.SaveAsync(item1, CancellationToken.None);
+        await _store.SaveAsync(item2, CancellationToken.None);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT Priority FROM WorkItems WHERE ExternalId = @ExternalId";
+        cmd.Parameters.AddWithValue("@ExternalId", "ext-pri");
+        var priority = (string)cmd.ExecuteScalar()!;
+        // Priority from first save should be retained
+        Assert.Equal("High", priority);
+    }
+
     private static WorkItem CreateWorkItem(string externalId, string title) =>
         new(externalId, title, "messages",
             WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
             new Dictionary<string, string>());
+
+    private static WorkItem CreateWorkItem(string externalId, string title, WorkItemStatus targetStatus)
+    {
+        var item = new WorkItem(externalId, title, "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
+            new Dictionary<string, string>());
+
+        if (targetStatus == WorkItemStatus.Processing)
+        {
+            item.MarkProcessing();
+        }
+        else if (targetStatus == WorkItemStatus.Completed)
+        {
+            item.MarkProcessing();
+            item.MarkCompleted();
+        }
+        else if (targetStatus == WorkItemStatus.Faulted)
+        {
+            item.MarkProcessing();
+            item.MarkFaulted("test fault");
+        }
+
+        return item;
+    }
 }

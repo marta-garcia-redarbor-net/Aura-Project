@@ -209,6 +209,51 @@ public class WorkItemTests
     }
 
     [Fact]
+    public void MarkAutoCompleted_FromPending_TransitionsToCompleted()
+    {
+        var item = CreateValidWorkItem();
+
+        item.MarkAutoCompleted();
+
+        Assert.Equal(WorkItemStatus.Completed, item.Status);
+    }
+
+    [Fact]
+    public void MarkAutoCompleted_FromProcessing_ThrowsInvalidOperationException()
+    {
+        var item = CreateValidWorkItem();
+        item.MarkProcessing();
+
+        Assert.Throws<InvalidOperationException>(() => item.MarkAutoCompleted());
+    }
+
+    [Fact]
+    public void MarkAutoCompleted_FromCompleted_ThrowsInvalidOperationException()
+    {
+        var item = CreateValidWorkItem();
+        item.MarkProcessing();
+        item.MarkCompleted();
+
+        Assert.Throws<InvalidOperationException>(() => item.MarkAutoCompleted());
+    }
+
+    [Fact]
+    public void MarkAutoCompleted_FromFaulted_ThrowsInvalidOperationException()
+    {
+        var item = CreateValidWorkItem();
+        item.MarkProcessing();
+        item.MarkFaulted("reason");
+
+        Assert.Throws<InvalidOperationException>(() => item.MarkAutoCompleted());
+    }
+
+    [Fact]
+    public void WorkItemSourceType_TeamsChat_HasValue14()
+    {
+        Assert.Equal(14, (int)WorkItemSourceType.TeamsChat);
+    }
+
+    [Fact]
     public void Constructor_EmptyMetadata_IsAccepted()
     {
         var item = CreateValidWorkItem(metadata: new Dictionary<string, string>());

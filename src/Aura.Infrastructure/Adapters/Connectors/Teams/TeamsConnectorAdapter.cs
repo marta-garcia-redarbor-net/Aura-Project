@@ -71,6 +71,7 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
         {
             if (_mapper.TryMap(payload, out var workItem) && workItem is not null)
             {
+                TryAutoDismissChat(payload, workItem);
                 _buffer.Enqueue(workItem);
                 mappedCount++;
                 continue;
@@ -93,38 +94,57 @@ internal sealed partial class TeamsConnectorAdapter : IConnectorAdapter
             MaxProcessedAt: request.WindowEnd);
     }
 
+    private static void TryAutoDismissChat(TeamsMessageDto payload, Aura.Domain.WorkItems.WorkItem workItem)
+    {
+        if (payload.Source != "chats")
+            return;
+
+        if (payload.LastMessageReadAt.HasValue
+            && payload.LastMessageAt.HasValue
+            && payload.LastMessageReadAt.Value >= payload.LastMessageAt.Value)
+        {
+            workItem.MarkAutoCompleted();
+        }
+    }
+
     private static IReadOnlyList<TeamsMessageDto> LoadDefaultFixtures()
         =>
         [
             new TeamsMessageDto
             {
-                ExternalId = "teams-msg-1001",
-                Title = "Escalate production incident",
-                Source = "messages",
+                ExternalId = "chat-high-1",
+                Title = "Urgent: production issue in payment pipeline",
+                Source = "chats",
                 Priority = "high",
-                TeamId = "team-a",
-                ChannelId = "channel-ops",
-                MessageUrl = "https://teams/messages/1001",
-                CorrelationId = "corr-1001",
+                LastMessageReadAt = null,
+                LastMessageAt = new DateTimeOffset(2026, 07, 1, 10, 00, 00, TimeSpan.Zero),
+                UnreadCount = 5,
+                CorrelationId = "corr-chat-1",
                 CapturedAtUtc = DateTimeOffset.UtcNow
             },
             new TeamsMessageDto
             {
-                ExternalId = null,
-                Title = "Missing id should be skipped",
-                Source = "messages",
-                Priority = "low",
-                TeamId = "team-a",
-                ChannelId = "channel-ops"
+                ExternalId = "chat-med-1",
+                Title = "Sprint retro notes",
+                Source = "chats",
+                Priority = "medium",
+                LastMessageReadAt = null,
+                LastMessageAt = new DateTimeOffset(2026, 07, 1, 09, 30, 00, TimeSpan.Zero),
+                UnreadCount = 2,
+                CorrelationId = "corr-chat-2",
+                CapturedAtUtc = DateTimeOffset.UtcNow
             },
             new TeamsMessageDto
             {
-                ExternalId = "teams-msg-1003",
-                Title = "Needs triage",
-                Source = "messages",
-                Priority = "unknown-priority",
-                TeamId = "team-b",
-                ChannelId = "channel-triage"
+                ExternalId = "chat-read-1",
+                Title = "General discussion: quarterly planning",
+                Source = "chats",
+                Priority = "low",
+                LastMessageReadAt = new DateTimeOffset(2026, 07, 1, 11, 00, 00, TimeSpan.Zero),
+                LastMessageAt = new DateTimeOffset(2026, 07, 1, 10, 30, 00, TimeSpan.Zero),
+                UnreadCount = 0,
+                CorrelationId = "corr-chat-3",
+                CapturedAtUtc = DateTimeOffset.UtcNow
             }
         ];
 
