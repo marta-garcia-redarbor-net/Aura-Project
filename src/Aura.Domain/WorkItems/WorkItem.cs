@@ -82,6 +82,18 @@ public sealed class WorkItem
         Status = WorkItemStatus.Completed;
     }
 
+    /// <summary>Transition from <see cref="WorkItemStatus.Pending"/> to <see cref="WorkItemStatus.Completed"/>.
+    /// Origin-side completion for auto-dismiss when a chat has been fully read.
+    /// Throws <see cref="InvalidOperationException"/> when called from Processing, Completed, or Faulted.</summary>
+    public void MarkAutoCompleted()
+    {
+        if (Status != WorkItemStatus.Pending)
+            throw new InvalidOperationException(
+                $"Cannot auto-complete from {Status}. Expected Pending.");
+
+        Status = WorkItemStatus.Completed;
+    }
+
     /// <summary>Transition from <see cref="WorkItemStatus.Processing"/> to <see cref="WorkItemStatus.Faulted"/>.</summary>
     public void MarkFaulted(string reason)
     {

@@ -91,7 +91,10 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
                 BodyPreview = chat.LastMessagePreview?.Body?.Content?.Length > 200
                     ? chat.LastMessagePreview.Body.Content[..200]
                     : chat.LastMessagePreview?.Body?.Content,
-                CapturedAtUtc = chat.LastUpdatedDateTime ?? DateTimeOffset.UtcNow
+                CapturedAtUtc = chat.LastUpdatedDateTime ?? DateTimeOffset.UtcNow,
+                LastMessageReadAt = chat.Viewpoint?.LastMessageReadDateTime,
+                LastMessageAt = chat.LastUpdatedDateTime,
+                UnreadCount = 0
             };
 
             results.Add(dto);

@@ -15,4 +15,14 @@ public interface IWorkItemReader
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Read-only list of work items for the requested window.</returns>
     Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reads work items for the provided query window, optionally filtered by status.
+    /// </summary>
+    /// <param name="query">User and UTC window bounds used for work-item retrieval.</param>
+    /// <param name="statusFilter">Optional status filter. When null, returns all statuses.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Read-only list of work items matching the filter for the requested window.</returns>
+    Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
+        MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
 }

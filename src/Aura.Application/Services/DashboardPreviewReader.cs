@@ -53,7 +53,7 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
         var query = new MorningSummaryQuery(userId, now.AddHours(-24), now);
         var items = _workItemReader is null
             ? []
-            : await _workItemReader.ReadForWindowAsync(query, cancellationToken);
+            : await _workItemReader.ReadForWindowAsync(query, Domain.WorkItems.WorkItemStatus.Pending, cancellationToken);
         var ranked = _rankingPolicy.Rank(items);
 
         var groups = ranked
@@ -72,7 +72,8 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
                     Snippet = ExtractMetadata(entry.Item, "snippet"),
                     DeepLink = ExtractMetadata(entry.Item, "deepLink"),
                     PriorityHint = entry.Item.Priority.ToString(),
-                    SyncState = HasSyncedMetadata(entry.Item) ? "synced" : null
+                    SyncState = HasSyncedMetadata(entry.Item) ? "synced" : null,
+                    UnreadCount = ParseUnreadCount(entry.Item)
                 })
                 .ToArray()))
             .ToArray();
@@ -122,6 +123,22 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
     /// <summary>
     /// Determines if a work item has synced metadata (sender, snippet, or deepLink present).
     /// </summary>
+    /// <summary>
+    /// Parses the UnreadCount from metadata using source-prefixed key "{source}.unreadCount".
+    /// Returns 0 when the key is absent or the value is not a valid integer.
+    /// </summary>
+    private static int? ParseUnreadCount(Domain.WorkItems.WorkItem item)
+    {
+        var sourceKey = $"{item.Source.Trim().ToLowerInvariant()}.unreadCount";
+        if (item.Metadata.TryGetValue(sourceKey, out var value)
+            && int.TryParse(value, out var count))
+        {
+            return count;
+        }
+
+        return 0;
+    }
+
     private static bool HasSyncedMetadata(Domain.WorkItems.WorkItem item)
     {
         return ExtractMetadata(item, "sender") is not null

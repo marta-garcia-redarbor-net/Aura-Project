@@ -28,4 +28,13 @@ internal sealed record TeamsMessageDto
 
     /// <summary>Deep link URL to the message in Teams web client.</summary>
     public string? WebUrl { get; init; }
+
+    /// <summary>Timestamp when the chat was last read by the user (from Graph API).</summary>
+    public DateTimeOffset? LastMessageReadAt { get; init; }
+
+    /// <summary>Timestamp of the last message in the chat.</summary>
+    public DateTimeOffset? LastMessageAt { get; init; }
+
+    /// <summary>Number of unread messages in the chat.</summary>
+    public int UnreadCount { get; init; }
 }

@@ -99,8 +99,12 @@ public sealed class MorningSummaryComposerTests
         }
 
         public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(_items);
-        }
+            => Task.FromResult(_items);
+
+        public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<WorkItem>>(
+                statusFilter.HasValue
+                    ? _items.Where(i => i.Status == statusFilter.Value).ToArray()
+                    : _items);
     }
 }

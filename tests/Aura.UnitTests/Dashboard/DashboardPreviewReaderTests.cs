@@ -21,7 +21,7 @@ public class DashboardPreviewReaderTests
         });
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 CreateWorkItem("a", "outlook", WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
                     new DateTimeOffset(2026, 6, 23, 8, 0, 0, TimeSpan.Zero)),
@@ -105,7 +105,7 @@ public class DashboardPreviewReaderTests
         };
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 new WorkItem("ext-teams-1", "PR Review needed", "teams",
                     WorkItemSourceType.TeamsMessage, WorkItemPriority.High, teamsMetadata,
@@ -152,7 +152,7 @@ public class DashboardPreviewReaderTests
         });
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 new WorkItem("ext-1", "No metadata item", "teams",
                     WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
@@ -177,12 +177,135 @@ public class DashboardPreviewReaderTests
         Assert.Null(item.SyncState);
     }
 
+    [Fact]
+    public void InboxItemPreviewDto_UnreadCount_InitOnlyProperty_CanBeSet()
+    {
+        var dto = new InboxItemPreviewDto("Title", "source", "1h ago", 10.0, "Review")
+        {
+            UnreadCount = 3
+        };
+
+        Assert.Equal(3, dto.UnreadCount);
+    }
+
+    [Fact]
+    public void InboxItemPreviewDto_UnreadCount_Default_IsNull()
+    {
+        var dto = new InboxItemPreviewDto("Title", "source", "1h ago", 10.0, "Review");
+
+        Assert.Null(dto.UnreadCount);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithStatusFilter_OnlyReturnsPendingItems()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                CreateWorkItem("p1", "chats", WorkItemSourceType.TeamsChat, WorkItemPriority.High,
+                    new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero),
+                    new Dictionary<string, string> { ["chats.unreadCount"] = "3" }),
+                CreateWorkItem("p2", "chats", WorkItemSourceType.TeamsChat, WorkItemPriority.Medium,
+                    new DateTimeOffset(2026, 7, 1, 9, 0, 0, TimeSpan.Zero),
+                    new Dictionary<string, string> { ["chats.unreadCount"] = "1" })
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 7, 1, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        // Verify Pending-only filter was used
+        await workItemReader.Received(1)
+            .ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>());
+        Assert.Single(result.InboxGroups);
+        Assert.Equal(2, result.InboxGroups.Sum(g => g.Items.Count));
+    }
+
+    [Fact]
+    public async Task GetAsync_ChatItem_ProjectsUnreadCountFromMetadata()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                new WorkItem("chat-ext-1", "Sprint planning", "chats",
+                    WorkItemSourceType.TeamsChat, WorkItemPriority.High,
+                    new Dictionary<string, string> { ["chats.unreadCount"] = "5" },
+                    "corr-1", new DateTimeOffset(2026, 7, 1, 9, 0, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 7, 1, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var chatsGroup = Assert.Single(result.InboxGroups.Where(g => g.Source == "chats"));
+        var item = Assert.Single(chatsGroup.Items);
+        Assert.Equal(5, item.UnreadCount);
+    }
+
+    [Fact]
+    public async Task GetAsync_ItemWithoutUnreadCount_DefaultsToZero()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                new WorkItem("chat-ext-2", "No unread count item", "chats",
+                    WorkItemSourceType.TeamsChat, WorkItemPriority.Medium,
+                    new Dictionary<string, string>(),
+                    "corr-2", new DateTimeOffset(2026, 7, 1, 9, 0, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 7, 1, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var chatsGroup = Assert.Single(result.InboxGroups.Where(g => g.Source == "chats"));
+        var item = Assert.Single(chatsGroup.Items);
+        Assert.Equal(0, item.UnreadCount);
+    }
+
     private static WorkItem CreateWorkItem(
         string externalId,
         string source,
         WorkItemSourceType sourceType,
         WorkItemPriority priority,
-        DateTimeOffset capturedAtUtc)
+        DateTimeOffset capturedAtUtc,
+        Dictionary<string, string>? metadata = null)
     {
         return new WorkItem(
             externalId,
@@ -190,7 +313,7 @@ public class DashboardPreviewReaderTests
             source,
             sourceType,
             priority,
-            new Dictionary<string, string>(),
+            metadata ?? new Dictionary<string, string>(),
             correlationId: $"corr-{externalId}",
             capturedAtUtc: capturedAtUtc);
     }

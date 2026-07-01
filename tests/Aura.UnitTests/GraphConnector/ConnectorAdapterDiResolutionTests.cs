@@ -111,9 +111,9 @@ public class ConnectorAdapterDiResolutionTests
 
         var result = adapter.ExecuteAsync(request, CancellationToken.None).GetAwaiter().GetResult();
 
-        // Fixture path: default fixtures have 3 items (2 valid, 1 invalid)
-        Assert.Equal(2, result.ItemCount);
-        Assert.Equal(ConnectorExecutionStatus.PartialFailure, result.Status);
+        // Fixture path: default fixtures have 3 items, all valid
+        Assert.Equal(3, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
     }
 
     private sealed class TestBuffer : IWorkItemBuffer

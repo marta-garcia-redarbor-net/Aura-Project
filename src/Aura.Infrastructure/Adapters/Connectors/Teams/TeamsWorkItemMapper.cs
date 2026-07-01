@@ -37,13 +37,22 @@ internal sealed class TeamsWorkItemMapper
             metadata["teams.source.resolution"] = "defaulted";
         }
 
+        var sourceType = source == "chats"
+            ? WorkItemSourceType.TeamsChat
+            : WorkItemSourceType.TeamsMessage;
+
+        if (source == "chats")
+        {
+            AddChatMetadata(message, metadata);
+        }
+
         var priority = ResolvePriority(message.Priority, metadata);
 
         workItem = new WorkItem(
             message.ExternalId,
             title,
             source,
-            WorkItemSourceType.TeamsMessage,
+            sourceType,
             priority,
             metadata,
             message.CorrelationId,
@@ -92,6 +101,16 @@ internal sealed class TeamsWorkItemMapper
         }
 
         return metadata;
+    }
+
+    private static void AddChatMetadata(TeamsMessageDto message, Dictionary<string, string> metadata)
+    {
+        // Source is guaranteed to be "chats" — caller only enters when source == "chats"
+        if (message.LastMessageAt is not null)
+            metadata["chats.lastMessageAt"] = message.LastMessageAt.Value.ToString("o");
+        if (message.LastMessageReadAt is not null)
+            metadata["chats.lastMessageReadAt"] = message.LastMessageReadAt.Value.ToString("o");
+        metadata["chats.unreadCount"] = message.UnreadCount.ToString();
     }
 
     private static WorkItemPriority ResolvePriority(string? rawPriority, IDictionary<string, string> metadata)
