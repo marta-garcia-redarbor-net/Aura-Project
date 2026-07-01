@@ -3,6 +3,7 @@ using Aura.Api.Endpoints;
 using Aura.Api.Hubs;
 using Aura.Application;
 using Aura.Application.Ports;
+using Aura.Application.UseCases.Calendar;
 using Aura.Infrastructure;
 using System.Diagnostics;
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuraApplication();
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddSignalR();
+builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -84,6 +86,7 @@ app.MapAuthEndpoints(app.Environment);
 app.MapDashboardEndpoints();
 app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
+app.MapWorkItemsEndpoints();
 app.MapHub<MeetingAlertHub>("/hubs/meeting-alerts");
 
 app.Run();

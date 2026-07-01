@@ -25,6 +25,10 @@
                     <span data-testid="morning-summary-preview-rank">#@entry.Rank</span>
                     <strong data-testid="morning-summary-preview-title">@entry.Title</strong>
                     <span data-testid="morning-summary-preview-source">@entry.Source</span>
+                    @if (entry.PriorityHint is not null)
+                    {
+                        <PriorityBadge Level="@entry.PriorityHint" />
+                    }
                     <span data-testid="morning-summary-preview-score">@entry.Score.ToString("0.##")</span>
                 </li>
             }

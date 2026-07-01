@@ -86,6 +86,54 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         return Task.FromResult(WorkItemPersistenceResult.Success());
     }
 
+    public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
+        WorkItemSourceType sourceType,
+        WorkItemStatus? statusFilter,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
+                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason
+            FROM WorkItems
+            WHERE SourceType = @SourceType
+              AND (@Status IS NULL OR Status = @Status)
+            ORDER BY
+              CASE Priority
+                WHEN 'Critical' THEN 0
+                WHEN 'High' THEN 1
+                WHEN 'Medium' THEN 2
+                WHEN 'Low' THEN 3
+              END,
+              CapturedAtUtc DESC;
+            """;
+        cmd.Parameters.AddWithValue("@SourceType", sourceType.ToString());
+        cmd.Parameters.AddWithValue("@Status", (object?)statusFilter?.ToString() ?? DBNull.Value);
+
+        var items = new List<WorkItem>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var id = Guid.Parse(reader.GetString(0));
+            var externalId = reader.GetString(1);
+            var title = reader.GetString(2);
+            var source = reader.GetString(3);
+            var sourceTypeValue = Enum.Parse<WorkItemSourceType>(reader.GetString(4));
+            var priority = Enum.Parse<WorkItemPriority>(reader.GetString(5));
+            var metadataJson = reader.GetString(6);
+            var metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(metadataJson)
+                           ?? new Dictionary<string, string>();
+            var correlationId = reader.GetString(7);
+            var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(8));
+
+            items.Add(new WorkItem(externalId, title, source, sourceTypeValue, priority, metadata, correlationId, capturedAtUtc));
+        }
+
+        return Task.FromResult<IReadOnlyList<WorkItem>>(items);
+    }
+
     public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(MorningSummaryQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);

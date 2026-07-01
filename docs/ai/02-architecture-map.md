@@ -85,6 +85,15 @@ ISemanticRequirementValidator
 IReviewDecisionEngine
 ```
 
+### Calendar
+
+```text
+ICalendarApiClient          ← UI layer: fetches upcoming meetings from Aura.Api
+ICalendarEventStore         ← Application layer: in-memory event store for calendar data
+GetUpcomingMeetingsUseCase  ← Application layer: retrieves and orders upcoming meetings
+IPrioritySummaryService     ← UI layer: composes preview + calendar into source-based cards
+```
+
 ---
 
 ## Recommended patterns by domain
@@ -96,6 +105,7 @@ IReviewDecisionEngine
 | Triage | State, Specification, Chain of Responsibility, policy-based design |
 | Reviewer | Pipeline, Strategy, Evidence Aggregator |
 | Observability | Decorator for instrumentation, module-level `ActivitySource` |
+| Calendar | HttpClient resilience (timeout, retry with jitter, circuit breaker via `AddStandardResilienceHandler`), structured logging |
 
 ---
 
@@ -108,6 +118,9 @@ Aura.Auth
 Aura.Ingestion
 Aura.Triage
 Aura.Reviewer
+Aura.UI                     ← MainLayoutAuthenticated
+Aura.UI.CalendarApi          ← CalendarApiClient telemetry
+Aura.UI.PrioritySummary      ← PrioritySummaryService telemetry
 ```
 
 ---

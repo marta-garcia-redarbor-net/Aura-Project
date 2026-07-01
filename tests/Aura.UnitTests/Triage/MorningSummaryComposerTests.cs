@@ -102,5 +102,13 @@ public sealed class MorningSummaryComposerTests
         {
             return Task.FromResult(_items);
         }
+
+        public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
+            WorkItemSourceType sourceType,
+            WorkItemStatus? statusFilter,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_items);
+        }
     }
 }
