@@ -55,6 +55,8 @@ public class DashboardPreviewReaderTests
         Assert.Equal("Item b", result.SummaryEntries[0].Title);
         Assert.Equal("teams", result.SummaryEntries[0].Source);
         Assert.Equal(1, result.SummaryEntries[0].Rank);
+        Assert.Equal("Critical", result.SummaryEntries[0].PriorityHint);
+        Assert.Equal("High", result.SummaryEntries[1].PriorityHint);
     }
 
     [Fact]
@@ -175,6 +177,154 @@ public class DashboardPreviewReaderTests
         Assert.Null(item.DeepLink);
         Assert.Equal("Medium", item.PriorityHint);
         Assert.Null(item.SyncState);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithMessagesSource_ResolvesTeamsMetadataPrefix()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var metadata = new Dictionary<string, string>
+        {
+            ["teams.sender"] = "Bob",
+            ["teams.snippet"] = "Deploy blocked on auth service",
+            ["teams.deepLink"] = "https://teams.microsoft.com/msg/99"
+        };
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                new WorkItem("msg-1", "Auth service issue", "messages",
+                    WorkItemSourceType.TeamsMessage, WorkItemPriority.High, metadata,
+                    "corr-1", new DateTimeOffset(2026, 6, 23, 9, 0, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 6, 23, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var group = Assert.Single(result.InboxGroups);
+        var item = Assert.Single(group.Items);
+        Assert.Equal("messages", item.Source);
+        Assert.Equal("Bob", item.Sender);
+        Assert.Equal("Deploy blocked on auth service", item.Snippet);
+        Assert.Equal("https://teams.microsoft.com/msg/99", item.DeepLink);
+        Assert.Equal("synced", item.SyncState);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithInboxSource_ResolvesOutlookMetadataPrefix()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var metadata = new Dictionary<string, string>
+        {
+            ["outlook.sender"] = "cto@aura.dev",
+            ["outlook.snippet"] = "Incident P1: database replication lag",
+            ["outlook.deepLink"] = "https://outlook.office.com/mail/id/777"
+        };
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                new WorkItem("mail-1", "Incident P1", "inbox",
+                    WorkItemSourceType.OutlookEmail, WorkItemPriority.Critical, metadata,
+                    "corr-2", new DateTimeOffset(2026, 6, 23, 8, 30, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 6, 23, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var group = Assert.Single(result.InboxGroups);
+        var item = Assert.Single(group.Items);
+        Assert.Equal("inbox", item.Source);
+        Assert.Equal("cto@aura.dev", item.Sender);
+        Assert.Equal("Incident P1: database replication lag", item.Snippet);
+        Assert.Equal("https://outlook.office.com/mail/id/777", item.DeepLink);
+        Assert.Equal("synced", item.SyncState);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithMessagesSource_ReturnsReviewAndRespondAction()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                CreateWorkItem("msg-1", "messages", WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
+                    new DateTimeOffset(2026, 6, 23, 9, 0, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 6, 23, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var group = Assert.Single(result.InboxGroups);
+        var item = Assert.Single(group.Items);
+        Assert.Equal("Review and respond", item.SuggestedAction);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithInboxSource_ReturnsReviewAndReplyAction()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                CreateWorkItem("mail-1", "inbox", WorkItemSourceType.OutlookEmail, WorkItemPriority.Medium,
+                    new DateTimeOffset(2026, 6, 23, 9, 0, 0, TimeSpan.Zero))
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 6, 23, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var group = Assert.Single(result.InboxGroups);
+        var item = Assert.Single(group.Items);
+        Assert.Equal("Review and reply", item.SuggestedAction);
     }
 
     private static WorkItem CreateWorkItem(

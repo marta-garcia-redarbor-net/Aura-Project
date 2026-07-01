@@ -78,6 +78,25 @@ public class DashboardPreviewResponseOptionalFieldsTests
     }
 
     [Fact]
+    public void SummaryPreviewEntryResponse_NewOptionalFields_DefaultToNull()
+    {
+        var entry = new SummaryPreviewEntryResponse(1, "Test", "teams", 0.85);
+
+        Assert.Null(entry.PriorityHint);
+    }
+
+    [Fact]
+    public void SummaryPreviewEntryResponse_PriorityHint_CanBeSetViaInitOnly()
+    {
+        var entry = new SummaryPreviewEntryResponse(1, "Test", "teams", 0.85)
+        {
+            PriorityHint = "Critical"
+        };
+
+        Assert.Equal("Critical", entry.PriorityHint);
+    }
+
+    [Fact]
     public void DashboardPreviewResponse_WithOptionalFields_DeserializesFromJson()
     {
         var preview = new DashboardPreviewResponse(
