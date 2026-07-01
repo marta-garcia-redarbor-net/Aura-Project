@@ -62,6 +62,36 @@ public class DashboardArchitectureTests
             $"Dashboard endpoint types reference Aura.Domain: {FormatFailingTypes(result)}");
     }
 
+    [Fact]
+    public void PrioritySummaryService_ShouldNotReference_AuraInfrastructure()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.UI.Services.PrioritySummaryService).Assembly)
+            .That()
+            .HaveNameStartingWith("PrioritySummary")
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Infrastructure")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"PrioritySummaryService references Aura.Infrastructure: {FormatFailingTypes(result)}");
+    }
+
+    [Fact]
+    public void PrioritySummaryService_ShouldNotReference_AuraDomain()
+    {
+        var result = Types
+            .InAssembly(typeof(Aura.UI.Services.PrioritySummaryService).Assembly)
+            .That()
+            .HaveNameStartingWith("PrioritySummary")
+            .ShouldNot()
+            .HaveDependencyOn("Aura.Domain")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            $"PrioritySummaryService references Aura.Domain: {FormatFailingTypes(result)}");
+    }
+
     private static string FormatFailingTypes(TestResult result)
     {
         if (result.FailingTypes == null || !result.FailingTypes.Any())

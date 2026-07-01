@@ -8,6 +8,7 @@ using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.Dashboard;
 using Aura.Infrastructure.Adapters.MorningSummaryScheduling;
+using Aura.Infrastructure.Adapters.SeedData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,6 +54,30 @@ public static class DependencyInjection
         services.AddHealthChecks()
             .AddCheck<QdrantHealthCheck>("qdrant");
 
+        AddSeedDataIfDevelopment(services, configuration, environment);
+
         return services;
+    }
+
+    private static void AddSeedDataIfDevelopment(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return;
+        }
+
+        var seedOptions = new SeedDataOptions();
+        configuration.GetSection(SeedDataOptions.SectionName).Bind(seedOptions);
+
+        if (!seedOptions.Enabled)
+        {
+            return;
+        }
+
+        services.Configure<SeedDataOptions>(configuration.GetSection(SeedDataOptions.SectionName));
+        services.AddHostedService<SeedDataHostedService>();
     }
 }

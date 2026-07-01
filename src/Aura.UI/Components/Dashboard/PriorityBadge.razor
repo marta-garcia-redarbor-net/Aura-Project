@@ -1,0 +1,9 @@
+<span class="priority-badge priority-badge--@Level.ToLowerInvariant()" data-testid="priority-badge">
+    <span class="priority-badge__dot" data-testid="priority-badge-dot"></span>
+    @Level
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Level { get; set; } = string.Empty;
+}

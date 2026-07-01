@@ -1,0 +1,148 @@
+@page "/calendar/day"
+@using Aura.UI.Services
+@using Aura.UI.Models
+@using Aura.UI.Components.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject ICalendarApiClient CalendarApiClient
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Today's Calendar</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Today's Calendar</h1>
+                <p class="dashboard-page-header__subtitle">Your schedule for today.</p>
+            </div>
+            @if (_events is not null)
+            {
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    @_events.Count EVENTS
+                </span>
+            }
+        </div>
+
+        @if (_loadError is not null)
+        {
+            <p class="source-feed-panel__empty" role="alert">@_loadError</p>
+        }
+        else if (_events is null)
+        {
+            <p class="source-feed-panel__empty">Loading today's calendar...</p>
+        }
+        else if (_events.Count == 0)
+        {
+            <p class="source-feed-panel__empty">No events scheduled for today.</p>
+        }
+        else
+        {
+            <section class="calendar-day-panel" data-testid="calendar-day-page" aria-label="Today's calendar">
+                <ul class="calendar-day-panel__items" data-testid="calendar-day-items">
+                    @foreach (var ev in _events)
+                    {
+                        var status = GetEventStatus(ev);
+                        <li class="schedule-item schedule-item--@status" data-testid="calendar-day-event" data-status="@status">
+                            <div class="schedule-item__dot"></div>
+                            <div class="schedule-item__content">
+                                <span class="schedule-item__time" data-testid="calendar-day-event-time">
+                                    @FormatTimeRange(ev)
+                                </span>
+                                <strong class="schedule-item__title" data-testid="calendar-day-event-title">
+                                    @ev.Title
+                                </strong>
+                                @if (ev.Organizer is not null)
+                                {
+                                    <span class="schedule-item__organizer" data-testid="calendar-day-event-organizer">
+                                        @ev.Organizer
+                                    </span>
+                                }
+                                @if (ev.Location is not null)
+                                {
+                                    <span class="schedule-item__location" data-testid="calendar-day-event-location">
+                                        @ev.Location
+                                    </span>
+                                }
+                                <div class="schedule-item__meta">
+                                    <span class="schedule-item__duration" data-testid="calendar-day-event-duration">
+                                        @FormatDuration(ev)
+                                    </span>
+                                    @if (ev.IsOnlineMeeting)
+                                    {
+                                        <span class="schedule-item__online-badge" data-testid="calendar-day-event-online">
+                                            Online
+                                        </span>
+                                    }
+                                </div>
+                                @if (ev.IsOnlineMeeting && ev.JoinUrl is not null)
+                                {
+                                    <a href="@ev.JoinUrl"
+                                       class="schedule-item__join-btn"
+                                       data-testid="calendar-day-event-join"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">videocam</span>
+                                        Join
+                                    </a>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<UpcomingMeetingResponse>? _events;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var events = await CalendarApiClient.GetTodayCalendarAsync(CancellationToken.None);
+            _events = events.OrderBy(e => e.StartUtc).ToList();
+        }
+        catch
+        {
+            _loadError = "Today's calendar is currently unavailable.";
+        }
+    }
+
+    private static string FormatTimeRange(UpcomingMeetingResponse ev)
+    {
+        var start = ev.StartUtc.ToLocalTime();
+        var end = ev.EndUtc.ToLocalTime();
+
+        if (start.Date == end.Date)
+            return $"{start:h:mm} - {end:h:mm}";
+
+        return $"{start:M/d h:mm} - {end:M/d h:mm}";
+    }
+
+    private static string FormatDuration(UpcomingMeetingResponse ev)
+    {
+        var minutes = (ev.EndUtc - ev.StartUtc).TotalMinutes;
+        if (minutes < 60)
+            return $"{(int)minutes} min";
+
+        var hours = (int)(minutes / 60);
+        var remaining = (int)(minutes % 60);
+        return remaining > 0 ? $"{hours}h {remaining}min" : $"{hours}h";
+    }
+
+    private static string GetEventStatus(UpcomingMeetingResponse ev)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (ev.EndUtc < now) return "past";
+        if (ev.StartUtc <= now) return "current";
+        return "upcoming";
+    }
+}

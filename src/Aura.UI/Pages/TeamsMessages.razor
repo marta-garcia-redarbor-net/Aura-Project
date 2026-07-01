@@ -1,0 +1,113 @@
+@page "/teams"
+@using Aura.UI.Services
+@using Aura.UI.Components.Auth
+@using Aura.UI.Components.Dashboard
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IWorkItemsApiClient WorkItemsApiClient
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Teams Messages</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Teams Messages</h1>
+                <p class="dashboard-page-header__subtitle">Pending messages requiring attention.</p>
+            </div>
+            @if (_items is not null)
+            {
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    @_items.Count PENDING
+                </span>
+            }
+        </div>
+
+        @if (_loadError is not null)
+        {
+            <p class="source-feed-panel__empty" role="alert">@_loadError</p>
+        }
+        else if (_items is null)
+        {
+            <p class="source-feed-panel__empty">Loading teams messages...</p>
+        }
+        else if (_items.Count == 0)
+        {
+            <p class="source-feed-panel__empty">No pending teams messages.</p>
+        }
+        else
+        {
+            <section class="source-feed-panel" data-testid="teams-messages-page" aria-label="Teams messages">
+                <ul class="source-feed-panel__items" data-testid="teams-messages-items">
+                    @foreach (var item in _items)
+                    {
+                        <li class="source-feed-item" data-testid="teams-message-item">
+                            <div class="source-feed-item__top">
+                                @if (item.Sender is not null)
+                                {
+                                    <span class="source-feed-item__sender" data-testid="teams-message-sender">
+                                        @@@item.Sender
+                                    </span>
+                                }
+                                @if (item.Channel is not null)
+                                {
+                                    <span class="source-feed-item__channel" data-testid="teams-message-channel">
+                                        #@item.Channel
+                                    </span>
+                                }
+                                <span class="source-feed-item__time" data-testid="teams-message-time">
+                                    @item.RelativeTimestamp
+                                </span>
+                            </div>
+                            @if (item.Title is not null)
+                            {
+                                <strong class="source-feed-item__title" data-testid="teams-message-title">
+                                    @item.Title
+                                </strong>
+                            }
+                            @if (item.Snippet is not null)
+                            {
+                                <p class="source-feed-item__snippet" data-testid="teams-message-snippet">
+                                    @item.Snippet
+                                </p>
+                            }
+                            @if (item.Priority is not null)
+                            {
+                                <PriorityBadge Level="@item.Priority" />
+                            }
+                            @if (item.SuggestedAction is not null)
+                            {
+                                <span class="source-feed-item__action" data-testid="teams-message-action">
+                                    @item.SuggestedAction
+                                </span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<WorkItemDetailResponse>? _items;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var items = await WorkItemsApiClient.GetBySourceAsync("TeamsMessage", "Pending", CancellationToken.None);
+            _items = items.ToList();
+        }
+        catch
+        {
+            _loadError = "Teams messages are currently unavailable.";
+        }
+    }
+}

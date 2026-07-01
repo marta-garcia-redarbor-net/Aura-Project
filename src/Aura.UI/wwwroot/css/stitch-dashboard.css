@@ -52,6 +52,16 @@
     /* Accent (dotnet purple) */
     --aura-dotnet-purple: #512BD4;
 
+    /* Priority colors (functional mapping following Stitch status badge pattern) */
+    --aura-priority-critical: #FF4B4B;
+    --aura-priority-critical-bg: rgba(255, 75, 75, 0.12);
+    --aura-priority-high: #F59E0B;
+    --aura-priority-high-bg: rgba(245, 158, 11, 0.12);
+    --aura-priority-medium: #ADC6FF;
+    --aura-priority-medium-bg: rgba(173, 198, 255, 0.12);
+    --aura-priority-low: #64748B;
+    --aura-priority-low-bg: rgba(100, 116, 139, 0.12);
+
     /* Spacing from Stitch export */
     --aura-margin-desktop: 32px;
     --aura-margin-mobile: 16px;
@@ -970,4 +980,555 @@ a {
     font-size: 13px;
     font-weight: 600;
     color: var(--aura-primary);
+}
+
+/* ==========================================================================
+   Priority Badge — Stitch status badge pattern
+   Capsule shape, background tint, border, glow dot
+   ========================================================================== */
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    width: fit-content;
+}
+
+.priority-badge__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.priority-badge--critical {
+    color: var(--aura-priority-critical);
+    border-color: rgba(255, 75, 75, 0.4);
+    background: var(--aura-priority-critical-bg);
+}
+.priority-badge--critical .priority-badge__dot {
+    background: var(--aura-priority-critical);
+    box-shadow: 0 0 6px var(--aura-priority-critical);
+}
+
+.priority-badge--high {
+    color: var(--aura-priority-high);
+    border-color: rgba(245, 158, 11, 0.4);
+    background: var(--aura-priority-high-bg);
+}
+.priority-badge--high .priority-badge__dot {
+    background: var(--aura-priority-high);
+    box-shadow: 0 0 6px var(--aura-priority-high);
+}
+
+.priority-badge--medium {
+    color: var(--aura-priority-medium);
+    border-color: rgba(173, 198, 255, 0.4);
+    background: var(--aura-priority-medium-bg);
+}
+.priority-badge--medium .priority-badge__dot {
+    background: var(--aura-priority-medium);
+    box-shadow: 0 0 6px var(--aura-priority-medium);
+}
+
+.priority-badge--low {
+    color: var(--aura-priority-low);
+    border-color: rgba(100, 116, 139, 0.4);
+    background: var(--aura-priority-low-bg);
+}
+.priority-badge--low .priority-badge__dot {
+    background: var(--aura-priority-low);
+}
+
+/* ==========================================================================
+   Priority Summary Cards — grouped by priority level (Stitch card pattern)
+   Each card: header (level + count), top 3 items, "View all" link
+   ========================================================================== */
+
+.priority-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 1rem;
+    margin-bottom: var(--aura-gutter);
+}
+
+.priority-card {
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-xl);
+    padding: 1rem 1.25rem;
+    transition: border-color 0.15s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.priority-card:hover {
+    transform: translateY(-2px);
+}
+
+.priority-card:hover {
+    border-color: var(--aura-outline);
+}
+
+.priority-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--aura-border-subtle);
+}
+
+.priority-card__level {
+    margin: 0 0 0 0.375rem;
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex: 1;
+}
+
+.priority-card__count {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    color: var(--aura-on-surface-variant);
+}
+
+.priority-card__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.priority-card__item {
+    display: grid;
+    gap: 0.125rem;
+    padding: 0.5rem;
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+}
+
+.priority-card__item-title {
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--aura-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.priority-card__item-detail {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--aura-on-surface-variant);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.priority-card__item-detail > span {
+    white-space: nowrap;
+}
+
+.priority-card__item-sender {
+    font-weight: 500;
+    color: var(--aura-primary);
+}
+
+.priority-card__item-snippet {
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 14rem;
+}
+
+.priority-card__item-action {
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.05em;
+    color: var(--aura-on-surface-variant);
+    opacity: 0.7;
+}
+
+.priority-card__footer {
+    margin-top: auto;
+    padding: 0.75rem;
+    border-top: 1px solid var(--aura-border-subtle);
+    background: var(--aura-surface-container-low);
+}
+
+.priority-card__link {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--aura-primary);
+    text-decoration: none;
+    transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.priority-card__link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.priority-card__link--source {
+    color: var(--aura-on-surface-variant);
+    font-weight: 400;
+}
+
+.priority-card__footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.priority-card--empty {
+    opacity: 0.5;
+}
+
+.priority-card--empty .priority-card__items {
+    justify-content: center;
+    align-items: center;
+    min-height: 4rem;
+    color: var(--aura-on-surface-variant);
+    font-size: 13px;
+}
+
+
+
+/* ==========================================================================
+   Schedule Item — Calendar event in Schedule Today
+   Matches Stitch: border-l-4 + absolute dot + content
+   ========================================================================== */
+
+.schedule-item {
+    display: flex;
+    gap: 1rem;
+    border-left: 4px solid var(--aura-border-subtle);
+    padding-left: 1rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    position: relative;
+}
+
+.schedule-item__dot {
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--aura-on-surface-variant);
+    box-shadow: 0 0 8px currentColor;
+}
+
+.schedule-item__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.schedule-item__time {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--aura-on-surface-variant);
+}
+
+.schedule-item__title {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+    color: var(--aura-on-surface);
+}
+
+.schedule-item__location {
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--aura-primary);
+}
+
+/* --- Event status colors --- */
+
+.schedule-item--past {
+    border-left-color: var(--aura-status-offline);
+    opacity: 0.5;
+}
+
+.schedule-item--past .schedule-item__dot {
+    background: var(--aura-primary);
+    box-shadow: 0 0 8px var(--aura-primary);
+}
+
+.schedule-item--current {
+    border-left-color: var(--aura-secondary);
+}
+
+.schedule-item--current .schedule-item__dot {
+    background: var(--aura-status-healthy);
+    box-shadow: 0 0 8px var(--aura-status-healthy);
+}
+
+.schedule-item--upcoming {
+    border-left-color: var(--aura-primary);
+}
+
+.schedule-item--upcoming .schedule-item__dot {
+    background: var(--aura-error);
+    box-shadow: 0 0 8px var(--aura-error);
+}
+
+.schedule-item__join {
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--aura-secondary);
+    text-decoration: none;
+    margin-top: 0.125rem;
+}
+
+.schedule-item__join:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Source Feed Panel — Inbox feed lists for Teams, Outlook, and detail pages
+   ========================================================================== */
+
+.source-feed-panel__empty {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--aura-on-surface-variant);
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.source-feed-panel__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.source-feed-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.source-feed-item:hover {
+    border-color: var(--aura-outline-variant);
+    background: var(--aura-surface-container-high);
+}
+
+.source-feed-item__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.source-feed-item__sender {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    color: var(--aura-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.source-feed-item__channel {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--aura-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.source-feed-item__time {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    color: var(--aura-on-surface-variant);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.source-feed-item__title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--aura-on-surface);
+}
+
+.source-feed-item__snippet {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--aura-on-surface-variant);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.source-feed-item__action {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--aura-primary);
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Calendar Day Panel — Today's full-day calendar detail view
+   ========================================================================== */
+
+.calendar-day-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-day-panel__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.calendar-day-panel__items .schedule-item {
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    padding: 1rem;
+    background: var(--aura-surface-container);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.calendar-day-panel__items .schedule-item:hover {
+    border-color: var(--aura-outline-variant);
+    background: var(--aura-surface-container-high);
+}
+
+.schedule-item__content {
+    flex: 1;
+    gap: 0.25rem;
+}
+
+.schedule-item__time {
+    font-family: var(--aura-font-code);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--aura-on-surface-variant);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.schedule-item__title {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 700;
+    color: var(--aura-on-surface);
+    display: block;
+}
+
+.schedule-item__organizer {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--aura-on-surface-variant);
+    display: block;
+}
+
+.schedule-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.375rem;
+}
+
+.schedule-item__duration {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    color: var(--aura-on-surface-variant);
+}
+
+.schedule-item__online-badge {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    color: var(--aura-primary);
+    background: color-mix(in srgb, var(--aura-primary) 12%, transparent);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--aura-radius-sm);
+}
+
+.schedule-item__join-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 16px;
+    color: var(--aura-on-primary);
+    background: var(--aura-primary);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--aura-radius-sm);
+    text-decoration: none;
+    margin-top: 0.5rem;
+    transition: opacity 0.15s;
+}
+
+.schedule-item__join-btn:hover {
+    opacity: 0.85;
 }
