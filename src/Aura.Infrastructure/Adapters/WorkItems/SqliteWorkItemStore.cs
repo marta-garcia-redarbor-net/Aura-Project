@@ -191,6 +191,41 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         return Task.FromResult<IReadOnlyList<WorkItem>>(items);
     }
 
+    public Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
+        WorkItemSourceType sourceType, MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+
+        var filters = new List<string> { "CapturedAtUtc >= @FromUtc AND CapturedAtUtc <= @ToUtc", "SourceType = @SourceType" };
+        cmd.Parameters.AddWithValue("@SourceType", sourceType.ToString());
+        if (statusFilter.HasValue)
+        {
+            filters.Add("Status = @Status");
+            cmd.Parameters.AddWithValue("@Status", statusFilter.Value.ToString());
+        }
+
+        cmd.CommandText = $"""
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            FROM WorkItems
+            WHERE {string.Join(" AND ", filters)}
+            ORDER BY CapturedAtUtc DESC;
+            """;
+        cmd.Parameters.AddWithValue("@FromUtc", query.FromUtc.ToString("O"));
+        cmd.Parameters.AddWithValue("@ToUtc", query.ToUtc.ToString("O"));
+
+        var items = new List<WorkItem>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            items.Add(ReadWorkItemFromReader(reader));
+        }
+
+        return Task.FromResult<IReadOnlyList<WorkItem>>(items);
+    }
+
     /// <summary>Reads a single WorkItem from the current row of a SqliteDataReader.
     /// Assumes columns: 0=ExternalId, 1=Title, 2=Source, 3=SourceType, 4=Priority,
     /// 5=MetadataJson, 6=CorrelationId, 7=CapturedAtUtc.</summary>

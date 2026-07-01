@@ -18,12 +18,21 @@ public interface IWorkItemReader
 
     /// <summary>
     /// Reads work items for the provided query window, optionally filtered by status.
+    /// When statusFilter is null, returns all statuses.
     /// </summary>
-    /// <param name="query">User and UTC window bounds used for work-item retrieval.</param>
-    /// <param name="statusFilter">Optional status filter. When null, returns all statuses.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Read-only list of work items matching the filter for the requested window.</returns>
+    Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
+        MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reads work items for the provided query window, optionally filtered by source type and status.
+    /// </summary>
     Task<IReadOnlyList<WorkItem>> ReadForWindowAsync(
         WorkItemSourceType sourceType,
         MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Reads work items filtered by source type, optionally filtered by status.
+    /// </summary>
+    Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
+        WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
 }

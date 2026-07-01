@@ -198,7 +198,7 @@ public class DashboardPreviewReaderTests
         };
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 new WorkItem("msg-1", "Auth service issue", "messages",
                     WorkItemSourceType.TeamsMessage, WorkItemPriority.High, metadata,
@@ -241,7 +241,7 @@ public class DashboardPreviewReaderTests
         };
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 new WorkItem("mail-1", "Incident P1", "inbox",
                     WorkItemSourceType.OutlookEmail, WorkItemPriority.Critical, metadata,
@@ -277,7 +277,7 @@ public class DashboardPreviewReaderTests
         });
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 CreateWorkItem("msg-1", "messages", WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
                     new DateTimeOffset(2026, 6, 23, 9, 0, 0, TimeSpan.Zero))
@@ -308,7 +308,7 @@ public class DashboardPreviewReaderTests
         });
 
         var workItemReader = Substitute.For<IWorkItemReader>();
-        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), Arg.Any<CancellationToken>())
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
                 CreateWorkItem("mail-1", "inbox", WorkItemSourceType.OutlookEmail, WorkItemPriority.Medium,
                     new DateTimeOffset(2026, 6, 23, 9, 0, 0, TimeSpan.Zero))
