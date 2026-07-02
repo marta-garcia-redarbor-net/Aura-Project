@@ -54,20 +54,21 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
         MessageCollectionResponse messages;
         try
         {
-            messages = await client.Me.Messages.GetAsync(requestConfig =>
+            messages = await client.Me.MailFolders["inbox"].Messages.GetAsync(requestConfig =>
             {
                 requestConfig.QueryParameters.Top = 50;
+                requestConfig.QueryParameters.Filter = "isRead eq false";
                 requestConfig.QueryParameters.Orderby = ["receivedDateTime desc"];
-                requestConfig.QueryParameters.Select = ["id", "subject", "importance", "sender", "bodyPreview", "webLink", "receivedDateTime", "conversationId"];
+                requestConfig.QueryParameters.Select = ["id", "subject", "importance", "sender", "bodyPreview", "webLink", "receivedDateTime", "conversationId", "isRead"];
             }, ct);
         }
         catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
         {
-            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/messages");
+            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/mailFolders/inbox/messages");
             s_graphHttpError.Add(1,
                 new KeyValuePair<string, object?>("connector", "outlook"),
                 new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
-                new KeyValuePair<string, object?>("endpoint", "me/messages"));
+                new KeyValuePair<string, object?>("endpoint", "me/mailFolders/inbox/messages"));
             throw;
         }
 
@@ -91,7 +92,8 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
                     : msg.BodyPreview,
                 ReceivedDateTime = msg.ReceivedDateTime,
                 ConversationId = msg.ConversationId,
-                WebLink = msg.WebLink
+                WebLink = msg.WebLink,
+                IsRead = msg.IsRead ?? false
             };
 
             results.Add(dto);

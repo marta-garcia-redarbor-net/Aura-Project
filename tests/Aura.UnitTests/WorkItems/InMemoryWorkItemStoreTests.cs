@@ -92,6 +92,108 @@ public class InMemoryWorkItemStoreTests
         Assert.NotEqual(found1!.Id, found2!.Id);
     }
 
+    // ---- Phase 2: GetPendingExternalIdsAsync ----
+
+    [Fact]
+    public async Task GetPendingExternalIdsAsync_ReturnsOnlyPending()
+    {
+        var store = new InMemoryWorkItemStore();
+        var pending = CreateWorkItem("ext-pend");
+        var completed = CreateWorkItem("ext-comp");
+        completed.MarkProcessing();
+        completed.MarkCompleted();
+
+        await store.SaveAsync(pending, CancellationToken.None);
+        await store.SaveAsync(completed, CancellationToken.None);
+
+        var result = await store.GetPendingExternalIdsAsync(WorkItemSourceType.TeamsMessage, CancellationToken.None);
+
+        Assert.Contains("ext-pend", result);
+        Assert.DoesNotContain("ext-comp", result);
+    }
+
+    [Fact]
+    public async Task GetPendingExternalIdsAsync_FiltersBySourceType()
+    {
+        var store = new InMemoryWorkItemStore();
+        var outlook = new WorkItem("ext-ol", "Outlook Item", "inbox",
+            WorkItemSourceType.OutlookEmail, WorkItemPriority.Medium, new Dictionary<string, string>());
+        var teams = new WorkItem("ext-teams", "Teams Item", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium, new Dictionary<string, string>());
+
+        await store.SaveAsync(outlook, CancellationToken.None);
+        await store.SaveAsync(teams, CancellationToken.None);
+
+        var result = await store.GetPendingExternalIdsAsync(WorkItemSourceType.OutlookEmail, CancellationToken.None);
+
+        Assert.Contains("ext-ol", result);
+        Assert.DoesNotContain("ext-teams", result);
+    }
+
+    [Fact]
+    public async Task GetPendingExternalIdsAsync_NoPending_ReturnsEmptySet()
+    {
+        var store = new InMemoryWorkItemStore();
+        var result = await store.GetPendingExternalIdsAsync(WorkItemSourceType.TeamsMessage, CancellationToken.None);
+        Assert.Empty(result);
+    }
+
+    // ---- Phase 2: MarkCompletedAsync ----
+
+    [Fact]
+    public async Task MarkCompletedAsync_ChangesMultipleItems()
+    {
+        var store = new InMemoryWorkItemStore();
+        var itemA = CreateWorkItem("ext-a");
+        var itemB = CreateWorkItem("ext-b");
+        var itemC = CreateWorkItem("ext-c");
+
+        await store.SaveAsync(itemA, CancellationToken.None);
+        await store.SaveAsync(itemB, CancellationToken.None);
+        await store.SaveAsync(itemC, CancellationToken.None);
+
+        await store.MarkCompletedAsync(new HashSet<string> { "ext-a", "ext-c" }, WorkItemSourceType.TeamsMessage, CancellationToken.None);
+
+        var pending = await store.GetPendingExternalIdsAsync(WorkItemSourceType.TeamsMessage, CancellationToken.None);
+        Assert.DoesNotContain("ext-a", pending);
+        Assert.Contains("ext-b", pending);
+        Assert.DoesNotContain("ext-c", pending);
+    }
+
+    [Fact]
+    public async Task MarkCompletedAsync_IgnoresNonexistentIds()
+    {
+        var store = new InMemoryWorkItemStore();
+        var itemA = CreateWorkItem("ext-a");
+        await store.SaveAsync(itemA, CancellationToken.None);
+
+        var ex = await Record.ExceptionAsync(() =>
+            store.MarkCompletedAsync(new HashSet<string> { "ext-a", "nonexistent" }, WorkItemSourceType.TeamsMessage, CancellationToken.None));
+
+        Assert.Null(ex);
+
+        var pending = await store.GetPendingExternalIdsAsync(WorkItemSourceType.TeamsMessage, CancellationToken.None);
+        Assert.DoesNotContain("ext-a", pending);
+    }
+
+    [Fact]
+    public async Task MarkCompletedAsync_IncludesSourceFilter()
+    {
+        var store = new InMemoryWorkItemStore();
+        var outlook = new WorkItem("ext-ol", "Outlook Item", "inbox",
+            WorkItemSourceType.OutlookEmail, WorkItemPriority.Medium, new Dictionary<string, string>());
+        var teams = new WorkItem("ext-teams", "Teams Item", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium, new Dictionary<string, string>());
+
+        await store.SaveAsync(outlook, CancellationToken.None);
+        await store.SaveAsync(teams, CancellationToken.None);
+
+        await store.MarkCompletedAsync(new HashSet<string> { "ext-ol" }, WorkItemSourceType.OutlookEmail, CancellationToken.None);
+
+        var teamsPending = await store.GetPendingExternalIdsAsync(WorkItemSourceType.TeamsMessage, CancellationToken.None);
+        Assert.Contains("ext-teams", teamsPending);
+    }
+
     private static WorkItem CreateWorkItem(string externalId, WorkItemPriority priority = WorkItemPriority.Medium) =>
         new(
             externalId,

@@ -37,6 +37,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                 SchemaVersion TEXT NOT NULL,
                 Status TEXT NOT NULL,
                 CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NULL,
                 FaultReason TEXT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_WorkItems_ExternalId
@@ -45,6 +46,18 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                 ON WorkItems (CapturedAtUtc);
             """;
         cmd.ExecuteNonQuery();
+
+        // Migration: add UpdatedAt column for existing databases (safe no-op if already present)
+        try
+        {
+            using var migrateCmd = connection.CreateCommand();
+            migrateCmd.CommandText = "ALTER TABLE WorkItems ADD COLUMN UpdatedAt TEXT;";
+            migrateCmd.ExecuteNonQuery();
+        }
+        catch
+        {
+            // Column already exists — ignore
+        }
     }
 
     public Task<WorkItem?> FindByExternalIdAsync(string externalId, CancellationToken ct)
@@ -224,6 +237,66 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         }
 
         return Task.FromResult<IReadOnlyList<WorkItem>>(items);
+    }
+
+    public Task<IReadOnlySet<string>> GetPendingExternalIdsAsync(WorkItemSourceType source, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT ExternalId FROM WorkItems
+            WHERE Status = @Status AND SourceType = @SourceType
+            """;
+        cmd.Parameters.AddWithValue("@Status", "Pending");
+        cmd.Parameters.AddWithValue("@SourceType", source.ToString());
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            ids.Add(reader.GetString(0));
+        }
+
+        return Task.FromResult<IReadOnlySet<string>>(ids);
+    }
+
+    public Task MarkCompletedAsync(IReadOnlySet<string> externalIds, WorkItemSourceType source, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(externalIds);
+        ct.ThrowIfCancellationRequested();
+
+        if (externalIds.Count == 0)
+            return Task.CompletedTask;
+
+        using var cmd = _connection.CreateCommand();
+        var now = DateTimeOffset.UtcNow.ToString("O");
+
+        // Build parameterized IN clause dynamically
+        var paramNames = new List<string>();
+        var index = 0;
+        foreach (var id in externalIds)
+        {
+            var paramName = $"@id{index}";
+            paramNames.Add(paramName);
+            cmd.Parameters.AddWithValue(paramName, id);
+            index++;
+        }
+
+        cmd.CommandText = $"""
+            UPDATE WorkItems
+            SET Status = @CompletedStatus, UpdatedAt = @Now
+            WHERE Status = @PendingStatus
+              AND SourceType = @SourceType
+              AND ExternalId IN ({string.Join(", ", paramNames)})
+            """;
+        cmd.Parameters.AddWithValue("@CompletedStatus", "Completed");
+        cmd.Parameters.AddWithValue("@PendingStatus", "Pending");
+        cmd.Parameters.AddWithValue("@Now", now);
+        cmd.Parameters.AddWithValue("@SourceType", source.ToString());
+
+        cmd.ExecuteNonQuery();
+        return Task.CompletedTask;
     }
 
     /// <summary>Reads a single WorkItem from the current row of a SqliteDataReader.

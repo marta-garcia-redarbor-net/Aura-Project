@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Aura.Domain.WorkItems;
 using Microsoft.Extensions.Logging;
 
 namespace Aura.Application.UseCases.ConnectorExecution;
@@ -73,6 +74,12 @@ public sealed partial class ExecuteConnectorUseCase
 
         public Task<Aura.Domain.WorkItems.WorkItem?> FindByExternalIdAsync(string externalId, CancellationToken ct)
             => Task.FromResult<Aura.Domain.WorkItems.WorkItem?>(null);
+
+        public Task<IReadOnlySet<string>> GetPendingExternalIdsAsync(WorkItemSourceType source, CancellationToken ct)
+            => Task.FromResult<IReadOnlySet<string>>(new HashSet<string>());
+
+        public Task MarkCompletedAsync(IReadOnlySet<string> externalIds, WorkItemSourceType source, CancellationToken ct)
+            => Task.CompletedTask;
     }
 
     public async Task<ConnectorExecutionResult> ExecuteAsync(CheckpointIdentity identity, CancellationToken ct)
@@ -106,7 +113,14 @@ public sealed partial class ExecuteConnectorUseCase
         try
         {
             var adapterResult = await adapter.ExecuteAsync(request, ct);
-            var finalResult = await PersistWorkItemsAsync(adapterResult, ct);
+            var (finalResult, batchExternalIds) = await PersistWorkItemsAsync(adapterResult, ct);
+
+            // Diff lifecycle: mark absent pending items as Completed for Outlook
+            if (string.Equals(identity.Connector, "outlook", StringComparison.OrdinalIgnoreCase)
+                && adapterResult.Status != ConnectorExecutionStatus.Failure)
+            {
+                await RunDiffLifecycleAsync(WorkItemSourceType.OutlookEmail, batchExternalIds, ct);
+            }
 
             await PersistCheckpointAsync(identity, checkpoint, finalResult, now, ct);
             EmitTelemetry(activity, finalResult);
@@ -125,12 +139,18 @@ public sealed partial class ExecuteConnectorUseCase
         }
     }
 
-    private async Task<ConnectorExecutionResult> PersistWorkItemsAsync(ConnectorExecutionResult adapterResult, CancellationToken ct)
+    private async Task<(ConnectorExecutionResult Result, IReadOnlySet<string> BatchExternalIds)> PersistWorkItemsAsync(ConnectorExecutionResult adapterResult, CancellationToken ct)
     {
         var bufferedItems = _workItemBuffer.Drain();
+
+        // Capture batch ExternalIds before any consumption
+        var batchExternalIds = bufferedItems
+            .Select(i => i.ExternalId)
+            .ToHashSet(StringComparer.Ordinal);
+
         if (bufferedItems.Count == 0)
         {
-            return adapterResult;
+            return (adapterResult, batchExternalIds);
         }
 
         var failureReasons = new List<string>();
@@ -146,27 +166,41 @@ public sealed partial class ExecuteConnectorUseCase
 
         if (failureReasons.Count == 0)
         {
-            return adapterResult;
+            return (adapterResult, batchExternalIds);
         }
 
         var mergedFailureReason = string.Join(" | ", failureReasons);
 
         if (adapterResult.Status == ConnectorExecutionStatus.Failure)
         {
-            return adapterResult;
+            return (adapterResult, batchExternalIds);
         }
 
         if (adapterResult.Status == ConnectorExecutionStatus.PartialFailure)
         {
             var priorReason = adapterResult.FailureReason ?? "Connector partial failure.";
-            return adapterResult with { FailureReason = $"{priorReason} | Persistence: {mergedFailureReason}" };
+            return (adapterResult with { FailureReason = $"{priorReason} | Persistence: {mergedFailureReason}" }, batchExternalIds);
         }
 
-        return adapterResult with
+        return (adapterResult with
         {
             Status = ConnectorExecutionStatus.PartialFailure,
             FailureReason = $"Persistence: {mergedFailureReason}"
-        };
+        }, batchExternalIds);
+    }
+
+    private async Task RunDiffLifecycleAsync(WorkItemSourceType sourceType, IReadOnlySet<string> batchExternalIds, CancellationToken ct)
+    {
+        var pendingIds = await _workItemStore.GetPendingExternalIdsAsync(sourceType, ct);
+        if (pendingIds.Count == 0)
+            return;
+
+        var absentIds = pendingIds.Except(batchExternalIds).ToHashSet(StringComparer.Ordinal);
+        if (absentIds.Count == 0)
+            return;
+
+        await _workItemStore.MarkCompletedAsync(absentIds, sourceType, ct);
+        Log.DiffLifecycleCompleted(_logger, sourceType.ToString(), absentIds.Count);
     }
 
     private async Task PersistCheckpointAsync(
@@ -304,5 +338,14 @@ public sealed partial class ExecuteConnectorUseCase
             int itemCount,
             string failureReason,
             string correlationId);
+
+        [LoggerMessage(
+            EventId = 2204,
+            Level = LogLevel.Information,
+            Message = "Diff lifecycle for {SourceType}: marked {Count} absent items as Completed")]
+        public static partial void DiffLifecycleCompleted(
+            ILogger logger,
+            string sourceType,
+            int count);
     }
 }

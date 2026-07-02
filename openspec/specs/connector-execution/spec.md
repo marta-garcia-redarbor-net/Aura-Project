@@ -21,6 +21,8 @@ Teams is the first connector in this slice.
 |---|---|---|
 | Connector Execution Port | Provider-neutral; all types MUST be Aura.Application or BCL | MUST |
 | Connector Execution Use Case | Invokes the port; no Infrastructure or SDK type references | MUST |
+| Post-Persistence Diff Lifecycle | Successful Outlook runs MUST diff pending persisted ids against the current batch and auto-complete absent Outlook items | MUST |
+| Application-Owned Pending Filter | Pending/completed filtering MUST live in Application/store layers; UI MUST NOT own unread-state filtering | MUST |
 | Canonical Execution Result | identity + item count + status + max-processed-item timestamp; failure MUST include reason | MUST |
 | Telemetry Emission | Trace span + item-count metric + log; share one correlation ID | MUST |
 | Clean Architecture Boundary | No SDK types above Infrastructure; enforced by arch tests | MUST NOT violate |
@@ -66,6 +68,70 @@ The use case MUST receive a `CheckpointIdentity` that carries an optional `UserO
 - GIVEN the port returns a typed failure
 - WHEN the use case processes it
 - THEN the typed failure is returned without re-throwing
+
+---
+
+### Requirement: Post-Persistence Diff Lifecycle
+
+After a successful Outlook connector run persists the current batch, the use case MUST
+retrieve the pending persisted Outlook `ExternalId` values, compare them against the
+current batch ids, and mark absent Outlook ids as `Completed`. The diff MUST run only
+after persistence succeeds and MUST NOT run when the Graph execution returns a failure.
+
+#### Scenario: Read Outlook email is auto-completed on the next successful poll
+
+- GIVEN pending Outlook items with external ids `A`, `B`, and `C`
+- WHEN the persisted batch contains only `A` and `B`
+- THEN the use case invokes `MarkCompletedAsync` for `C`
+- AND item `C` transitions to `Completed`
+
+#### Scenario: Graph failure skips the diff lifecycle
+
+- GIVEN the Outlook connector returns a failure from Graph
+- WHEN the use case handles that result
+- THEN the post-persistence diff does not execute
+- AND no persisted work item state changes to `Completed`
+
+#### Scenario: Inbox zero completes all pending Outlook items
+
+- GIVEN persisted Outlook items exist in `Pending`
+- WHEN a successful Graph poll returns zero unread Outlook emails
+- THEN every pending Outlook item absent from the empty batch is marked `Completed`
+
+#### Scenario: First successful empty sync does not invoke completion for a blank store
+
+- GIVEN no Outlook work items are currently persisted in `Pending`
+- WHEN a successful Outlook poll returns zero unread emails
+- THEN `GetPendingExternalIdsAsync` returns an empty set
+- AND `MarkCompletedAsync` is not invoked
+
+#### Scenario: Non-Outlook pending items are not affected by the Outlook diff
+
+- GIVEN pending Teams items and pending Outlook items exist together
+- WHEN the Outlook batch omits one Outlook external id
+- THEN only the missing Outlook external id is passed to `MarkCompletedAsync`
+- AND non-Outlook items remain unchanged
+
+---
+
+### Requirement: Application-Owned Pending Filter
+
+Pending/completed filtering for Outlook unread behavior MUST be applied in the
+Application and persistence layers. UI consumers MUST receive already-filtered data and
+MUST NOT implement additional read-state filtering to hide completed Outlook items.
+
+#### Scenario: Application requests only pending ids for the diff
+
+- GIVEN persisted Outlook items with mixed statuses
+- WHEN the diff lifecycle prepares its comparison set
+- THEN it reads only `Pending` Outlook ids from the store
+
+#### Scenario: UI receives already-filtered pending state
+
+- GIVEN an Outlook item was auto-completed by the Application diff lifecycle
+- WHEN downstream UI readers request inbox data
+- THEN completed Outlook items are excluded by Application/store filtering
+- AND the UI applies no extra read-state logic
 
 ---
 
