@@ -16,6 +16,8 @@ are recorded in `WorkItem.Metadata` for explainability.
 | Requirement | Constraint | Strength |
 |---|---|---|
 | Outlook Field Mapping | Valid payload → `WorkItem`; `SourceType = OutlookEmail`; all required fields populated | MUST |
+| Unread Inbox Filter | Graph inbox query MUST use `$filter=isRead eq false` and include `isRead` in `$select` | MUST |
+| DTO Read State Mapping | `OutlookEmailDto.IsRead` MUST be mapped from Graph `isRead` | MUST |
 | Partial Payload Tolerance | Recoverable fields degrade; unrecoverable items skipped; batch MUST NOT abort | MUST |
 | Metadata Traceability | Degraded/absent source values AND all classification scoring inputs recorded in `WorkItem.Metadata` | MUST |
 | Initial Classification | Priority from multi-signal score (`Importance`, subject, sender, body); all signals traced in Metadata | MUST |
@@ -40,6 +42,47 @@ corresponding email payload fields.
 - GIVEN any Outlook payload that produces a WorkItem
 - WHEN the WorkItem is inspected
 - THEN `SourceType` equals `OutlookEmail`
+
+---
+
+### Requirement: Unread Inbox Filter
+
+The Graph-backed Outlook source MUST query `/me/mailFolders/inbox/messages` with
+`$filter=isRead eq false`. The request MUST include `isRead` in `$select` so the
+adapter can preserve read-state semantics explicitly while ingesting only unread
+inbox mail.
+
+#### Scenario: Graph query filters unread inbox messages
+
+- GIVEN a user with messages in the Outlook inbox
+- WHEN `GraphOutlookSourceProvider` builds the Graph request
+- THEN the request URL contains `$filter=isRead eq false`
+- AND the endpoint targets `/me/mailFolders/inbox/messages`
+
+#### Scenario: Read email is excluded from unread result set
+
+- GIVEN an Outlook email where `isRead = true`
+- WHEN Microsoft Graph returns the filtered inbox result
+- THEN that email is not included in the adapter input batch
+
+---
+
+### Requirement: DTO Read State Mapping
+
+`OutlookEmailDto` MUST expose an `IsRead` field and the Graph adapter MUST copy the
+Graph `isRead` payload value into that DTO field.
+
+#### Scenario: Graph unread flag maps to DTO false
+
+- GIVEN a Graph payload with `isRead = false`
+- WHEN the Outlook adapter maps the message DTO
+- THEN `OutlookEmailDto.IsRead` equals `false`
+
+#### Scenario: Graph read flag maps to DTO true
+
+- GIVEN a Graph payload with `isRead = true`
+- WHEN the Outlook adapter maps the message DTO
+- THEN `OutlookEmailDto.IsRead` equals `true`
 
 ---
 
