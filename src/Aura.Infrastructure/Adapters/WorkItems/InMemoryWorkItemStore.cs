@@ -48,4 +48,38 @@ internal sealed class InMemoryWorkItemStore : IWorkItemStore
         _store.TryGetValue(externalId, out var item);
         return Task.FromResult(item);
     }
+
+    public Task<IReadOnlySet<string>> GetPendingExternalIdsAsync(WorkItemSourceType source, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var kvp in _store)
+        {
+            if (kvp.Value.Status == WorkItemStatus.Pending && kvp.Value.SourceType == source)
+            {
+                ids.Add(kvp.Key);
+            }
+        }
+
+        return Task.FromResult<IReadOnlySet<string>>(ids);
+    }
+
+    public Task MarkCompletedAsync(IReadOnlySet<string> externalIds, WorkItemSourceType source, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(externalIds);
+        ct.ThrowIfCancellationRequested();
+
+        foreach (var externalId in externalIds)
+        {
+            if (_store.TryGetValue(externalId, out var item) &&
+                item.SourceType == source &&
+                item.Status == WorkItemStatus.Pending)
+            {
+                item.MarkAutoCompleted();
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 }

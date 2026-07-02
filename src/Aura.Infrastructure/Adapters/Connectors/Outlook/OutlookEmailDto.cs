@@ -20,4 +20,7 @@ internal sealed record OutlookEmailDto
 
     /// <summary>Deep link URL to open the email in Outlook web.</summary>
     public string? WebLink { get; init; }
+
+    /// <summary>Indicates whether the email has been read in Outlook.</summary>
+    public bool IsRead { get; init; }
 }
