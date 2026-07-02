@@ -3,6 +3,7 @@ using System.Text.Json;
 using Aura.UI;
 using Aura.UI.Models;
 using Aura.UI.Services;
+using Aura.E2E.Shared;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -173,6 +174,8 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         {
             builder.ConfigureTestServices(services =>
             {
+                services.AddAuthenticatedUiTestUser();
+
                 // Swap only the HTTP transport — keep DashboardApiClient as the
                 // real typed client implementation under test.
                 services.AddHttpClient<IDashboardApiClient, DashboardApiClient>(client =>
@@ -461,6 +464,8 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         {
             builder.ConfigureTestServices(services =>
             {
+                services.AddAuthenticatedUiTestUser();
+
                 services.RemoveAll<IDashboardApiClient>();
                 services.AddScoped(_ => dashboardApiClient);
 

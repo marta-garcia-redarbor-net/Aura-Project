@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Concurrent;
 using System.Text;
 using Aura.Api;
@@ -17,7 +18,10 @@ namespace Aura.IntegrationTests.GraphConnector;
 
 public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
     private readonly WebApplicationFactory<ApiMarker> _factory;
     private readonly ConcurrentQueue<string> _logEntries = new();
 
@@ -29,6 +33,7 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
+            builder.UseSetting("UseEntraId", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
             builder.ConfigureLogging(logging =>

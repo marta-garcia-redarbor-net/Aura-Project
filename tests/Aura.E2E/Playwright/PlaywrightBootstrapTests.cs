@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using Aura.E2E.Browser;
 
 namespace Aura.E2E.PlaywrightTests;
 
@@ -18,18 +19,15 @@ namespace Aura.E2E.PlaywrightTests;
 /// </remarks>
 public class PlaywrightBootstrapTests : IAsyncLifetime
 {
+    private PlaywrightWebApplicationFactory? _factory;
     private Microsoft.Playwright.IPlaywright? _playwright;
     private Microsoft.Playwright.IBrowser? _browser;
 
-    /// <summary>
-    /// Base URL for the Aura UI. Override via AURA_UI_BASE_URL environment variable.
-    /// Defaults to https://localhost:5001 (typical Blazor Server dev URL).
-    /// </summary>
-    private static string BaseUrl =>
-        Environment.GetEnvironmentVariable("AURA_UI_BASE_URL") ?? "https://localhost:5001";
-
     public async Task InitializeAsync()
     {
+        _factory = new PlaywrightWebApplicationFactory();
+        await _factory.StartAsync();
+
         _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -43,6 +41,8 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
             await _browser.CloseAsync();
         if (_playwright is not null)
             _playwright.Dispose();
+        if (_factory is not null)
+            await _factory.DisposeAsync();
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync(BaseUrl);
+        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
 
         // Verify the dashboard shell renders (matches existing E2E data-testid convention)
         var shell = page.Locator("[data-testid='dashboard-shell']");
@@ -80,7 +80,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync(BaseUrl);
+        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
 
         var inboxPanel = page.Locator("[data-testid='inbox-preview-panel']");
         await inboxPanel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
@@ -99,7 +99,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync(BaseUrl);
+        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
 
         var syncPanel = page.Locator("[data-testid='sync-status-panel']");
         await syncPanel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });

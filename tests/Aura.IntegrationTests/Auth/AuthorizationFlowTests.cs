@@ -23,6 +23,7 @@ public class AuthorizationFlowTests : IClassFixture<WebApplicationFactory<ApiMar
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
+            builder.UseSetting("UseEntraId", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
         });
@@ -85,9 +86,11 @@ public class AuthorizationFlowTests : IClassFixture<WebApplicationFactory<ApiMar
         // Arrange — obtain a mock token
         var client = _factory.CreateClient();
         var loginResponse = await client.PostAsync("/api/auth/mock-login", null);
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
         var loginContent = await loginResponse.Content.ReadAsStringAsync();
         using var loginJson = JsonDocument.Parse(loginContent);
         var token = loginJson.RootElement.GetProperty("token").GetString()!;
+        Assert.False(string.IsNullOrWhiteSpace(token));
 
         // Act — call a protected endpoint with the token
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/me");

@@ -22,8 +22,8 @@ testing:
       available: true
       tool: xUnit (`tests/Aura.IntegrationTests`)
     e2e:
-      available: false
-      tool: xUnit placeholder project (`tests/Aura.E2E`) without Playwright package/tooling
+      available: true
+      tool: xUnit (`tests/Aura.E2E`) with Playwright browser coverage and host-level smoke tests
     architecture:
       available: true
       tool: xUnit + NetArchTest (`tests/Aura.ArchitectureTests`)

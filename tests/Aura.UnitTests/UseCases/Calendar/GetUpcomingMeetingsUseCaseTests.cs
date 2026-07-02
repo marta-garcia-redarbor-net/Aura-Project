@@ -1,5 +1,6 @@
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
+using Aura.Application.Models;
 using Aura.Domain.Calendar;
 using NSubstitute;
 
@@ -27,6 +28,7 @@ public class GetUpcomingMeetingsUseCaseTests
         var result = await useCase.ExecuteAsync(from, to, CancellationToken.None);
 
         Assert.Equal(3, result.Count);
+        Assert.IsType<UpcomingMeetingDto>(result[0]);
         Assert.Equal("1", result[0].Id);
         Assert.Equal("2", result[1].Id);
         Assert.Equal("3", result[2].Id);

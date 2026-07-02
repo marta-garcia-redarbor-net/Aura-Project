@@ -2,6 +2,7 @@ using System.Net;
 using Aura.UI;
 using Aura.UI.Models;
 using Aura.UI.Services;
+using Aura.E2E.Shared;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -47,6 +48,8 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
         {
             builder.ConfigureTestServices(services =>
             {
+                services.AddAuthenticatedUiTestUser();
+
                 services.RemoveAll<IGraphConnectorApiClient>();
                 services.AddScoped(_ => graphConnectorApiClient);
                 services.AddScoped<ISyncApiClient>(_ => new StubSyncClient());

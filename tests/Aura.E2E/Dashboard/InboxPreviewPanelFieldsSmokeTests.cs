@@ -2,6 +2,7 @@ using System.Net;
 using Aura.UI;
 using Aura.UI.Models;
 using Aura.UI.Services;
+using Aura.E2E.Shared;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -192,6 +193,8 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         {
             builder.ConfigureTestServices(services =>
             {
+                services.AddAuthenticatedUiTestUser();
+
                 // Stub all required clients so the Blazor shell renders without hitting real APIs
                 services.RemoveAll<IDashboardApiClient>();
                 services.RemoveAll<ISystemStatusApiClient>();
