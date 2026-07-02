@@ -28,6 +28,7 @@
 | NFR-2 | Selector stability | All assertions use stable `data-testid` or role-based queries, not text/CSS fragile selectors |
 | NFR-3 | Documentation | Readme or inline comment explains how to run browser tests vs smoke tests |
 | NFR-4 | Configuration simplicity | Playwright config is minimal; no CI integration yet |
+| NFR-5 | Host reachability gate | Test bootstrap fails fast with `HostNotReachable: {BaseUrl}` when host probe fails before browser assertions |
 
 ---
 
@@ -135,6 +136,21 @@ These markers already exist in the codebase and are stable:
 - `data-testid="dashboard-state-error"`
 
 **No new selectors need to be added to production code.**
+
+Selector contract source of truth:
+- `openspec/specs/test-baseline-guardrails/stable-selectors.md`
+
+Any selector rename/removal MUST update E2E assertions in the same change per REQ-02.
+
+---
+
+## Host Reachability Gate
+
+- Playwright bootstrap uses `PlaywrightWebApplicationFactory` to self-host Aura UI.
+- Before any browser navigation, the fixture probes `GET {BaseUrl}/health`.
+- If probe fails or returns non-success, fixture throws:
+  - `HostNotReachable: {BaseUrl} — {diagnostics}`
+- Browser assertions only run after this gate passes.
 
 ---
 

@@ -4,11 +4,14 @@ using Aura.Domain.Calendar;
 using Aura.UI.Components;
 using Aura.UI.Models;
 using Aura.UI.Services;
+using Aura.E2E.Shared;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
 
 namespace Aura.E2E.Browser;
 
@@ -60,6 +63,7 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddAuthenticatedUiTestUser();
 
         // Stub all external API clients with deterministic responses
         builder.Services.AddScoped<IDashboardApiClient>(_ =>
@@ -98,6 +102,8 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         builder.Services.AddScoped<ISyncApiClient>(_ =>
             new StubSyncApiClient());
 
+        builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
+
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
@@ -118,6 +124,8 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         var boundAddress = addresses.First();
         var boundPort = boundAddress.Split(':').Last();
         BaseUrl = $"http://127.0.0.1:{boundPort}";
+
+        await EnsureHostReachableAsync(BaseUrl);
     }
 
     /// <summary>
@@ -199,6 +207,39 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
         public Task TriggerSyncAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
+    }
+
+    internal static Task EnsureHostReachableAsync(string baseUrl, HttpMessageHandler? httpMessageHandler = null)
+    {
+        return EnsureHostReachableCoreAsync(baseUrl, httpMessageHandler);
+    }
+
+    private static async Task EnsureHostReachableCoreAsync(string baseUrl, HttpMessageHandler? httpMessageHandler)
+    {
+        var healthUrl = $"{baseUrl}/health";
+
+        try
+        {
+            using var probeClient = httpMessageHandler is null
+                ? new HttpClient()
+                : new HttpClient(httpMessageHandler, disposeHandler: false);
+
+            probeClient.Timeout = TimeSpan.FromSeconds(5);
+
+            var response = await probeClient.GetAsync(healthUrl);
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                throw new InvalidOperationException(
+                    $"HostNotReachable: {baseUrl} — GET {healthUrl} returned {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
+            }
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"HostNotReachable: {baseUrl} — {ex.Message}",
+                ex);
+        }
     }
 
     #endregion

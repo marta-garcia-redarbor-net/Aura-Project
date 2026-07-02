@@ -24,6 +24,7 @@ public class DashboardPreviewEndpointTests : IClassFixture<WebApplicationFactory
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
+            builder.UseSetting("UseEntraId", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
         });

@@ -21,7 +21,7 @@
         <ul class="dashboard-status-list" style="margin-top: 1rem;">
             @foreach (var source in _syncStatus)
             {
-                <li class="dashboard-status-item" data-testid="sync-source-@source.Source.ToLowerInvariant()">
+                <li class="dashboard-status-item" data-testid="sync-source-progress-@source.Source.ToLowerInvariant()">
                     <span class="dashboard-status-item__name">@source.Source</span>
                     <span class="dashboard-status-item__state @StatusClass(source.Status)">
                         @source.Status

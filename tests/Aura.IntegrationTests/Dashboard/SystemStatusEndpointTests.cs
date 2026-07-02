@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aura.Api;
 using Aura.Application.Models;
 using Aura.Application.Ports;
@@ -13,7 +14,10 @@ namespace Aura.IntegrationTests.Dashboard;
 
 public class SystemStatusEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
     private readonly WebApplicationFactory<ApiMarker> _factory;
 
     public SystemStatusEndpointTests(WebApplicationFactory<ApiMarker> factory)
@@ -24,6 +28,7 @@ public class SystemStatusEndpointTests : IClassFixture<WebApplicationFactory<Api
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
+            builder.UseSetting("UseEntraId", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
         });

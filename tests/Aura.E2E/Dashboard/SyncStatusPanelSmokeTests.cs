@@ -2,6 +2,7 @@ using System.Net;
 using Aura.UI;
 using Aura.UI.Models;
 using Aura.UI.Services;
+using Aura.E2E.Shared;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -92,6 +93,8 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
         {
             builder.ConfigureTestServices(services =>
             {
+                services.AddAuthenticatedUiTestUser();
+
                 services.RemoveAll<IDashboardApiClient>();
                 services.RemoveAll<ISystemStatusApiClient>();
                 services.RemoveAll<IModuleProgressApiClient>();

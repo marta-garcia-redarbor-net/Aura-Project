@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
-using Aura.Domain.Calendar;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -184,21 +183,11 @@ public static partial class DashboardEndpoints
         try
         {
             var now = DateTimeOffset.UtcNow;
-            var events = await useCase.ExecuteAsync(now, now.AddHours(12), cancellationToken);
+            var dtos = await useCase.ExecuteAsync(now, now.AddHours(12), cancellationToken);
 
-            var dtos = events.Select(e => new UpcomingMeetingDto(
-                e.Id,
-                e.Title,
-                e.StartUtc,
-                e.EndUtc,
-                e.IsOnlineMeeting,
-                e.JoinUrl,
-                e.Organizer,
-                e.Location)).ToArray();
+            activity?.SetTag("dashboard.upcoming_meetings.count", dtos.Count);
 
-            activity?.SetTag("dashboard.upcoming_meetings.count", dtos.Length);
-
-            Log.UpcomingMeetingsSucceeded(logger, dtos.Length);
+            Log.UpcomingMeetingsSucceeded(logger, dtos.Count);
 
             return Results.Ok(dtos);
         }
@@ -231,21 +220,11 @@ public static partial class DashboardEndpoints
             var now = DateTimeOffset.UtcNow;
             var dayStart = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero);
             var dayEnd = dayStart.AddDays(1);
-            var events = await useCase.ExecuteAsync(dayStart, dayEnd, cancellationToken);
+            var dtos = await useCase.ExecuteAsync(dayStart, dayEnd, cancellationToken);
 
-            var dtos = events.Select(e => new UpcomingMeetingDto(
-                e.Id,
-                e.Title,
-                e.StartUtc,
-                e.EndUtc,
-                e.IsOnlineMeeting,
-                e.JoinUrl,
-                e.Organizer,
-                e.Location)).ToArray();
+            activity?.SetTag("dashboard.today_calendar.count", dtos.Count);
 
-            activity?.SetTag("dashboard.today_calendar.count", dtos.Length);
-
-            Log.TodayCalendarSucceeded(logger, dtos.Length);
+            Log.TodayCalendarSucceeded(logger, dtos.Count);
 
             return Results.Ok(dtos);
         }
@@ -262,16 +241,6 @@ public static partial class DashboardEndpoints
             return Results.Problem(title: "Today calendar request failed", statusCode: StatusCodes.Status500InternalServerError);
         }
     }
-
-    private sealed record UpcomingMeetingDto(
-        string Id,
-        string Title,
-        DateTimeOffset StartUtc,
-        DateTimeOffset EndUtc,
-        bool IsOnlineMeeting,
-        string? JoinUrl,
-        string? Organizer,
-        string? Location);
 
     private static partial class Log
     {

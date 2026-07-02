@@ -1,5 +1,5 @@
 @using Aura.Application.UseCases.Calendar
-@using Aura.Domain.Calendar
+@using Aura.Application.Models
 @inject GetUpcomingMeetingsUseCase UseCase
 
 <section class="dashboard-panel" data-testid="upcoming-meetings-panel" aria-live="polite">
@@ -41,7 +41,7 @@
 </section>
 
 @code {
-    private IReadOnlyList<CalendarEvent>? _events;
+    private IReadOnlyList<UpcomingMeetingDto>? _events;
     private string? _loadError;
     private Timer? _refreshTimer;
 
