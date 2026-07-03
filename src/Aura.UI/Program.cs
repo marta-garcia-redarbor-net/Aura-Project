@@ -196,8 +196,11 @@ public static class Program
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
 
-        // Priority Summary — composes preview + calendar into source-based cards
+        // Priority Summary — composes preview + calendar + PRs into source-based cards
         builder.Services.AddScoped<IPrioritySummaryService, PrioritySummaryService>();
+
+        // PR Review connector — v1 mock client for Azure DevOps PRs
+        builder.Services.AddScoped<IAzureDevOpsPrClient, AzureDevOpsPrClient>();
 
         if (!useEntraId && builder.Environment.IsDevelopment())
         {
@@ -232,11 +235,18 @@ public static class Program
 
         // OIDC challenge endpoint: opens the popup flow by triggering an OIDC challenge.
         // The OIDC middleware owns state/nonce/correlation — no manual URL construction needed.
+        // When ?popup=true is present (popup context), the RedirectUri carries the flag
+        // through the full OIDC redirect chain so the callback page knows to close itself.
         app.MapGet("/login/challenge", async (HttpContext ctx) =>
+        {
+            var redirect = ctx.Request.Query.ContainsKey("popup")
+                ? "/authentication/callback?popup=true"
+                : "/authentication/callback";
+
             await ctx.ChallengeAsync(
                 OpenIdConnectDefaults.AuthenticationScheme,
-                new AuthenticationProperties { RedirectUri = "/authentication/callback" }))
-            .AllowAnonymous();
+                new AuthenticationProperties { RedirectUri = redirect });
+        }).AllowAnonymous();
 
         // Sign-out endpoint: performs server-side sign-out then redirects home.
         // Blazor Server components cannot call SignOutAsync directly because the HTTP

@@ -1,5 +1,6 @@
 using Aura.UI.Components.Auth;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -8,8 +9,8 @@ using NSubstitute;
 namespace Aura.UnitTests.UI;
 
 /// <summary>
-/// Tests for the AuthenticationCallback component (redesigned popup flow).
-/// After redesign: detects window.opener → postMessage+close, or redirects to "/".
+/// Tests for the AuthenticationCallback component (query-parameter-based popup detection).
+/// The component reads ?popup=true from the URL to determine popup context.
 /// </summary>
 public class AuthenticationCallbackTests : TestContext
 {
@@ -27,79 +28,86 @@ public class AuthenticationCallbackTests : TestContext
     }
 
     [Fact]
-    public void CallbackPage_WhenWindowOpenerExists_InvokesJsWithPostMessageAndClose()
+    public void CallbackPage_WithPopupQueryParam_ClosesWindow()
     {
-        // Arrange — popup detection returns true (window.opener exists and is not closed)
-        List<(string identifier, object?[] args)> jsCalls = [];
+        // Arrange — URL is set to authentication/callback?popup=true via custom NavigationManager
+        var (_, invokedScripts) = RegisterForPopupTest(popup: true);
 
-        IJSRuntime mockJs = Substitute.For<IJSRuntime>();
-        mockJs
-            .InvokeAsync<bool>(Arg.Any<string>(), Arg.Any<object?[]?>())
-            .Returns(callInfo =>
-            {
-                string id = callInfo.ArgAt<string>(0);
-                object?[] args = callInfo.ArgAt<object?[]?>(1) ?? [];
-                jsCalls.Add((id, args));
-                // Popup detection call returns true
-                return new ValueTask<bool>(true);
-            });
-
-        RegisterServicesWithJs(mockJs);
-
-        // Act — render triggers OnAfterRenderAsync
+        // Act
         IRenderedComponent<AuthenticationCallback> cut = RenderComponent<AuthenticationCallback>();
 
-        // Wait for all async JS calls to complete
+        // Wait for window.close() to be called
         cut.WaitForAssertion(() =>
         {
-            // The InvokeVoidAsync for postMessage+close must be triggered
-            mockJs.Received()
-                .InvokeAsync<bool>("eval", Arg.Any<object?[]?>());
+            Assert.Contains(invokedScripts, s => s.Contains("window.close()"));
         }, TimeSpan.FromSeconds(2));
-
-        // Assert — at minimum the popup detection was called
-        Assert.Contains(jsCalls, call =>
-            call.identifier == "eval" &&
-            call.args.Length > 0);
     }
 
     [Fact]
-    public void CallbackPage_WhenWindowOpenerIsNull_DoesNotInvokePostMessage()
+    public void CallbackPage_WithPopupQueryParam_PostsAuthSuccess()
     {
-        // Arrange — popup detection returns false (no opener)
-        List<string> invokeVoidCallArgs = [];
+        // Arrange — URL contains popup=true
+        var (_, invokedScripts) = RegisterForPopupTest(popup: true);
 
+        // Act
+        IRenderedComponent<AuthenticationCallback> cut = RenderComponent<AuthenticationCallback>();
+
+        // Wait for postMessage to be called
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(invokedScripts, s =>
+                s.Contains("postMessage") && s.Contains("auth-success"));
+        }, TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public void CallbackPage_WithoutPopupQuery_DoesNotCloseWindow()
+    {
+        // Arrange — URL does NOT contain popup=true (direct navigation)
+        var (_, invokedScripts) = RegisterForPopupTest(popup: false);
+
+        // Act
+        IRenderedComponent<AuthenticationCallback> cut = RenderComponent<AuthenticationCallback>();
+
+        // Give OnAfterRenderAsync time to complete
+        Thread.Sleep(500);
+
+        // Assert — no JS calls were made (non-popup path uses NavigateTo, not JS)
+        Assert.Empty(invokedScripts);
+    }
+
+    [Fact]
+    public void CallbackPage_WhenPostMessageThrows_StillCloses()
+    {
+        // Arrange — postMessage script throws, close must still be called
         IJSRuntime mockJs = Substitute.For<IJSRuntime>();
-        mockJs
-            .InvokeAsync<bool>(Arg.Any<string>(), Arg.Any<object?[]?>())
-            .Returns(new ValueTask<bool>(false));
+        bool closeAttempted = false;
 
-        // Track InvokeVoidAsync calls
-        mockJs.When(js => js.InvokeAsync<Microsoft.JSInterop.Infrastructure.IJSVoidResult>(
-                Arg.Any<string>(), Arg.Any<object?[]?>()))
+        mockJs
+            .When(js => js.InvokeAsync<Microsoft.JSInterop.Infrastructure.IJSVoidResult>(
+                "eval", Arg.Any<object?[]?>()))
             .Do(callInfo =>
             {
                 object?[]? args = callInfo.ArgAt<object?[]?>(1);
                 if (args?.Length > 0 && args[0] is string s)
                 {
-                    invokeVoidCallArgs.Add(s);
+                    if (s.Contains("postMessage"))
+                        throw new JSException("Simulated postMessage failure");
+                    if (s.Contains("window.close()"))
+                        closeAttempted = true;
                 }
             });
 
-        RegisterServicesWithJs(mockJs);
+        RegisterForPopupTest(popup: true, jsOverride: mockJs);
 
         // Act
         IRenderedComponent<AuthenticationCallback> cut = RenderComponent<AuthenticationCallback>();
 
-        // Wait for popup detection to complete
+        // Wait for close to be attempted despite postMessage failure
         cut.WaitForAssertion(() =>
         {
-            mockJs.Received()
-                .InvokeAsync<bool>("eval", Arg.Any<object?[]?>());
+            Assert.True(closeAttempted);
         }, TimeSpan.FromSeconds(2));
-
-        // Assert — postMessage must NOT have been called (no opener)
-        Assert.DoesNotContain(invokeVoidCallArgs, s => s.Contains("postMessage"));
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -112,9 +120,61 @@ public class AuthenticationCallbackTests : TestContext
         Services.AddSingleton(Substitute.For<ILogger<AuthenticationCallback>>());
     }
 
-    private void RegisterServicesWithJs(IJSRuntime js)
+    /// <summary>
+    /// Registers services and returns the JS mock and invoked scripts list.
+    /// The NavigationManager is set with a URI that either includes or excludes ?popup=true.
+    /// </summary>
+    private (IJSRuntime js, List<string> invokedScripts) RegisterForPopupTest(
+        bool popup,
+        IJSRuntime? jsOverride = null)
     {
+        // Set up navigation URI via a custom NavigationManager
+        string baseUrl = "http://localhost/";
+        string path = popup
+            ? "authentication/callback?popup=true"
+            : "authentication/callback";
+        var navManager = new UriNavigationManager(baseUrl + path);
+        Services.AddSingleton<NavigationManager>(navManager);
+
+        // Create JS mock if not overridden
+        List<string> invokedScripts = [];
+        IJSRuntime js = jsOverride ?? CreateJsMock(invokedScripts);
         Services.AddSingleton(js);
         Services.AddSingleton(Substitute.For<ILogger<AuthenticationCallback>>());
+
+        return (js, invokedScripts);
+    }
+
+    private static IJSRuntime CreateJsMock(List<string> invokedScripts)
+    {
+        IJSRuntime mockJs = Substitute.For<IJSRuntime>();
+        mockJs
+            .When(js => js.InvokeAsync<Microsoft.JSInterop.Infrastructure.IJSVoidResult>(
+                "eval", Arg.Any<object?[]?>()))
+            .Do(callInfo =>
+            {
+                object?[]? args = callInfo.ArgAt<object?[]?>(1);
+                if (args?.Length > 0 && args[0] is string s)
+                    invokedScripts.Add(s);
+            });
+        return mockJs;
+    }
+
+    /// <summary>
+    /// NavigationManager that sets a fixed initial URI and does nothing on NavigateTo.
+    /// Overrides NavigateToCore (protected virtual in .NET 9) instead of NavigateTo
+    /// (which is a non-virtual public concrete method).
+    /// </summary>
+    private sealed class UriNavigationManager : NavigationManager
+    {
+        public UriNavigationManager(string uri)
+        {
+            Initialize("http://localhost/", uri);
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            // No-op — no Blazor circuit in test context
+        }
     }
 }

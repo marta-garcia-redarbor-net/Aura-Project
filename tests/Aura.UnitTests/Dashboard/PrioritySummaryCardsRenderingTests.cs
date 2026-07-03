@@ -180,4 +180,53 @@ public class PrioritySummaryCardsRenderingTests : TestContext
         Assert.Contains("View all 5 meetings", scheduleCard.TextContent);
         Assert.Contains("Open Calendar", scheduleCard.TextContent);
     }
+
+    [Fact]
+    public void RendersPrMiniTable_WhenCardHasPrItems()
+    {
+        // Arrange
+        var prItems = new List<PrPreviewItemResponse>
+        {
+            new(
+                Title: "Fix: SSO redirect",
+                PrDisplayName: "#139 Fix: SSO redirect",
+                BranchName: "main",
+                BuildStatus: "passing",
+                ReviewApprovals: 1,
+                ReviewRequired: 2,
+                ReviewChangesRequested: 0,
+                Author: "David Martínez",
+                UpdatedAt: DateTimeOffset.UtcNow.AddHours(-3),
+                RelativeTimestamp: "3h ago",
+                SourceLink: "https://dev.azure.com/pr/139",
+                IsDraft: false,
+                Priority: "critical")
+        };
+
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, []),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "PENDING",
+                "PRs", "View All Repositories", "https://redarbor.visualstudio.com/",
+                "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems = prItems
+            }
+        ]);
+
+        // Act
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        // Assert
+        var prCard = cut.Find("[data-source='pr-review']");
+        Assert.Contains("#139 Fix: SSO redirect", prCard.TextContent);
+        Assert.Contains("1/2 Approved", prCard.TextContent);
+        Assert.NotNull(cut.Find("[data-testid='pr-mini-table']"));
+    }
 }

@@ -338,46 +338,37 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** flujo E2E cubre al menos un caso Deep Work.  
   **Riesgo:** UX rota pese a lógica correcta.
 
-### Épica W3-E2 — Reviewer técnico de PRs
+### Épica W3-E2 — Conector de PRs (v1)
 
-#### Historia W3-H4 — Preparar pipeline de PRs
+> **Alcance v1:** Solo visibilidad de PRs pendientes desde Azure DevOps. Sin revisión de código, sin SonarQube, sin OWASP, sin modelo de evidencia. El reviewer completo (multi-fuente con Copilot ADO + SonarQube + OWASP) queda postpuesto a backlog.
 
-- [ ] **W3-H4-T1** Definir modelo de evidencia de PR.  
-  **DoD:** diff, findings, criterios y decisión comparten contrato.  
-  **Riesgo:** reviewer sin estructura consistente.
-- [ ] **W3-H4-T2** Crear payloads mock de PR.  
-  **DoD:** fixtures listos para pruebas de reviewer.  
-  **Riesgo:** depender del ecosistema real demasiado pronto.
-- [ ] **W3-H4-T3** Implementar ingesta inicial de PR en el pipeline.  
-  **DoD:** un PR de demo entra al sistema.  
-  **Riesgo:** reviewer aislado del flujo principal.
+#### Historia W3-H4 — Listar PRs pendientes desde Azure DevOps
 
-#### Historia W3-H5 — Integrar SonarQube y reglas OWASP
+- [ ] **W3-H4-T1** Crear modelo `PullRequestResponse` y payloads mock de PR.  
+  **DoD:** DTO con título, repositorio, autor, fecha, estado, enlace ADO, reviewers, comentarios. Fixtures embebidos como en Teams/Outlook.  
+  **Riesgo:** modelo insuficiente para cubrir estados reales de ADO.
+- [ ] **W3-H4-T2** Implementar adaptador Azure DevOps REST API + fallback a fixtures.  
+  **DoD:** `IAzureDevOpsPrProvider` obtiene PRs activos vía `GET .../pullrequests?searchCriteria.status=active`. Sin PAT configurado → usa fixtures. Tests de integración del adaptador.  
+  **Riesgo:** API de ADO cambia o requiere permisos no disponibles.
+- [ ] **W3-H4-T3** Añadir 4ª card de PRs en dashboard (PrioritySummaryCards).  
+  **DoD:** card muestra top 3 PRs + total pending + link a `/pull-requests` y link externo a ADO. Sigue el mismo patrón que Teams/Outlook/Calendar.  
+  **Riesgo:** card vacía o datos inconsistentes con ADO real.
+- [ ] **W3-H4-T4** Crear página `/pull-requests` con lista completa + sidebar.  
+  **DoD:** nueva ruta con tabla de PRs, cada uno con enlace "Open in ADO". Item "Pull Requests" en sidebar con icono `account_tree`.  
+  **Riesgo:** ruta sin auth o sin estado cargando/vacío.
+- [ ] **W3-H4-T5** Escribir tests: xUnit del adaptador, bUnit de la página, Playwright del flujo completo.  
+  **DoD:** adaptador mockeable, página con estados loading/empty/error/populated cubiertos, Playwright verifica card + vista detalle.  
+  **Riesgo:** tests flaky por depender de datos mock que no reflejen el schema real de ADO.
 
-- [ ] **W3-H5-T1** Definir puerto `IStaticAnalysisProvider`.  
-  **DoD:** contrato desacoplado de SonarQube.  
-  **Riesgo:** acoplamiento a proveedor.
-- [ ] **W3-H5-T2** Implementar adaptador inicial SonarQube.  
-  **DoD:** findings traducidos al modelo interno.  
-  **Riesgo:** pérdida de severidad/contexto.
-- [ ] **W3-H5-T3** Definir reglas iniciales OWASP.  
-  **DoD:** conjunto inicial acotado y explicable.  
-  **Riesgo:** falsos positivos masivos.
-- [ ] **W3-H5-T4** Combinar findings en decisión final del reviewer.  
-  **DoD:** estado final calculado y testeado.  
-  **Riesgo:** decisión inconsistente.
+### Postpuesto — Reviewer completo (backlog)
 
-#### Historia W3-H6 — Crear panel de reviewer en dashboard
+Las siguientes historias se mueven a backlog para después de la Semana 4. Están planificadas pero no comprometidas para este sprint.
 
-- [ ] **W3-H6-T1** Diseñar tarjeta/resumen del PR analizado.  
-  **DoD:** PR visible con score y estado final.  
-  **Riesgo:** demo poco clara.
-- [ ] **W3-H6-T2** Mostrar evidencias SonarQube/OWASP.  
-  **DoD:** findings legibles y agrupados.  
-  **Riesgo:** reviewer incomprensible para evaluación.
-- [ ] **W3-H6-T3** Añadir Playwright del flujo reviewer.  
-  **DoD:** prueba E2E valida carga y lectura de findings.  
-  **Riesgo:** fallo tardío en integración UI-reviewer.
+- **W3-H5** — Integrar SonarQube y reglas OWASP (puertos, adaptadores, reglas, decisión).
+- **W3-H6** — Panel de reviewer en dashboard con evidencias multi-fuente.
+- Integrar Copilot Code Review de Azure DevOps como fuente de evidencia.
+- Modelo de evidencia unificado con `IReviewDecisionEngine`.
+- Motor de decisión con scoring, thresholds y escalado humano.
 
 ---
 

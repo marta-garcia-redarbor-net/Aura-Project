@@ -1,0 +1,212 @@
+@page "/pull-requests"
+@using Aura.UI.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Aura.UI.Components.Auth
+@attribute [Authorize]
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Pull Requests</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Pull Requests</h1>
+                <p class="dashboard-page-header__subtitle">Pending PRs requiring your review across Azure DevOps repositories.</p>
+            </div>
+            <span class="dashboard-page-header__badge dashboard-page-header__badge--live" data-testid="pr-pending-count">
+                <span class="dashboard-page-header__badge-dot"></span>
+                @Prs.Count pending
+            </span>
+        </div>
+
+        @switch (_state)
+        {
+            case PrListState.Loading:
+                <div class="pr-list__loading" data-testid="pr-loading">
+                    <p>Loading pull requests...</p>
+                </div>
+                break;
+
+            case PrListState.Empty:
+                <div class="pr-list__empty" data-testid="pr-empty">
+                    <div class="pr-list__empty-content">
+                        <span class="material-symbols-outlined pr-list__empty-icon">account_tree</span>
+                        <h3>No pending PRs</h3>
+                        <p>All pull requests have been reviewed or merged. Great job!</p>
+                    </div>
+                </div>
+                break;
+
+            case PrListState.Error:
+                <div class="pr-list__error" data-testid="pr-error">
+                    <div class="pr-list__error-content">
+                        <span class="material-symbols-outlined pr-list__error-icon">error_outline</span>
+                        <h3>Failed to load PRs</h3>
+                        <p>@_errorMessage</p>
+                        <button class="btn btn-primary" @onclick="LoadPrsAsync" data-testid="pr-retry-btn">
+                            Retry
+                        </button>
+                    </div>
+                </div>
+                break;
+
+            case PrListState.Populated:
+                <div class="pr-list__table-wrapper" data-testid="pr-list">
+                    <table class="pr-table">
+                        <thead>
+                            <tr>
+                                <th>PR Name</th>
+                                <th>CI Status</th>
+                                <th>Reviews</th>
+                                <th>Last Activity</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pr in Prs)
+                            {
+                                <tr data-testid="pr-row" data-pr-id="@pr.Id">
+                                    <td>
+                                        <div>
+                                            <a href="@pr.SourceLink" target="_blank" rel="noopener noreferrer"
+                                               class="pr-table__name">
+                                                #@pr.Id @pr.Title
+                                            </a>
+                                            <div class="pr-table__meta">
+                                                <span>@pr.Author</span>
+                                                <span class="pr-table__branch"> — @pr.SourceBranchName ← @pr.BranchName</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="ci-status ci-status--@pr.BuildStatus" data-testid="pr-ci-status">
+                                            @pr.BuildStatus
+                                        </span>
+                                    </td>
+                                    <td data-testid="pr-review-status">
+                                        <div class="reviewer-initials">
+                                            @{
+                                                var initials = GetInitials(pr.Author);
+                                            }
+                                            <span class="reviewer-initials__avatar">@initials</span>
+                                            <span class="review-detail">
+                                                <span class="review-detail__approved">@pr.ReviewApprovals/@pr.ReviewRequired Approved</span>
+                                                @if (pr.ReviewChangesRequested > 0)
+                                                {
+                                                    <span class="review-detail__changes">@pr.ReviewChangesRequested changes requested</span>
+                                                }
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="pr-list__timestamp">@GetRelativeTime(pr.UpdatedAt)</span>
+                                    </td>
+                                    <td>
+                                        <a href="@pr.SourceLink"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="pr-table__action"
+                                           data-testid="pr-open-link"
+                                           title="Open in Azure DevOps">
+                                            <span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pr-pagination" data-testid="pr-pagination">
+                    <span>Showing @Prs.Count of @Prs.Count pull requests</span>
+                    <div class="pr-pagination__pages">
+                        <a href="#" class="pr-pagination__page pr-pagination__page--active">1</a>
+                    </div>
+                </div>
+                break;
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private PrListState _state = PrListState.Loading;
+    private string _errorMessage = string.Empty;
+    private List<PullRequestResponse> _prs = [];
+
+    [Inject]
+    private Services.IAzureDevOpsPrClient PrClient { get; set; } = null!;
+
+    private List<PullRequestResponse> Prs => _prs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPrsAsync();
+    }
+
+    private async Task LoadPrsAsync()
+    {
+        _state = PrListState.Loading;
+
+        try
+        {
+            var prs = await PrClient.GetPendingPullRequestsAsync();
+
+            if (prs.Count == 0)
+            {
+                _state = PrListState.Empty;
+                _prs = [];
+            }
+            else
+            {
+                _state = PrListState.Populated;
+                _prs = [.. prs.OrderByDescending(p => p.Priority switch
+                {
+                    "critical" => 4,
+                    "high" => 3,
+                    "medium" => 2,
+                    _ => 1
+                }).ThenByDescending(p => p.UpdatedAt)];
+            }
+        }
+        catch (Exception ex)
+        {
+            _state = PrListState.Error;
+            _errorMessage = ex.Message;
+            _prs = [];
+        }
+    }
+
+    private static string GetRelativeTime(DateTimeOffset dateTime)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var diff = now - dateTime;
+
+        if (diff.TotalMinutes < 1) return "just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        return dateTime.ToLocalTime().ToString("MMM d");
+    }
+
+    private static string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "?";
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return $"{parts[0][..1]}{parts[^1][..1]}".ToUpperInvariant();
+    }
+
+    private enum PrListState
+    {
+        Loading,
+        Empty,
+        Error,
+        Populated
+    }
+}

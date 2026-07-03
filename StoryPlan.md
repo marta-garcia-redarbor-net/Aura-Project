@@ -134,13 +134,13 @@ Implementar el flujo de ingestión inicial para Teams y Outlook, normalizar even
 
 ---
 
-## Semana 3 — Deep Work & PRs
+## Semana 3 — Deep Work & PRs (v1 ajustada)
 
 ### Objetivo
 
-Convertir la ingestión en decisiones de atención útiles y habilitar una primera versión del reviewer técnico para PRs con foco en seguridad y evidencia.
+Convertir la ingestión en decisiones de atención útiles y habilitar la primera versión del conector de PRs con visibilidad de pendientes desde Azure DevOps. El reviewer completo (Copilot ADO + SonarQube + OWASP + modelo de evidencia) se posterga a backlog post-W4.
 
-### Tareas
+### Tareas (W3-E1: Triaje proactivo)
 
 1. **Modelo de estado de foco: Deep Work vs Window of Opportunity**  
    **[Prioridad: P0]**  
@@ -157,31 +157,34 @@ Convertir la ingestión en decisiones de atención útiles y habilitar una prime
    **DoD:** dashboard muestra estado actual de foco, por qué un item fue interrumpido o diferido, y backlog priorizado.  
    **Riesgo:** reglas invisibles que impidan auditar decisiones del motor.
 
-4. **Conector inicial de PRs y modelo de evidencia**  
-   **[Prioridad: P0]**  
-   **DoD:** PR mockeado/real de laboratorio entra al pipeline; diff, metadatos y criterios de aceptación quedan representados en un modelo común.  
-   **Riesgo:** reviewer sin trazabilidad suficiente para justificar decisiones.
+### Tareas (W3-E2: Conector de PRs v1)
 
-5. **Integración de SonarQube como proveedor de análisis estático**  
+4. **Listar PRs pendientes desde Azure DevOps**  
    **[Prioridad: P0]**  
+   **DoD:** modelo `PullRequestResponse` con payloads mock; adaptador Azure DevOps REST API con fallback a fixtures; 4ª card en dashboard (top 3 + total); página `/pull-requests` con lista completa; item en sidebar; tests xUnit + bUnit + Playwright.  
+   **Riesgo:** API de ADO requiere permisos no disponibles en preview.
+
+5. **(Postpuesto) Integración de SonarQube como proveedor de análisis estático**  
+   **[Prioridad: P1]**  
    **DoD:** adaptador consulta findings, severidades y quality gate; resultado se integra al modelo de evidencia del reviewer.  
    **Riesgo:** dependencia externa inestable o semántica pobre de findings.
 
-6. **Auditoría OWASP para reviewer**  
-   **[Prioridad: P0]**  
+6. **(Postpuesto) Auditoría OWASP para reviewer**  
+   **[Prioridad: P1]**  
    **DoD:** reglas iniciales de seguridad aplicadas al diff/contexto; findings clasificados y explicables; decisión final del reviewer considera seguridad + análisis estático.  
    **Riesgo:** falsos positivos masivos o falsa sensación de seguridad.
 
-7. **Panel UI del agente de revisión**  
-   **[Prioridad: P1]**  
-   **DoD:** vista con score, evidencias, findings SonarQube/OWASP y estado final `Approved/Changes Requested/Security Escalation/Needs Human Review`.  
+7. **(Postpuesto) Panel UI del agente de revisión**  
+   **[Prioridad: P2]**  
+   **DoD:** vista con score, evidencias, findings SonarQube/OWASP y estado final.  
    **Riesgo:** no poder demostrar el valor del reviewer durante la demo o el TFM.
 
 ### Entregable visible de la semana
 
-- Dashboard mostrando modo Deep Work/Window.
-- Cola de interrupciones explicada.
-- Reviewer con panel de evidencia para PRs.
+- Dashboard mostrando modo Deep Work/Window (si se completa triaje).
+- Card de PRs en dashboard con top 3 + enlace a ADO.
+- Página `/pull-requests` con lista completa.
+- Sidebar con item "Pull Requests".
 
 ---
 

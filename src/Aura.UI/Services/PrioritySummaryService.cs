@@ -9,15 +9,18 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
     private static readonly ActivitySource ActivitySource = new("Aura.UI.PrioritySummary");
     private readonly IDashboardPreviewApiClient _previewApiClient;
     private readonly ICalendarApiClient _calendarApiClient;
+    private readonly IAzureDevOpsPrClient _prClient;
     private readonly ILogger<PrioritySummaryService> _logger;
 
     public PrioritySummaryService(
         IDashboardPreviewApiClient previewApiClient,
         ICalendarApiClient calendarApiClient,
+        IAzureDevOpsPrClient prClient,
         ILogger<PrioritySummaryService> logger)
     {
         _previewApiClient = previewApiClient;
         _calendarApiClient = calendarApiClient;
+        _prClient = prClient;
         _logger = logger;
     }
 
@@ -29,20 +32,24 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
         {
             var previewTask = _previewApiClient.GetPreviewAsync(cancellationToken);
             var calendarTask = _calendarApiClient.GetUpcomingMeetingsAsync(cancellationToken);
+            var prTask = _prClient.GetPendingPullRequestsAsync(cancellationToken);
 
-            await Task.WhenAll(previewTask, calendarTask);
+            await Task.WhenAll(previewTask, calendarTask, prTask);
 
             var preview = previewTask.Result;
             var calendar = calendarTask.Result;
+            var prs = prTask.Result;
 
-            var cards = BuildCards(preview, calendar);
+            var cards = BuildCards(preview, calendar, prs);
             activity?.SetTag("priority-summary.teams_count", cards[0].PreviewItems?.Count ?? 0);
             activity?.SetTag("priority-summary.outlook_count", cards[1].PreviewItems?.Count ?? 0);
             activity?.SetTag("priority-summary.calendar_count", cards[2].CalendarItems?.Count ?? 0);
-            _logger.LogDebug("Built priority summary cards: Teams={TeamsCount}, Outlook={OutlookCount}, Calendar={CalendarCount}",
+            activity?.SetTag("priority-summary.pr_count", cards[3].PrItems?.Count ?? 0);
+            _logger.LogDebug("Built priority summary cards: Teams={TeamsCount}, Outlook={OutlookCount}, Calendar={CalendarCount}, PRs={PrCount}",
                 cards[0].PreviewItems?.Count ?? 0,
                 cards[1].PreviewItems?.Count ?? 0,
-                cards[2].CalendarItems?.Count ?? 0);
+                cards[2].CalendarItems?.Count ?? 0,
+                cards[3].PrItems?.Count ?? 0);
             return cards;
         }
         catch (Exception ex)
@@ -55,7 +62,8 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
 
     private static List<PrioritySummaryCard> BuildCards(
         DashboardPreviewResponse preview,
-        IReadOnlyList<UpcomingMeetingResponse> calendar)
+        IReadOnlyList<UpcomingMeetingResponse> calendar,
+        List<PullRequestResponse> prs)
     {
         var allItems = preview.InboxGroups
             .SelectMany(g => g.Items)
@@ -73,6 +81,31 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
 
         var orderedCalendar = calendar
             .OrderBy(c => c.StartUtc)
+            .ToList();
+
+        var prPreviewItems = prs
+            .OrderByDescending(p => p.Priority switch
+            {
+                "critical" => 4,
+                "high" => 3,
+                "medium" => 2,
+                _ => 1
+            })
+            .ThenByDescending(p => p.UpdatedAt)
+            .Select(p => new PrPreviewItemResponse(
+                Title: p.Title,
+                PrDisplayName: $"#{p.Id} {p.Title}",
+                BranchName: p.BranchName,
+                BuildStatus: p.BuildStatus,
+                ReviewApprovals: p.ReviewApprovals,
+                ReviewRequired: p.ReviewRequired,
+                ReviewChangesRequested: p.ReviewChangesRequested,
+                Author: p.Author,
+                UpdatedAt: p.UpdatedAt,
+                RelativeTimestamp: GetRelativeTime(p.UpdatedAt),
+                SourceLink: p.SourceLink,
+                IsDraft: p.IsDraft,
+                Priority: p.Priority))
             .ToList();
 
         return
@@ -109,7 +142,22 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 ViewAllUrl: "https://outlook.office.com/calendar/view/day",
                 DetailPageUrl: "/calendar/day",
                 PreviewItems: null,
-                CalendarItems: orderedCalendar)
+                CalendarItems: orderedCalendar),
+            new PrioritySummaryCard(
+                DisplayName: "Pull Requests",
+                Icon: "account_tree",
+                CssClass: "pr-review",
+                CountLabel: "PENDING",
+                ItemsLabel: "PRs",
+                SourceLabel: "View All Repositories",
+                ViewAllUrl: "https://redarbor.visualstudio.com/",
+                DetailPageUrl: "/pull-requests",
+                PreviewItems: null,
+                CalendarItems: null)
+            {
+                IsPrCard = true,
+                PrItems = prPreviewItems
+            }
         ];
     }
 
@@ -132,5 +180,17 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
         if (ev.EndUtc < now) return "past";
         if (ev.StartUtc <= now) return "current";
         return "upcoming";
+    }
+
+    private static string GetRelativeTime(DateTimeOffset dateTime)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var diff = now - dateTime;
+
+        if (diff.TotalMinutes < 1) return "just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        return dateTime.ToLocalTime().ToString("MMM d");
     }
 }

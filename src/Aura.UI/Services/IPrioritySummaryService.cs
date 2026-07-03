@@ -15,7 +15,9 @@ public sealed record PrioritySummaryCard(
     List<UpcomingMeetingResponse>? CalendarItems)
 {
     public bool IsCalendarCard => CalendarItems is not null;
-    public int TotalCount => PreviewItems?.Count ?? CalendarItems?.Count ?? 0;
+    public bool IsPrCard { get; init; }
+    public List<PrPreviewItemResponse>? PrItems { get; init; }
+    public int TotalCount => PrItems?.Count ?? PreviewItems?.Count ?? CalendarItems?.Count ?? 0;
 }
 
 public interface IPrioritySummaryService
