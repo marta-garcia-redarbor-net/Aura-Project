@@ -64,6 +64,59 @@
                         }
                     </div>
                 }
+                else if (card.IsPrCard)
+                {
+                    <div class="pr-mini-table-container">
+                        <table class="pr-mini-table" data-testid="pr-mini-table">
+                            <thead>
+                                <tr>
+                                    <th>PR Name</th>
+                                    <th>Branch</th>
+                                    <th>CI Status</th>
+                                    <th>Reviews</th>
+                                    <th>Last Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in card.PrItems!.Take(3))
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="pr-mini-table__name">@item.PrDisplayName</span>
+                                            <span class="pr-mini-table__author">@@@item.Author</span>
+                                        </td>
+                                        <td>
+                                            <span class="pr-mini-table__branch">@item.BranchName</span>
+                                        </td>
+                                        <td>
+                                            <span class="ci-status ci-status--@item.BuildStatus" data-testid="pr-ci-status">@item.BuildStatus</span>
+                                        </td>
+                                        <td>
+                                            <div class="pr-mini-table__reviews">
+                                                <span class="pr-mini-table__reviews-approved">@item.ReviewApprovals/@item.ReviewRequired Approved</span>
+                                                @if (item.ReviewChangesRequested > 0)
+                                                {
+                                                    <span class="pr-mini-table__reviews-changes">@item.ReviewChangesRequested changes requested</span>
+                                                }
+                                                else if (item.ReviewApprovals < item.ReviewRequired && item.ReviewRequired > 0)
+                                                {
+                                                    <span class="pr-mini-table__reviews-needed">@(item.ReviewRequired - item.ReviewApprovals) needed</span>
+                                                }
+                                                @if (item.ReviewApprovals >= item.ReviewRequired && item.ReviewChangesRequested == 0)
+                                                {
+                                                    <span class="pr-mini-table__reviews-approved">✓ Approved</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="pr-mini-table__time">@item.RelativeTimestamp</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
                 else
                 {
                     <ul class="priority-card__items" data-testid="priority-card-preview-items">
@@ -101,17 +154,29 @@
                 @if (!isEmpty && card.TotalCount > 3)
                 {
                     <footer class="priority-card__footer">
-                        <div class="priority-card__footer-links">
-                            <a href="@card.DetailPageUrl" class="priority-card__link" data-testid="priority-card-view-all">
-                                View all @card.TotalCount @card.ItemsLabel
-                                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
-                            </a>
-                            <a href="@card.ViewAllUrl" class="priority-card__link priority-card__link--source" data-testid="priority-card-view-source"
-                               target="_blank" rel="noopener noreferrer">
-                                @card.SourceLabel
-                                <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
-                            </a>
-                        </div>
+                        @if (card.IsPrCard)
+                        {
+                            <div class="priority-card__footer-links">
+                                <a href="@card.DetailPageUrl" class="priority-card__link" data-testid="priority-card-view-all">
+                                    View all @card.TotalCount @card.ItemsLabel
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="priority-card__footer-links">
+                                <a href="@card.DetailPageUrl" class="priority-card__link" data-testid="priority-card-view-all">
+                                    View all @card.TotalCount @card.ItemsLabel
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+                                </a>
+                                <a href="@card.ViewAllUrl" class="priority-card__link priority-card__link--source" data-testid="priority-card-view-source"
+                                   target="_blank" rel="noopener noreferrer">
+                                    @card.SourceLabel
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
+                                </a>
+                            </div>
+                        }
                     </footer>
                 }
             </article>

@@ -44,6 +44,7 @@ internal sealed partial class SeedDataHostedService : IHostedService
         await SeedTeamsMessagesAsync(now, cancellationToken);
         await SeedOutlookEmailsAsync(now, cancellationToken);
         await SeedCalendarEventsAsync(now, cancellationToken);
+        await SeedPullRequestsAsync(now, cancellationToken);
 
         Log.SeedDataCompleted(_logger);
     }
@@ -195,6 +196,90 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
         await _calendarEventStore.SaveBatchAsync(events, ct);
         Log.SeedDataInserted(_logger, "Calendar", events.Length);
+    }
+
+    private async Task SeedPullRequestsAsync(DateTimeOffset now, CancellationToken ct)
+    {
+        var prItems = new[]
+        {
+            CreatePrWorkItem(
+                "pr-seed-001", "Hotfix: production crash on payment validation", WorkItemPriority.Critical,
+                "Carlos Ruiz", "Aura", 12, 3, "active", false, now.AddMinutes(-30)),
+            CreatePrWorkItem(
+                "pr-seed-002", "Fix: SSO redirect loop on token expiry", WorkItemPriority.Critical,
+                "David Martínez", "Aura.Auth", 8, 5, "active", false, now.AddMinutes(-90)),
+            CreatePrWorkItem(
+                "pr-seed-003", "Feature: Add reporting dashboard v2", WorkItemPriority.High,
+                "Laura Sánchez", "Aura", 5, 12, "active", false, now.AddHours(-2)),
+            CreatePrWorkItem(
+                "pr-seed-004", "Refactor: Extract payment gateway adapter", WorkItemPriority.High,
+                "Pedro Gómez", "Aura.Payments", 3, 8, "active", false, now.AddHours(-4)),
+            CreatePrWorkItem(
+                "pr-seed-005", "Chore: Update dependency versions", WorkItemPriority.Low,
+                "Sistema", "Aura", 0, 15, "active", true, now.AddHours(-1)),
+            CreatePrWorkItem(
+                "pr-seed-006", "Docs: Update API reference for v3 endpoints", WorkItemPriority.Low,
+                "María García", "Aura.Docs", 1, 4, "active", false, now.AddHours(-3))
+        };
+
+        foreach (var item in prItems)
+        {
+            await _workItemStore.SaveAsync(item, ct);
+        }
+
+        Log.SeedDataInserted(_logger, "PrReview", prItems.Length);
+    }
+
+    private static WorkItem CreatePrWorkItem(
+        string externalId,
+        string title,
+        WorkItemPriority priority,
+        string author,
+        string repo,
+        int commentCount,
+        int fileCount,
+        string prStatus,
+        bool isDraft,
+        DateTimeOffset capturedAt)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["pr.pullRequestId"] = externalId.Replace("pr-seed-", ""),
+            ["pr.status"] = prStatus,
+            ["pr.repo"] = repo,
+            ["pr.author"] = author,
+            ["pr.reviewers"] = author == "Carlos Ruiz" ? "Ana López,Pedro Gómez"
+                : author == "David Martínez" ? "María García"
+                : author == "Laura Sánchez" ? "Ana López,Carlos Ruiz,Pedro Gómez"
+                : author == "Pedro Gómez" ? "Laura Sánchez"
+                : author == "María García" ? "Carlos Ruiz"
+                : "",
+            ["pr.reviewerCount"] = author switch
+            {
+                "Carlos Ruiz" => "2",
+                "David Martínez" => "1",
+                "Laura Sánchez" => "3",
+                "Pedro Gómez" => "1",
+                "María García" => "1",
+                _ => "0"
+            },
+            ["pr.commentCount"] = commentCount.ToString(),
+            ["pr.fileCount"] = fileCount.ToString(),
+            ["pr.isDraft"] = isDraft.ToString(),
+            ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/{repo}/pullrequest/{externalId.Replace("pr-seed-", "")}",
+            ["pr.priority.raw"] = priority.ToString(),
+            ["pr.priority.resolution"] = "explicit"
+        };
+
+        return new WorkItem(
+            externalId: externalId,
+            title: title,
+            source: "pr",
+            sourceType: WorkItemSourceType.PrReview,
+            priority: priority,
+            metadata: metadata,
+            correlationId: $"corr-{externalId}",
+            capturedAtUtc: capturedAt);
     }
 
     private static WorkItem CreateTeamsWorkItem(

@@ -261,12 +261,12 @@ public class RestrictedAccessViewTests : TestContext
         // Wait briefly for async handler to complete
         cut.WaitForAssertion(() =>
             mockPopupService.Received(1)
-                .OpenMicrosoftLoginPopupAsync("/login/challenge"),
+                .OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true"),
             TimeSpan.FromSeconds(2));
 
         // Assert — also verify directly via NSubstitute
         await mockPopupService.Received(1)
-            .OpenMicrosoftLoginPopupAsync("/login/challenge");
+            .OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true");
     }
 
     private sealed class MockHttpMessageHandler : HttpMessageHandler

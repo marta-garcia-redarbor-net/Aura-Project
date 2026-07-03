@@ -37,9 +37,12 @@ public partial class RestrictedAccessView : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Returns the challenge endpoint URL. The OIDC middleware owns state/nonce/correlation.
+    /// Returns the challenge endpoint URL with popup context indicator.
+    /// The OIDC middleware owns state/nonce/correlation.
+    /// The ?popup=true query param survives the full OIDC redirect chain and
+    /// tells the callback page it should close itself instead of redirecting to /.
     /// </summary>
-    private static string BuildAuthUrl() => "/login/challenge";
+    private static string BuildAuthUrl() => "/login/challenge?popup=true";
 
     private async Task HandleMicrosoftLogin()
     {

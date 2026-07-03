@@ -1,7 +1,9 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Connectors.AzureDevOps;
 using Aura.Infrastructure.Adapters.Connectors.Calendar;
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
+using Aura.Infrastructure.Adapters.Connectors.PrReview;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.WorkItems;
@@ -35,6 +37,18 @@ internal static class DependencyInjection
 
         services.AddScoped<IConnectorAdapter, TeamsConnectorAdapter>();
         services.AddScoped<IConnectorAdapter, OutlookConnectorAdapter>();
+
+        // Register PR Review connector adapter (v1 — dedicated view, not triage pipeline)
+        services.AddScoped<PrReviewWorkItemMapper>();
+        services.AddScoped<IConnectorAdapter, PrReviewConnectorAdapter>();
+
+        // Register Azure DevOps source provider gated by PrReview:Enabled
+        var prOptions = new AzureDevOpsPrOptions();
+        configuration.GetSection(AzureDevOpsPrOptions.SectionName).Bind(prOptions);
+        if (prOptions.Enabled && !string.IsNullOrWhiteSpace(prOptions.PatToken))
+        {
+            services.AddScoped<IMessageSourceProvider<PrReviewDto>, AzureDevOpsPrProvider>();
+        }
 
         return services;
     }

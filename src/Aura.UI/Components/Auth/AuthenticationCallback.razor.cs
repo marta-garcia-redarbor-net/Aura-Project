@@ -6,8 +6,8 @@ namespace Aura.UI.Components.Auth;
 /// <summary>
 /// Handles the OIDC authentication callback from the popup flow.
 /// The OIDC middleware already exchanged the code at /signin-oidc and wrote the auth cookie.
-/// This component detects the popup context and either posts auth-success to the opener or
-/// redirects to / for non-popup navigation.
+/// Uses a ?popup=true query parameter (set by the challenge endpoint) to determine
+/// whether we're in a popup — avoids unreliable JS window.opener detection across origins.
 /// </summary>
 public partial class AuthenticationCallback : ComponentBase, IAsyncDisposable
 {
@@ -28,28 +28,37 @@ public partial class AuthenticationCallback : ComponentBase, IAsyncDisposable
             return;
         }
 
-        try
-        {
-            bool isPopup = await JSRuntime.InvokeAsync<bool>(
-                "eval",
-                "window.opener !== null && !window.opener.closed");
+        bool isPopup = Navigation.Uri.Contains("popup=true", StringComparison.Ordinal);
 
-            if (isPopup)
+        if (isPopup)
+        {
+            Logger.LogInformation("Auth callback in popup context — posting auth-success and closing.");
+
+            // Try to notify the opener via postMessage (may fail for reasons unrelated to popup status)
+            try
             {
-                Logger.LogInformation("Auth callback in popup context — posting auth-success and closing.");
                 await JSRuntime.InvokeVoidAsync(
                     "eval",
-                    "window.opener.postMessage({ type: 'auth-success' }, '*'); window.close();");
+                    "if(window.opener && !window.opener.closed){window.opener.postMessage({ type: 'auth-success' }, '*');}");
             }
-            else
+            catch (JSException ex)
             {
-                Logger.LogInformation("Auth callback in non-popup context — redirecting to /.");
-                Navigation.NavigateTo("/", forceLoad: true);
+                Logger.LogWarning(ex, "Could not post auth-success to opener — the main window may time out.");
+            }
+
+            // Close the popup — this is the main goal
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("eval", "window.close();");
+            }
+            catch (JSException ex)
+            {
+                Logger.LogWarning(ex, "Could not close popup via JS — user may need to close manually.");
             }
         }
-        catch (JSException ex)
+        else
         {
-            Logger.LogWarning(ex, "JS interop error in authentication callback — falling back to redirect.");
+            Logger.LogInformation("Auth callback in non-popup context — redirecting to /.");
             Navigation.NavigateTo("/", forceLoad: true);
         }
     }
