@@ -2,19 +2,46 @@
 
 ## Status
 
-**Deferred / Out of Scope** for `triage-global-policy-foundation`.
+**Implemented** as part of `w3-h1-focus-state-machine`.
 
-## Why deferred
+## States
 
-This change establishes the policy foundation and ownership boundary first:
+Aura defines four focus states:
 
-- Connectors normalize and pre-score.
-- The global triage engine decides interrupt-vs-queue.
+| State | Meaning |
+|-------|---------|
+| DeepWork | User is in deep concentration. No interruptions except critical urgency. |
+| WindowOfOpportunity | User is receptive to interruptions. Default state. |
+| Away | User is unavailable (meeting, DND, away from keyboard). No interruptions. |
+| Recovery | Post-interruption or post-meeting. Reacclimation period before DeepWork. |
 
-Defining Focus Mode state transitions before this boundary is fully stabilized would create
-false confidence and likely require immediate rework.
+## Transition Matrix
 
-## Contract note
+| From → To | Allowed | Trigger |
+|-----------|---------|---------|
+| DeepWork → WindowOfOpportunity | ✅ | break |
+| WindowOfOpportunity → Away | ✅ | dnd / meeting |
+| Away → Recovery | ✅ | end |
+| Away → DeepWork | ✅ | direct focus return |
+| Recovery → DeepWork | ✅ | refocus |
+| Recovery → WindowOfOpportunity | ✅ | soft-landing |
+| Any other | ❌ InvalidOperationException |
 
-`IFocusStateResolver` remains a future integration point that can consume triage outcomes,
-but no Focus Mode behavior is defined in this documentation change.
+## Integration Point
+
+`IFocusStateResolver` (in `Aura.Application.Ports`) is the contract for determining the current focus state:
+
+```csharp
+Task<FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default);
+```
+
+The default implementation (`FocusStateResolver` in `Aura.Application.Services`) returns `WindowOfOpportunity` as a placeholder. Real signal sources (calendar, activity, preferences) will be wired in W3-H2 when the interruption engine is built.
+
+## Domain Types
+
+| Type | Location | Purpose |
+|------|----------|---------|
+| `FocusStateType` | `Aura.Domain.FocusState` | Enum: DeepWork, WindowOfOpportunity, Away, Recovery |
+| `FocusState` | `Aura.Domain.FocusState` | Sealed class with 6 guarded transitions |
+| `IFocusStateResolver` | `Aura.Application.Ports` | Port for resolving current focus state |
+| `FocusStateResolver` | `Aura.Application.Services` | Stub returning WindowOfOpportunity by default |

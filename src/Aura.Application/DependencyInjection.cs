@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IMorningSummaryRankingPolicy, MorningSummaryRankingPolicy>();
         services.AddScoped<IMorningSummaryComposer, MorningSummaryComposer>();
         services.AddScoped<IMorningSummaryScheduler, MorningSummaryScheduler>();
+        services.AddScoped<IFocusStateResolver, FocusStateResolver>();
         services.AddScoped<ExecuteConnectorUseCase>();
 
         AddKernel(services);

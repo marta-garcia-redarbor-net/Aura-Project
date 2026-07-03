@@ -193,10 +193,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W2-H5 — Construir el motor de summary
 
-- [ ] **W2-H5-T1** Definir contrato `IMorningSummaryComposer`.  
+- [x] **W2-H5-T1** Definir contrato `IMorningSummaryComposer`.  
   **DoD:** puerto de composición definido.  
   **Riesgo:** lógica acoplada a UI o transporte.
-- [ ] **W2-H5-T2** Implementar ranking por impacto, deadline y riesgo.  
+- [x] **W2-H5-T2** Implementar ranking por impacto, deadline y riesgo.  
   **DoD:** output priorizado y testeado.  
   **Riesgo:** resumen plano sin criterio ejecutivo.
 - [x] **W2-H5-T3** Añadir soporte inicial de timezone.  
@@ -303,10 +303,10 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W3-H1 — Modelar estados de foco
 
-- [ ] **W3-H1-T1** Definir estados `DeepWork`, `WindowOfOpportunity`, `Away`, `Recovery`.  
+- [x] **W3-H1-T1** Definir estados `DeepWork`, `WindowOfOpportunity`, `Away`, `Recovery`.  
   **DoD:** estados y transiciones documentados y testeados.  
   **Riesgo:** reglas ambiguas de foco.
-- [ ] **W3-H1-T2** Implementar resolver de estado actual.  
+- [x] **W3-H1-T2** Implementar resolver de estado actual.  
   **DoD:** el sistema puede determinar el estado activo.  
   **Riesgo:** decisiones inconsistentes entre sesiones.
 
@@ -344,19 +344,19 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W3-H4 — Listar PRs pendientes desde Azure DevOps
 
-- [ ] **W3-H4-T1** Crear modelo `PullRequestResponse` y payloads mock de PR.  
+- [x] **W3-H4-T1** Crear modelo `PullRequestResponse` y payloads mock de PR.  
   **DoD:** DTO con título, repositorio, autor, fecha, estado, enlace ADO, reviewers, comentarios. Fixtures embebidos como en Teams/Outlook.  
   **Riesgo:** modelo insuficiente para cubrir estados reales de ADO.
-- [ ] **W3-H4-T2** Implementar adaptador Azure DevOps REST API + fallback a fixtures.  
+- [x] **W3-H4-T2** Implementar adaptador Azure DevOps REST API + fallback a fixtures.  
   **DoD:** `IAzureDevOpsPrProvider` obtiene PRs activos vía `GET .../pullrequests?searchCriteria.status=active`. Sin PAT configurado → usa fixtures. Tests de integración del adaptador.  
   **Riesgo:** API de ADO cambia o requiere permisos no disponibles.
-- [ ] **W3-H4-T3** Añadir 4ª card de PRs en dashboard (PrioritySummaryCards).  
+- [x] **W3-H4-T3** Añadir 4ª card de PRs en dashboard (PrioritySummaryCards).  
   **DoD:** card muestra top 3 PRs + total pending + link a `/pull-requests` y link externo a ADO. Sigue el mismo patrón que Teams/Outlook/Calendar.  
   **Riesgo:** card vacía o datos inconsistentes con ADO real.
-- [ ] **W3-H4-T4** Crear página `/pull-requests` con lista completa + sidebar.  
+- [x] **W3-H4-T4** Crear página `/pull-requests` con lista completa + sidebar.  
   **DoD:** nueva ruta con tabla de PRs, cada uno con enlace "Open in ADO". Item "Pull Requests" en sidebar con icono `account_tree`.  
   **Riesgo:** ruta sin auth o sin estado cargando/vacío.
-- [ ] **W3-H4-T5** Escribir tests: xUnit del adaptador, bUnit de la página, Playwright del flujo completo.  
+- [x] **W3-H4-T5** Escribir tests: xUnit del adaptador, bUnit de la página, Playwright del flujo completo.  
   **DoD:** adaptador mockeable, página con estados loading/empty/error/populated cubiertos, Playwright verifica card + vista detalle.  
   **Riesgo:** tests flaky por depender de datos mock que no reflejen el schema real de ADO.
 
