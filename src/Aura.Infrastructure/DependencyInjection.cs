@@ -8,7 +8,13 @@ using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.GraphConnector;
 using Aura.Infrastructure.Adapters.Dashboard;
 using Aura.Infrastructure.Adapters.MorningSummaryScheduling;
+using Aura.Infrastructure.Adapters.Notifications;
+using Aura.Infrastructure.Adapters.Rules;
 using Aura.Infrastructure.Adapters.SeedData;
+using Aura.Infrastructure.Adapters.Options;
+using Aura.Infrastructure.Adapters.Services;
+using Aura.Infrastructure.Adapters.Services.Rules;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -51,12 +57,71 @@ public static class DependencyInjection
             sp.GetRequiredService<IWorkItemBuffer>(),
             sp.GetRequiredService<IWorkItemStore>()));
 
+        // Interruption policy engine
+        services.Configure<InterruptionOptions>(configuration.GetSection(InterruptionOptions.SectionName));
+        services.AddSingleton<IInterruptionPolicyEngine, InterruptionPolicyEngine>();
+        services.AddSingleton<IInterruptionRule, ScoreThresholdRule>();
+        services.AddSingleton<IInterruptionRule, VipSenderRule>();
+        services.AddSingleton<IInterruptionRule, KeywordMatchRule>();
+        services.AddSingleton<IInterruptionRule, DeadlineUrgencyRule>();
+
+        // Alert rule store (SQLite)
+        services.AddSingleton<IAlertRuleStore>(sp =>
+        {
+            var connString = ResolveDbPath(configuration, environment, "Aura");
+            var connection = new SqliteConnection(connString);
+            connection.Open();
+            SqliteAlertRuleStore.InitializeSchema(connection);
+            return new SqliteAlertRuleStore(connection);
+        });
+
+        // Cross-process notification outbox (SQLite)
+        services.AddSingleton<INotificationOutboxStore>(sp =>
+        {
+            var connString = ResolveDbPath(configuration, environment, "Aura");
+            var connection = new SqliteConnection(connString);
+            connection.Open();
+            SqliteNotificationOutboxStore.InitializeSchema(connection);
+            return new SqliteNotificationOutboxStore(connection);
+        });
+
         services.AddHealthChecks()
             .AddCheck<QdrantHealthCheck>("qdrant");
 
         AddSeedDataIfDevelopment(services, configuration, environment);
 
         return services;
+    }
+
+    /// <summary>
+    /// Resolves a SQLite connection string, converting relative Data Source paths
+    /// to absolute paths rooted at <see cref="IHostEnvironment.ContentRootPath"/>.
+    /// Ensures the parent directory exists.
+    /// </summary>
+    private static string ResolveDbPath(
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        string connectionStringName)
+    {
+        var raw = configuration.GetConnectionString(connectionStringName)
+                  ?? "Data Source=aura.db";
+        var builder = new SqliteConnectionStringBuilder(raw);
+
+        if (!string.IsNullOrEmpty(builder.DataSource) && !Path.IsPathRooted(builder.DataSource))
+        {
+            var fullPath = Path.GetFullPath(
+                Path.Combine(environment.ContentRootPath, builder.DataSource));
+
+            var dir = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            builder.DataSource = fullPath;
+        }
+
+        return builder.ConnectionString;
     }
 
     private static void AddSeedDataIfDevelopment(

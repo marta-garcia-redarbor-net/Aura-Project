@@ -26,7 +26,6 @@ else
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
     builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
-    builder.Services.AddHostedService<MeetingAlertWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
 
     // MSAL for delegated token cache access (Workers need to resolve user oid)

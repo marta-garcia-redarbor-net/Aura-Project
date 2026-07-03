@@ -1,6 +1,7 @@
 using Aura.Api.Adapters;
 using Aura.Api.Endpoints;
 using Aura.Api.Hubs;
+using Aura.Api.Workers;
 using Aura.Application;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
@@ -18,7 +19,16 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
+
+// Meeting alert dispatcher (uses unified AlertHub)
 builder.Services.AddSingleton<IMeetingAlertDispatcher, SignalRMeetingAlertDispatcher>();
+
+// Work item notification pipeline
+builder.Services.AddSingleton<IWorkItemNotificationDispatcher, SignalRWorkItemNotificationDispatcher>();
+
+// Background workers
+builder.Services.AddHostedService<WorkItemNotificationWorker>();
+builder.Services.AddHostedService<MeetingAlertWorker>();
 
 builder.Services.AddCors(options =>
 {
@@ -87,7 +97,12 @@ app.MapDashboardEndpoints();
 app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
 app.MapWorkItemsEndpoints();
-app.MapHub<MeetingAlertHub>("/hubs/meeting-alerts");
+app.MapHub<AlertHub>("/hubs/alerts");
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapDebugEndpoints();
+}
 
 app.Run();
 

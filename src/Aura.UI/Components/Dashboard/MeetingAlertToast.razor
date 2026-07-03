@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.JSInterop
+@inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
 @inject ITokenAcquisitionService TokenService
 @implements IAsyncDisposable
@@ -37,8 +38,14 @@
         {
             var token = await TokenService.AcquireTokenAsync();
             
+            var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
+                          ?? string.Empty;
+            var hubUrl = string.IsNullOrEmpty(baseUrl)
+                ? "/hubs/alerts"
+                : $"{baseUrl}/hubs/alerts";
+
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl("/hubs/meeting-alerts", options =>
+                .WithUrl(hubUrl, options =>
                 {
                     options.AccessTokenProvider = () => Task.FromResult(token)!;
                 })

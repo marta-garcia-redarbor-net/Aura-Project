@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
 using Aura.Domain.Calendar;
@@ -276,6 +277,39 @@ public static class Program
 
             ctx.Response.Redirect("/");
         }).AllowAnonymous();
+
+        // Dev login endpoint: performs the sign-in in a fresh HTTP request so cookie
+        // auth works. Blazor Server interactive mode cannot call SignInAsync because
+        // the HTTP response has already started (SignalR circuit).
+        if (!useEntraId)
+        {
+            app.MapGet("/login/dev", async (HttpContext ctx, IConfiguration config) =>
+            {
+                var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+                using var httpClient = new HttpClient();
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
+                response.EnsureSuccessStatusCode();
+
+                var content = await response.Content.ReadAsStringAsync();
+                using var json = System.Text.Json.JsonDocument.Parse(content);
+                var token = json.RootElement.GetProperty("token").GetString()
+                    ?? throw new InvalidOperationException("Token not found in response");
+
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, "dev-user"),
+                    new Claim(ClaimTypes.NameIdentifier, "mock-user-001"),
+                    new Claim("oid", "mock-user-001"),
+                    new Claim("token", token)
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                ctx.Response.Redirect("/test-dashboard");
+            }).AllowAnonymous();
+        }
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

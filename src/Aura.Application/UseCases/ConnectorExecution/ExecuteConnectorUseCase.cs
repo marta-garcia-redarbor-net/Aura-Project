@@ -19,6 +19,8 @@ public sealed partial class ExecuteConnectorUseCase
     private readonly IWorkItemStore _workItemStore;
     private readonly ILogger<ExecuteConnectorUseCase> _logger;
     private readonly Func<DateTimeOffset> _utcNow;
+    private readonly IInterruptionPolicyEngine _interruptionEngine;
+    private readonly INotificationOutboxStore _outboxStore;
 
     public ExecuteConnectorUseCase(
         IIngestionCheckpointStore checkpointStore,
@@ -30,6 +32,8 @@ public sealed partial class ExecuteConnectorUseCase
             adapters,
             new NoopWorkItemBuffer(),
             new NoopWorkItemStore(),
+            new NoopInterruptionEngine(),
+            new NoopNotificationOutboxStore(),
             logger,
             utcNow)
     {
@@ -42,17 +46,42 @@ public sealed partial class ExecuteConnectorUseCase
         IWorkItemStore workItemStore,
         ILogger<ExecuteConnectorUseCase> logger,
         Func<DateTimeOffset>? utcNow = null)
+        : this(
+            checkpointStore,
+            adapters,
+            workItemBuffer,
+            workItemStore,
+            new NoopInterruptionEngine(),
+            new NoopNotificationOutboxStore(),
+            logger,
+            utcNow)
+    {
+    }
+
+    public ExecuteConnectorUseCase(
+        IIngestionCheckpointStore checkpointStore,
+        IEnumerable<IConnectorAdapter> adapters,
+        IWorkItemBuffer workItemBuffer,
+        IWorkItemStore workItemStore,
+        IInterruptionPolicyEngine interruptionEngine,
+        INotificationOutboxStore outboxStore,
+        ILogger<ExecuteConnectorUseCase> logger,
+        Func<DateTimeOffset>? utcNow = null)
     {
         ArgumentNullException.ThrowIfNull(checkpointStore);
         ArgumentNullException.ThrowIfNull(adapters);
         ArgumentNullException.ThrowIfNull(workItemBuffer);
         ArgumentNullException.ThrowIfNull(workItemStore);
+        ArgumentNullException.ThrowIfNull(interruptionEngine);
+        ArgumentNullException.ThrowIfNull(outboxStore);
         ArgumentNullException.ThrowIfNull(logger);
 
         _checkpointStore = checkpointStore;
         _adapters = adapters.ToArray();
         _workItemBuffer = workItemBuffer;
         _workItemStore = workItemStore;
+        _interruptionEngine = interruptionEngine;
+        _outboxStore = outboxStore;
         _logger = logger;
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
     }
@@ -80,6 +109,23 @@ public sealed partial class ExecuteConnectorUseCase
 
         public Task MarkCompletedAsync(IReadOnlySet<string> externalIds, WorkItemSourceType source, CancellationToken ct)
             => Task.CompletedTask;
+    }
+
+    private sealed class NoopInterruptionEngine : IInterruptionPolicyEngine
+    {
+        public Task<InterruptionVerdict> EvaluateAsync(WorkItem item, CancellationToken ct)
+            => Task.FromResult(new InterruptionVerdict(
+                InterruptionDecision.Queue,
+                new EvaluationReport([]),
+                triggerRule: "NoopEngine"));
+    }
+
+    private sealed class NoopNotificationOutboxStore : INotificationOutboxStore
+    {
+        public Task EnqueueAsync(NotificationOutboxEntry entry, CancellationToken ct) => Task.CompletedTask;
+        public Task<IReadOnlyList<NotificationOutboxEntry>> GetPendingAsync(int maxEntries, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<NotificationOutboxEntry>>([]);
+        public Task MarkDispatchedAsync(Guid id, CancellationToken ct) => Task.CompletedTask;
     }
 
     public async Task<ConnectorExecutionResult> ExecuteAsync(CheckpointIdentity identity, CancellationToken ct)
@@ -158,10 +204,15 @@ public sealed partial class ExecuteConnectorUseCase
         foreach (var item in bufferedItems)
         {
             var persistResult = await _workItemStore.SaveAsync(item, ct);
+
             if (!persistResult.IsSuccess)
             {
                 failureReasons.Add(persistResult.FailureReason ?? "Unknown persistence failure.");
+                continue;
             }
+
+            // After successful persistence, evaluate interruption and enqueue notification
+            await EvaluateAndEnqueueAsync(item, ct);
         }
 
         if (failureReasons.Count == 0)
@@ -187,6 +238,46 @@ public sealed partial class ExecuteConnectorUseCase
             Status = ConnectorExecutionStatus.PartialFailure,
             FailureReason = $"Persistence: {mergedFailureReason}"
         }, batchExternalIds);
+    }
+
+    private async Task EvaluateAndEnqueueAsync(WorkItem item, CancellationToken ct)
+    {
+        try
+        {
+            var verdict = await _interruptionEngine.EvaluateAsync(item, ct);
+
+            if (verdict.Decision is InterruptionDecision.InterruptNow)
+            {
+                var userId = item.Metadata.TryGetValue("assignedTo", out var assignedTo)
+                    ? assignedTo
+                    : item.Source;
+
+                var priorityValue = item.Priority switch
+                {
+                    WorkItemPriority.Critical => 5.0,
+                    WorkItemPriority.High => 4.0,
+                    WorkItemPriority.Medium => 3.0,
+                    WorkItemPriority.Low => 2.0,
+                    _ => 1.0
+                };
+
+                var entry = new NotificationOutboxEntry(
+                    workItemId: item.Id,
+                    userId: userId,
+                    sourceType: item.SourceType.ToString(),
+                    title: item.Title,
+                    priority: priorityValue,
+                    triggerRule: verdict.TriggerRule);
+
+                await _outboxStore.EnqueueAsync(entry, ct);
+                Log.NotificationEnqueued(_logger, entry.Id, verdict.Decision.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            // Swallow evaluation failures gracefully — do not block ingestion
+            Log.EvaluationFailed(_logger, item.ExternalId ?? "unknown", ex);
+        }
     }
 
     private async Task RunDiffLifecycleAsync(WorkItemSourceType sourceType, IReadOnlySet<string> batchExternalIds, CancellationToken ct)
@@ -347,5 +438,23 @@ public sealed partial class ExecuteConnectorUseCase
             ILogger logger,
             string sourceType,
             int count);
+
+        [LoggerMessage(
+            EventId = 2205,
+            Level = LogLevel.Debug,
+            Message = "Notification enqueued in outbox: EntryId={EntryId}, Decision={Decision}")]
+        public static partial void NotificationEnqueued(
+            ILogger logger,
+            Guid entryId,
+            string decision);
+
+        [LoggerMessage(
+            EventId = 2206,
+            Level = LogLevel.Warning,
+            Message = "Interruption evaluation failed for WorkItem ExternalId={ExternalId} — swallowing to avoid blocking ingestion")]
+        public static partial void EvaluationFailed(
+            ILogger logger,
+            string externalId,
+            Exception exception);
     }
 }
