@@ -1,0 +1,200 @@
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
+@inject ITokenAcquisitionService TokenService
+@implements IAsyncDisposable
+
+<div class="toast-container" data-testid="urgent-work-item-toast">
+    @if (_currentAlert is not null)
+    {
+        <div class="toast toast--@SeverityClass" data-testid="work-item-toast-card">
+            <div class="toast__icon">
+                <span class="material-symbols-outlined">@SeverityIcon</span>
+            </div>
+            <div class="toast__body">
+                <div class="toast__header">
+                    <span class="toast__badge" data-testid="work-item-badge">@SeverityLabel</span>
+                    <h3 class="toast__title" data-testid="work-item-title">@_currentAlert.Title</h3>
+                    <button class="toast__dismiss"
+                            data-testid="work-item-dismiss"
+                            @onclick="DismissAlert"
+                            aria-label="Dismiss alert">
+                        &times;
+                    </button>
+                </div>
+                @if (!string.IsNullOrEmpty(_currentAlert.Reason))
+                {
+                    <p class="toast__source" data-testid="work-item-reason">@_currentAlert.Reason</p>
+                }
+                <div class="toast__actions">
+                    <button class="toast__acknowledge"
+                            data-testid="work-item-acknowledge"
+                            @onclick="AcknowledgeAlert">
+                        Acknowledge
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private HubConnection? _hubConnection;
+    private WorkItemAlertInfo? _currentAlert;
+
+    private const double CriticalThreshold = 8.0;
+    private const double HighThreshold = 6.0;
+    private const double MediumThreshold = 4.0;
+
+    private string SeverityClass
+    {
+        get
+        {
+            if (_currentAlert is null) return "low";
+            return _currentAlert.Priority switch
+            {
+                >= CriticalThreshold => "critical",
+                >= HighThreshold => "high",
+                >= MediumThreshold => "medium",
+                _ => "low"
+            };
+        }
+    }
+
+    private string SeverityLabel
+    {
+        get
+        {
+            if (_currentAlert is null) return "";
+            return _currentAlert.Priority switch
+            {
+                >= CriticalThreshold => "Critical",
+                >= HighThreshold => "High",
+                >= MediumThreshold => "Medium",
+                _ => "Info"
+            };
+        }
+    }
+
+    private string SeverityIcon
+    {
+        get
+        {
+            if (_currentAlert is null) return "notifications";
+            return _currentAlert.Priority switch
+            {
+                >= CriticalThreshold => "error",
+                >= HighThreshold => "warning",
+                >= MediumThreshold => "info",
+                _ => "notifications"
+            };
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await TokenService.AcquireTokenAsync();
+
+            var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
+                          ?? string.Empty;
+            var hubUrl = string.IsNullOrEmpty(baseUrl)
+                ? "/hubs/alerts"
+                : $"{baseUrl}/hubs/alerts";
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(hubUrl, options =>
+                {
+                    options.AccessTokenProvider = () => Task.FromResult(token)!;
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On<WorkItemAlertInfo>("UrgentWorkItem", alert =>
+            {
+                _currentAlert = alert;
+                InvokeAsync(async () =>
+                {
+                    StateHasChanged();
+                    await ShowBrowserNotification(alert);
+                    await PlayAlertSound();
+                });
+            });
+
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
+        }
+    }
+
+    private async Task ShowBrowserNotification(WorkItemAlertInfo alert)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workItemAlert.showNotification",
+                alert.Title, alert.Reason ?? $"{SeverityLabel} priority");
+        }
+        catch (JSException)
+        {
+            // JS interop not available (e.g., during prerendering)
+        }
+    }
+
+    private async Task PlayAlertSound()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workItemAlert.playSound");
+        }
+        catch (JSException)
+        {
+            // JS interop not available
+        }
+    }
+
+    private async Task AcknowledgeAlert()
+    {
+        if (_hubConnection is not null && _currentAlert is not null)
+        {
+            try
+            {
+                await _hubConnection.InvokeAsync("AcknowledgeWorkItem", _currentAlert.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to acknowledge work item alert: {ex.Message}");
+            }
+        }
+
+        _currentAlert = null;
+        StateHasChanged();
+    }
+
+    private void DismissAlert()
+    {
+        _currentAlert = null;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    public class WorkItemAlertInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string SourceType { get; set; } = string.Empty;
+        public double Priority { get; set; }
+        public string? TriggerRule { get; set; }
+        public string? Reason { get; set; }
+    }
+}

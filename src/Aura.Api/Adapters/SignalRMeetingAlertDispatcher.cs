@@ -6,13 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Aura.Api.Adapters;
 
+/// <summary>
+/// Dispatches meeting alerts via the unified <see cref="AlertHub"/>.
+/// Sends "MeetingAlert" event to the user's group on the unified hub endpoint.
+/// </summary>
 internal sealed partial class SignalRMeetingAlertDispatcher : IMeetingAlertDispatcher
 {
-    private readonly IHubContext<MeetingAlertHub> _hubContext;
+    private readonly IHubContext<AlertHub> _hubContext;
     private readonly ILogger<SignalRMeetingAlertDispatcher> _logger;
 
     public SignalRMeetingAlertDispatcher(
-        IHubContext<MeetingAlertHub> hubContext,
+        IHubContext<AlertHub> hubContext,
         ILogger<SignalRMeetingAlertDispatcher> logger)
     {
         ArgumentNullException.ThrowIfNull(hubContext);

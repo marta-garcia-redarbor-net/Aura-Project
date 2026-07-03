@@ -1,6 +1,8 @@
+@using Microsoft.JSInterop
 @attribute [StreamRendering]
 @implements IDisposable
 @inject IDashboardApiClient DashboardClient
+@inject IJSRuntime JSRuntime
 @inject PersistentComponentState ApplicationState
 @inject ILogger<MainLayoutAuthenticated> Logger
 
@@ -14,6 +16,7 @@
                 @ChildContent
             </CascadingValue>
             <MeetingAlertToast />
+            <UrgentWorkItemToast />
         </main>
     </div>
 </div>
@@ -65,6 +68,27 @@
         finally
         {
             _persistingSubscription ??= ApplicationState.RegisterOnPersisting(PersistDashboardStateAsync);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await PrimeAlertAudio();
+        }
+    }
+
+    private async Task PrimeAlertAudio()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("meetingAlert.primeAudio");
+            await JSRuntime.InvokeVoidAsync("workItemAlert.primeAudio");
+        }
+        catch (JSException)
+        {
+            // JS interop not available (e.g., during prerendering)
         }
     }
 
