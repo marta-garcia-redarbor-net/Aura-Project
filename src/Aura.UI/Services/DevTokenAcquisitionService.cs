@@ -1,35 +1,60 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace Aura.UI.Services;
 
 /// <summary>
-/// Development-only implementation of <see cref="ITokenAcquisitionService"/> that returns a mock JWT token.
-/// Used as a fallback when MSAL configuration is absent from Program.cs.
-/// Easy to remove — just delete this file and the registration in Program.cs.
+/// Development-only implementation of <see cref="ITokenAcquisitionService"/> that reads the
+/// real JWT from the authenticated user's claims (acquired via the /login/dev flow).
+/// Uses <see cref="AuthenticationStateProvider"/> (Blazor circuit-safe) instead of
+/// <see cref="Microsoft.AspNetCore.Http.IHttpContextAccessor"/>, because in Blazor Server
+/// interactive mode the HttpContext is null during component lifecycle.
+/// Falls back to a mock JWT if no claim is found (e.g. during prerendering).
 /// </summary>
 public sealed partial class DevTokenAcquisitionService : ITokenAcquisitionService
 {
     private readonly ILogger<DevTokenAcquisitionService> _logger;
+    private readonly AuthenticationStateProvider _authStateProvider;
     private string? _cachedToken;
+    private bool _triedClaim;
 
-    public DevTokenAcquisitionService(ILogger<DevTokenAcquisitionService> logger)
+    public DevTokenAcquisitionService(
+        ILogger<DevTokenAcquisitionService> logger,
+        AuthenticationStateProvider authStateProvider)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _authStateProvider = authStateProvider;
     }
 
-    public Task<string> AcquireTokenAsync(CancellationToken cancellationToken = default)
+    public async Task<string> AcquireTokenAsync(CancellationToken cancellationToken = default)
     {
         if (_cachedToken is not null)
         {
-            return Task.FromResult(_cachedToken);
+            return _cachedToken;
         }
 
-        // Generate a mock JWT token for development use
+        // Try to read the real JWT from the "token" claim on the authenticated user.
+        // AuthenticationStateProvider works in Blazor Server interactive mode (SignalR circuit),
+        // unlike IHttpContextAccessor which is null after the initial HTTP request.
+        if (!_triedClaim)
+        {
+            _triedClaim = true;
+            var state = await _authStateProvider.GetAuthenticationStateAsync();
+            var tokenClaim = state.User.FindFirst("token")?.Value;
+
+            if (!string.IsNullOrEmpty(tokenClaim))
+            {
+                _cachedToken = tokenClaim;
+                Log.DevTokenFromClaim(_logger);
+                return _cachedToken;
+            }
+        }
+
+        // Fallback mock JWT for prerendering or unauthenticated state.
         _cachedToken = GenerateMockJwt();
+        Log.DevTokenFallback(_logger);
 
-        Log.DevTokenAcquired(_logger);
-
-        return Task.FromResult(_cachedToken);
+        return _cachedToken;
     }
 
     private static string GenerateMockJwt()
@@ -46,6 +71,10 @@ public sealed partial class DevTokenAcquisitionService : ITokenAcquisitionServic
     {
         [LoggerMessage(EventId = 3001, Level = LogLevel.Warning,
             Message = "Using dev mock token for SignalR authentication — remove DevTokenAcquisitionService when real auth is wired up")]
-        public static partial void DevTokenAcquired(ILogger logger);
+        public static partial void DevTokenFallback(ILogger logger);
+
+        [LoggerMessage(EventId = 3002, Level = LogLevel.Debug,
+            Message = "Using real JWT from user claims for SignalR authentication")]
+        public static partial void DevTokenFromClaim(ILogger logger);
     }
 }

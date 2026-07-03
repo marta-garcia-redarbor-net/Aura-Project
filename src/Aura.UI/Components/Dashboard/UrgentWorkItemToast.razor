@@ -5,39 +5,47 @@
 @inject ITokenAcquisitionService TokenService
 @implements IAsyncDisposable
 
-<div class="meeting-alert-toast" data-testid="meeting-alert-toast">
+<div class="urgent-work-item-toast" data-testid="urgent-work-item-toast">
     @if (_currentAlert is not null)
     {
-        <div class="meeting-alert-toast__content" data-testid="meeting-alert-toast-content">
-            <div class="meeting-alert-toast__header">
-                <h3 data-testid="meeting-alert-title">@_currentAlert.Title</h3>
-                <button class="meeting-alert-toast__dismiss" 
-                        data-testid="meeting-alert-dismiss"
+        <div class="urgent-work-item-toast__content" data-testid="urgent-work-item-toast-content">
+            <div class="urgent-work-item-toast__header">
+                <span class="urgent-work-item-toast__badge" data-testid="work-item-badge">Urgent</span>
+                <h3 data-testid="work-item-title">@_currentAlert.Title</h3>
+                <button class="urgent-work-item-toast__dismiss"
+                        data-testid="work-item-dismiss"
                         @onclick="DismissAlert"
                         aria-label="Dismiss alert">
                     &times;
                 </button>
             </div>
-            <p data-testid="meeting-alert-time">@_currentAlert.Time</p>
-            <button class="meeting-alert-toast__acknowledge" 
-                    data-testid="meeting-alert-acknowledge"
-                    @onclick="AcknowledgeAlert">
-                Acknowledge
-            </button>
+            @if (!string.IsNullOrEmpty(_currentAlert.Decision))
+            {
+                <p class="urgent-work-item-toast__decision" data-testid="work-item-decision">
+                    Priority: @_currentAlert.Decision
+                </p>
+            }
+            <div class="urgent-work-item-toast__actions">
+                <button class="urgent-work-item-toast__acknowledge"
+                        data-testid="work-item-acknowledge"
+                        @onclick="AcknowledgeAlert">
+                    Acknowledge
+                </button>
+            </div>
         </div>
     }
 </div>
 
 @code {
     private HubConnection? _hubConnection;
-    private MeetingAlertInfo? _currentAlert;
+    private WorkItemAlertInfo? _currentAlert;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var token = await TokenService.AcquireTokenAsync();
-            
+
             var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
                           ?? string.Empty;
             var hubUrl = string.IsNullOrEmpty(baseUrl)
@@ -52,7 +60,7 @@
                 .WithAutomaticReconnect()
                 .Build();
 
-            _hubConnection.On<MeetingAlertInfo>("MeetingAlert", alert =>
+            _hubConnection.On<WorkItemAlertInfo>("UrgentWorkItem", alert =>
             {
                 _currentAlert = alert;
                 InvokeAsync(async () =>
@@ -71,12 +79,12 @@
         }
     }
 
-    private async Task ShowBrowserNotification(MeetingAlertInfo alert)
+    private async Task ShowBrowserNotification(WorkItemAlertInfo alert)
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("meetingAlert.showNotification", 
-                alert.Title, alert.Time);
+            await JSRuntime.InvokeVoidAsync("workItemAlert.showNotification",
+                alert.Title, alert.Decision ?? "Urgent work item");
         }
         catch (JSException)
         {
@@ -88,7 +96,7 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("meetingAlert.playSound");
+            await JSRuntime.InvokeVoidAsync("workItemAlert.playSound");
         }
         catch (JSException)
         {
@@ -102,11 +110,11 @@
         {
             try
             {
-                await _hubConnection.InvokeAsync("AcknowledgeAlert", _currentAlert.Id);
+                await _hubConnection.InvokeAsync("AcknowledgeWorkItem", _currentAlert.Id);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to acknowledge alert: {ex.Message}");
+                Console.WriteLine($"Failed to acknowledge work item alert: {ex.Message}");
             }
         }
 
@@ -128,10 +136,10 @@
         }
     }
 
-    public class MeetingAlertInfo
+    public class WorkItemAlertInfo
     {
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
-        public string Time { get; set; } = string.Empty;
+        public string? Decision { get; set; }
     }
 }

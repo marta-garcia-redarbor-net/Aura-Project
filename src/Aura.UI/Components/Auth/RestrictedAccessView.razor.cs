@@ -1,8 +1,4 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using Aura.UI.Services;
 
@@ -17,19 +13,10 @@ public partial class RestrictedAccessView : ComponentBase, IAsyncDisposable
     private IConfiguration Configuration { get; set; } = default!;
 
     [Inject]
-    private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
-
-    [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
-
-    [Inject]
-    private HttpClient HttpClient { get; set; } = default!;
-
-    [Inject]
-    private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
     private bool _useEntraId;
     private string? _errorMessage;
@@ -96,45 +83,9 @@ public partial class RestrictedAccessView : ComponentBase, IAsyncDisposable
         Navigation.NavigateTo("/login/challenge", forceLoad: true);
     }
 
-    private async Task HandleDevLogin()
+    private void HandleDevLogin()
     {
-        try
-        {
-            _errorMessage = null;
-
-            HttpResponseMessage response = await HttpClient.PostAsync("/api/auth/mock-login", null);
-            response.EnsureSuccessStatusCode();
-
-            string content = await response.Content.ReadAsStringAsync();
-            using System.Text.Json.JsonDocument json = System.Text.Json.JsonDocument.Parse(content);
-            string token = json.RootElement.GetProperty("token").GetString()
-                ?? throw new InvalidOperationException("Token not found in response");
-
-            // Sign in with cookie authentication so the auth pipeline recognizes the user
-            Claim[] claims =
-            [
-                new Claim(ClaimTypes.Name, "dev-user"),
-                new Claim("oid", "mock-user-001"),
-                new Claim("token", token)
-            ];
-            ClaimsIdentity identity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            ClaimsPrincipal principal = new(identity);
-
-            HttpContext? httpContext = HttpContextAccessor.HttpContext;
-            if (httpContext is not null)
-            {
-                await httpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    principal);
-            }
-
-            Navigation.Refresh();
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = $"Login failed: {ex.Message}";
-            StateHasChanged();
-        }
+        Navigation.NavigateTo("/login/dev", forceLoad: true);
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
