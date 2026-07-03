@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/Endpoints/DashboardEndpoints.cs": {
-    "mtime": 1783018048.1361642,
-    "ast_hash": "194643e73a61fc0aa3226d49d25d0692",
+    "mtime": 1783022027.1541705,
+    "ast_hash": "6de45b4dee426876d5cd9ea134d15155",
     "semantic_hash": ""
   },
   "src/Aura.Api/Endpoints/GraphConnectorEndpoints.cs": {
@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Layout/Sidebar.razor": {
-    "mtime": 1782938515.597786,
-    "ast_hash": "c88ef8c47f2daa483d54986ad1fad599",
+    "mtime": 1783024350.9292748,
+    "ast_hash": "5a6c14c79178a3d834543b2e68920abe",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Routes.razor": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Program.cs": {
-    "mtime": 1782938515.61895,
-    "ast_hash": "92b8e761e79539b5999b8862f6fdfc38",
+    "mtime": 1783058310.2621796,
+    "ast_hash": "f549a5374c125fd8e8528a0054e750ee",
     "semantic_hash": ""
   },
   "src/Aura.UI/Properties/launchSettings.json": {
@@ -665,13 +665,13 @@
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Dashboard/InitialDashboardSmokeTests.cs": {
-    "mtime": 1783003434.0276108,
-    "ast_hash": "e9f5200f2c34646b09125c2256fe19a0",
+    "mtime": 1783022027.1853113,
+    "ast_hash": "71892d600fb73aef5ebf8fb2cb7dc3e3",
     "semantic_hash": ""
   },
   "tests/Aura.E2E/GraphConnector/GraphConnectorStatusSmokeTests.cs": {
-    "mtime": 1783004598.685906,
-    "ast_hash": "9c66d1051c37c0f47147742b835acf28",
+    "mtime": 1783022027.1927822,
+    "ast_hash": "22b130cd84c56b08bc99d6e163bc4c35",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Aura.IntegrationTests.csproj": {
@@ -680,23 +680,23 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Auth/AuthorizationFlowTests.cs": {
-    "mtime": 1783003242.5828238,
-    "ast_hash": "cd0676c6544e7e3b71371b7b3eb89f33",
+    "mtime": 1783022027.2042558,
+    "ast_hash": "ee2a8bd93d74af04c415b8350afc0d03",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Dashboard/InitialDashboardEndpointTests.cs": {
-    "mtime": 1783004590.3555148,
-    "ast_hash": "8575fa8c2986c713726f5c154e809233",
+    "mtime": 1783022027.2150078,
+    "ast_hash": "2b94db9b81c7db086f891b5ed857234c",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Dashboard/ModuleProgressEndpointTests.cs": {
-    "mtime": 1783004650.828551,
-    "ast_hash": "22a9ff525266867ac1eb94ca4e86f559",
+    "mtime": 1783022027.2180183,
+    "ast_hash": "374c0f0ec5fd85d14fe4ecd9e5ab35b7",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Dashboard/SystemStatusEndpointTests.cs": {
-    "mtime": 1783004650.830323,
-    "ast_hash": "be2f99f84ce3958298d8332b4f52c430",
+    "mtime": 1783022027.222102,
+    "ast_hash": "1ffcb556162f6bb7dd234e0a20500099",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Embedding/EmbeddingResilienceTests.cs": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/GraphConnector/GraphConnectorStatusEndpointTests.cs": {
-    "mtime": 1783004650.8323655,
-    "ast_hash": "20191c3a4386a513f89b11d849aa01a6",
+    "mtime": 1783022027.2252305,
+    "ast_hash": "e74886dd17cf4adcb781a89a1e547318",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Health/QdrantHealthCheckIntegrationTests.cs": {
@@ -930,13 +930,13 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1782938341.1427622,
-    "ast_hash": "3d14dc4c980626ac298c6442dda8db29",
+    "mtime": 1783023808.372549,
+    "ast_hash": "ef210603d15fcb4a29e37e375881e27c",
     "semantic_hash": ""
   },
   "StoryPlan.md": {
-    "mtime": 1782938341.1497636,
-    "ast_hash": "51622b55010db3cfa28807c5d366d075",
+    "mtime": 1783023942.7744756,
+    "ast_hash": "6af8ff99e8934d5048072d3b4fdbe9fc",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -1485,8 +1485,8 @@
     "semantic_hash": ""
   },
   "openspec/config.yaml": {
-    "mtime": 1783019268.9218845,
-    "ast_hash": "dc609990a1434cf7412be204c2de5059",
+    "mtime": 1783022027.138436,
+    "ast_hash": "0427cadff5e7c1532fb1145145ed66f2",
     "semantic_hash": ""
   },
   "openspec/specs/api-authentication/spec.md": {
@@ -1750,13 +1750,13 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/UseCases/ConnectorExecution/ExecuteConnectorUseCase.cs": {
-    "mtime": 1782939583.840269,
-    "ast_hash": "005ba79d66920824a679f3461d4fc990",
+    "mtime": 1783021004.1464262,
+    "ast_hash": "52c00c2b5addb5cecb811244d8a60fef",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/DependencyInjection.cs": {
-    "mtime": 1782938341.9680357,
-    "ast_hash": "f90e5d939a0fd6d164714383c113d556",
+    "mtime": 1783024257.4033184,
+    "ast_hash": "e1435fd8005d9fa8525b8f2aa60ffc9a",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Teams/TeamsConnectorAdapter.cs": {
@@ -1830,8 +1830,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/connector-execution/spec.md": {
-    "mtime": 1782938341.659956,
-    "ast_hash": "39450db0904df7b05047983acb93903a",
+    "mtime": 1783021004.128513,
+    "ast_hash": "d080fa9a2bf78831df6747997de38b3a",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-19-W2-H2-T3/apply-progress.md": {
@@ -1890,8 +1890,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/Ports/IWorkItemStore.cs": {
-    "mtime": 1782939583.8296602,
-    "ast_hash": "d4e8aa9848e2bf5434cf4c26af5d9977",
+    "mtime": 1783021004.1419463,
+    "ast_hash": "9c8de3132775a2e4760b71becbbb783f",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Teams/TeamsMessageDto.cs": {
@@ -1915,8 +1915,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/WorkItems/InMemoryWorkItemStore.cs": {
-    "mtime": 1782939583.8817594,
-    "ast_hash": "a87b024e463fce60d01a4a504536b639",
+    "mtime": 1783021004.1622293,
+    "ast_hash": "6ad8f6f8755f4cccb55721d49c465112",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs": {
@@ -1940,8 +1940,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/WorkItems/InMemoryWorkItemStoreTests.cs": {
-    "mtime": 1782939583.9431875,
-    "ast_hash": "e0be8d0bad301fe23ee2219c538e8850",
+    "mtime": 1783021004.1806166,
+    "ast_hash": "0ee17702c0e213fa324a54ec9eb78824",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/WorkItems/WorkItemPersistenceResultTests.cs": {
@@ -2000,8 +2000,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/work-item-persistence/spec.md": {
-    "mtime": 1782939583.8149529,
-    "ast_hash": "0615300f511d5c5c1311a110126916d6",
+    "mtime": 1783021004.1375268,
+    "ast_hash": "ab87e29d952b58c462782580fb18b81e",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookConnectorAdapter.cs": {
@@ -2010,8 +2010,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookEmailDto.cs": {
-    "mtime": 1782321063.0143447,
-    "ast_hash": "c0b335cc99ca22afc97abeff7d2d08e9",
+    "mtime": 1783021004.1572118,
+    "ast_hash": "f424700a96e31c788ff2fedb8deeebc9",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Outlook/OutlookWorkItemMapper.cs": {
@@ -2120,8 +2120,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/outlook-connector-mapping/spec.md": {
-    "mtime": 1782321004.2878072,
-    "ast_hash": "e5e6b9cc6df0efe4ad089e49d875d8a0",
+    "mtime": 1783021004.1325235,
+    "ast_hash": "62747abad36df9336d8933a48c241d13",
     "semantic_hash": ""
   },
   "openspec/specs/triage-global-policy/spec.md": {
@@ -2355,8 +2355,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Dashboard/DashboardPreviewEndpointTests.cs": {
-    "mtime": 1783004590.3579807,
-    "ast_hash": "71bcab7f8c5763497026e1af1f430dfc",
+    "mtime": 1783022027.211409,
+    "ast_hash": "d9c56ae5481dab982d6de499aed10bbb",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Dashboard/DashboardPreviewReaderTests.cs": {
@@ -2550,8 +2550,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/WorkItems/SqliteWorkItemStore.cs": {
-    "mtime": 1782939583.8856657,
-    "ast_hash": "62eb11f8d8617ecaea68981c459b07ad",
+    "mtime": 1783021004.166906,
+    "ast_hash": "470badc073e3aafc8575cf402e52526b",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Dashboard/InboxItemPreviewDtoExtensionTests.cs": {
@@ -2585,8 +2585,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/WorkItems/SqliteWorkItemStoreTests.cs": {
-    "mtime": 1782939583.9485354,
-    "ast_hash": "0a5250672d818b5770f47ae5a0e88c03",
+    "mtime": 1783021004.1850972,
+    "ast_hash": "c52a64330e81df3ad9558ee4d8582a7f",
     "semantic_hash": ""
   },
   "ESTADO_PROYECTO_EXHAUSTIVO.md": {
@@ -2660,8 +2660,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Graph/GraphOutlookSourceProvider.cs": {
-    "mtime": 1782938342.0121355,
-    "ast_hash": "f2aa8827357ca9001009cf299b4d0220",
+    "mtime": 1783021004.1518514,
+    "ast_hash": "86707e626210f6e814626f30135a6434",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/Graph/GraphTeamsSourceProvider.cs": {
@@ -2680,8 +2680,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Sync/SyncEndpointTests.cs": {
-    "mtime": 1783004590.3949318,
-    "ast_hash": "ac7756a157b6ac953388de041beb98f3",
+    "mtime": 1783022027.2297654,
+    "ast_hash": "f549c1bee602e02fbff022fe6882aeeb",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/GraphConnector/ConnectorAdapterDiResolutionTests.cs": {
@@ -2745,8 +2745,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/UseCases/Calendar/GetUpcomingMeetingsUseCase.cs": {
-    "mtime": 1783017943.374969,
-    "ast_hash": "8304ff70d641464ef722900ab846ef42",
+    "mtime": 1783022027.1607525,
+    "ast_hash": "9efacb296a8706afd268a6b3703f990b",
     "semantic_hash": ""
   },
   "src/Aura.Domain/Calendar/CalendarEvent.cs": {
@@ -2810,13 +2810,13 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Dashboard/SyncStatusPanel.razor": {
-    "mtime": 1783003579.324685,
-    "ast_hash": "001ceab19b682bd3fc19db9bc3bc845d",
+    "mtime": 1783022027.1657557,
+    "ast_hash": "e1e09f4355ff672f38af611f27532671",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Dashboard/UpcomingMeetingsPanel.razor": {
-    "mtime": 1783017973.673772,
-    "ast_hash": "5f21066ac67231110a7b9db53d41b3dc",
+    "mtime": 1783022027.169188,
+    "ast_hash": "4b5986893cb0a8452ae04a2764c03b0a",
     "semantic_hash": ""
   },
   "src/Aura.UI/Services/DevTokenAcquisitionService.cs": {
@@ -2855,23 +2855,23 @@
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Browser/PlaywrightWebApplicationFactory.cs": {
-    "mtime": 1783019150.9548905,
-    "ast_hash": "7c621c53e14e6987957cf1a1c35c14ae",
+    "mtime": 1783022027.1765327,
+    "ast_hash": "042cf936a73a72df468d53577b017574",
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Dashboard/InboxPreviewPanelFieldsSmokeTests.cs": {
-    "mtime": 1783003470.917008,
-    "ast_hash": "c039d3dfc4bafce91a27f7e1360f10a3",
+    "mtime": 1783022027.1808345,
+    "ast_hash": "527163338756b224acfe0bb382f696e7",
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Dashboard/SyncStatusPanelSmokeTests.cs": {
-    "mtime": 1783003470.9878333,
-    "ast_hash": "95f6f41f4598faee1f8635fbb769c6a8",
+    "mtime": 1783022027.1897845,
+    "ast_hash": "67ce64f2f5711d7aab5345e1e1a1027b",
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Playwright/PlaywrightBootstrapTests.cs": {
-    "mtime": 1783003635.2743235,
-    "ast_hash": "2205590876e453fec7aeda096ab303c8",
+    "mtime": 1783022027.1962905,
+    "ast_hash": "c30b71fed09c8730b1006658cf8abba4",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Dashboard/DashboardPreviewResponseOptionalFieldsTests.cs": {
@@ -2940,8 +2940,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UI/UpcomingMeetingsPanelTests.cs": {
-    "mtime": 1783017988.1295395,
-    "ast_hash": "96fb33874e86241fc410b57b222a6d40",
+    "mtime": 1783022027.2326546,
+    "ast_hash": "e55eec423118212a4f8ea5c0752f1b23",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UseCases/Calendar/CheckAndDispatchMeetingAlertsUseCaseTests.cs": {
@@ -2950,8 +2950,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UseCases/Calendar/GetUpcomingMeetingsUseCaseTests.cs": {
-    "mtime": 1783017980.6238177,
-    "ast_hash": "0ff97970a1f5462dea6b97eb60c77d73",
+    "mtime": 1783022027.237393,
+    "ast_hash": "e872e40526f2067ac1c419fff0969b6a",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Workers/MeetingAlertWorkerTests.cs": {
@@ -2975,8 +2975,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/playwright-e2e-bootstrap-spec.md": {
-    "mtime": 1783004908.539563,
-    "ast_hash": "a6d9d3e327a0c3018aa0e0e3ba6344af",
+    "mtime": 1783022027.1424887,
+    "ast_hash": "a62b26fddf2377920010ba2dd7f03c10",
     "semantic_hash": ""
   },
   "openspec/specs/playwright-e2e-bootstrap-tasks.md": {
@@ -3270,13 +3270,13 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Auth/AuthenticationCallback.razor": {
-    "mtime": 1782938342.149289,
-    "ast_hash": "bc478d9dcabcebbbc065dcc8932a8a69",
+    "mtime": 1783093212.5317774,
+    "ast_hash": "d253cfc168d1a02c0cc9b68cbf52837d",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Auth/AuthenticationCallback.razor.cs": {
-    "mtime": 1782938342.1563168,
-    "ast_hash": "03f5b72003032cf83b28315d04183572",
+    "mtime": 1783058326.588353,
+    "ast_hash": "5dc932d75c97fe35aa21050793ec257d",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Auth/RestrictedAccessView.razor": {
@@ -3285,8 +3285,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Auth/RestrictedAccessView.razor.cs": {
-    "mtime": 1782938342.172531,
-    "ast_hash": "f4778dd5acf2d33891a0173620eb4331",
+    "mtime": 1783058300.141243,
+    "ast_hash": "3bb6afd617382c754a9451fc0d77fabe",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Layout/MainLayoutAuthenticated.razor": {
@@ -3315,8 +3315,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Auth/CorsMockLoginTests.cs": {
-    "mtime": 1783004571.7070332,
-    "ast_hash": "88602cf94e475b41efdecd19c0b2b718",
+    "mtime": 1783022027.208402,
+    "ast_hash": "7b931daba1ce365a4186326d9dddaf93",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Auth/LoginChallengeEndpointTests.cs": {
@@ -3330,8 +3330,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UI/AuthenticationCallbackTests.cs": {
-    "mtime": 1782938342.9544878,
-    "ast_hash": "0001749794432f87f457d986a33238aa",
+    "mtime": 1783058770.246241,
+    "ast_hash": "24695b6d08728e0d8cc2479cf5aefc01",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UI/ProgramAuthPipelineTests.cs": {
@@ -3340,8 +3340,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/UI/RestrictedAccessViewTests.cs": {
-    "mtime": 1782938343.0056572,
-    "ast_hash": "12537183aa3d5eaa1b1ac72ee62a9b75",
+    "mtime": 1783058838.5256355,
+    "ast_hash": "58b02dad01a213ed1bec92abbfe0b0e4",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-28-login-popup/archive-report.md": {
@@ -3570,8 +3570,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SeedData/SeedDataHostedService.cs": {
-    "mtime": 1782938515.5609398,
-    "ast_hash": "bb8d8f0620579e4e1b33700bd3392d2a",
+    "mtime": 1783024283.422428,
+    "ast_hash": "1808405e09253ec67ec58bab3248b9a5",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SeedData/SeedDataOptions.cs": {
@@ -3585,8 +3585,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Dashboard/PrioritySummaryCards.razor": {
-    "mtime": 1782938515.5942771,
-    "ast_hash": "2e41f766d6a8727f5857fda98ca5aaf5",
+    "mtime": 1783059444.4312263,
+    "ast_hash": "6a3b3e0c12e3e4d83ac64f18428927e9",
     "semantic_hash": ""
   },
   "src/Aura.UI/Models/UpcomingMeetingResponse.cs": {
@@ -3625,8 +3625,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Services/IPrioritySummaryService.cs": {
-    "mtime": 1782938515.6274664,
-    "ast_hash": "707ab90f42aaa220432cc6cdd0c00232",
+    "mtime": 1783027598.7963586,
+    "ast_hash": "aeb2a3a24f3ce8c2cbb75368b3c20e7d",
     "semantic_hash": ""
   },
   "src/Aura.UI/Services/IWorkItemsApiClient.cs": {
@@ -3635,8 +3635,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Services/PrioritySummaryService.cs": {
-    "mtime": 1782938515.6334753,
-    "ast_hash": "f32311fd9a8b6d8ccd74841b71bf95bd",
+    "mtime": 1783056032.4935668,
+    "ast_hash": "0b795dd8f97abcf323f2796461ca2ed9",
     "semantic_hash": ""
   },
   "src/Aura.UI/Services/WorkItemsApiClient.cs": {
@@ -3650,8 +3650,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Dashboard/PrioritySummaryCardsRenderingTests.cs": {
-    "mtime": 1782938515.6654742,
-    "ast_hash": "6e81b9ca262d3643989e8a702aceb089",
+    "mtime": 1783056060.694786,
+    "ast_hash": "90656677fa98ab8c182bf6707dc61587",
     "semantic_hash": ""
   },
   "docs/architecture/calendar/00-overview.md": {
@@ -3660,8 +3660,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Shared/TestAuthenticationStateProvider.cs": {
-    "mtime": 1783003365.658528,
-    "ast_hash": "6e7df4f82743e38e5cecc2c2aac5d988",
+    "mtime": 1783022027.1997983,
+    "ast_hash": "29e60d16528284982d5b43e2a5c4a1d3",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/WorkItems/WorkItemStoreRoundTripTests.cs": {
@@ -3719,59 +3719,224 @@
     "ast_hash": "2afdb78ea0d2858c42a0cce70d2d9821",
     "semantic_hash": ""
   },
-  "openspec/changes/recover-broken-test-baseline/design.md": {
-    "mtime": 1783002104.3191414,
-    "ast_hash": "d3a62763ece98955dda2d1d746502078",
-    "semantic_hash": ""
-  },
-  "openspec/changes/recover-broken-test-baseline/exploration.md": {
-    "mtime": 1782996366.1061344,
-    "ast_hash": "2d413d2bcc23e77c16bdf17ce2a27ecf",
-    "semantic_hash": ""
-  },
-  "openspec/changes/recover-broken-test-baseline/proposal.md": {
-    "mtime": 1783000515.34856,
-    "ast_hash": "1c32df20726b36bc3d93d100a1001277",
-    "semantic_hash": ""
-  },
-  "openspec/changes/recover-broken-test-baseline/specs/test-baseline-guardrails/spec.md": {
-    "mtime": 1783001033.3101609,
-    "ast_hash": "d7f608277d82429de5edb2fbfd069590",
-    "semantic_hash": ""
-  },
-  "openspec/changes/recover-broken-test-baseline/tasks.md": {
-    "mtime": 1783018126.6046796,
-    "ast_hash": "388c4b15995720c3c97c50bd71a24ee4",
-    "semantic_hash": ""
-  },
   "openspec/specs/test-baseline-guardrails/spec.md": {
-    "mtime": 1783004908.5362413,
-    "ast_hash": "db5a9ea1712ebffe87467df450fd13c1",
+    "mtime": 1783022027.146513,
+    "ast_hash": "337beeda22b3669175fca7cd0ebffedb",
     "semantic_hash": ""
   },
   "openspec/specs/test-baseline-guardrails/stable-selectors.md": {
-    "mtime": 1783017322.7804086,
-    "ast_hash": "da747011b84d3cd8643a98fe9c700029",
+    "mtime": 1783022027.1486652,
+    "ast_hash": "4c7198917a2d417c922e38510e7ca951",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/UpcomingMeetingDto.cs": {
-    "mtime": 1783017936.3478189,
-    "ast_hash": "04d3af13295552b5a04faeee4ff6aa9a",
-    "semantic_hash": ""
-  },
-  "openspec/changes/recover-broken-test-baseline/apply-progress.md": {
-    "mtime": 1783019291.6914873,
-    "ast_hash": "6b087f6988bd535f05f2c4e9e8e517a2",
+    "mtime": 1783022027.1572225,
+    "ast_hash": "a57a2bd631c8055cc29922beef6ef27d",
     "semantic_hash": ""
   },
   "tests/Aura.E2E/Browser/PlaywrightHostReachabilityGateTests.cs": {
-    "mtime": 1783019141.0175076,
-    "ast_hash": "48695e8b4059e719ea9eeb48805bf176",
+    "mtime": 1783022027.1719422,
+    "ast_hash": "42476110c6a88335fd0943cbf66533c0",
     "semantic_hash": ""
   },
-  "openspec/changes/recover-broken-test-baseline/verify-report.md": {
-    "mtime": 1783018909.0526614,
-    "ast_hash": "dda6197eacce982d06836cb3e6945221",
+  "src/Aura.Infrastructure/Adapters/Connectors/AzureDevOps/AzureDevOpsPrProvider.cs": {
+    "mtime": 1783024239.966827,
+    "ast_hash": "deaa3eb8518a86b13fdb10d4c916b5b0",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/PrReview/PrReviewConnectorAdapter.cs": {
+    "mtime": 1783024239.9390297,
+    "ast_hash": "c6ea9f337bfcdd1bfb8368d4aee2882d",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/PrReview/PrReviewDto.cs": {
+    "mtime": 1783024205.4397378,
+    "ast_hash": "88702d6c6fda239cb0fa839824f73767",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Connectors/PrReview/PrReviewWorkItemMapper.cs": {
+    "mtime": 1783024205.4590373,
+    "ast_hash": "348e84e85459aed1974787d0f6ac03c6",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Components/Layout/AnonymousLayout.razor": {
+    "mtime": 1783093212.5177689,
+    "ast_hash": "d0efbe4336d2f7b43fd9520c665e1316",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Models/PrPreviewItemResponse.cs": {
+    "mtime": 1783055978.0570288,
+    "ast_hash": "1b46173c59c80eba14f07094694afae2",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Models/PullRequestResponse.cs": {
+    "mtime": 1783027574.6631806,
+    "ast_hash": "2d2613fcf17128c8a0520eee4c53b4cc",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Pages/PullRequests.razor": {
+    "mtime": 1783055856.0793853,
+    "ast_hash": "903ce880a36514bc04fbabda3c3deecb",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Services/AzureDevOpsPrClient.cs": {
+    "mtime": 1783027660.8299387,
+    "ast_hash": "e7e556e954ec821fbe75358a1618b967",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Services/IAzureDevOpsPrClient.cs": {
+    "mtime": 1783024301.2274022,
+    "ast_hash": "eaddec384b33ac5ea6bc5c0d7fea6ce8",
+    "semantic_hash": ""
+  },
+  "tests/Aura.ArchitectureTests/OutlookUnreadOnlyArchitectureTests.cs": {
+    "mtime": 1783021004.169916,
+    "ast_hash": "6b7c28fc24146381286e21b78c0d37e0",
+    "semantic_hash": ""
+  },
+  "tests/Aura.E2E/PullRequests/PullRequestsPageSmokeTests.cs": {
+    "mtime": 1783027957.166384,
+    "ast_hash": "c51e53522ef5f74a4012cba102852f31",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Adapters/Connectors/PrReview/PrReviewConnectorAdapterTests.cs": {
+    "mtime": 1783024382.0994804,
+    "ast_hash": "a783e4a81951cdb180bac3694dc66265",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/GraphConnector/GraphOutlookSourceProviderFilterTests.cs": {
+    "mtime": 1783021004.1729157,
+    "ast_hash": "63a8dca40ee7d5744e2d1595f464e140",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseDiffLifecycleTests.cs": {
+    "mtime": 1783021004.1765137,
+    "ast_hash": "ca5f9fff738e9ba5c3683b4b1d0179e0",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Pages/PullRequestsPageTests.cs": {
+    "mtime": 1783056178.2473195,
+    "ast_hash": "873b8cca174758a438d7d97117f8ac3a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/archive-report.md": {
+    "mtime": 1783021004.0933452,
+    "ast_hash": "0df29f189dc1c0a2ce2f5e96c8445254",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/design.md": {
+    "mtime": 1783021004.096476,
+    "ast_hash": "447fb66f9d36fb266e06cd9a1e926b60",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/proposal.md": {
+    "mtime": 1783021004.0987706,
+    "ast_hash": "9b83ef21de675186f641834b3f08f92c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/spec.md": {
+    "mtime": 1783021004.1068852,
+    "ast_hash": "07ec4251b9ceb6f61b84fba1f0733ad7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/specs/connector-execution/spec.md": {
+    "mtime": 1783021004.110572,
+    "ast_hash": "8d7ac3e85541aa649df226a6f657944a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/specs/outlook-connector-mapping/spec.md": {
+    "mtime": 1783021004.1139243,
+    "ast_hash": "68e334eeae05cb560eb2caadd7146bf7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/specs/work-item-persistence/spec.md": {
+    "mtime": 1783021004.116981,
+    "ast_hash": "c1e0a5fbddea9303bf9900f4b41f78ab",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/tasks.md": {
+    "mtime": 1783021004.1214607,
+    "ast_hash": "e9eaf5c99312599492e79dba04aa20c1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-outlook-unread-only/verify-report.md": {
+    "mtime": 1783021004.1228995,
+    "ast_hash": "7248cfc8ed6bdd78ef2e97bf9269f789",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/archive-report.md": {
+    "mtime": 1783028745.9959023,
+    "ast_hash": "9ee2b039e2dfcc2e07ac9673c4313ce0",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/design.md": {
+    "mtime": 1783027178.7887478,
+    "ast_hash": "06e507d8fa0c9e3f4e9fb9a83aa69c8c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/proposal.md": {
+    "mtime": 1783026755.6427624,
+    "ast_hash": "105e054b5a73788e98a7c2a2df35a3c9",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/spec.md": {
+    "mtime": 1783026972.0290222,
+    "ast_hash": "2e2c972c6a1b9396438c3cc3c1e4389c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/tasks.md": {
+    "mtime": 1783028245.021664,
+    "ast_hash": "a7a00b3d0a99555a1bb4d6c48cfa2b9f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-pr-ui-stitch-alignment/verify-report.md": {
+    "mtime": 1783028586.918042,
+    "ast_hash": "f1a82c4752f0b202dab6b75d6fb6d251",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/apply-progress.md": {
+    "mtime": 1783022027.1149838,
+    "ast_hash": "90f8a15c4a9dda853514a2a0e13924a3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/archive-report.md": {
+    "mtime": 1783022027.1184726,
+    "ast_hash": "0835acbd210f7be4f0dc0f92be6f01bc",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/design.md": {
+    "mtime": 1783022027.12071,
+    "ast_hash": "3610fe1c0fcc0b552ffcd3b18c8e39ec",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/exploration.md": {
+    "mtime": 1783022027.1235468,
+    "ast_hash": "57c4bc664c563d5fb022186c55483865",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/proposal.md": {
+    "mtime": 1783022027.1263535,
+    "ast_hash": "e460099e7fa1211d04cbc2ce6a731b73",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/specs/test-baseline-guardrails/spec.md": {
+    "mtime": 1783022027.1302283,
+    "ast_hash": "ecf9fc9395873ffed7a967634dfd1a57",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/tasks.md": {
+    "mtime": 1783022027.1325173,
+    "ast_hash": "6b157053760ca8c5760304d82e4322b3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-02-recover-broken-test-baseline/verify-report.md": {
+    "mtime": 1783022027.134435,
+    "ast_hash": "c015ffca3555510549eb4cbfd4719418",
+    "semantic_hash": ""
+  },
+  "openspec/specs/pr-connector-ui/spec.md": {
+    "mtime": 1783028726.7250812,
+    "ast_hash": "634c3cc81fcd4b86ef76c87f76269c99",
     "semantic_hash": ""
   }
 }
