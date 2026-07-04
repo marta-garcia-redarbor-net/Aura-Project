@@ -25,6 +25,17 @@ public sealed class DeadlineUrgencyRule : IInterruptionRule
     {
         ct.ThrowIfCancellationRequested();
 
+        if (context.TryLevelSignal(WorkItemSignalKeys.TimeCriticalitySignal, out var timeCriticality)
+            && timeCriticality is SignalLevel.High or SignalLevel.Critical)
+        {
+            return Task.FromResult(new RuleResult(
+                nameof(DeadlineUrgencyRule),
+                true,
+                timeCriticality == SignalLevel.Critical ? 10.0 : 9.0,
+                0.9,
+                $"Typed time-criticality signal is {timeCriticality}."));
+        }
+
         var deadline = FindDeadlineFromMetadata(context.Item.Metadata);
 
         if (deadline is null)

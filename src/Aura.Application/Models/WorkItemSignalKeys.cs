@@ -5,6 +5,16 @@ namespace Aura.Application.Models;
 /// </summary>
 public static class WorkItemSignalKeys
 {
+    public const string CanonicalSender = "triage.sender";
+    public const string CanonicalSnippet = "triage.snippet";
+    public const string VipSenderSignal = "vip_sender";
+    public const string ActionNeededSignal = "action_needed";
+    public const string AckOnlySignal = "ack_only";
+    public const string TimeCriticalitySignal = "time_criticality";
+    public const string MessageLengthBucketSignal = "message_length_bucket";
+    public const string ExplicitPatternKey = "triage.override.pattern";
+    public const string TargetOwnerUserId = "triage.target.ownerUserId";
+    public const string TargetResponsibleUserId = "triage.target.responsibleUserId";
     public const string OutlookDeadlineCue = "outlook.deadline.cue";
     public const string OutlookDeadlineSource = "outlook.deadline.source";
     public const string OutlookTotalScore = "outlook.scoring.totalScore";

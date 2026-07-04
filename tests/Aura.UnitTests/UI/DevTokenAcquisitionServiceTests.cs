@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Aura.UI.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -11,7 +13,8 @@ public class DevTokenAcquisitionServiceTests
     {
         // Arrange & Act
         var logger = Substitute.For<ILogger<DevTokenAcquisitionService>>();
-        var service = new DevTokenAcquisitionService(logger);
+        var authStateProvider = CreateAuthStateProvider();
+        var service = new DevTokenAcquisitionService(logger, authStateProvider);
 
         // Assert
         Assert.IsAssignableFrom<ITokenAcquisitionService>(service);
@@ -22,9 +25,19 @@ public class DevTokenAcquisitionServiceTests
     {
         // Arrange & Act
         var logger = Substitute.For<ILogger<DevTokenAcquisitionService>>();
-        var service = new DevTokenAcquisitionService(logger);
+        var authStateProvider = CreateAuthStateProvider();
+        var service = new DevTokenAcquisitionService(logger, authStateProvider);
 
         // Assert
         Assert.NotNull(service);
+    }
+
+    private static AuthenticationStateProvider CreateAuthStateProvider()
+    {
+        var authStateProvider = Substitute.For<AuthenticationStateProvider>();
+        var authState = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        authStateProvider.GetAuthenticationStateAsync().Returns(Task.FromResult(authState));
+
+        return authStateProvider;
     }
 }

@@ -24,6 +24,11 @@ public sealed class KeywordMatchRule : IInterruptionRule
     {
         ct.ThrowIfCancellationRequested();
 
+        if (context.TryGetBooleanSignal(WorkItemSignalKeys.ActionNeededSignal, out var actionNeeded) && actionNeeded)
+        {
+            return new RuleResult(nameof(KeywordMatchRule), true, 7.0, 0.9, "Typed action-needed signal matched.");
+        }
+
         var keywords = await _ruleStore.GetKeywordsAsync(ct);
         if (keywords.Count == 0)
         {

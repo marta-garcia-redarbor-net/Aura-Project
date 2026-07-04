@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Domain.WorkItems;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Teams;
@@ -88,11 +89,14 @@ internal sealed class TeamsWorkItemMapper
         if (!string.IsNullOrWhiteSpace(message.Sender))
         {
             metadata["teams.sender"] = message.Sender;
+            metadata[WorkItemSignalKeys.CanonicalSender] = message.Sender;
         }
 
         if (!string.IsNullOrWhiteSpace(message.BodyPreview))
         {
             metadata["teams.snippet"] = message.BodyPreview;
+            metadata[WorkItemSignalKeys.CanonicalSnippet] = message.BodyPreview;
+            metadata[WorkItemSignalKeys.MessageLengthBucketSignal] = message.BodyPreview.Length > 160 ? "long" : "short";
         }
 
         if (!string.IsNullOrWhiteSpace(message.WebUrl))
@@ -119,13 +123,30 @@ internal sealed class TeamsWorkItemMapper
         {
             metadata["teams.priority.raw"] = "absent";
             metadata["teams.priority.resolution"] = "defaulted-medium";
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = SignalLevel.Medium.ToString();
             return WorkItemPriority.Medium;
         }
 
-        if (rawPriority.Equals("critical", StringComparison.OrdinalIgnoreCase)) return WorkItemPriority.Critical;
-        if (rawPriority.Equals("high", StringComparison.OrdinalIgnoreCase)) return WorkItemPriority.High;
-        if (rawPriority.Equals("medium", StringComparison.OrdinalIgnoreCase)) return WorkItemPriority.Medium;
-        if (rawPriority.Equals("low", StringComparison.OrdinalIgnoreCase)) return WorkItemPriority.Low;
+        if (rawPriority.Equals("critical", StringComparison.OrdinalIgnoreCase))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = SignalLevel.Critical.ToString();
+            return WorkItemPriority.Critical;
+        }
+        if (rawPriority.Equals("high", StringComparison.OrdinalIgnoreCase))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = SignalLevel.High.ToString();
+            return WorkItemPriority.High;
+        }
+        if (rawPriority.Equals("medium", StringComparison.OrdinalIgnoreCase))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = SignalLevel.Medium.ToString();
+            return WorkItemPriority.Medium;
+        }
+        if (rawPriority.Equals("low", StringComparison.OrdinalIgnoreCase))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = SignalLevel.Low.ToString();
+            return WorkItemPriority.Low;
+        }
 
         metadata["teams.priority.raw"] = rawPriority;
         metadata["teams.priority.resolution"] = "defaulted-medium";

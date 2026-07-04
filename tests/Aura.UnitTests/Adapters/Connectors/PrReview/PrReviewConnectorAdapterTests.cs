@@ -219,6 +219,45 @@ public class PrReviewConnectorAdapterTests
         Assert.Equal("defaulted-low-draft", item.Metadata["pr.priority.resolution"]);
     }
 
+    [Fact]
+    public async Task Mapper_WritesCanonicalTargetUserMetadata()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var capturedItems = new List<Aura.Domain.WorkItems.WorkItem>();
+        buffer.When(b => b.Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>()))
+            .Do(ci => capturedItems.Add(ci.Arg<Aura.Domain.WorkItems.WorkItem>()));
+
+        var fixtures = new[]
+        {
+            new PrReviewDto
+            {
+                PullRequestId = 50,
+                Title = "Review me",
+                RepoName = "Aura",
+                Author = "Carlos Ruiz",
+                Reviewers = ["Ana López", "Pedro Gómez"],
+                Status = "active",
+                Priority = "high"
+            }
+        };
+
+        var adapter = new PrReviewConnectorAdapter(
+            NullLogger<PrReviewConnectorAdapter>.Instance,
+            buffer,
+            new PrReviewWorkItemMapper(),
+            () => fixtures);
+
+        await adapter.ExecuteAsync(CreateRequest(), CancellationToken.None);
+
+        Assert.Single(capturedItems);
+        var item = capturedItems[0];
+        Assert.Equal("Carlos Ruiz", item.Metadata[WorkItemSignalKeys.CanonicalSender]);
+        Assert.Equal("Carlos Ruiz", item.Metadata[WorkItemSignalKeys.TargetOwnerUserId]);
+        Assert.Equal("Ana López", item.Metadata[WorkItemSignalKeys.TargetResponsibleUserId]);
+        Assert.Equal("True", item.Metadata[WorkItemSignalKeys.ActionNeededSignal]);
+        Assert.Equal("Review me", item.Metadata[WorkItemSignalKeys.CanonicalSnippet]);
+    }
+
     private static ConnectorExecutionRequest CreateRequest() =>
         new(
             new CheckpointIdentity("pr", "azdo", "acme"),

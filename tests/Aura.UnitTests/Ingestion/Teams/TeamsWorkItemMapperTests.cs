@@ -1,4 +1,5 @@
 using Aura.Domain.WorkItems;
+using Aura.Application.Models;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 
 namespace Aura.UnitTests.Ingestion.Teams;
@@ -254,5 +255,28 @@ public class TeamsWorkItemMapperTests
         Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageAt"));
         Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageReadAt"));
         Assert.False(workItem.Metadata.ContainsKey("messages.unreadCount"));
+    }
+
+    [Fact]
+    public void TryMap_WritesCanonicalTriageMetadata()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "msg-11",
+            Title = "Need response",
+            Source = "messages",
+            Priority = "high",
+            Sender = "Alice Smith",
+            BodyPreview = "Please review the incident and respond"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("Alice Smith", workItem!.Metadata[WorkItemSignalKeys.CanonicalSender]);
+        Assert.Equal("Please review the incident and respond", workItem.Metadata[WorkItemSignalKeys.CanonicalSnippet]);
+        Assert.Equal(SignalLevel.High.ToString(), workItem.Metadata[WorkItemSignalKeys.TimeCriticalitySignal]);
+        Assert.Equal("short", workItem.Metadata[WorkItemSignalKeys.MessageLengthBucketSignal]);
     }
 }

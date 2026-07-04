@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Domain.WorkItems;
 
 namespace Aura.Infrastructure.Adapters.Connectors.PrReview;
@@ -48,7 +49,11 @@ internal sealed class PrReviewWorkItemMapper
             metadata["pr.repo"] = pr.RepoName;
 
         if (!string.IsNullOrWhiteSpace(pr.Author))
+        {
             metadata["pr.author"] = pr.Author;
+            metadata[WorkItemSignalKeys.CanonicalSender] = pr.Author;
+            metadata[WorkItemSignalKeys.TargetOwnerUserId] = pr.Author;
+        }
 
         if (!string.IsNullOrWhiteSpace(pr.SourceLink))
             metadata["pr.sourceLink"] = pr.SourceLink;
@@ -57,12 +62,17 @@ internal sealed class PrReviewWorkItemMapper
             metadata["pr.updatedAt"] = pr.UpdatedAt.Value.ToString("o");
 
         if (pr.Reviewers?.Count > 0)
+        {
             metadata["pr.reviewers"] = string.Join(",", pr.Reviewers);
+            metadata[WorkItemSignalKeys.TargetResponsibleUserId] = pr.Reviewers[0];
+        }
 
         metadata["pr.reviewerCount"] = (pr.Reviewers?.Count ?? 0).ToString();
         metadata["pr.commentCount"] = pr.CommentCount.ToString();
         metadata["pr.fileCount"] = pr.FileCount.ToString();
         metadata["pr.isDraft"] = pr.IsDraft.ToString();
+        metadata[WorkItemSignalKeys.ActionNeededSignal] = ((pr.Reviewers?.Count ?? 0) > 0).ToString();
+        metadata[WorkItemSignalKeys.CanonicalSnippet] = pr.Title ?? string.Empty;
 
         return metadata;
     }

@@ -1,4 +1,5 @@
 using Aura.Domain.WorkItems;
+using Aura.Application.Models;
 using Aura.Infrastructure.Adapters.Connectors.Outlook;
 
 namespace Aura.UnitTests.Ingestion.Outlook;
@@ -220,6 +221,27 @@ public class OutlookWorkItemMapperTests
         Assert.NotNull(workItem);
         Assert.DoesNotContain("outlook.deadline.source", workItem!.Metadata.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.DoesNotContain("outlook.deadline.cue", workItem.Metadata.Keys, StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void TryMap_WritesCanonicalTriageMetadata()
+    {
+        var dto = CreateBaseDto() with
+        {
+            Importance = "High",
+            SenderAddress = "ceo@aura.dev",
+            BodyPreview = "Please review this urgent incident update"
+        };
+
+        var mapped = _mapper.TryMap(dto, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("ceo@aura.dev", workItem!.Metadata[WorkItemSignalKeys.CanonicalSender]);
+        Assert.Equal("Please review this urgent incident update", workItem.Metadata[WorkItemSignalKeys.CanonicalSnippet]);
+        Assert.Equal("True", workItem.Metadata[WorkItemSignalKeys.ActionNeededSignal]);
+        Assert.Equal(SignalLevel.Critical.ToString(), workItem.Metadata[WorkItemSignalKeys.TimeCriticalitySignal]);
+        Assert.Equal("short", workItem.Metadata[WorkItemSignalKeys.MessageLengthBucketSignal]);
     }
 
     private static OutlookEmailDto CreateBaseDto() =>

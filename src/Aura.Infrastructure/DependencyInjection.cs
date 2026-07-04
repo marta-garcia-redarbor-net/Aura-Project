@@ -59,11 +59,11 @@ public static class DependencyInjection
 
         // Interruption policy engine
         services.Configure<InterruptionOptions>(configuration.GetSection(InterruptionOptions.SectionName));
-        services.AddSingleton<IInterruptionPolicyEngine, InterruptionPolicyEngine>();
-        services.AddSingleton<IInterruptionRule, ScoreThresholdRule>();
-        services.AddSingleton<IInterruptionRule, VipSenderRule>();
-        services.AddSingleton<IInterruptionRule, KeywordMatchRule>();
-        services.AddSingleton<IInterruptionRule, DeadlineUrgencyRule>();
+        services.AddScoped<IInterruptionPolicyEngine, InterruptionPolicyEngine>();
+        services.AddScoped<IInterruptionRule, ScoreThresholdRule>();
+        services.AddScoped<IInterruptionRule, VipSenderRule>();
+        services.AddScoped<IInterruptionRule, KeywordMatchRule>();
+        services.AddScoped<IInterruptionRule, DeadlineUrgencyRule>();
 
         // Alert rule store (SQLite)
         services.AddSingleton<IAlertRuleStore>(sp =>

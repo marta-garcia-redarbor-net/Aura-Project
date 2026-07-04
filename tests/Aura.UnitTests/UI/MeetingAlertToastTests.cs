@@ -2,6 +2,7 @@ using System.Reflection;
 using Aura.UI.Components.Dashboard;
 using Aura.UI.Services;
 using Bunit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NSubstitute;
@@ -14,6 +15,7 @@ public class MeetingAlertToastTests : TestContext
     public void MeetingAlertToast_ShouldRender_Initially()
     {
         // Arrange
+        Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         Services.AddSingleton(Substitute.For<ITokenAcquisitionService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         
@@ -28,6 +30,7 @@ public class MeetingAlertToastTests : TestContext
     public void MeetingAlertToast_ShouldShowEmpty_WhenNoAlerts()
     {
         // Arrange
+        Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         Services.AddSingleton(Substitute.For<ITokenAcquisitionService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         
@@ -43,6 +46,7 @@ public class MeetingAlertToastTests : TestContext
     public void MeetingAlertToast_ShouldDismissAlert_WhenAcknowledgeClicked()
     {
         // Arrange
+        Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         Services.AddSingleton(Substitute.For<ITokenAcquisitionService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         

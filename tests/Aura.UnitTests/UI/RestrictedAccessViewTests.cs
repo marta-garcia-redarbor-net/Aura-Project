@@ -4,6 +4,7 @@ using Aura.UI.Components.Auth;
 using Aura.UI.Services;
 using Bunit;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,7 +91,7 @@ public class RestrictedAccessViewTests : TestContext
     }
 
     [Fact]
-    public async Task DevLogin_ClickMockButton_CallsMockLoginEndpoint()
+    public void DevLogin_ClickMockButton_NavigatesToDevLoginEndpoint()
     {
         // Arrange
         var config = new ConfigurationBuilder()
@@ -100,63 +101,18 @@ public class RestrictedAccessViewTests : TestContext
             })
             .Build();
 
-        var mockToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtb2NrLXVzZXItMDAxIn0.signature";
-        var handler = new MockHttpMessageHandler(
-            HttpStatusCode.OK,
-            $"{{\"token\":\"{mockToken}\"}}");
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost:5180")
-        };
-
         Services.AddSingleton<IConfiguration>(config);
         Services.AddSingleton(Substitute.For<IAuthPopupService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         Services.AddSingleton(Substitute.For<IHttpContextAccessor>());
-        Services.AddSingleton(httpClient);
+        Services.AddSingleton(Substitute.For<HttpClient>());
 
         // Act
         var cut = RenderComponent<RestrictedAccessView>();
         cut.Find("[data-testid='login-dev-btn']").Click();
 
-        // Assert — HTTP request was sent
-        Assert.True(handler.WasCalled);
-        Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
-        Assert.Equal("/api/auth/mock-login", handler.LastRequest!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public void LoginCard_ShowsError_WhenMockLoginFails()
-    {
-        // Arrange
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["UseEntraId"] = "false"
-            })
-            .Build();
-
-        var handler = new MockHttpMessageHandler(
-            HttpStatusCode.InternalServerError,
-            "Server error");
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("http://localhost:5180")
-        };
-
-        Services.AddSingleton<IConfiguration>(config);
-        Services.AddSingleton(Substitute.For<IAuthPopupService>());
-        Services.AddSingleton(Substitute.For<IJSRuntime>());
-        Services.AddSingleton(Substitute.For<IHttpContextAccessor>());
-        Services.AddSingleton(httpClient);
-
-        // Act
-        var cut = RenderComponent<RestrictedAccessView>();
-        cut.Find("[data-testid='login-dev-btn']").Click();
-
-        // Assert — error message is displayed
-        Assert.NotNull(cut.Find("[data-testid='login-error']"));
-        Assert.Contains("Login failed", cut.Find("[data-testid='login-error']").TextContent);
+        // Assert — component delegates dev login to the server endpoint route
+        Assert.EndsWith("/login/dev", Services.GetRequiredService<NavigationManager>().Uri, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -269,31 +225,4 @@ public class RestrictedAccessViewTests : TestContext
             .OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true");
     }
 
-    private sealed class MockHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly HttpStatusCode _statusCode;
-        private readonly string _responseContent;
-
-        public bool WasCalled { get; private set; }
-        public HttpRequestMessage? LastRequest { get; private set; }
-
-        public MockHttpMessageHandler(HttpStatusCode statusCode, string responseContent)
-        {
-            _statusCode = statusCode;
-            _responseContent = responseContent;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            WasCalled = true;
-            LastRequest = request;
-
-            return Task.FromResult(new HttpResponseMessage(_statusCode)
-            {
-                Content = new StringContent(_responseContent, Encoding.UTF8, "application/json")
-            });
-        }
-    }
 }

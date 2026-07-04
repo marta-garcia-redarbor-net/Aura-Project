@@ -24,6 +24,11 @@ public sealed class VipSenderRule : IInterruptionRule
     {
         ct.ThrowIfCancellationRequested();
 
+        if (context.TryGetBooleanSignal(WorkItemSignalKeys.VipSenderSignal, out var isVip) && isVip)
+        {
+            return new RuleResult(nameof(VipSenderRule), true, 8.0, 0.95, "Typed VIP sender signal matched.");
+        }
+
         // Extract sender email from metadata
         var sender = GetSenderFromMetadata(context.Item.Metadata);
         if (string.IsNullOrWhiteSpace(sender))

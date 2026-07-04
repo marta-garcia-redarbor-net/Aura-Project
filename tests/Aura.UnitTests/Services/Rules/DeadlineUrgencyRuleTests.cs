@@ -75,4 +75,26 @@ public class DeadlineUrgencyRuleTests
 
         Assert.Equal(40, rule.Priority);
     }
+
+    [Fact]
+    public async Task EvaluateAsync_UsesTimeCriticalitySignal_WhenTypedContextIsAvailable()
+    {
+        var options = Options.Create(new InterruptionOptions { DeadlineWindowHours = 48 });
+        var rule = new DeadlineUrgencyRule(options);
+        var context = new EvaluationContext(
+            CreateWorkItemWithoutDeadline(),
+            userId: "user-1",
+            focusState: null,
+            normalizedSignals: new Dictionary<string, NormalizedSignal>
+            {
+                [WorkItemSignalKeys.TimeCriticalitySignal] = new LevelSignal(WorkItemSignalKeys.TimeCriticalitySignal, SignalLevel.Critical, "deadline due soon")
+            },
+            priorityScore: null,
+            approvedPolicy: UserTriagePolicy.Empty);
+
+        var result = await rule.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.True(result.Matched);
+        Assert.Contains("critical", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
 }

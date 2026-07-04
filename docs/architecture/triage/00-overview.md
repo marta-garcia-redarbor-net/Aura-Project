@@ -5,9 +5,12 @@ Aura triage follows a two-stage model with a strict ownership boundary:
 1. **Connector adapters (Infrastructure)** normalize provider payloads into canonical `WorkItem`s,
    extract source-specific signals, and compute **preliminary** scores.
 2. The **global triage engine (Application)** is the single authority that makes the final
-   **interrupt-vs-queue** decision.
+   **interrupt-vs-queue-or-defer** decision.
 
 Connectors MUST NOT own final interruption decisions.
+
+Connectors may emit canonical metadata such as sender, snippet, target-user hints, and traceable explicit cues,
+but those remain policy inputs only.
 
 ## Quick path
 
@@ -22,6 +25,15 @@ Connectors MUST NOT own final interruption decisions.
   - **Explainable**: every decision is human-readable.
   - **Auditable**: decision inputs and rationale can be inspected later.
   - **User-adjustable**: users can tune policy inputs and overrides.
+  - **Per-user bounded**: narrow explicit overrides can auto-apply for the same user, while broader or riskier generalizations remain review-first.
+
+## Target-user resolution
+
+The global engine resolves the target user in this order:
+
+1. `assignedTo`
+2. explicit connector owner/responsible metadata
+3. unresolved target user means the engine must not interrupt and falls back to `QUEUE` or `DEFER`
 
 ## Refinement model
 

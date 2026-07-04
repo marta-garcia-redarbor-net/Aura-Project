@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Domain.WorkItems;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Outlook;
@@ -96,6 +97,7 @@ internal sealed class OutlookWorkItemMapper
         if (!string.IsNullOrWhiteSpace(email.SenderAddress))
         {
             metadata["outlook.sender"] = email.SenderAddress;
+            metadata[WorkItemSignalKeys.CanonicalSender] = email.SenderAddress;
         }
 
         if (!string.IsNullOrWhiteSpace(email.ConversationId))
@@ -112,6 +114,7 @@ internal sealed class OutlookWorkItemMapper
         if (!string.IsNullOrWhiteSpace(email.BodyPreview))
         {
             metadata["outlook.snippet"] = email.BodyPreview;
+            metadata[WorkItemSignalKeys.CanonicalSnippet] = email.BodyPreview;
         }
 
         return metadata;
@@ -132,10 +135,20 @@ internal sealed class OutlookWorkItemMapper
         var totalScore = importanceWeight + subjectWeight + senderWeight + bodyWeight;
 
         metadata["outlook.importance.raw"] = string.IsNullOrWhiteSpace(importance) ? "absent" : importance;
+        if (!string.IsNullOrWhiteSpace(importance))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = importance.Equals("High", StringComparison.OrdinalIgnoreCase)
+                ? SignalLevel.Critical.ToString()
+                : SignalLevel.Medium.ToString();
+        }
         metadata["outlook.scoring.subjectCues"] = subjectTokens.Count == 0 ? "none" : string.Join(',', subjectTokens);
         metadata["outlook.scoring.senderWeight"] = senderWeight.ToString(System.Globalization.CultureInfo.InvariantCulture);
         metadata["outlook.scoring.bodyCues"] = bodyTokens.Count == 0 ? "none" : string.Join(',', bodyTokens);
         metadata["outlook.scoring.totalScore"] = totalScore.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        metadata[WorkItemSignalKeys.ActionNeededSignal] = (subjectTokens.Count > 0 || bodyTokens.Count > 0).ToString();
+        metadata[WorkItemSignalKeys.MessageLengthBucketSignal] = string.IsNullOrWhiteSpace(body)
+            ? "short"
+            : body.Length > 160 ? "long" : "short";
 
         if (totalScore >= 6) return WorkItemPriority.Critical;
         if (totalScore >= 2) return WorkItemPriority.High;
