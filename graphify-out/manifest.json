@@ -2125,8 +2125,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/triage-global-policy/spec.md": {
-    "mtime": 1782073520.3627675,
-    "ast_hash": "a767572577ca8a901f733dbe022ac314",
+    "mtime": 1783189198.2642338,
+    "ast_hash": "b69deb59351904955eca1dc6fb31c6ef",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/MorningSummary.cs": {
@@ -4164,46 +4164,6 @@
     "ast_hash": "4dfbd7057e6ba363baf362ab151c67bc",
     "semantic_hash": ""
   },
-  "openspec/changes/W3-H2-A/apply-progress.md": {
-    "mtime": 1783188050.1362505,
-    "ast_hash": "c6754821cfb1a42530f925e8ecc45042",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/design.md": {
-    "mtime": 1783113404.1238377,
-    "ast_hash": "8dc207628952149530ea190d977f808d",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/proposal.md": {
-    "mtime": 1783111461.5094228,
-    "ast_hash": "47d3a2d08d666209754dd0dc2f802080",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/interruption-policy-engine/spec.md": {
-    "mtime": 1783113172.9339175,
-    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/priority-scoring/spec.md": {
-    "mtime": 1783113172.9314094,
-    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/triage-global-policy/spec.md": {
-    "mtime": 1783113180.6476276,
-    "ast_hash": "81f230dba0d1df645ab8e0818223302e",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/tasks.md": {
-    "mtime": 1783188030.4451187,
-    "ast_hash": "d3a3e51beac20d66eb21077b7482b9c2",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/verify-report.md": {
-    "mtime": 1783188519.4320612,
-    "ast_hash": "923a516ccf52fa789902b0e828b298b5",
-    "semantic_hash": ""
-  },
   "openspec/changes/W3-H2/exploration.md": {
     "mtime": 1783111151.729051,
     "ast_hash": "ac41348888c5eff73f1c49ba0e76de57",
@@ -4257,6 +4217,61 @@
   "src/Aura.UI/wwwroot/work-item-alert.wav": {
     "mtime": 1783099665.438853,
     "ast_hash": "372c9cbc244b648821ba689afba1171b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/apply-progress.md": {
+    "mtime": 1783188050.1362505,
+    "ast_hash": "c6754821cfb1a42530f925e8ecc45042",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/archive-report.md": {
+    "mtime": 1783189279.3338525,
+    "ast_hash": "d19783d56c5247d1f584fddb5db6e5ec",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/design.md": {
+    "mtime": 1783113404.1238377,
+    "ast_hash": "8dc207628952149530ea190d977f808d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/proposal.md": {
+    "mtime": 1783111461.5094228,
+    "ast_hash": "47d3a2d08d666209754dd0dc2f802080",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/interruption-policy-engine/spec.md": {
+    "mtime": 1783113172.9339175,
+    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/priority-scoring/spec.md": {
+    "mtime": 1783113172.9314094,
+    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/triage-global-policy/spec.md": {
+    "mtime": 1783113180.6476276,
+    "ast_hash": "81f230dba0d1df645ab8e0818223302e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/tasks.md": {
+    "mtime": 1783188030.4451187,
+    "ast_hash": "d3a3e51beac20d66eb21077b7482b9c2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/verify-report.md": {
+    "mtime": 1783188519.4320612,
+    "ast_hash": "923a516ccf52fa789902b0e828b298b5",
+    "semantic_hash": ""
+  },
+  "openspec/specs/interruption-policy-engine/spec.md": {
+    "mtime": 1783113172.9339175,
+    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
+    "semantic_hash": ""
+  },
+  "openspec/specs/priority-scoring/spec.md": {
+    "mtime": 1783113172.9314094,
+    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
     "semantic_hash": ""
   }
 }

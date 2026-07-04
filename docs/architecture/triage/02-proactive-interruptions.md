@@ -53,3 +53,14 @@ Each decision should capture enough data to verify policy behavior:
 - Applied policy branch or rule key
 - Final decision and rationale
 - Correlation metadata for downstream review
+
+### Persisted explanation chain
+
+The full verdict is persisted as an audit trail:
+
+- **Explanation** — human-readable rationale for the decision.
+- **Decision** — the `InterruptionDecision` enum value (InterruptNow, Queue, Defer).
+- **TargetUserId** — resolved user identifier at decision time.
+- **RuleResults** — serialized JSON array of all evaluated `RuleResult` entries, including matched state, score, and confidence for each rule that ran.
+
+These fields flow through the notification outbox, worker reconstruction, and SignalR dispatch, ensuring the explanation survives process boundaries and is available to any downstream consumer. Pre-migration entries tolerate missing fields via nullable columns and a synthetic fallback.

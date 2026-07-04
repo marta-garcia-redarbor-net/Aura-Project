@@ -1,16 +1,16 @@
 # Graph Report - Aura  (2026-07-04)
 
 ## Corpus Check
-- 847 files · ~361,902 words
+- 850 files · ~363,118 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 9747 nodes · 12173 edges · 830 communities (761 shown, 69 thin omitted)
+- 9867 nodes · 12290 edges · 842 communities (771 shown, 71 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dd1f8408`
+- Built from commit: `064e7017`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -785,6 +785,18 @@
 - [[_COMMUNITY_Community 825|Community 825]]
 - [[_COMMUNITY_Community 826|Community 826]]
 - [[_COMMUNITY_Community 827|Community 827]]
+- [[_COMMUNITY_Community 830|Community 830]]
+- [[_COMMUNITY_Community 831|Community 831]]
+- [[_COMMUNITY_Community 832|Community 832]]
+- [[_COMMUNITY_Community 833|Community 833]]
+- [[_COMMUNITY_Community 834|Community 834]]
+- [[_COMMUNITY_Community 835|Community 835]]
+- [[_COMMUNITY_Community 836|Community 836]]
+- [[_COMMUNITY_Community 837|Community 837]]
+- [[_COMMUNITY_Community 838|Community 838]]
+- [[_COMMUNITY_Community 839|Community 839]]
+- [[_COMMUNITY_Community 840|Community 840]]
+- [[_COMMUNITY_Community 841|Community 841]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Services` - 37 edges
@@ -799,33 +811,33 @@
 10. `Fact` - 24 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `TestBuffer` --implements--> `IWorkItemBuffer`  [EXTRACTED]
+  tests/Aura.UnitTests/GraphConnector/ConnectorAdapterDiResolutionTests.cs → src/Aura.Application/UseCases/ConnectorExecution/ExecuteConnectorUseCase.cs
+- `RecordingLogger` --implements--> `ILogger`  [EXTRACTED]
+  tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Api/Endpoints/DashboardEndpoints.cs
 - `StubSystemStatusReader` --implements--> `ISystemStatusReader`  [EXTRACTED]
   tests/Aura.IntegrationTests/Dashboard/SystemStatusEndpointTests.cs → src/Aura.Api/Endpoints/DashboardEndpoints.cs
 - `StubModuleProgressReader` --implements--> `IModuleProgressReader`  [EXTRACTED]
   tests/Aura.IntegrationTests/Dashboard/ModuleProgressEndpointTests.cs → src/Aura.Api/Endpoints/DashboardEndpoints.cs
-- `RecordingLogger` --implements--> `ILogger`  [EXTRACTED]
-  tests/Aura.UnitTests/Ingestion/ExecuteConnectorUseCaseTests.cs → src/Aura.Api/Endpoints/DashboardEndpoints.cs
-- `FakeMorningSummaryComposer` --implements--> `IMorningSummaryComposer`  [EXTRACTED]
-  tests/Aura.UnitTests/Triage/MorningSummaryContractTests.cs → src/Aura.Application/Ports/IMorningSummaryComposer.cs
-- `SuccessAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
-  tests/Aura.UnitTests/Workers/ConnectorExecutionWorkerTests.cs → src/Aura.Application/UseCases/IngestionSync/TriggerSyncUseCase.cs
+- `StubAdapter` --implements--> `IConnectorAdapter`  [EXTRACTED]
+  tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs → src/Aura.Application/Ports/IConnectorAdapter.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (830 total, 69 thin omitted)
+## Communities (842 total, 71 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.20
 Nodes (7): ExecuteConnectorUseCaseTests, GetTag(), Activity, Fact, IReadOnlyDictionary, Task, WorkItem
 
 ### Community 1 - "Community 1"
-Cohesion: 0.13
-Nodes (13): ConcurrentQueue, InMemoryLogger, InMemoryLoggerProvider, StubGraphConnectorStatusReader, IGraphConnectorStatusReader, ILoggerProvider, CancellationToken, EventId (+5 more)
+Cohesion: 0.14
+Nodes (12): ConcurrentQueue, InMemoryLogger, InMemoryLoggerProvider, NullScope, ILoggerProvider, EventId, Exception, Func (+4 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.22
-Nodes (10): InitialDashboardEndpointTests, RequestCancellationObservingDashboardReader, TaskCompletionSource, ApiMarker, Fact, HttpClient, HttpResponseMessage, JsonSerializerOptions (+2 more)
+Cohesion: 0.15
+Nodes (17): CancellingInitialDashboardReader, InitialDashboardEndpointTests, RequestCancellationObservingDashboardReader, StubInitialDashboardReader, ThrowingInitialDashboardReader, TaskCompletionSource, ApiMarker, CancellationToken (+9 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.30
@@ -856,8 +868,8 @@ Cohesion: 0.17
 Nodes (14): SemanticIndexSyncWorker, Fact, IEmbeddingProvider, ILogger, ISemanticChunkExtractor, ISemanticIndexWriter, ISemanticOutboxRepository, IServiceScopeFactory (+6 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.17
-Nodes (10): IMorningSummaryComposer, MorningSummaryPayload, CancellationToken, Fact, MorningSummaryDueState, MorningSummaryRequest, Task, WorkItem (+2 more)
+Cohesion: 0.22
+Nodes (7): CancellationToken, Fact, MorningSummaryDueState, MorningSummaryRequest, Task, WorkItem, MorningSummaryContractTests
 
 ### Community 11 - "Community 11"
 Cohesion: 0.05
@@ -925,7 +937,7 @@ Nodes (20): Purpose, Requirement: capturedAtUtc Resolution, Requirement: correla
 
 ### Community 27 - "Community 27"
 Cohesion: 0.12
-Nodes (16): IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger, IReadOnlyList (+8 more)
+Nodes (16): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset, Func, ILogger, IMessageSourceProvider, IReadOnlyList (+8 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.21
@@ -985,7 +997,7 @@ Nodes (5): Config, Fact, IConfiguration, IServiceCollection, DependencyInjection
 
 ### Community 42 - "Community 42"
 Cohesion: 0.07
-Nodes (14): Program, MockJwtOptionsReadinessAdapter, DependencyInjection, DependencyInjection, IMockAuthReadinessProvider, options, DependencyInjection, IConfiguration (+6 more)
+Nodes (15): Program, MockJwtOptionsReadinessAdapter, DependencyInjection, EmbeddingProviderOptionsValidator, IMockAuthReadinessProvider, IValidateOptions, options, DependencyInjection (+7 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.08
@@ -1093,7 +1105,7 @@ Nodes (25): Requirement: UnreadCount on InboxItemPreviewDto, Scenario: All items
 
 ### Community 69 - "Community 69"
 Cohesion: 0.18
-Nodes (14): BatchExternalIds, NoopNotificationOutboxStore, NoopWorkItemStore, Result, CancellationToken, CheckpointIdentity, ConnectorExecutionResult, DateTimeOffset (+6 more)
+Nodes (14): BatchExternalIds, CheckpointIdentity, NoopNotificationOutboxStore, NoopWorkItemStore, IngestionCheckpoint, IReadOnlySet, NotificationOutboxEntry, Result (+6 more)
 
 ### Community 70 - "Community 70"
 Cohesion: 0.11
@@ -1104,7 +1116,7 @@ Cohesion: 0.18
 Nodes (14): DashboardPreviewEndpointTests, StubDashboardPreviewReader, ThrowingDashboardPreviewReader, ApiMarker, CancellationToken, DashboardPreviewDto, Exception, Fact (+6 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (11): MeaiEmbeddingProvider, IEmbeddingProvider, ActivitySource, CancellationToken, EmbeddingProviderOptions, IEmbeddingGenerator, IReadOnlyList, List (+3 more)
 
 ### Community 73 - "Community 73"
@@ -1240,8 +1252,8 @@ Cohesion: 0.04
 Nodes (45): 1. Chat-Level Model with Auto-Dismiss in Connector (RECOMMENDED), 2. Minimal — Just Chat Source Provider Changes, No Auto-Dismiss, 3. Full Chat with Multi-Message Preview, Affected Areas, Approaches, Current State, Current store/reader interfaces, DashboardPreviewReader (+37 more)
 
 ### Community 106 - "Community 106"
-Cohesion: 0.11
-Nodes (17): PlaywrightWebApplicationFactory, StubDashboardPreviewApiClient, StubGraphConnectorApiClient, StubModuleProgressApiClient, StubSyncApiClient, IModuleProgressApiClient, ISyncApiClient, CancellationToken (+9 more)
+Cohesion: 0.12
+Nodes (15): PlaywrightWebApplicationFactory, StubDashboardPreviewApiClient, StubGraphConnectorApiClient, StubModuleProgressApiClient, IGraphConnectorApiClient, CancellationToken, DashboardPreviewResponse, GraphConnectorStatusResponse (+7 more)
 
 ### Community 107 - "Community 107"
 Cohesion: 0.24
@@ -1757,7 +1769,7 @@ Nodes (11): FakeGraphHttpHandler, GraphCalendarEventProviderTests, GraphCalendar
 
 ### Community 238 - "Community 238"
 Cohesion: 0.07
-Nodes (21): DependencyInjection, DependencyInjectionTests, TestHostEnvironment, MockJwtGenerator, OutlookWorkItemMapper, Dictionary, IDictionary, IEnumerable (+13 more)
+Nodes (21): DependencyInjection, DependencyInjectionTests, TestHostEnvironment, MockJwtGenerator, IEnumerable, List, OutlookWorkItemMapper, Dictionary (+13 more)
 
 ### Community 239 - "Community 239"
 Cohesion: 0.25
@@ -2016,8 +2028,8 @@ Cohesion: 0.15
 Nodes (12): Purpose, Requirement: Infrastructure Store Implementation, Requirement: Typed Persistence Result, Requirement: Work Item Persistence Port, Requirements, Scenario: Architecture test rejects store-technology leakage, Scenario: Persistence failure returns typed result with reason, Scenario: Port accepts canonical WorkItem and returns success (+4 more)
 
 ### Community 352 - "Community 352"
-Cohesion: 0.18
-Nodes (13): GraphTeamsSourceProvider, Log, CancellationToken, ConnectorExecutionRequest, Counter, IGraphClientFactory, ILogger, IReadOnlyList (+5 more)
+Cohesion: 0.19
+Nodes (12): GraphTeamsSourceProvider, Log, CancellationToken, ConnectorExecutionRequest, Counter, IGraphClientFactory, ILogger, IReadOnlyList (+4 more)
 
 ### Community 353 - "Community 353"
 Cohesion: 0.18
@@ -2025,7 +2037,7 @@ Nodes (10): Phase 1: RED — Contracts and Boundary Tests, Phase 2: GREEN — Po
 
 ### Community 354 - "Community 354"
 Cohesion: 0.22
-Nodes (3): TeamsWorkItemMapperTests, Fact, TeamsWorkItemMapper
+Nodes (3): TeamsWorkItemMapperTests, TeamsWorkItemMapper, Fact
 
 ### Community 355 - "Community 355"
 Cohesion: 0.09
@@ -2085,11 +2097,11 @@ Nodes (29): Outlook Connector Mapping Specification, Purpose, Requirement: Clean
 
 ### Community 371 - "Community 371"
 Cohesion: 0.22
-Nodes (4): OutlookWorkItemMapperTests, Fact, OutlookEmailDto, OutlookWorkItemMapper
+Nodes (4): OutlookWorkItemMapperTests, OutlookWorkItemMapper, Fact, OutlookEmailDto
 
 ### Community 372 - "Community 372"
 Cohesion: 0.29
-Nodes (6): Dictionary, IDictionary, TeamsMessageDto, WorkItem, WorkItemPriority, TeamsWorkItemMapper
+Nodes (6): Dictionary, IDictionary, WorkItem, WorkItemPriority, TeamsWorkItemMapper, TeamsMessageDto
 
 ### Community 373 - "Community 373"
 Cohesion: 0.10
@@ -2097,7 +2109,7 @@ Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triag
 
 ### Community 374 - "Community 374"
 Cohesion: 0.10
-Nodes (19): Purpose, Requirement: Focus Mode Deferral, Requirement: Global Triage Decision Authority, Requirement: Refinement Anchoring, Requirement: Rule Governance, Requirement: Teams Preliminary Scoring Backlog, Requirement: Two-Stage Pipeline Boundary, Requirements (+11 more)
+Nodes (19): Requirement: Global Triage Decision Authority, Requirement: Rule Governance, Requirement: Two-Stage Pipeline Boundary, Scenario: Docs assert explainability, Scenario: Docs assert per-user adjustability, Scenario: Docs distinguish pre-scoring from final decision, Scenario: Docs name the global engine as decision authority, Scenario: Docs prohibit silent generalization (+11 more)
 
 ### Community 375 - "Community 375"
 Cohesion: 0.13
@@ -2148,8 +2160,8 @@ Cohesion: 0.17
 Nodes (11): Apply Progress — triage-global-policy-foundation, Command Log, Completed Tasks, Deviations from Design, Execution Summary, Files Changed, Issues / Notes, Rollback Notes (+3 more)
 
 ### Community 387 - "Community 387"
-Cohesion: 0.18
-Nodes (14): Log, MorningSummarySchedulingWorker, CancellationToken, DateOnly, Exception, ILogger, IMorningSummaryComposer, IMorningSummaryEmissionStore (+6 more)
+Cohesion: 0.29
+Nodes (8): Log, CancellationToken, DateOnly, Exception, ILogger, LoggerMessage, Task, TimeOnly
 
 ### Community 388 - "Community 388"
 Cohesion: 0.20
@@ -2212,8 +2224,8 @@ Cohesion: 0.29
 Nodes (6): Microsoft.AspNetCore.SignalR.Client (9.0.0), Microsoft.Extensions.Http.Resilience (9.0.0), Microsoft.Identity.Web (3.0.0), net9.0, Microsoft.Identity.Client (4.85.2), Microsoft.NET.Sdk.Web
 
 ### Community 405 - "Community 405"
-Cohesion: 0.10
-Nodes (25): InboxPreviewPanelFieldsSmokeTests, StubDashboardClient, StubGraphConnectorClient, StubModuleProgressClient, StubPreviewClient, StubSyncClient, StubSystemStatusClient, ThrowingPreviewClient (+17 more)
+Cohesion: 0.11
+Nodes (21): InboxPreviewPanelFieldsSmokeTests, StubDashboardClient, StubGraphConnectorClient, StubPreviewClient, StubSystemStatusClient, ThrowingPreviewClient, CancellationToken, DashboardPreviewResponse (+13 more)
 
 ### Community 406 - "Community 406"
 Cohesion: 0.20
@@ -2244,12 +2256,12 @@ Cohesion: 0.08
 Nodes (23): Morning Summary Ranking Specification, Purpose, Requirement: AI-Assisted Prioritization Boundary, Requirement: Application Layer Ownership, Requirement: Deterministic Tiebreak Chain, Requirement: Insufficient Signals Handling, Requirement: Preliminary Score as Decision Input, Requirement: Primary Ranking Order (+15 more)
 
 ### Community 413 - "Community 413"
-Cohesion: 0.13
-Nodes (16): CalendarConnectorAdapter, Log, CalendarEventMapper, CalendarEventDto, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, DateTimeOffset (+8 more)
+Cohesion: 0.12
+Nodes (17): CalendarConnectorAdapter, Log, CalendarEventMapper, IConnectorAdapter, CalendarEventDto, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult (+9 more)
 
 ### Community 414 - "Community 414"
-Cohesion: 0.31
-Nodes (7): CancellingInitialDashboardReader, StubInitialDashboardReader, ThrowingInitialDashboardReader, CancellationToken, Exception, IInitialDashboardReader, InitialDashboardDto
+Cohesion: 0.10
+Nodes (19): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), CRITICAL, Interruption Policy Engine Spec (2 requirements, 4 scenarios) (+11 more)
 
 ### Community 415 - "Community 415"
 Cohesion: 0.24
@@ -2360,8 +2372,8 @@ Cohesion: 0.33
 Nodes (4): IMorningSummaryRankingPolicy, IReadOnlyList, RankedWorkItem, WorkItem
 
 ### Community 451 - "Community 451"
-Cohesion: 0.12
-Nodes (16): StubDelayedDashboardApiClient, DelayedDashboardApiClient, StubDashboardApiClient, ThrowingDashboardApiClient, IDashboardApiClient, Dispose, Authorized, AuthorizeView (+8 more)
+Cohesion: 0.08
+Nodes (29): StubDelayedDashboardApiClient, DelayedDashboardApiClient, DelayedDashboardPreviewApiClient, StubApiPrimaryHandler, StubDashboardApiClient, StubDashboardPreviewApiClient, StubGraphConnectorApiClient, ThrowingDashboardApiClient (+21 more)
 
 ### Community 452 - "Community 452"
 Cohesion: 0.20
@@ -2380,8 +2392,8 @@ Cohesion: 0.10
 Nodes (19): Change 1: Dashboard Reorder, Change 2: Health Page, Change 3: Logout Button, Phase 4: Verification, Review Workload Forecast, Summary, Task 10: Add sign-out to Header.razor, Task 11: Full build and test suite (+11 more)
 
 ### Community 456 - "Community 456"
-Cohesion: 0.12
-Nodes (17): Log, TriggerSyncUseCase, IWorkItemStore, SourceSyncResult, CancellationToken, DateTimeOffset, Exception, Func (+9 more)
+Cohesion: 0.13
+Nodes (16): Log, TriggerSyncUseCase, SourceSyncResult, CancellationToken, DateTimeOffset, Exception, Func, ILogger (+8 more)
 
 ### Community 457 - "Community 457"
 Cohesion: 0.22
@@ -2428,8 +2440,8 @@ Cohesion: 0.20
 Nodes (8): MorningSummaryScheduler, CancellationToken, Func, IMorningSummaryEmissionStore, IMorningSummarySettingsProvider, MorningSummaryDueState, Task, TimeZoneInfo
 
 ### Community 472 - "Community 472"
-Cohesion: 0.08
-Nodes (20): AuthenticationStateProvider, ITokenAcquisitionService, DevTokenAcquisitionService, Log, MsalTokenAcquisitionService, AuthenticatedUiTestServiceCollectionExtensions, TestAuthenticationStateProvider, AuthenticationStateProvider (+12 more)
+Cohesion: 0.07
+Nodes (22): AuthenticationStateProvider, ITokenAcquisitionService, DevTokenAcquisitionService, Log, MsalTokenAcquisitionService, AuthenticatedUiTestServiceCollectionExtensions, TestAuthenticationStateProvider, AuthenticationStateProvider (+14 more)
 
 ### Community 473 - "Community 473"
 Cohesion: 0.09
@@ -2437,7 +2449,7 @@ Nodes (19): SqliteMeetingAlertStore, Hub, AlertHub, MeetingAlertHub, IMeetingAle
 
 ### Community 474 - "Community 474"
 Cohesion: 0.06
-Nodes (22): DependencyInjectionTests, StubCurrentUserService, StubMorningSummaryEmissionStore, StubMorningSummarySettingsProvider, IMorningSummarySettingsProvider, SqliteMorningSummaryEmissionStoreTests, TestSettingsProvider, AppSettingsMorningSummarySettingsProvider (+14 more)
+Nodes (22): DependencyInjectionTests, StubCurrentUserService, StubMorningSummaryEmissionStore, StubMorningSummarySettingsProvider, AuraUser, DateOnly, IMorningSummarySettingsProvider, SqliteMorningSummaryEmissionStoreTests (+14 more)
 
 ### Community 475 - "Community 475"
 Cohesion: 0.12
@@ -2492,8 +2504,8 @@ Cohesion: 0.31
 Nodes (7): IMeetingAlertStore, CancellationToken, DateTimeOffset, IReadOnlyList, MeetingAlert, MeetingAlertTrigger, Task
 
 ### Community 488 - "Community 488"
-Cohesion: 0.13
-Nodes (14): NullScope, IDisposable, ILogger, NullScope, RecordingLogger, IDisposable, TState, EventId (+6 more)
+Cohesion: 0.22
+Nodes (8): EventId, ILogger, RecordingLogger, LogLevel, T, Exception, Func, TState
 
 ### Community 489 - "Community 489"
 Cohesion: 0.50
@@ -2512,19 +2524,19 @@ Cohesion: 0.20
 Nodes (8): CheckAndDispatchMeetingAlertsUseCase, CancellationToken, DateTimeOffset, ICalendarEventStore, IMeetingAlertDispatcher, IMeetingAlertStore, MeetingAlertTrigger, Task
 
 ### Community 495 - "Community 495"
-Cohesion: 0.26
-Nodes (7): ExecuteConnectorUseCaseWorkItemTests, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, WorkItem
+Cohesion: 0.24
+Nodes (8): ExecuteConnectorUseCaseWorkItemTests, StubAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult, Fact, Task, WorkItem
 
 ### Community 496 - "Community 496"
-Cohesion: 0.16
-Nodes (14): StubAdapter, IConnectorAdapter, CapturingConnectorAdapter, StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest (+6 more)
+Cohesion: 0.13
+Nodes (16): IConnectorAdapter, CapturingConnectorAdapter, StubConnectorAdapter, ThrowingConnectorAdapter, IConnectorAdapter, CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult (+8 more)
 
 ### Community 497 - "Community 497"
-Cohesion: 0.50
+Cohesion: 0.42
 Nodes (3): SystemStatusReaderTests, Fact, Task
 
 ### Community 498 - "Community 498"
-Cohesion: 0.30
+Cohesion: 0.35
 Nodes (5): GraphConnectorStatusReaderTests, Fact, InlineData, Task, Theory
 
 ### Community 499 - "Community 499"
@@ -2577,11 +2589,11 @@ Nodes (10): HealthRouteBrowserTests, bool, Fact, IBrowser, IBrowserContext, IPag
 
 ### Community 511 - "Community 511"
 Cohesion: 0.11
-Nodes (8): Program, UiMarker, Services, AuthenticationStateProvider, Fact, Fact, DevTokenAcquisitionServiceTests, SignalRMeetingAlertIntegrationTests
+Nodes (6): Program, UiMarker, MorningSummary, Services, Fact, SignalRMeetingAlertIntegrationTests
 
 ### Community 512 - "Community 512"
-Cohesion: 0.21
-Nodes (9): INotificationOutboxStore, SqliteNotificationOutboxStore, CancellationToken, Guid, IReadOnlyList, NotificationOutboxEntry, SqliteConnection, SqliteDataReader (+1 more)
+Cohesion: 0.23
+Nodes (8): SqliteNotificationOutboxStore, CancellationToken, Guid, IReadOnlyList, NotificationOutboxEntry, SqliteConnection, SqliteDataReader, Task
 
 ### Community 513 - "Community 513"
 Cohesion: 0.12
@@ -2608,8 +2620,8 @@ Cohesion: 0.22
 Nodes (6): Microsoft.Extensions.DependencyInjection.Abstractions (10.0.8), Microsoft.Extensions.Logging.Abstractions (10.0.8), net9.0, Microsoft.NET.Sdk, net9.0, Microsoft.NET.Sdk
 
 ### Community 520 - "Community 520"
-Cohesion: 0.25
-Nodes (6): ModuleProgressApiClient, CancellationToken, HttpClient, JsonSerializerOptions, ModuleProgressResponse, Task
+Cohesion: 0.15
+Nodes (12): StubModuleProgressClient, StubModuleProgressApiClient, ThrowingModuleProgressApiClient, IModuleProgressApiClient, ModuleProgressApiClient, CancellationToken, HttpClient, JsonSerializerOptions (+4 more)
 
 ### Community 521 - "Community 521"
 Cohesion: 0.14
@@ -2900,8 +2912,8 @@ Cohesion: 0.18
 Nodes (11): GraphClientFactory, StaticAccessTokenProvider, IAccessTokenProvider, IGraphClientFactory, CancellationToken, Dictionary, GraphServiceClient, IPublicClientApplication (+3 more)
 
 ### Community 604 - "Community 604"
-Cohesion: 0.12
-Nodes (9): PriorityBadgeTests, SidebarNavigationTests, TestContext, Fact, InlineData, Theory, Fact, Fact (+1 more)
+Cohesion: 0.18
+Nodes (7): PriorityBadgeTests, SidebarNavigationTests, TestContext, Fact, InlineData, Theory, Fact
 
 ### Community 605 - "Community 605"
 Cohesion: 0.50
@@ -3024,8 +3036,8 @@ Cohesion: 0.22
 Nodes (8): Environment Configuration Specification, Purpose, Requirement: `.env` in `.gitignore`, Requirement: No Real Credentials in `.env`, Requirements, Scenario: Application starts with placeholder credentials, Scenario: `.env` is git-ignored, Scenario: Placeholders present in `.env`
 
 ### Community 638 - "Community 638"
-Cohesion: 0.33
-Nodes (4): SqliteMeetingAlertStoreTests, Fact, SqliteConnection, Task
+Cohesion: 0.24
+Nodes (6): SqliteMeetingAlertStoreTests, IDisposable, NullScope, Fact, SqliteConnection, Task
 
 ### Community 639 - "Community 639"
 Cohesion: 0.22
@@ -3136,8 +3148,8 @@ Cohesion: 0.20
 Nodes (9): Architecture Decisions, Data Flow, Design: Login Popup — OIDC Pipeline Redesign, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
 
 ### Community 667 - "Community 667"
-Cohesion: 0.29
-Nodes (6): HandleSyncNow, LoadSyncStatusAsync, OnInitializedAsync, StatusClass, Aura.UI.Services, SourceSyncStateDto
+Cohesion: 0.14
+Nodes (13): StubSyncApiClient, StubSyncClient, StubSyncApiClient, HandleSyncNow, LoadSyncStatusAsync, OnInitializedAsync, StatusClass, ISyncApiClient (+5 more)
 
 ### Community 668 - "Community 668"
 Cohesion: 0.27
@@ -3148,8 +3160,8 @@ Cohesion: 0.25
 Nodes (8): Requirement: Checkpoint Read-Only Integration, Scenario: Absent checkpoint applies today-only window, Scenario: Existing checkpoint bounds fetch window, Scenario: Full failure advances neither timestamp, Scenario: Full success with new items advances both timestamps, Scenario: Full success with no items advances execution-finished-at only, Scenario: Partial failure advances max-processed-at only, Scenario: Repeated run over same window does not regress checkpoint
 
 ### Community 671 - "Community 671"
-Cohesion: 0.13
-Nodes (16): ExecuteConnectorUseCase, NoopInterruptionEngine, NoopWorkItemBuffer, IWorkItemBuffer, ActivitySource, Counter, Func, IIngestionCheckpointStore (+8 more)
+Cohesion: 0.16
+Nodes (13): ActivitySource, ExecuteConnectorUseCase, NoopInterruptionEngine, NoopWorkItemBuffer, Counter, INotificationOutboxStore, IWorkItemBuffer, Meter (+5 more)
 
 ### Community 672 - "Community 672"
 Cohesion: 0.13
@@ -3257,15 +3269,15 @@ Nodes (5): Fact, SqliteConnection, SqliteWorkItemStore, Task, WorkItemStoreRound
 
 ### Community 720 - "Community 720"
 Cohesion: 0.10
-Nodes (21): IInterruptionPolicyEngine, InterruptionDecision, NormalizedSignal, InterruptionPolicyEngine, Log, CancellationToken, Exception, FocusState (+13 more)
+Nodes (20): IInterruptionPolicyEngine, InterruptionDecision, NormalizedSignal, InterruptionPolicyEngine, Log, CancellationToken, Exception, FocusState (+12 more)
 
 ### Community 721 - "Community 721"
 Cohesion: 0.21
 Nodes (9): SystemStatusReader, CancellationToken, IApiReadinessProvider, IMockAuthReadinessProvider, IQdrantReadinessProvider, ReadinessSignal, SystemStatusDto, Task (+1 more)
 
 ### Community 722 - "Community 722"
-Cohesion: 0.10
-Nodes (16): AlwaysAuthorizedService, HealthPageTests, IAuthorizationService, AlwaysAuthorizedService, AuthenticationState, AuthorizationResult, ClaimsPrincipal, Fact (+8 more)
+Cohesion: 0.17
+Nodes (10): AlwaysAuthorizedService, HealthPageTests, IAuthorizationService, AuthenticationState, AuthorizationResult, ClaimsPrincipal, Fact, IAuthorizationRequirement (+2 more)
 
 ### Community 723 - "Community 723"
 Cohesion: 0.15
@@ -3280,12 +3292,12 @@ Cohesion: 0.29
 Nodes (5): IReadOnlyList, List, Lock, WorkItem, InMemoryWorkItemBuffer
 
 ### Community 726 - "Community 726"
-Cohesion: 0.16
-Nodes (7): DependencyInjection, MorningSummary, IMorningSummaryComposer, IServiceCollection, CancellationToken, MorningSummaryRequest, Task
+Cohesion: 0.20
+Nodes (7): IMorningSummaryComposer, MorningSummaryPayload, IMorningSummaryComposer, CancellationToken, MorningSummaryRequest, Task, FakeMorningSummaryComposer
 
 ### Community 727 - "Community 727"
 Cohesion: 0.18
-Nodes (9): StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, IGraphConnectorSettingsProvider, IOptionsMonitor, IGraphConnectorSettingsProvider, GraphConnectorSettings, IOptionsMonitor (+1 more)
+Nodes (9): StubGraphConnectorSettingsProvider, AppSettingsGraphConnectorSettingsProvider, GraphConnectorOptions, GraphConnectorSettings, IGraphConnectorSettingsProvider, IOptionsMonitor, IGraphConnectorSettingsProvider, GraphConnectorSettings (+1 more)
 
 ### Community 728 - "Community 728"
 Cohesion: 0.25
@@ -3317,7 +3329,7 @@ Nodes (9): AlwaysAuthorizedService, PriorityDashboardRenderOrderTests, Authentic
 
 ### Community 737 - "Community 737"
 Cohesion: 0.33
-Nodes (6): Log, Activity, Exception, Guid, ILogger, LoggerMessage
+Nodes (6): Log, Guid, Activity, Exception, ILogger, LoggerMessage
 
 ### Community 738 - "Community 738"
 Cohesion: 0.22
@@ -3408,16 +3420,16 @@ Cohesion: 0.14
 Nodes (13): Assertion Quality, Build & Tests Execution, Changed File Coverage, Coherence (Design), Completeness, Correctness (Static Evidence), Issues Found, Quality Metrics (+5 more)
 
 ### Community 763 - "Community 763"
-Cohesion: 0.11
-Nodes (20): DelayedDashboardPreviewApiClient, StubApiPrimaryHandler, StubDashboardPreviewApiClient, StubGraphConnectorApiClient, StubModuleProgressApiClient, StubSyncApiClient, ThrowingDashboardPreviewApiClient, ThrowingModuleProgressApiClient (+12 more)
+Cohesion: 0.13
+Nodes (14): Affected Areas, Approach, Capabilities, Dependencies, In Scope, Intent, Modified Capabilities, New Capabilities (+6 more)
 
 ### Community 764 - "Community 764"
 Cohesion: 0.24
 Nodes (9): Log, MeetingAlertWorker, CancellationToken, Exception, IHostApplicationLifetime, ILogger, IServiceScopeFactory, LoggerMessage (+1 more)
 
 ### Community 765 - "Community 765"
-Cohesion: 0.27
-Nodes (8): CancellationToken, ConcurrentDictionary, IReadOnlySet, Task, WorkItem, WorkItemPersistenceResult, WorkItemSourceType, InMemoryWorkItemStore
+Cohesion: 0.24
+Nodes (9): IWorkItemStore, CancellationToken, ConcurrentDictionary, IReadOnlySet, Task, WorkItem, WorkItemPersistenceResult, WorkItemSourceType (+1 more)
 
 ### Community 766 - "Community 766"
 Cohesion: 0.15
@@ -3461,7 +3473,7 @@ Nodes (6): ICalendarApiClient, IPrioritySummaryService, StubCalendarClient, Stub
 
 ### Community 776 - "Community 776"
 Cohesion: 0.29
-Nodes (6): PrReviewWorkItemMapper, Dictionary, IDictionary, PrReviewDto, WorkItem, WorkItemPriority
+Nodes (6): PrReviewWorkItemMapper, PrReviewDto, Dictionary, IDictionary, WorkItem, WorkItemPriority
 
 ### Community 777 - "Community 777"
 Cohesion: 0.31
@@ -3529,7 +3541,7 @@ Nodes (5): SqliteNotificationOutboxStore, SqliteNotificationOutboxStoreTests, Fa
 
 ### Community 793 - "Community 793"
 Cohesion: 0.12
-Nodes (12): IInterruptionRule, ScoreThresholdRule, StubRule, CancellationToken, EvaluationContext, RuleResult, Task, CancellationToken (+4 more)
+Nodes (13): IInterruptionRule, IInterruptionRule, ScoreThresholdRule, StubRule, CancellationToken, EvaluationContext, RuleResult, Task (+5 more)
 
 ### Community 794 - "Community 794"
 Cohesion: 0.28
@@ -3548,24 +3560,24 @@ Cohesion: 0.29
 Nodes (5): IInterruptionPolicyEngine, CancellationToken, InterruptionVerdict, Task, WorkItem
 
 ### Community 802 - "Community 802"
-Cohesion: 0.40
-Nodes (4): EmbeddingProviderOptionsValidator, IValidateOptions, EmbeddingProviderOptions, ValidateOptionsResult
+Cohesion: 0.18
+Nodes (10): Apply Progress: W3-H2-A, Change, Command Log, Completed Tasks, Completed Tasks (scoped closure), Cumulative Task Status, Notes, Pending Tasks (+2 more)
 
 ### Community 809 - "Community 809"
-Cohesion: 0.15
-Nodes (9): IPriorityScoringService, StubFocusStateResolver, StubPriorityScoringService, PriorityScoringService, EvaluationContext, IAlertRuleStore, PriorityScore, EvaluationContext (+1 more)
+Cohesion: 0.29
+Nodes (5): IPriorityScoringService, PriorityScoringService, EvaluationContext, IAlertRuleStore, PriorityScore
 
 ### Community 810 - "Community 810"
-Cohesion: 0.15
-Nodes (12): Requirement: Global Triage Decision Authority, Requirement: Rule Governance, Requirement: Two-Stage Pipeline Boundary, Scenario: Docs assert explainability, Scenario: Docs distinguish pre-scoring from final decision, Scenario: Docs name the global engine as decision authority, Scenario: Docs state connector responsibility boundary, Scenario: No connector owns the interrupt decision (+4 more)
+Cohesion: 0.08
+Nodes (22): Requirement: Global Triage Decision Authority, Requirement: Rule Governance, Requirement: Two-Stage Pipeline Boundary, Scenario: Docs assert explainability, Scenario: Docs assert per-user adjustability, Scenario: Docs distinguish pre-scoring from final decision, Scenario: Docs name the global engine as decision authority, Scenario: Docs prohibit silent generalization (+14 more)
 
 ### Community 811 - "Community 811"
-Cohesion: 0.33
-Nodes (6): IMorningSummaryEmissionStore, SqliteMorningSummaryEmissionStore, CancellationToken, DateOnly, SqliteConnection, Task
+Cohesion: 0.38
+Nodes (5): SqliteMorningSummaryEmissionStore, CancellationToken, DateOnly, SqliteConnection, Task
 
 ### Community 812 - "Community 812"
-Cohesion: 0.17
-Nodes (8): IUserTriagePolicyProvider, DefaultUserTriagePolicyProvider, StubUserTriagePolicyProvider, CancellationToken, Task, UserTriagePolicy, CancellationToken, UserTriagePolicy
+Cohesion: 0.11
+Nodes (13): IUserTriagePolicyProvider, DefaultUserTriagePolicyProvider, StubFocusStateResolver, StubPriorityScoringService, StubUserTriagePolicyProvider, CancellationToken, Task, UserTriagePolicy (+5 more)
 
 ### Community 813 - "Community 813"
 Cohesion: 0.18
@@ -3612,32 +3624,72 @@ Cohesion: 0.33
 Nodes (4): IUserTriagePolicyProvider, CancellationToken, Task, UserTriagePolicy
 
 ### Community 825 - "Community 825"
-Cohesion: 0.60
-Nodes (3): CancellationToken, ConnectorExecutionRequest, ConnectorExecutionResult
+Cohesion: 0.20
+Nodes (9): Archive Contents, Archive Report: W3-H2-A — Deterministic Interruption Scoring and Decision Contract, Merge Details — triage-global-policy, Scope Boundary Note, SDD Cycle Complete, Source of Truth Updated, Specs Synced, Task Completion Gate (+1 more)
 
 ### Community 826 - "Community 826"
 Cohesion: 0.40
 Nodes (3): IPriorityScoringService, EvaluationContext, PriorityScore
 
+### Community 830 - "Community 830"
+Cohesion: 0.20
+Nodes (9): Architecture Decisions, Data Flow, Design: W3-H2-A, File Changes, Interfaces / Contracts, Migration / Rollout, Open Questions, Technical Approach (+1 more)
+
+### Community 831 - "Community 831"
+Cohesion: 0.20
+Nodes (9): Interruption Policy Engine Specification, Purpose, Requirement: Explainable Final Decision Authority, Requirement: Explicit Per-User Adjustment Handling, Requirements, Scenario: Broad generalization waits for review, Scenario: Narrow override applies to the next similar case, Scenario: Receptive context can interrupt (+1 more)
+
+### Community 832 - "Community 832"
+Cohesion: 0.20
+Nodes (9): Priority Scoring Specification, Purpose, Requirement: Canonical Explainable Scoring Inputs, Requirement: Deterministic Per-User Scoring Rules, Requirements, Scenario: Canonical inputs drive the explanation, Scenario: Content cues remain traceable, Scenario: Explicit per-user differences are respected (+1 more)
+
+### Community 833 - "Community 833"
+Cohesion: 0.20
+Nodes (9): Interruption Policy Engine Specification, Purpose, Requirement: Explainable Final Decision Authority, Requirement: Explicit Per-User Adjustment Handling, Requirements, Scenario: Broad generalization waits for review, Scenario: Narrow override applies to the next similar case, Scenario: Receptive context can interrupt (+1 more)
+
+### Community 834 - "Community 834"
+Cohesion: 0.20
+Nodes (9): Priority Scoring Specification, Purpose, Requirement: Canonical Explainable Scoring Inputs, Requirement: Deterministic Per-User Scoring Rules, Requirements, Scenario: Canonical inputs drive the explanation, Scenario: Content cues remain traceable, Scenario: Explicit per-user differences are respected (+1 more)
+
+### Community 835 - "Community 835"
+Cohesion: 0.25
+Nodes (7): Phase 1: RED Contract Baseline, Phase 2: Foundation Contracts, Phase 3: GREEN Reuse-First Implementation, Phase 4: Verification and Documentation, Review Workload Forecast, Suggested Work Units, Tasks: W3-H2-A — Deterministic Interruption Scoring and Decision Contract
+
+### Community 836 - "Community 836"
+Cohesion: 0.25
+Nodes (7): MorningSummarySchedulingWorker, IMorningSummaryEmissionStore, IMorningSummaryComposer, IMorningSummaryEmissionStore, IMorningSummaryScheduler, string, TimeSpan
+
+### Community 837 - "Community 837"
+Cohesion: 0.25
+Nodes (6): AlwaysAuthorizedService, AuthorizationResult, ClaimsPrincipal, IAuthorizationRequirement, IEnumerable, Task
+
+### Community 839 - "Community 839"
+Cohesion: 0.40
+Nodes (3): DependencyInjection, IConfiguration, IServiceCollection
+
+### Community 840 - "Community 840"
+Cohesion: 0.50
+Nodes (4): StubGraphConnectorStatusReader, IGraphConnectorStatusReader, CancellationToken, GraphConnectorStatusDto
+
 ## Knowledge Gaps
-- **4799 isolated node(s):** `$schema`, `plugin`, `@opencode-ai/plugin`, `$schema`, `IHubContext` (+4794 more)
+- **4878 isolated node(s):** `Quick path`, `Decision authority and governance`, `Target-user resolution`, `Refinement model`, `Scope note` (+4873 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **69 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Services` connect `Community 511` to `Community 13`, `Community 526`, `Community 783`, `Community 525`, `Community 788`, `Community 405`, `Community 791`, `Community 794`, `Community 35`, `Community 164`, `Community 809`, `Community 42`, `Community 41`, `Community 47`, `Community 431`, `Community 821`, `Community 824`, `Community 465`, `Community 722`, `Community 726`, `Community 474`, `Community 91`, `Community 736`, `Community 106`, `Community 498`, `Community 376`, `Community 763`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `options` connect `Community 42` to `Community 4`, `Community 650`, `Community 18`, `Community 19`, `Community 791`, `Community 23`, `Community 793`, `Community 802`, `Community 37`, `Community 822`, `Community 727`, `Community 474`, `Community 603`, `Community 91`, `Community 232`, `Community 107`, `Community 748`, `Community 238`, `Community 496`, `Community 753`?**
+- **Why does `Services` connect `Community 511` to `Community 13`, `Community 526`, `Community 783`, `Community 525`, `Community 788`, `Community 405`, `Community 791`, `Community 794`, `Community 35`, `Community 164`, `Community 41`, `Community 42`, `Community 812`, `Community 47`, `Community 431`, `Community 821`, `Community 824`, `Community 451`, `Community 837`, `Community 465`, `Community 722`, `Community 472`, `Community 474`, `Community 736`, `Community 106`, `Community 497`, `Community 376`?**
   _High betweenness centrality (0.048) - this node is a cross-community bridge._
-- **Why does `HttpMessageHandler` connect `Community 106` to `Community 770`, `Community 35`, `Community 613`, `Community 237`, `Community 47`, `Community 783`, `Community 559`, `Community 788`, `Community 376`, `Community 763`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **What connects `$schema`, `plugin`, `@opencode-ai/plugin` to the rest of the system?**
-  _4799 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `options` connect `Community 42` to `Community 4`, `Community 650`, `Community 18`, `Community 19`, `Community 791`, `Community 23`, `Community 793`, `Community 37`, `Community 822`, `Community 839`, `Community 72`, `Community 727`, `Community 474`, `Community 603`, `Community 232`, `Community 107`, `Community 748`, `Community 238`, `Community 496`, `Community 753`, `Community 511`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `HttpMessageHandler` connect `Community 106` to `Community 770`, `Community 35`, `Community 451`, `Community 613`, `Community 237`, `Community 47`, `Community 783`, `Community 559`, `Community 788`, `Community 376`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **What connects `Quick path`, `Decision authority and governance`, `Target-user resolution` to the rest of the system?**
+  _4878 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.1286549707602339 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14035087719298245 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.14795008912655971 - nodes in this community are weakly interconnected._
 - **Should `Community 7` be split into smaller, more focused modules?**
   _Cohesion score 0.1173054587688734 - nodes in this community are weakly interconnected._
-- **Should `Community 8` be split into smaller, more focused modules?**
-  _Cohesion score 0.1422924901185771 - nodes in this community are weakly interconnected._

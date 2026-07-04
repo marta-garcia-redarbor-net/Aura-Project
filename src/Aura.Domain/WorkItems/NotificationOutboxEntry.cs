@@ -13,6 +13,10 @@ public sealed class NotificationOutboxEntry
     public string Title { get; }
     public double Priority { get; }
     public string? TriggerRule { get; }
+    public string? Explanation { get; }
+    public string? Decision { get; }
+    public string? TargetUserId { get; }
+    public string? RuleResults { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset? DispatchedAt { get; private set; }
 
@@ -25,7 +29,11 @@ public sealed class NotificationOutboxEntry
         string sourceType,
         string title,
         double priority,
-        string? triggerRule = null)
+        string? triggerRule = null,
+        string? explanation = null,
+        string? decision = null,
+        string? targetUserId = null,
+        string? ruleResults = null)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("UserId must not be null or empty.", nameof(userId));
@@ -41,6 +49,10 @@ public sealed class NotificationOutboxEntry
         Title = title;
         Priority = priority;
         TriggerRule = triggerRule;
+        Explanation = explanation;
+        Decision = decision;
+        TargetUserId = targetUserId;
+        RuleResults = ruleResults;
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -56,7 +68,11 @@ public sealed class NotificationOutboxEntry
         double priority,
         string? triggerRule,
         DateTimeOffset createdAt,
-        DateTimeOffset? dispatchedAt)
+        DateTimeOffset? dispatchedAt,
+        string? explanation = null,
+        string? decision = null,
+        string? targetUserId = null,
+        string? ruleResults = null)
     {
         Id = id;
         WorkItemId = workItemId;
@@ -65,6 +81,10 @@ public sealed class NotificationOutboxEntry
         Title = title;
         Priority = priority;
         TriggerRule = triggerRule;
+        Explanation = explanation;
+        Decision = decision;
+        TargetUserId = targetUserId;
+        RuleResults = ruleResults;
         CreatedAt = createdAt;
         DispatchedAt = dispatchedAt;
     }
