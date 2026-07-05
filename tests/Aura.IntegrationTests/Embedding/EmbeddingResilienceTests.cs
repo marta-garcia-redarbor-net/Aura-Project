@@ -130,6 +130,7 @@ public class EmbeddingResilienceTests
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["EmbeddingProvider:Provider"] = "OpenAI",
                 ["EmbeddingProvider:Endpoint"] = "https://fake.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
                 ["EmbeddingProvider:ApiKey"] = "test-key",

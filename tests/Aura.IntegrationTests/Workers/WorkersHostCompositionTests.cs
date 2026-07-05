@@ -37,6 +37,7 @@ public class WorkersHostCompositionTests
                 ["Qdrant:VectorSize"] = "768",
                 ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
                 ["ConnectionStrings:Aura"] = $"Data Source={dbPath}",
+                ["EmbeddingProvider:Provider"] = "OpenAI",
                 ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
                 ["EmbeddingProvider:ApiKey"] = "test-key",
