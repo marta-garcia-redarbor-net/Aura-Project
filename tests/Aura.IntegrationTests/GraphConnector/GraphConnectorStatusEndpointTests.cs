@@ -7,6 +7,7 @@ using System.Text;
 using Aura.Api;
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
@@ -108,6 +109,8 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         var tempDirectory = Path.Combine(Path.GetTempPath(), $"aura-graph-{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempDirectory);
 
+        WebApplicationFactory<ApiMarker>? factory = null;
+
         try
         {
             var appSettingsPath = Path.Combine(tempDirectory, "appsettings.json");
@@ -124,14 +127,18 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
 
             File.WriteAllText(appSettingsPath, appSettings, Encoding.UTF8);
 
-            var client = CreateAuthenticatedClientWithConfiguration((builder, _) =>
+            factory = _factory.WithWebHostBuilder(builder =>
             {
                 builder.UseContentRoot(tempDirectory);
+                builder.UseSetting("ConnectionStrings:Aura", "Data Source=aura.db;Pooling=False");
                 builder.ConfigureAppConfiguration((_, configBuilder) =>
                 {
                     configBuilder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
                 });
             });
+            var client = factory.CreateClient();
+            var token = await GetMockTokenAsync(client);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var response = await client.GetAsync("/api/connectors/graph/status");
 
@@ -141,9 +148,25 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            if (factory is not null)
+            {
+                await factory.DisposeAsync();
+            }
+
+            SqliteConnection.ClearAllPools();
+
+            try
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+            catch (IOException)
+            {
+                // Temp directory cleanup is best-effort.
+                // SQLite may hold a delayed file handle even after pool clear.
+            }
         }
     }
+
 
     [Fact]
     public async Task GetGraphConnectorStatus_EnvironmentVariableShadowsAppsettingsConfig()

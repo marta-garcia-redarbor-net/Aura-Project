@@ -1,4 +1,7 @@
+using System.Text.Json;
+using Aura.Application.Models;
 using Aura.Application.Ports;
+using Aura.Domain.WorkItems;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,12 +49,14 @@ public sealed partial class WorkItemNotificationWorker : BackgroundService
 
                     foreach (var entry in pending)
                     {
-                        // Use a simple verdict for dispatch - the verdict is already baked into
-                        // the entry's TriggerRule and Priority from when it was enqueued.
-                        var verdict = new Aura.Application.Models.InterruptionVerdict(
-                            Aura.Application.Models.InterruptionDecision.InterruptNow,
-                            new Aura.Application.Models.EvaluationReport(Array.Empty<Aura.Application.Models.RuleResult>()),
-                            entry.TriggerRule);
+                        // Reconstruct the verdict from persisted fields (if available)
+                        // or fall back to a synthetic default for pre-migration entries.
+                        var verdict = entry.Decision is not null
+                            ? DeserializeVerdict(entry)
+                            : new InterruptionVerdict(
+                                InterruptionDecision.InterruptNow,
+                                new EvaluationReport([]),
+                                triggerRule: entry.TriggerRule);
 
                         await dispatcher.DispatchAsync(entry, verdict, stoppingToken);
                         await store.MarkDispatchedAsync(entry.Id, stoppingToken);
@@ -86,6 +91,21 @@ public sealed partial class WorkItemNotificationWorker : BackgroundService
         {
             Log.WorkerCrashed(_logger, ex);
         }
+    }
+
+    private static InterruptionVerdict DeserializeVerdict(NotificationOutboxEntry entry)
+    {
+        var decision = Enum.Parse<InterruptionDecision>(entry.Decision!);
+        var results = entry.RuleResults is not null
+            ? JsonSerializer.Deserialize<List<RuleResult>>(entry.RuleResults) ?? []
+            : [];
+        var report = new EvaluationReport(results);
+        return new InterruptionVerdict(
+            decision,
+            report,
+            triggerRule: entry.TriggerRule,
+            explanation: entry.Explanation,
+            targetUserId: entry.TargetUserId);
     }
 
     private static partial class Log

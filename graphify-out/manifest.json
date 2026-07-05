@@ -325,12 +325,12 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Embedding/EmbeddingProviderOptions.cs": {
-    "mtime": 1781643120.223862,
+    "mtime": 1783199600.1320913,
     "ast_hash": "7aeace34abc445483f15884b4e7a0a27",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Embedding/EmbeddingProviderOptionsValidator.cs": {
-    "mtime": 1781643120.2273917,
+    "mtime": 1783199600.1285844,
     "ast_hash": "f7f29b78e15ddd6046079f90455ea229",
     "semantic_hash": ""
   },
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SemanticIndex/QdrantOptions.cs": {
-    "mtime": 1781643120.2510805,
-    "ast_hash": "b4ffb3f1f47b02ee9d451460ba73069c",
+    "mtime": 1783197196.03446,
+    "ast_hash": "c17ef0965957cbe5e490a727ff0f3f0a",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SemanticIndex/QdrantPointMapper.cs": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/GraphConnector/GraphConnectorStatusEndpointTests.cs": {
-    "mtime": 1783022027.2252305,
-    "ast_hash": "e74886dd17cf4adcb781a89a1e547318",
+    "mtime": 1783196618.4566019,
+    "ast_hash": "d3d1b43b38202d32b35e2caf1da4230b",
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Health/QdrantHealthCheckIntegrationTests.cs": {
@@ -740,8 +740,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Aura.UnitTests.csproj": {
-    "mtime": 1782938342.7053986,
-    "ast_hash": "3deff7330afbbb10fe7a4d028a834e6b",
+    "mtime": 1783192052.893861,
+    "ast_hash": "8e370d1d050d337434efd57c2e9000c1",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Dashboard/AlwaysHealthyApiReadinessAdapterTests.cs": {
@@ -895,7 +895,7 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/VectorStore/QdrantOptionsTests.cs": {
-    "mtime": 1781643120.3255982,
+    "mtime": 1783199600.1245084,
     "ast_hash": "4b14c2b545157a80430f2d2040e40571",
     "semantic_hash": ""
   },
@@ -930,7 +930,7 @@
     "semantic_hash": ""
   },
   "StoryBacklog.md": {
-    "mtime": 1783099821.7901635,
+    "mtime": 1783199600.1541817,
     "ast_hash": "910b868aa245cb2a4e2d5321b34f7c28",
     "semantic_hash": ""
   },
@@ -945,7 +945,7 @@
     "semantic_hash": ""
   },
   "docs/ai/00-overview.md": {
-    "mtime": 1782938515.5091598,
+    "mtime": 1783199600.1506622,
     "ast_hash": "38b8368a3129b16bef1199483caaaeac",
     "semantic_hash": ""
   },
@@ -955,7 +955,7 @@
     "semantic_hash": ""
   },
   "docs/ai/02-architecture-map.md": {
-    "mtime": 1782938515.5116322,
+    "mtime": 1783199600.146663,
     "ast_hash": "d0752308eecc31415d5043c6f8fbe34d",
     "semantic_hash": ""
   },
@@ -1095,8 +1095,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/00-overview.md": {
-    "mtime": 1783187266.4248002,
-    "ast_hash": "5e1ae4cc5a28948e78b59508b992a700",
+    "mtime": 1783194344.7219305,
+    "ast_hash": "35faa18cd9ce8034d1ad95e99aa1761d",
     "semantic_hash": ""
   },
   "docs/architecture/triage/01-morning-summary.md": {
@@ -1105,8 +1105,8 @@
     "semantic_hash": ""
   },
   "docs/architecture/triage/02-proactive-interruptions.md": {
-    "mtime": 1783187266.7911472,
-    "ast_hash": "732ee72cd61c70b512f6b797de977dc5",
+    "mtime": 1783194364.279941,
+    "ast_hash": "085bf10735abd79af8921646d820b6b2",
     "semantic_hash": ""
   },
   "docs/architecture/triage/03-focus-state-machine.md": {
@@ -1750,8 +1750,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Application/UseCases/ConnectorExecution/ExecuteConnectorUseCase.cs": {
-    "mtime": 1783186857.9948778,
-    "ast_hash": "df1105f4e1fbabf7b98611be50ae9fbe",
+    "mtime": 1783191849.010112,
+    "ast_hash": "01f1ba631dbc6fcce35194e454d404eb",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Connectors/DependencyInjection.cs": {
@@ -1830,8 +1830,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/connector-execution/spec.md": {
-    "mtime": 1783021004.128513,
-    "ast_hash": "d080fa9a2bf78831df6747997de38b3a",
+    "mtime": 1783195447.5330462,
+    "ast_hash": "eef6430df85a6e6e00d8250240d7d401",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-19-W2-H2-T3/apply-progress.md": {
@@ -1920,8 +1920,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/ConnectorExecution/ExecuteConnectorUseCaseWorkItemTests.cs": {
-    "mtime": 1782071984.9220846,
-    "ast_hash": "84a11d558256827b607f93206b501cbf",
+    "mtime": 1783191987.4779866,
+    "ast_hash": "5af7b6d2a127888dd144a1d6f3410475",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Ingestion/Teams/TeamsConnectorAdapterTests.cs": {
@@ -2125,8 +2125,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/triage-global-policy/spec.md": {
-    "mtime": 1782073520.3627675,
-    "ast_hash": "a767572577ca8a901f733dbe022ac314",
+    "mtime": 1783189198.2642338,
+    "ast_hash": "b69deb59351904955eca1dc6fb31c6ef",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/MorningSummary.cs": {
@@ -3115,7 +3115,7 @@
     "semantic_hash": ""
   },
   "docs/architecture/auth/01-entra-id-configuration.md": {
-    "mtime": 1782938341.1865182,
+    "mtime": 1783199600.143652,
     "ast_hash": "9783cb6d739e5b713c8bbbf4a8e9a0f1",
     "semantic_hash": ""
   },
@@ -3125,12 +3125,12 @@
     "semantic_hash": ""
   },
   "docs/architecture/deployment/00-overview.md": {
-    "mtime": 1782938341.1974556,
+    "mtime": 1783199600.1401417,
     "ast_hash": "a07833b9bc74c7785276201a81fa12cd",
     "semantic_hash": ""
   },
   "docs/architecture/deployment/01-docker-local-deployment.md": {
-    "mtime": 1782938341.2014568,
+    "mtime": 1783199600.1361418,
     "ast_hash": "c6a71b0ec51cc1fbc68fdcdc30ee7bde",
     "semantic_hash": ""
   },
@@ -3795,8 +3795,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.E2E/PullRequests/PullRequestsPageSmokeTests.cs": {
-    "mtime": 1783027957.166384,
-    "ast_hash": "c51e53522ef5f74a4012cba102852f31",
+    "mtime": 1783196181.5881498,
+    "ast_hash": "9233a99def8504d60ff833e1969a6669",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Adapters/Connectors/PrReview/PrReviewConnectorAdapterTests.cs": {
@@ -3940,8 +3940,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/Adapters/SignalRWorkItemNotificationDispatcher.cs": {
-    "mtime": 1783099665.258729,
-    "ast_hash": "81835cb22aef8923944845eea6776526",
+    "mtime": 1783193582.8830264,
+    "ast_hash": "41232653af5fa1fad2f404c15465fbdf",
     "semantic_hash": ""
   },
   "src/Aura.Api/Endpoints/DebugEndpoints.cs": {
@@ -3960,8 +3960,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/Workers/WorkItemNotificationWorker.cs": {
-    "mtime": 1783099665.2817595,
-    "ast_hash": "fc89d78920463d357c3fc6f9234c8398",
+    "mtime": 1783193718.453153,
+    "ast_hash": "555ae8818cb0294f22ba8f769cc6601a",
     "semantic_hash": ""
   },
   "src/Aura.Application/Models/EvaluationContext.cs": {
@@ -4060,13 +4060,13 @@
     "semantic_hash": ""
   },
   "src/Aura.Domain/WorkItems/NotificationOutboxEntry.cs": {
-    "mtime": 1783099665.3341393,
-    "ast_hash": "3c4f0789b570b6acd01a7180d6fe212b",
+    "mtime": 1783191538.6316776,
+    "ast_hash": "7118d13b356e541143d9d919302eaff2",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Notifications/SqliteNotificationOutboxStore.cs": {
-    "mtime": 1783099665.33914,
-    "ast_hash": "9fdc9c7dc637097a8104b7472455f2f6",
+    "mtime": 1783191686.9876468,
+    "ast_hash": "0a76a87786894b8a7c3721412c03e3f7",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Options/InterruptionOptions.cs": {
@@ -4164,46 +4164,6 @@
     "ast_hash": "4dfbd7057e6ba363baf362ab151c67bc",
     "semantic_hash": ""
   },
-  "openspec/changes/W3-H2-A/apply-progress.md": {
-    "mtime": 1783188050.1362505,
-    "ast_hash": "c6754821cfb1a42530f925e8ecc45042",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/design.md": {
-    "mtime": 1783113404.1238377,
-    "ast_hash": "8dc207628952149530ea190d977f808d",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/proposal.md": {
-    "mtime": 1783111461.5094228,
-    "ast_hash": "47d3a2d08d666209754dd0dc2f802080",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/interruption-policy-engine/spec.md": {
-    "mtime": 1783113172.9339175,
-    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/priority-scoring/spec.md": {
-    "mtime": 1783113172.9314094,
-    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/specs/triage-global-policy/spec.md": {
-    "mtime": 1783113180.6476276,
-    "ast_hash": "81f230dba0d1df645ab8e0818223302e",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/tasks.md": {
-    "mtime": 1783188030.4451187,
-    "ast_hash": "d3a3e51beac20d66eb21077b7482b9c2",
-    "semantic_hash": ""
-  },
-  "openspec/changes/W3-H2-A/verify-report.md": {
-    "mtime": 1783188519.4320612,
-    "ast_hash": "923a516ccf52fa789902b0e828b298b5",
-    "semantic_hash": ""
-  },
   "openspec/changes/W3-H2/exploration.md": {
     "mtime": 1783111151.729051,
     "ast_hash": "ac41348888c5eff73f1c49ba0e76de57",
@@ -4257,6 +4217,186 @@
   "src/Aura.UI/wwwroot/work-item-alert.wav": {
     "mtime": 1783099665.438853,
     "ast_hash": "372c9cbc244b648821ba689afba1171b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/apply-progress.md": {
+    "mtime": 1783188050.1362505,
+    "ast_hash": "c6754821cfb1a42530f925e8ecc45042",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/archive-report.md": {
+    "mtime": 1783189279.3338525,
+    "ast_hash": "d19783d56c5247d1f584fddb5db6e5ec",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/design.md": {
+    "mtime": 1783113404.1238377,
+    "ast_hash": "8dc207628952149530ea190d977f808d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/proposal.md": {
+    "mtime": 1783111461.5094228,
+    "ast_hash": "47d3a2d08d666209754dd0dc2f802080",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/interruption-policy-engine/spec.md": {
+    "mtime": 1783113172.9339175,
+    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/priority-scoring/spec.md": {
+    "mtime": 1783113172.9314094,
+    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/specs/triage-global-policy/spec.md": {
+    "mtime": 1783113180.6476276,
+    "ast_hash": "81f230dba0d1df645ab8e0818223302e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/tasks.md": {
+    "mtime": 1783188030.4451187,
+    "ast_hash": "d3a3e51beac20d66eb21077b7482b9c2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-A/verify-report.md": {
+    "mtime": 1783188519.4320612,
+    "ast_hash": "923a516ccf52fa789902b0e828b298b5",
+    "semantic_hash": ""
+  },
+  "openspec/specs/interruption-policy-engine/spec.md": {
+    "mtime": 1783113172.9339175,
+    "ast_hash": "1e7cdff55fe016170cd3ae54fb4953e7",
+    "semantic_hash": ""
+  },
+  "openspec/specs/priority-scoring/spec.md": {
+    "mtime": 1783113172.9314094,
+    "ast_hash": "08a5d0747a79cd29706065a2ad3e13ab",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Dispatchers/SignalRWorkItemNotificationDispatcherTests.cs": {
+    "mtime": 1783194085.704087,
+    "ast_hash": "38683b941fe0ffd4cb30a38a0e0f59f3",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Domain/NotificationOutboxEntryTests.cs": {
+    "mtime": 1783191465.8803773,
+    "ast_hash": "bf2d4e72f2af1f1229d24a2d9745673f",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Infrastructure/SqliteNotificationOutboxStoreTests.cs": {
+    "mtime": 1783191602.2213647,
+    "ast_hash": "5428e567aab63ff4831c9745ecc6bf84",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Workers/WorkItemNotificationWorkerTests.cs": {
+    "mtime": 1783192080.2615352,
+    "ast_hash": "bf39004b30ece62ef85ad2b7bd7409d9",
+    "semantic_hash": ""
+  },
+  "docs/ai/07-deployment-plan.md": {
+    "mtime": 1783197221.301433,
+    "ast_hash": "0f7878cf37ce482144ec6a818a9b8d9c",
+    "semantic_hash": ""
+  },
+  "docs/architecture/deployment/02-azure-container-apps.md": {
+    "mtime": 1783197123.008241,
+    "ast_hash": "fb1bc672d5bc2c77ca372836ddfac0cc",
+    "semantic_hash": ""
+  },
+  "docs/architecture/deployment/03-ollama-embedding.md": {
+    "mtime": 1783197123.008241,
+    "ast_hash": "03005af7684be0d56a17d1c1f65e9326",
+    "semantic_hash": ""
+  },
+  "docs/demo/00-overview.md": {
+    "mtime": 1783197147.1167986,
+    "ast_hash": "30f437856dec8da2ff21e785365f9f03",
+    "semantic_hash": ""
+  },
+  "docs/demo/01-deployment-checklist.md": {
+    "mtime": 1783197147.1167986,
+    "ast_hash": "3fc0eedb074ade9aa6d7ce1790736b63",
+    "semantic_hash": ""
+  },
+  "docs/demo/02-demo-scenarios.md": {
+    "mtime": 1783197147.1177962,
+    "ast_hash": "a6cf8b86fe31a450de02ec43434e45f6",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W3-H2-T4/design.md": {
+    "mtime": 1783199062.036335,
+    "ast_hash": "79b912e17b42c9363af2080865ff16e3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W3-H2-T4/proposal.md": {
+    "mtime": 1783199181.0151265,
+    "ast_hash": "98397c9e449f1f585cfc951511510edf",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W3-H2-T4/specs/priority-scoring/spec.md": {
+    "mtime": 1783199214.9337914,
+    "ast_hash": "54ee184a207f59fef7a5639515b6663f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W3-H2-T4/specs/teams-connector-mapping/spec.md": {
+    "mtime": 1783198843.9676013,
+    "ast_hash": "f7e7586f09a51fe6a79aa8a9e31e0b7e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/W3-H2-T4/tasks.md": {
+    "mtime": 1783199385.3934968,
+    "ast_hash": "0c2602f1459c2460387896d81543b6fa",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/archive-report.md": {
+    "mtime": 1783195552.6169071,
+    "ast_hash": "3c18adf2dbbe5e651d9204c72646afe1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/design.md": {
+    "mtime": 1783190902.9975247,
+    "ast_hash": "4247c12ad8094ceb788f4bd81799257f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/proposal.md": {
+    "mtime": 1783190435.6699133,
+    "ast_hash": "ac6bb61b3359609af893e69b57b6287c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/specs/connector-execution/spec.md": {
+    "mtime": 1783190669.665653,
+    "ast_hash": "c7813f958b47a9523a1407ddf32b85b1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/specs/notification-outbox-audit/spec.md": {
+    "mtime": 1783190669.6646519,
+    "ast_hash": "e11a87a9407c5c0cc4b7f9a0e07b9d0c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/specs/worker-dispatch/spec.md": {
+    "mtime": 1783190669.665653,
+    "ast_hash": "a88a7e976e36b695af25434b4c2b7bc3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/tasks.md": {
+    "mtime": 1783194382.2301126,
+    "ast_hash": "76ee771144b72bb02021132833d89b54",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-04-W3-H2-B/verify-report.md": {
+    "mtime": 1783195160.5062554,
+    "ast_hash": "a4163749161e75b4616dd59a6927241c",
+    "semantic_hash": ""
+  },
+  "openspec/specs/notification-outbox-audit/spec.md": {
+    "mtime": 1783190669.6646519,
+    "ast_hash": "e11a87a9407c5c0cc4b7f9a0e07b9d0c",
+    "semantic_hash": ""
+  },
+  "openspec/specs/worker-dispatch/spec.md": {
+    "mtime": 1783190669.665653,
+    "ast_hash": "a88a7e976e36b695af25434b4c2b7bc3",
     "semantic_hash": ""
   }
 }

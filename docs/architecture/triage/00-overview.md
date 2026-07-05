@@ -45,7 +45,17 @@ Rule refinement is anchored only to explicit, inspectable inputs:
 
 Aura does not use opaque or silent self-learning to change triage behavior.
 
+## Audit trail
+
+Every interruption verdict is persisted through the notification pipeline for explainability:
+
+1. **Outbox**: `NotificationOutboxEntry` stores `Explanation`, `Decision`, `TargetUserId`, and `RuleResults` (JSON) alongside the notification payload.
+2. **Worker**: `WorkItemNotificationWorker` reconstructs the full `InterruptionVerdict` from persisted fields — or falls back to a synthetic default for pre-migration entries.
+3. **Dispatcher**: `SignalRWorkItemNotificationDispatcher` forwards all audit fields (Explanation, Decision, TargetUserId, RuleResults) in the SignalR payload, enabling downstream consumers (e.g. the Blazor UI) to render explainable interruption cards.
+
+This chain ensures every decision is traceable from policy evaluation through to the user's screen, satisfying the **auditable** governance requirement.
+
 ## Scope note
 
-- **In scope now**: global policy boundary, governance, and refinement anchors.
+- **In scope now**: global policy boundary, governance, refinement anchors, and audit trail.
 - **Out of scope now**: Focus Mode design/state machine (explicitly deferred).

@@ -265,13 +265,19 @@ public sealed partial class ExecuteConnectorUseCase
                     _ => 1.0
                 };
 
+                var ruleResultsJson = System.Text.Json.JsonSerializer.Serialize(verdict.Report.Results);
+
                 var entry = new NotificationOutboxEntry(
                     workItemId: item.Id,
                     userId: userId,
                     sourceType: item.SourceType.ToString(),
                     title: item.Title,
                     priority: priorityValue,
-                    triggerRule: verdict.TriggerRule);
+                    triggerRule: verdict.TriggerRule,
+                    explanation: verdict.Explanation,
+                    decision: verdict.Decision.ToString(),
+                    targetUserId: verdict.TargetUserId,
+                    ruleResults: ruleResultsJson);
 
                 await _outboxStore.EnqueueAsync(entry, ct);
                 Log.NotificationEnqueued(_logger, entry.Id, verdict.Decision.ToString());
