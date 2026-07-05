@@ -1,0 +1,143 @@
+@page "/top-priority"
+@using Aura.UI.Components.Auth
+@using Aura.UI.Components.Dashboard
+@using Aura.UI.Models
+@using Aura.UI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IWorkItemsApiClient WorkItemsApiClient
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Top Priority Queue</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Top Priority Queue</h1>
+                <p class="dashboard-page-header__subtitle">Review the highest-priority work items across sources.</p>
+            </div>
+            @if (_items is not null)
+            {
+                <div class="dashboard-page-header__badges">
+                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live" data-testid="top-priority-count">
+                        @_items.Count pending
+                    </span>
+                    <a class="priority-card__link" href="/triage/decisions" data-testid="top-priority-decision-log-link">Decision log</a>
+                </div>
+            }
+        </div>
+
+        @if (_loadError is not null)
+        {
+            <section class="dashboard-panel dashboard-panel--error" data-testid="top-priority-error">
+                <p role="alert">@_loadError</p>
+            </section>
+        }
+        else if (_items is null)
+        {
+            <section class="dashboard-panel" data-testid="top-priority-loading">
+                <p>Loading top-priority queue...</p>
+            </section>
+        }
+        else if (_items.Count == 0)
+        {
+            <section class="dashboard-panel" data-testid="top-priority-empty">
+                <p>No top-priority items right now.</p>
+            </section>
+        }
+        else
+        {
+            <section class="top-priority-single-column top-priority-detail-layout" data-testid="top-priority-single-column">
+                <span hidden data-testid="top-priority-detail-layout">detail layout</span>
+                <div class="dashboard-panel" data-testid="top-priority-page">
+                    <ul class="top-priority-list" data-testid="top-priority-list" aria-label="Top priority work items">
+                        @foreach (var item in CurrentPageItems)
+                        {
+                            <li class="top-priority-list__item source-feed-item" data-testid="top-priority-item">
+                                <div class="top-priority-list__item-main source-feed-item__content">
+                                    <span hidden data-testid="top-priority-detail-item">detail item</span>
+                                    <strong class="top-priority-list__title source-feed-item__title">@item.Title</strong>
+                                    <div class="top-priority-list__meta source-feed-item__meta">
+                                        <span class="top-priority-list__source source-feed-item__channel">@item.SourceType</span>
+                                        <span class="top-priority-list__score" data-testid="top-priority-item-score">PriorityScore: @(item.PriorityScore?.ToString() ?? "-")</span>
+                                    </div>
+                                </div>
+                                <a class="priority-card__link"
+                                   href="@GetDetailLink(item.Id)"
+                                   data-testid="top-priority-item-detail-link">
+                                    Open
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    @if (TotalPages > 1)
+                    {
+                        <nav class="decision-log__pagination" data-testid="top-priority-pagination" aria-label="Top priority pages">
+                            @for (var p = 1; p <= TotalPages; p++)
+                            {
+                                <button class="decision-log__page @(p == _page ? "decision-log__page--active" : string.Empty)"
+                                        data-testid="top-priority-page-btn"
+                                        @onclick="() => GoToPage(p)">
+                                    @p
+                                </button>
+                            }
+                        </nav>
+                    }
+                </div>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private const int DefaultPageSize = 20;
+    private static readonly string[] TopPrioritySourceTypes = ["TeamsMessage", "OutlookEmail", "PrReview"];
+
+    private List<WorkItemDetailResponse>? _items;
+    private string? _loadError;
+    private int _page = 1;
+
+    private int TotalPages => _items is { Count: > 0 }
+        ? (int)Math.Ceiling(_items.Count / (double)DefaultPageSize)
+        : 0;
+
+    private IReadOnlyList<WorkItemDetailResponse> CurrentPageItems => _items is null
+        ? []
+        : _items
+            .Skip((_page - 1) * DefaultPageSize)
+            .Take(DefaultPageSize)
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var all = new List<WorkItemDetailResponse>();
+
+            foreach (var sourceType in TopPrioritySourceTypes)
+            {
+                var sourceItems = await WorkItemsApiClient.GetBySourceAsync(sourceType, "Pending", CancellationToken.None);
+                all.AddRange(sourceItems);
+            }
+
+            _items = PriorityPresentation.SortWorkItemsForTopPriority(all).ToList();
+        }
+        catch
+        {
+            _loadError = "Top-priority queue is currently unavailable.";
+        }
+    }
+
+    private void GoToPage(int page)
+    {
+        _page = page;
+    }
+
+    private string GetDetailLink(Guid workItemId)
+        => $"/workitems/{workItemId}";
+}

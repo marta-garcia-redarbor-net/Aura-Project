@@ -41,4 +41,17 @@ public class SidebarNavigationTests : TestContext
         Assert.NotNull(decisionsLink);
         Assert.Contains("Interruption Log", decisionsLink.TextContent);
     }
+
+    [Fact]
+    public void Sidebar_TopPriorityQueueEntry_IsSecondMenuItem_AndRoutesToTopPriority()
+    {
+        var cut = RenderComponent<Sidebar>();
+
+        var navItems = cut.FindAll(".dashboard-sidebar__nav > li");
+        var secondItemLink = navItems[1].QuerySelector("a");
+
+        Assert.NotNull(secondItemLink);
+        Assert.Equal("/top-priority", secondItemLink!.GetAttribute("href"));
+        Assert.Contains("Top Priority Queue", secondItemLink.TextContent);
+    }
 }

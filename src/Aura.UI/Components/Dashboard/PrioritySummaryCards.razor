@@ -27,9 +27,27 @@
                 <header class="priority-card__header">
                     <span class="material-symbols-outlined" style="font-size: 20px; color: var(--aura-on-surface-variant);">@card.Icon</span>
                     <h3 class="priority-card__level">@card.DisplayName</h3>
-                    <span class="priority-card__count" data-testid="priority-card-count">
-                        @card.TotalCount @card.CountLabel
-                    </span>
+                    @if (PriorityPresentation.HasTopPriorityItems(card.PreviewItems) || (card.IsPrCard && PriorityPresentation.HasTopPriorityPrItems(card.PrItems)))
+                    {
+                        <span class="top-priority-indicator" data-testid="priority-card-top-badge" title="Top priority" aria-label="Top priority"></span>
+                    }
+                    <div class="priority-card__header-counts">
+                        <span class="priority-card__count" data-testid="priority-card-count">
+                            @card.TotalCount @card.CountLabel
+                        </span>
+                        @if (!card.IsCalendarCard)
+                        {
+                            var highPriorityCount = card.IsPrCard
+                                ? PriorityPresentation.GetHighPriorityPrCount(card.PrItems)
+                                : PriorityPresentation.GetHighPriorityCount(card.PreviewItems);
+
+                            <span class="priority-card__high-count"
+                                  data-testid="priority-card-high-count"
+                                  aria-label="@($"{highPriorityCount} high priority")">
+                                @highPriorityCount high priority
+                            </span>
+                        }
+                    </div>
                 </header>
 
                 @if (isEmpty)

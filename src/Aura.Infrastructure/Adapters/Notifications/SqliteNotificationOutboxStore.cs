@@ -18,6 +18,7 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
 
     public static void InitializeSchema(SqliteConnection connection)
     {
+        // Create base table and index if missing
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             CREATE TABLE IF NOT EXISTS NotificationOutbox (
@@ -34,14 +35,37 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
 
             CREATE INDEX IF NOT EXISTS IX_NotificationOutbox_Pending
                 ON NotificationOutbox (DispatchedAt, Priority DESC, CreatedAt ASC);
-
-            -- W3-H2-B: audit trail verdict columns (nullable, backward-compatible)
-            ALTER TABLE NotificationOutbox ADD COLUMN Explanation TEXT NULL;
-            ALTER TABLE NotificationOutbox ADD COLUMN Decision TEXT NULL;
-            ALTER TABLE NotificationOutbox ADD COLUMN TargetUserId TEXT NULL;
-            ALTER TABLE NotificationOutbox ADD COLUMN RuleResults TEXT NULL;
             """;
         cmd.ExecuteNonQuery();
+
+        // Ensure audit trail columns exist (idempotent)
+        using var colCmd = connection.CreateCommand();
+        colCmd.CommandText = "PRAGMA table_info('NotificationOutbox');";
+        var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var reader = colCmd.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                // column name is at index 1
+                existing.Add(reader.GetString(1));
+            }
+        }
+
+        void AddColumnIfMissing(string columnSql, string columnName)
+        {
+            if (!existing.Contains(columnName))
+            {
+                using var add = connection.CreateCommand();
+                add.CommandText = $"ALTER TABLE NotificationOutbox ADD COLUMN {columnSql};";
+                add.ExecuteNonQuery();
+            }
+        }
+
+        // W3-H2-B: audit trail verdict columns (nullable, backward-compatible)
+        AddColumnIfMissing("Explanation TEXT NULL", "Explanation");
+        AddColumnIfMissing("Decision TEXT NULL", "Decision");
+        AddColumnIfMissing("TargetUserId TEXT NULL", "TargetUserId");
+        AddColumnIfMissing("RuleResults TEXT NULL", "RuleResults");
     }
 
     public Task EnqueueAsync(NotificationOutboxEntry entry, CancellationToken ct)

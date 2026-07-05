@@ -1,8 +1,8 @@
 @using Microsoft.AspNetCore.Authorization
 
 <div class="restricted-access" data-testid="restricted-access-view">
-    <!-- Blurred dashboard shell skeleton -->
-    <div class="blur-restricted">
+    <!-- Dashboard shell skeleton (no blur) -->
+    <div>
         <aside class="dashboard-sidebar" data-testid="blurred-sidebar">
             <div class="dashboard-sidebar__brand">
                 <h2 class="dashboard-sidebar__title">Aura Core</h2>
@@ -25,8 +25,11 @@
         </header>
     </div>
 
-    <!-- Login card overlay -->
-    <div class="login-card" data-testid="login-card">
+    <!-- Fullscreen blur backdrop behind the popup (blocks interaction with background) -->
+    <div class="login-overlay-backdrop" data-testid="login-overlay-backdrop" style="position:fixed;inset:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(255,255,255,0.06);z-index:1000;pointer-events:auto;"></div>
+
+    <!-- Login card overlay (on top of blur) -->
+    <div class="login-card" data-testid="login-card" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;">
         <h1 class="login-card__title">Aura</h1>
         <p class="login-card__subtitle">Sign in to continue</p>
 

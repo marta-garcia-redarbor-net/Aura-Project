@@ -2,8 +2,7 @@ using Aura.UI.Components.Layout;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,4 +97,29 @@ public class HeaderSignOutTests : TestContext
         // Assert
         Assert.Contains("Test User", cut.Markup);
     }
+
+    [Fact]
+    public void Header_RendersTopPriorityQueueLink_InHeaderNavPosition()
+    {
+        SetupCommonServices();
+
+        var cut = RenderComponent<Header>();
+        cut.WaitForElement("[data-testid='header-top-priority-counter']");
+
+        var nav = cut.Find(".dashboard-header__nav");
+        Assert.Contains("Top priority queue", nav.TextContent);
+    }
+
+    [Fact]
+    public void Header_ClickingTopPriorityQueueLink_NavigatesToTopPriorityRoute()
+    {
+        SetupCommonServices();
+        var navManager = Services.GetRequiredService<NavigationManager>();
+
+        var cut = RenderComponent<Header>();
+        cut.WaitForElement("[data-testid='header-top-priority-counter']").Click();
+
+        Assert.EndsWith("/top-priority", navManager.Uri, StringComparison.Ordinal);
+    }
+
 }

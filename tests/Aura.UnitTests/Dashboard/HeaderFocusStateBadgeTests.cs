@@ -1,4 +1,5 @@
 using Aura.UI.Components.Layout;
+using Aura.UI.Components.Dashboard;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
@@ -30,6 +31,16 @@ public class HeaderFocusStateBadgeTests : TestContext
         Services.AddSingleton(CreateConfig());
         Services.AddSingleton(api);
 
+        var previewApi = Substitute.For<IDashboardPreviewApiClient>();
+        previewApi.GetPreviewAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new DashboardPreviewResponse([], [])
+            {
+                TotalPendingCount = 4,
+                HighPriorityCount = 2,
+                TopItems = []
+            }));
+        Services.AddSingleton(previewApi);
+
         var cut = RenderComponent<Header>();
 
         cut.WaitForElement("[data-testid='focus-state-badge']");
@@ -45,6 +56,16 @@ public class HeaderFocusStateBadgeTests : TestContext
 
         Services.AddSingleton(CreateConfig());
         Services.AddSingleton(api);
+
+        var previewApi = Substitute.For<IDashboardPreviewApiClient>();
+        previewApi.GetPreviewAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new DashboardPreviewResponse([], [])
+            {
+                TotalPendingCount = 6,
+                HighPriorityCount = 3,
+                TopItems = []
+            }));
+        Services.AddSingleton(previewApi);
 
         var cut = RenderComponent<Header>();
 

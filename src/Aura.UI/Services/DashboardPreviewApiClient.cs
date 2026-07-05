@@ -17,6 +17,13 @@ public sealed class DashboardPreviewApiClient : IDashboardPreviewApiClient
     public async Task<DashboardPreviewResponse> GetPreviewAsync(CancellationToken cancellationToken)
     {
         using var response = await _httpClient.GetAsync("/api/dashboard/preview", cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // Propagate unauthorized so the UI can show a login overlay
+            throw new UnauthorizedAccessException("Unauthorized when calling /api/dashboard/preview");
+        }
+
         response.EnsureSuccessStatusCode();
 
         var preview = await response.Content.ReadFromJsonAsync<DashboardPreviewResponse>(SerializerOptions, cancellationToken);

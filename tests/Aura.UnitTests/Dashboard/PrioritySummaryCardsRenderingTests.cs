@@ -229,4 +229,143 @@ public class PrioritySummaryCardsRenderingTests : TestContext
         Assert.Contains("1/2 Approved", prCard.TextContent);
         Assert.NotNull(cut.Find("[data-testid='pr-mini-table']"));
     }
+
+    [Fact]
+    public void RendersTopPriorityBadgeNextToTeamsCardTitle_WhenGroupContainsTopItem()
+    {
+        var teamsItems = new List<InboxItemPreviewResponse>
+        {
+            new("A", "messages", "1m ago", 1, "Review") { PriorityScore = 95 },
+            new("B", "messages", "2m ago", 1, "Review") { PriorityScore = 70 }
+        };
+
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", teamsItems, null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "PENDING",
+                "PRs", "View All Repositories", "https://redarbor.visualstudio.com/",
+                "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems =
+                [
+                    new PrPreviewItemResponse(
+                        "Fix", "#1 Fix", "main", "passing", 1, 1, 0, "dev",
+                        DateTimeOffset.UtcNow.AddMinutes(-5), "5m ago", "https://dev.azure.com/pr/1", false, "high")
+                ]
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var teamsCard = cut.Find("[data-source='teams']");
+        var badge = teamsCard.QuerySelector("[data-testid='priority-card-top-badge']");
+        Assert.NotNull(badge);
+        Assert.Equal("Top priority", badge!.GetAttribute("title"));
+    }
+
+    [Fact]
+    public void RendersTopPriorityBadgeNextToOutlookCardTitle_WhenGroupContainsTopItem()
+    {
+        var outlookItems = new List<InboxItemPreviewResponse>
+        {
+            new("Email A", "inbox", "1m ago", 1, "Review") { PriorityScore = 92 },
+            new("Email B", "inbox", "2m ago", 1, "Review") { PriorityScore = 65 }
+        };
+
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", outlookItems, null),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "PENDING",
+                "PRs", "View All Repositories", "https://redarbor.visualstudio.com/",
+                "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems =
+                [
+                    new PrPreviewItemResponse(
+                        "Fix", "#1 Fix", "main", "passing", 1, 1, 0, "dev",
+                        DateTimeOffset.UtcNow.AddMinutes(-5), "5m ago", "https://dev.azure.com/pr/1", false, "medium")
+                ]
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var outlookCard = cut.Find("[data-source='outlook']");
+        var badge = outlookCard.QuerySelector("[data-testid='priority-card-top-badge']");
+        Assert.NotNull(badge);
+        Assert.Equal("Top priority", badge!.GetAttribute("title"));
+    }
+
+    [Fact]
+    public void RendersTopPriorityBadgeNextToPrCardTitle_WhenPrContainsTopItem()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "PENDING",
+                "PRs", "View All Repositories", "https://redarbor.visualstudio.com/",
+                "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems =
+                [
+                    new PrPreviewItemResponse(
+                        "Critical Fix", "#9 Critical Fix", "main", "passing", 1, 1, 0, "dev",
+                        DateTimeOffset.UtcNow.AddMinutes(-2), "2m ago", "https://dev.azure.com/pr/9", false, "critical")
+                ]
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var prCard = cut.Find("[data-source='pr-review']");
+        var badge = prCard.QuerySelector("[data-testid='priority-card-top-badge']");
+        Assert.NotNull(badge);
+        Assert.Equal("Top priority", badge!.GetAttribute("title"));
+    }
+
+    [Fact]
+    public void RendersHighPriorityCounterNextToCardCount_WithAriaLabel()
+    {
+        var teamsItems = new List<InboxItemPreviewResponse>
+        {
+            new("A", "messages", "1m ago", 1, "Review") { PriorityScore = 95 },
+            new("B", "messages", "2m ago", 1, "Review") { PriorityScore = 75 },
+            new("C", "messages", "3m ago", 1, "Review") { PriorityScore = 40 }
+        };
+
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "new", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", teamsItems, null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "new", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "new", "PRs",
+                "View All Repositories", "https://redarbor.visualstudio.com/", "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems =
+                [
+                    new PrPreviewItemResponse(
+                        "Critical", "#1 Critical", "main", "passing", 1, 1, 0, "dev",
+                        DateTimeOffset.UtcNow.AddMinutes(-1), "1m ago", "https://dev.azure.com/pr/1", false, "critical")
+                ]
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var teamsCard = cut.Find("[data-source='teams']");
+        var highBadge = teamsCard.QuerySelector("[data-testid='priority-card-high-count']");
+        Assert.NotNull(highBadge);
+        Assert.Equal("2 high priority", highBadge!.TextContent.Trim());
+        Assert.Equal("2 high priority", highBadge.GetAttribute("aria-label"));
+    }
 }

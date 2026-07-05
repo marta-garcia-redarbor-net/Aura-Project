@@ -214,6 +214,85 @@ a {
     gap: 1rem;
 }
 
+.dashboard-header__top-priority-link {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dashboard-header__top-priority-link .dashboard-page-header__badge {
+    padding: 0.125rem 0.5rem;
+}
+
+.top-priority-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.top-priority-single-column {
+    max-width: 56rem;
+    margin: 0 auto;
+}
+
+.top-priority-list__item {
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.top-priority-list__item-main {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.top-priority-list__title {
+    color: var(--aura-on-surface);
+    font-size: 14px;
+}
+
+.top-priority-list__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--aura-on-surface-variant);
+    font-size: 12px;
+}
+
+.top-priority-list__source {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.top-priority-list__score {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    color: var(--aura-primary);
+    font-weight: 700;
+}
+
+.top-priority-detail-layout .top-priority-list__item {
+    align-items: flex-start;
+}
+
+.top-priority-detail-layout .top-priority-list__meta {
+    flex-wrap: wrap;
+}
+
 .focus-state {
     position: relative;
 }
@@ -1272,6 +1351,37 @@ a {
     line-height: 16px;
     letter-spacing: 0.05em;
     color: var(--aura-on-surface-variant);
+}
+
+.priority-card__header-counts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.priority-card__high-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.03em;
+    color: var(--aura-on-surface-variant);
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    text-transform: lowercase;
+}
+
+.top-priority-indicator {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--aura-error);
+    display: inline-block;
+    margin-right: 0.5rem;
+    opacity: 0.85;
 }
 
 .priority-card__items {

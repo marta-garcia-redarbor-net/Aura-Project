@@ -3,6 +3,7 @@ using Aura.UI.Components.Dashboard;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,25 +45,7 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
     }
 
     [Fact]
-    public void RendersPendingAndHighPriorityCounts()
-    {
-        SetupServices(new DashboardPreviewResponse([], [])
-        {
-            TotalPendingCount = 15,
-            HighPriorityCount = 4,
-            TopItems = []
-        });
-
-        Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
-
-        cut.WaitForElement("[data-testid='priority-dashboard-counts']");
-        Assert.Contains("15 pending", cut.Markup);
-        Assert.Contains("4 high priority", cut.Markup);
-    }
-
-    [Fact]
-    public void RendersImportanceBadges_ForTopItems()
+    public void Dashboard_NoLongerRendersTopPrioritySummaryPanel()
     {
         SetupServices(new DashboardPreviewResponse([], [])
         {
@@ -70,18 +53,38 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
             HighPriorityCount = 4,
             TopItems =
             [
-                new InboxItemPreviewResponse("A", "messages", "1m ago", 0.9, "Review") { PriorityScore = 95 },
-                new InboxItemPreviewResponse("B", "messages", "2m ago", 0.8, "Review") { PriorityScore = 90 },
-                new InboxItemPreviewResponse("C", "messages", "3m ago", 0.7, "Review") { PriorityScore = 85 },
-                new InboxItemPreviewResponse("D", "messages", "4m ago", 0.6, "Review") { PriorityScore = 85 }
+                new InboxItemPreviewResponse("A", "messages", "1m ago", 0.9, "Review") { PriorityScore = 95 }
             ]
         });
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
         var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
 
-        cut.WaitForElement("[data-testid='priority-dashboard-top-items']");
-        var badges = cut.FindAll("[data-testid='priority-dashboard-importance-badge']");
-        Assert.Equal(4, badges.Count);
+        Assert.DoesNotContain("priority-dashboard-top-items", cut.Markup);
+        Assert.DoesNotContain("priority-dashboard-counts", cut.Markup);
+    }
+
+    [Fact]
+    public void Dashboard_HeaderReplacesLiveSyncWithTopPriorityCounter_AndNavigatesOnClick()
+    {
+        SetupServices(new DashboardPreviewResponse([], [])
+        {
+            TotalPendingCount = 9,
+            HighPriorityCount = 4,
+            TopItems = []
+        });
+
+        Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
+        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+
+        var counter = cut.Find("[data-testid='priority-dashboard-top-priority-counter']");
+        Assert.Contains("9 pending", counter.TextContent);
+        Assert.Contains("4 high priority", counter.TextContent);
+        Assert.DoesNotContain("Live Sync", cut.Markup);
+
+        counter.Click();
+
+        var navManager = Services.GetRequiredService<NavigationManager>();
+        Assert.EndsWith("/top-priority", navManager.Uri, StringComparison.Ordinal);
     }
 }
