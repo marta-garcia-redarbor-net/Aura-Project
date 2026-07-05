@@ -32,7 +32,8 @@ internal sealed class CalendarEventMapper
             JoinUrl: dto.JoinUrl,
             Organizer: dto.OrganizerName,
             Location: dto.LocationDisplayName,
-            OriginalTimeZone: dto.OriginalTimeZone);
+            OriginalTimeZone: dto.OriginalTimeZone,
+            UserId: dto.UserId);
 
         return true;
     }

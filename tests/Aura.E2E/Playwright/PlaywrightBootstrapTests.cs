@@ -108,4 +108,23 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
 
         await context.CloseAsync();
     }
+
+    [Fact]
+    public async Task FocusStateBadge_RendersOnDashboard()
+    {
+        var context = await _browser!.NewContextAsync();
+        var page = await context.NewPageAsync();
+
+        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
+
+        var panel = page.Locator("[data-testid='focus-state-panel']");
+        await panel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
+
+        var badge = page.Locator("[data-testid='focus-state-badge']");
+        await badge.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
+
+        Assert.True(await badge.IsVisibleAsync());
+
+        await context.CloseAsync();
+    }
 }

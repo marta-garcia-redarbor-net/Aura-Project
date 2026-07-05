@@ -193,6 +193,17 @@ public class DependencyInjectionTests
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
     }
 
+    [Fact]
+    public void AddAuraApplication_DoesNotRegisterIFocusStateResolver()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IFocusStateResolver));
+        Assert.Null(descriptor);
+    }
+
     private sealed class StubMorningSummarySettingsProvider : IMorningSummarySettingsProvider
     {
         private readonly MorningSummarySettings _settings;

@@ -21,7 +21,8 @@ public class CalendarEventMapperTests
             OrganizerAddress = "john@example.com",
             LocationDisplayName = "Conference Room A",
             IsCancelled = false,
-            OriginalTimeZone = "Eastern Standard Time"
+            OriginalTimeZone = "Eastern Standard Time",
+            UserId = "oid-123"
         };
 
         var result = mapper.TryMap(dto, out var calendarEvent);
@@ -37,6 +38,7 @@ public class CalendarEventMapperTests
         Assert.Equal("John Doe", calendarEvent.Organizer);
         Assert.Equal("Conference Room A", calendarEvent.Location);
         Assert.Equal("Eastern Standard Time", calendarEvent.OriginalTimeZone);
+        Assert.Equal("oid-123", calendarEvent.UserId);
     }
 
     [Fact]

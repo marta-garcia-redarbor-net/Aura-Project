@@ -80,15 +80,10 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 targetUserId: null);
         }
 
-        if (focusState?.CurrentState == FocusStateType.Away && !priorityScore.IsCriticalInterrupt)
-        {
-            return new InterruptionVerdict(
-                InterruptionDecision.Defer,
-                new EvaluationReport([]),
-                triggerRule: "FocusStateGate",
-                explanation: $"Focus state {focusState.CurrentState} defers non-critical interruption after evaluating '{priorityScore.RuleKey}'.",
-                targetUserId: targetUserId);
-        }
+        // Focus state gate: Away and DeepWork defer non-critical interruptions.
+        // Recovery passes through to rule evaluation (treated like WindowOfOpportunity).
+        if (ApplyFocusStateGate(focusState, priorityScore) is { } gateVerdict)
+            return gateVerdict;
 
         InterruptionDecision decision = InterruptionDecision.Queue;
         string? triggerRule = null;
@@ -149,6 +144,31 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             return ownerUserId;
         }
 
+        return null;
+    }
+
+    /// <summary>
+    /// Applies the focus state gate: returns a DEFER verdict if the user is in a
+    /// focus state that should suppress non-critical interruptions
+    /// (currently <see cref="FocusStateType.Away"/> and <see cref="FocusStateType.DeepWork"/>).
+    /// Returns <c>null</c> if the interruption should proceed to rule evaluation.
+    /// </summary>
+    private static InterruptionVerdict? ApplyFocusStateGate(FocusState? focusState, PriorityScore priorityScore)
+    {
+        if (focusState is null || priorityScore.IsCriticalInterrupt)
+            return null;
+
+        if (focusState.CurrentState is FocusStateType.Away or FocusStateType.DeepWork)
+        {
+            return new InterruptionVerdict(
+                InterruptionDecision.Defer,
+                new EvaluationReport([]),
+                triggerRule: "FocusStateGate",
+                explanation: $"Focus state {focusState.CurrentState} defers non-critical interruption after evaluating '{priorityScore.RuleKey}'.",
+                targetUserId: null);
+        }
+
+        // Recovery and WindowOfOpportunity pass through to rule evaluation.
         return null;
     }
 

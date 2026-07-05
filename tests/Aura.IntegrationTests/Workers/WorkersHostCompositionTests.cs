@@ -120,9 +120,11 @@ public class WorkersHostCompositionTests
         var scorer = scope.ServiceProvider.GetRequiredService<IPriorityScoringService>();
         var policyProvider = scope.ServiceProvider.GetRequiredService<IUserTriagePolicyProvider>();
         var engine = scope.ServiceProvider.GetRequiredService<IInterruptionPolicyEngine>();
+        var resolver = scope.ServiceProvider.GetRequiredService<IFocusStateResolver>();
 
         Assert.NotNull(scorer);
         Assert.NotNull(policyProvider);
         Assert.NotNull(engine);
+        Assert.NotNull(resolver);
     }
 }

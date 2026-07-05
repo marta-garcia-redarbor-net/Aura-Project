@@ -1,9 +1,12 @@
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
 using Aura.Infrastructure;
+using Aura.Infrastructure.Adapters.Options;
+using Aura.Infrastructure.Adapters.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Aura.UnitTests.Infrastructure;
@@ -256,5 +259,41 @@ public class InfrastructureDependencyInjectionTests
         // Act & Assert: attempting to resolve throws because it's not registered
         Assert.Throws<InvalidOperationException>(
             () => provider.GetRequiredService<ISemanticChunkExtractor>());
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_RegistersSignalBasedFocusStateResolver_AsIFocusStateResolver()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var resolver = scope.ServiceProvider.GetRequiredService<IFocusStateResolver>();
+
+        Assert.IsType<SignalBasedFocusStateResolver>(resolver);
+    }
+
+    [Fact]
+    public void AddAuraInfrastructure_BindsFocusStateOptions()
+    {
+        var config = CreateConfig(new Dictionary<string, string?>
+        {
+            ["FocusState:WorkingHoursStart"] = "09:00",
+            ["FocusState:WorkingHoursEnd"] = "17:00",
+            ["FocusState:MeetingBufferMinutes"] = "10"
+        });
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuraInfrastructure(config, CreateDevEnvironment());
+        using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<IOptions<FocusStateOptions>>().Value;
+
+        Assert.Equal(new TimeOnly(9, 0), options.WorkingHoursStart);
+        Assert.Equal(new TimeOnly(17, 0), options.WorkingHoursEnd);
+        Assert.Equal(10, options.MeetingBufferMinutes);
     }
 }

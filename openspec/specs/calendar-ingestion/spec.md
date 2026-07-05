@@ -22,7 +22,7 @@ domain model, storage, and UI panel. The calendar adapter reuses the existing
 ### Requirement: Calendar Event Domain Model
 
 The system MUST define a `CalendarEvent` domain model with fields: Id, Title, StartUtc,
-EndUtc, IsOnlineMeeting, JoinUrl (nullable), Organizer (nullable), and Location (nullable).
+EndUtc, IsOnlineMeeting, JoinUrl (nullable), Organizer (nullable), Location (nullable), and UserId (nullable).
 All datetime fields MUST be stored in UTC. The model MUST NOT inherit from or reference
 `WorkItem`.
 
@@ -30,7 +30,7 @@ All datetime fields MUST be stored in UTC. The model MUST NOT inherit from or re
 
 - GIVEN a Microsoft Graph calendar event response with all fields present
 - WHEN the adapter maps the response to `CalendarEvent`
-- THEN Id, Title, StartUtc, EndUtc, IsOnlineMeeting, JoinUrl, Organizer, and Location are populated
+- THEN Id, Title, StartUtc, EndUtc, IsOnlineMeeting, JoinUrl, Organizer, Location, and UserId are populated
 
 #### Scenario: Online meeting with join URL
 
