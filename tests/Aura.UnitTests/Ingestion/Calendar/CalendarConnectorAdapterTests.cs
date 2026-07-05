@@ -207,6 +207,47 @@ public class CalendarConnectorAdapterTests
         Assert.Equal("Bob", evt.Organizer);
         Assert.Equal("Room C", evt.Location);
         Assert.Equal("UTC", evt.OriginalTimeZone);
+        Assert.Null(evt.UserId);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSourceProvider_PreservesCalendarEventDtoUserId()
+    {
+        var store = Substitute.For<ICalendarEventStore>();
+        CalendarEvent? captured = null;
+        store.When(s => s.SaveAsync(Arg.Any<CalendarEvent>(), Arg.Any<CancellationToken>()))
+            .Do(ci => captured = ci.Arg<CalendarEvent>());
+
+        var provider = Substitute.For<IMessageSourceProvider<CalendarEventDto>>();
+        provider.FetchAsync(Arg.Any<ConnectorExecutionRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CalendarEventDto>>(
+            [
+                new CalendarEventDto
+                {
+                    ExternalId = "graph-event-user",
+                    Subject = "Owned event",
+                    Start = new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero),
+                    End = new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero),
+                    IsCancelled = false,
+                    UserId = "oid-42"
+                }
+            ]));
+
+        var adapter = new CalendarConnectorAdapter(
+            NullLogger<CalendarConnectorAdapter>.Instance,
+            store,
+            new CalendarEventMapper(),
+            sourceProvider: provider);
+
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("calendar", "calendar", "acme", userOid: "oid-request"),
+            new DateTimeOffset(2026, 06, 24, 00, 00, 00, TimeSpan.Zero),
+            new DateTimeOffset(2026, 06, 24, 23, 59, 59, TimeSpan.Zero));
+
+        await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal("oid-42", captured!.UserId);
     }
 
     [Fact]

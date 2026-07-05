@@ -128,4 +128,36 @@ public class InMemoryCalendarEventStoreTests
 
         Assert.Empty(upcoming);
     }
+
+    [Fact]
+    public async Task GetUpcomingAsync_OverlappingEventsFromDifferentUsers_ReturnsBothUntilUserScopedPortExists()
+    {
+        var store = new InMemoryCalendarEventStore();
+        var from = new DateTimeOffset(2026, 6, 24, 9, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero);
+
+        await store.SaveBatchAsync(
+        [
+            new CalendarEvent(
+                Id: "event-user-a",
+                Title: "User A meeting",
+                StartUtc: new DateTimeOffset(2026, 6, 24, 9, 30, 0, TimeSpan.Zero),
+                EndUtc: new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero),
+                IsOnlineMeeting: true,
+                UserId: "user-a"),
+            new CalendarEvent(
+                Id: "event-user-b",
+                Title: "User B meeting",
+                StartUtc: new DateTimeOffset(2026, 6, 24, 9, 45, 0, TimeSpan.Zero),
+                EndUtc: new DateTimeOffset(2026, 6, 24, 10, 15, 0, TimeSpan.Zero),
+                IsOnlineMeeting: true,
+                UserId: "user-b")
+        ], CancellationToken.None);
+
+        var upcoming = await store.GetUpcomingAsync(from, to, CancellationToken.None);
+
+        Assert.Equal(2, upcoming.Count);
+        Assert.Contains(upcoming, e => e.UserId == "user-a");
+        Assert.Contains(upcoming, e => e.UserId == "user-b");
+    }
 }

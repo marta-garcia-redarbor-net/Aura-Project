@@ -122,4 +122,22 @@ Given identical signals (calendars, time, preferences), `FocusStateResolver` MUS
 
 - GIVEN the resolver implementation
 - WHEN a developer inspects the signal-priority order
-- THEN calendar events take precedence over time-of-day heuristics, which take precedence over user preferences
+- THEN calendar events take precedence over blackout periods, which take precedence over time-of-day heuristics, which take precedence over user preferences
+
+---
+
+### Requirement: BlackoutPeriod Value Object
+
+`BlackoutPeriod` in `Aura.Domain.FocusState` MUST expose Label, TargetState (`DeepWork` or `Away`), StartTime, EndTime, DaysOfWeek, and TimeZoneId. `StartTime` MUST precede `EndTime`. `DaysOfWeek` MUST be non-empty.
+
+#### Scenario: Active blackout resolves state
+
+- GIVEN a DeepWork blackout weekdays 10:00–12:00 UTC
+- WHEN current time is 11:00 UTC Wednesday
+- THEN the resolver returns `DeepWork`
+
+#### Scenario: Invalid range rejected
+
+- GIVEN a blackout with start >= end
+- WHEN constructed
+- THEN validation throws

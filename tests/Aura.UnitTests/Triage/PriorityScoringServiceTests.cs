@@ -1,7 +1,8 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.Services;
-using Aura.Domain.FocusState;
+using FocusStateDomain = Aura.Domain.FocusState.FocusState;
+using FocusStateType = Aura.Domain.FocusState.FocusStateType;
 using Aura.Domain.WorkItems;
 using NSubstitute;
 
@@ -111,9 +112,9 @@ public sealed class PriorityScoringServiceTests
             priority: WorkItemPriority.High,
             metadata: metadata);
 
-    private static FocusState CreateFocusState(FocusStateType type)
+    private static FocusStateDomain CreateFocusState(FocusStateType type)
     {
-        var state = new FocusState();
+        var state = new FocusStateDomain();
         return type switch
         {
             FocusStateType.WindowOfOpportunity => state,
@@ -124,20 +125,20 @@ public sealed class PriorityScoringServiceTests
         };
     }
 
-    private static FocusState TransitionToAway(FocusState state)
+    private static FocusStateDomain TransitionToAway(FocusStateDomain state)
     {
         state.GoToAway();
         return state;
     }
 
-    private static FocusState TransitionToRecovery(FocusState state)
+    private static FocusStateDomain TransitionToRecovery(FocusStateDomain state)
     {
         state.GoToAway();
         state.GoToRecovery();
         return state;
     }
 
-    private static FocusState TransitionToDeepWork(FocusState state)
+    private static FocusStateDomain TransitionToDeepWork(FocusStateDomain state)
     {
         state.GoToAway();
         state.TryEnterDeepWork();

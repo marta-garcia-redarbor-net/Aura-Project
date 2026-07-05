@@ -13,4 +13,5 @@ internal sealed class CalendarEventDto
     public string? LocationDisplayName { get; init; }
     public bool IsCancelled { get; init; }
     public string? OriginalTimeZone { get; init; }
+    public string? UserId { get; init; }
 }

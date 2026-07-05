@@ -94,6 +94,7 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapAuthEndpoints(app.Environment);
 app.MapDashboardEndpoints();
+app.MapFocusStateEndpoints();
 app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
 app.MapWorkItemsEndpoints();

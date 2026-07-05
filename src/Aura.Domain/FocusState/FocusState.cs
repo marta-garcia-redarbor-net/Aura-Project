@@ -58,12 +58,12 @@ public sealed class FocusState
 
     private static bool IsValidTransition(FocusStateType from, FocusStateType to) => (from, to) switch
     {
-        (FocusStateType.DeepWork, FocusStateType.WindowOfOpportunity) => true,
         (FocusStateType.WindowOfOpportunity, FocusStateType.Away) => true,
         (FocusStateType.Away, FocusStateType.Recovery) => true,
         (FocusStateType.Away, FocusStateType.DeepWork) => true,
         (FocusStateType.Recovery, FocusStateType.DeepWork) => true,
         (FocusStateType.Recovery, FocusStateType.WindowOfOpportunity) => true,
+        (FocusStateType.DeepWork, FocusStateType.WindowOfOpportunity) => true,
         _ => false,
     };
 }

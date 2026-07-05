@@ -9,4 +9,5 @@ public sealed record CalendarEvent(
     string? JoinUrl = null,
     string? Organizer = null,
     string? Location = null,
-    string? OriginalTimeZone = null);
+    string? OriginalTimeZone = null,
+    string? UserId = null);
