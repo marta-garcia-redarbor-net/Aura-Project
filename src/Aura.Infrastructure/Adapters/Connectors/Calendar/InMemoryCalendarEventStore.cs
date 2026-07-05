@@ -29,11 +29,13 @@ internal sealed class InMemoryCalendarEventStore : ICalendarEventStore
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<CalendarEvent>> GetUpcomingAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    public Task<IReadOnlyList<CalendarEvent>> GetUpcomingAsync(string userId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         ct.ThrowIfCancellationRequested();
 
         var upcoming = _events.Values
+            .Where(e => string.Equals(e.UserId, userId, StringComparison.OrdinalIgnoreCase))
             .Where(e => e.StartUtc <= to && e.EndUtc >= from)
             .OrderBy(e => e.StartUtc)
             .ToList();

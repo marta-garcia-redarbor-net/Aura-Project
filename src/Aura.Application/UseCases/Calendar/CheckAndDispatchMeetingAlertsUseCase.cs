@@ -30,11 +30,13 @@ public class CheckAndDispatchMeetingAlertsUseCase
         _dispatcher = dispatcher;
     }
 
-    public async Task ExecuteAsync(DateTimeOffset now, CancellationToken ct)
+    public async Task ExecuteAsync(string userId, DateTimeOffset now, CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+
         // Fetch events in a 61-minute window ahead (max trigger is 60 min)
         var windowEnd = now.AddMinutes(61);
-        var events = await _eventStore.GetUpcomingAsync(now, windowEnd, ct);
+        var events = await _eventStore.GetUpcomingAsync(userId, now, windowEnd, ct);
 
         foreach (var calendarEvent in events)
         {
@@ -58,7 +60,7 @@ public class CheckAndDispatchMeetingAlertsUseCase
                     trigger,
                     calendarEvent.StartUtc,
                     calendarEvent.JoinUrl,
-                    UserId: "default",
+                    UserId: userId,
                     HasBeenSent: false);
 
                 await _dispatcher.DispatchAsync(alert, ct);

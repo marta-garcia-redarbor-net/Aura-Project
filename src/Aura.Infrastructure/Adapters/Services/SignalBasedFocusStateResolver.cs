@@ -63,23 +63,14 @@ public sealed partial class SignalBasedFocusStateResolver : IFocusStateResolver
         IReadOnlyList<CalendarEvent>? events = null;
         try
         {
-            events = await _calendarStore.GetUpcomingAsync(from, to, cancellationToken);
+            events = await _calendarStore.GetUpcomingAsync(userId, from, to, cancellationToken);
         }
         catch (Exception ex)
         {
             Log.CalendarStoreFailed(_logger, ex);
         }
 
-        var userEvents = events?
-            .Where(e => e.UserId is null || string.Equals(e.UserId, userId, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        if (events is { Count: > 0 } && userEvents is { Count: 0 })
-        {
-            Log.NoCalendarStoreMatch(_logger, userId);
-        }
-
-        if (userEvents is { Count: > 0 })
+        if (events is { Count: > 0 })
         {
             state.GoToAway();
             activity?.SetTag("matched_signal", "calendar");
@@ -167,8 +158,5 @@ public sealed partial class SignalBasedFocusStateResolver : IFocusStateResolver
             Message = "Blackout period '{Label}' evaluation failed")]
         public static partial void BlackoutEvaluationFailed(ILogger logger, string label, Exception exception);
 
-        [LoggerMessage(EventId = 4804, Level = LogLevel.Warning,
-            Message = "Calendar store returned events but no match found for user {UserId}")]
-        public static partial void NoCalendarStoreMatch(ILogger logger, string userId);
     }
 }

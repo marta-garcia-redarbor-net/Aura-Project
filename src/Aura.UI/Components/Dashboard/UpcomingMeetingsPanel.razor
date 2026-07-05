@@ -1,6 +1,9 @@
 @using Aura.Application.UseCases.Calendar
 @using Aura.Application.Models
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
 @inject GetUpcomingMeetingsUseCase UseCase
+@inject IHttpContextAccessor HttpContextAccessor
 
 <section class="dashboard-panel" data-testid="upcoming-meetings-panel" aria-live="polite">
     <h2>Upcoming meetings</h2>
@@ -45,6 +48,8 @@
     private string? _loadError;
     private Timer? _refreshTimer;
 
+    private string? CurrentUserId => HttpContextAccessor.HttpContext?.User.FindFirstValue("oid");
+
     protected override async Task OnInitializedAsync()
     {
         await LoadEventsAsync();
@@ -60,9 +65,17 @@
     {
         try
         {
+            var userId = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _events = [];
+                _loadError = null;
+                return;
+            }
+
             var now = DateTimeOffset.UtcNow;
             var windowEnd = now.AddHours(8);
-            _events = await UseCase.ExecuteAsync(now, windowEnd, CancellationToken.None);
+            _events = await UseCase.ExecuteAsync(userId, now, windowEnd, CancellationToken.None);
             _loadError = null;
         }
         catch

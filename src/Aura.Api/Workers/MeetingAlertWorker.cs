@@ -2,6 +2,7 @@ using Aura.Application.UseCases.Calendar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using IPublicClientApplication = Microsoft.Identity.Client.IPublicClientApplication;
 
 namespace Aura.Api.Workers;
 
@@ -35,7 +36,35 @@ public sealed partial class MeetingAlertWorker : BackgroundService
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var useCase = scope.ServiceProvider.GetRequiredService<CheckAndDispatchMeetingAlertsUseCase>();
-                    await useCase.ExecuteAsync(DateTimeOffset.UtcNow, stoppingToken);
+                    var msalApp = scope.ServiceProvider.GetService<IPublicClientApplication>();
+                    if (msalApp is null)
+                    {
+                        Log.NoTokenCacheProvider(_logger);
+                    }
+                    else
+                    {
+#pragma warning disable CS0618
+                        var accounts = await msalApp.GetAccountsAsync();
+#pragma warning restore CS0618
+                        var userOids = accounts
+                            .Select(a => a.HomeAccountId.ObjectId)
+                            .Where(oid => !string.IsNullOrWhiteSpace(oid))
+                            .Distinct(StringComparer.Ordinal)
+                            .ToArray();
+
+                        if (userOids.Length == 0)
+                        {
+                            Log.NoCachedUsers(_logger);
+                        }
+                        else
+                        {
+                            var now = DateTimeOffset.UtcNow;
+                            foreach (var userOid in userOids)
+                            {
+                                await useCase.ExecuteAsync(userOid!, now, stoppingToken);
+                            }
+                        }
+                    }
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -79,5 +108,14 @@ public sealed partial class MeetingAlertWorker : BackgroundService
         [LoggerMessage(EventId = 4403, Level = LogLevel.Error,
             Message = "MeetingAlertWorker crashed unexpectedly")]
         public static partial void WorkerCrashed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 4404, Level = LogLevel.Warning,
+            Message = "MeetingAlertWorker skipping poll because MSAL token cache provider is unavailable")]
+        public static partial void NoTokenCacheProvider(ILogger logger);
+
+        [LoggerMessage(EventId = 4405, Level = LogLevel.Information,
+            Message = "MeetingAlertWorker found no cached users in MSAL token cache")]
+        public static partial void NoCachedUsers(ILogger logger);
+
     }
 }
