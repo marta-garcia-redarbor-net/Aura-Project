@@ -28,7 +28,7 @@ public sealed class SignalBasedFocusStateResolverTests
     private static ICalendarEventStore CreateEmptyStore()
     {
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<CalendarEvent>());
         return store;
     }
@@ -45,65 +45,29 @@ public sealed class SignalBasedFocusStateResolverTests
     {
         var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(new[] { CreateEvent(TestUserId, now.AddMinutes(-30), now.AddMinutes(30)) });
 
         var resolver = CreateResolver(store, fixedTime: now);
         var result = await resolver.ResolveAsync(TestUserId);
 
         Assert.Equal(FocusStateType.Away, result.CurrentState);
+        await store.Received(1)
+            .GetUpcomingAsync(TestUserId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task ResolveAsync_CalendarEvent_OtherUserId_ReturnsWindowOfOpportunity()
+    public async Task ResolveAsync_CalendarEventStoreReturnsNoEvents_ReturnsWindowOfOpportunity()
     {
         var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { CreateEvent("other-user", now.AddMinutes(-30), now.AddMinutes(30)) });
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<CalendarEvent>());
 
         var resolver = CreateResolver(store, fixedTime: now);
         var result = await resolver.ResolveAsync(TestUserId);
 
         Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
-    }
-
-    [Fact]
-    public async Task ResolveAsync_CalendarEvent_OtherUserId_LogsNoCalendarStoreMatchWarning()
-    {
-        var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
-        var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { CreateEvent("other-user", now.AddMinutes(-30), now.AddMinutes(30)) });
-
-        var logger = new RecordingLogger<SignalBasedFocusStateResolver>();
-        var resolver = new SignalBasedFocusStateResolver(
-            store,
-            Options.Create(new FocusStateOptions()),
-            new FakeTimeProvider(now),
-            logger);
-
-        var result = await resolver.ResolveAsync(TestUserId);
-
-        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
-        Assert.Contains(logger.Entries, e =>
-            e.Level == LogLevel.Warning &&
-            e.EventId.Id == 4804 &&
-            e.Message.Contains(TestUserId, StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task ResolveAsync_CalendarEvent_NullUserId_MatchesAnyUser()
-    {
-        var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
-        var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { CreateEvent(null!, now.AddMinutes(-30), now.AddMinutes(30)) });
-
-        var resolver = CreateResolver(store, fixedTime: now);
-        var result = await resolver.ResolveAsync(TestUserId);
-
-        Assert.Equal(FocusStateType.Away, result.CurrentState);
     }
 
     // ============================================================
@@ -115,7 +79,7 @@ public sealed class SignalBasedFocusStateResolverTests
     {
         var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(new[] { CreateEvent(TestUserId, now.AddMinutes(-5), now.AddMinutes(5)) });
 
         var options = new FocusStateOptions
@@ -234,7 +198,7 @@ public sealed class SignalBasedFocusStateResolverTests
     {
         var now = new DateTimeOffset(2026, 7, 8, 11, 0, 0, TimeSpan.Zero);
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Store unavailable"));
 
         var options = new FocusStateOptions

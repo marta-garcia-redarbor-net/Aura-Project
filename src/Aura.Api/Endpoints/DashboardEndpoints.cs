@@ -172,6 +172,7 @@ public static partial class DashboardEndpoints
 
     private static async Task<IResult> GetUpcomingMeetingsAsync(
         GetUpcomingMeetingsUseCase useCase,
+        ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -182,8 +183,16 @@ public static partial class DashboardEndpoints
 
         try
         {
+            var currentUser = currentUserService.GetCurrentUser();
+            var userId = currentUser?.Oid;
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Results.Unauthorized();
+            }
+
             var now = DateTimeOffset.UtcNow;
-            var dtos = await useCase.ExecuteAsync(now, now.AddHours(12), cancellationToken);
+            var dtos = await useCase.ExecuteAsync(userId, now, now.AddHours(12), cancellationToken);
 
             activity?.SetTag("dashboard.upcoming_meetings.count", dtos.Count);
 
@@ -207,6 +216,7 @@ public static partial class DashboardEndpoints
 
     private static async Task<IResult> GetTodayCalendarAsync(
         GetUpcomingMeetingsUseCase useCase,
+        ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -217,10 +227,18 @@ public static partial class DashboardEndpoints
 
         try
         {
+            var currentUser = currentUserService.GetCurrentUser();
+            var userId = currentUser?.Oid;
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Results.Unauthorized();
+            }
+
             var now = DateTimeOffset.UtcNow;
             var dayStart = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero);
             var dayEnd = dayStart.AddDays(1);
-            var dtos = await useCase.ExecuteAsync(dayStart, dayEnd, cancellationToken);
+            var dtos = await useCase.ExecuteAsync(userId, dayStart, dayEnd, cancellationToken);
 
             activity?.SetTag("dashboard.today_calendar.count", dtos.Count);
 

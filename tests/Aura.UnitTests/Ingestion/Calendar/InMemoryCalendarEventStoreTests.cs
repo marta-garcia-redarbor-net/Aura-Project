@@ -5,6 +5,8 @@ namespace Aura.UnitTests.Ingestion.Calendar;
 
 public class InMemoryCalendarEventStoreTests
 {
+    private const string UserId = "user-1";
+
     [Fact]
     public async Task SaveAsync_AddsEventToStore()
     {
@@ -14,11 +16,13 @@ public class InMemoryCalendarEventStoreTests
             Title: "Team standup",
             StartUtc: new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero),
             EndUtc: new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero),
-            IsOnlineMeeting: true);
+            IsOnlineMeeting: true,
+            UserId: UserId);
 
         await store.SaveAsync(calendarEvent, CancellationToken.None);
 
         var upcoming = await store.GetUpcomingAsync(
+            UserId,
             new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero),
             CancellationToken.None);
@@ -36,18 +40,21 @@ public class InMemoryCalendarEventStoreTests
             Title: "Original",
             StartUtc: new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero),
             EndUtc: new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero),
-            IsOnlineMeeting: false);
+            IsOnlineMeeting: false,
+            UserId: UserId);
         var event2 = new CalendarEvent(
             Id: "event-1",
             Title: "Updated",
             StartUtc: new DateTimeOffset(2026, 6, 24, 14, 0, 0, TimeSpan.Zero),
             EndUtc: new DateTimeOffset(2026, 6, 24, 15, 0, 0, TimeSpan.Zero),
-            IsOnlineMeeting: true);
+            IsOnlineMeeting: true,
+            UserId: UserId);
 
         await store.SaveAsync(event1, CancellationToken.None);
         await store.SaveAsync(event2, CancellationToken.None);
 
         var upcoming = await store.GetUpcomingAsync(
+            UserId,
             new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero),
             CancellationToken.None);
@@ -68,18 +75,21 @@ public class InMemoryCalendarEventStoreTests
                 Title: "Event 1",
                 StartUtc: new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero),
                 EndUtc: new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero),
-                IsOnlineMeeting: false),
+                IsOnlineMeeting: false,
+                UserId: UserId),
             new CalendarEvent(
                 Id: "event-2",
                 Title: "Event 2",
                 StartUtc: new DateTimeOffset(2026, 6, 24, 14, 0, 0, TimeSpan.Zero),
                 EndUtc: new DateTimeOffset(2026, 6, 24, 15, 0, 0, TimeSpan.Zero),
-                IsOnlineMeeting: true)
+                IsOnlineMeeting: true,
+                UserId: UserId)
         };
 
         await store.SaveBatchAsync(events, CancellationToken.None);
 
         var upcoming = await store.GetUpcomingAsync(
+            UserId,
             new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero),
             CancellationToken.None);
@@ -96,18 +106,21 @@ public class InMemoryCalendarEventStoreTests
             Title: "Inside window",
             StartUtc: new DateTimeOffset(2026, 6, 24, 12, 0, 0, TimeSpan.Zero),
             EndUtc: new DateTimeOffset(2026, 6, 24, 13, 0, 0, TimeSpan.Zero),
-            IsOnlineMeeting: false);
+            IsOnlineMeeting: false,
+            UserId: UserId);
         var outsideEvent = new CalendarEvent(
             Id: "outside",
             Title: "Outside window",
             StartUtc: new DateTimeOffset(2026, 6, 25, 10, 0, 0, TimeSpan.Zero),
             EndUtc: new DateTimeOffset(2026, 6, 25, 11, 0, 0, TimeSpan.Zero),
-            IsOnlineMeeting: false);
+            IsOnlineMeeting: false,
+            UserId: UserId);
 
         await store.SaveAsync(insideEvent, CancellationToken.None);
         await store.SaveAsync(outsideEvent, CancellationToken.None);
 
         var upcoming = await store.GetUpcomingAsync(
+            UserId,
             new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero),
             CancellationToken.None);
@@ -122,6 +135,7 @@ public class InMemoryCalendarEventStoreTests
         var store = new InMemoryCalendarEventStore();
 
         var upcoming = await store.GetUpcomingAsync(
+            UserId,
             new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero),
             CancellationToken.None);
@@ -130,7 +144,7 @@ public class InMemoryCalendarEventStoreTests
     }
 
     [Fact]
-    public async Task GetUpcomingAsync_OverlappingEventsFromDifferentUsers_ReturnsBothUntilUserScopedPortExists()
+    public async Task GetUpcomingAsync_OverlappingEventsFromDifferentUsers_ReturnsOnlyRequestedUserEvents()
     {
         var store = new InMemoryCalendarEventStore();
         var from = new DateTimeOffset(2026, 6, 24, 9, 0, 0, TimeSpan.Zero);
@@ -154,10 +168,9 @@ public class InMemoryCalendarEventStoreTests
                 UserId: "user-b")
         ], CancellationToken.None);
 
-        var upcoming = await store.GetUpcomingAsync(from, to, CancellationToken.None);
+        var upcoming = await store.GetUpcomingAsync("user-a", from, to, CancellationToken.None);
 
-        Assert.Equal(2, upcoming.Count);
+        Assert.Single(upcoming);
         Assert.Contains(upcoming, e => e.UserId == "user-a");
-        Assert.Contains(upcoming, e => e.UserId == "user-b");
     }
 }
