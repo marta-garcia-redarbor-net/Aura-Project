@@ -29,4 +29,10 @@ public sealed class EmbeddingProviderOptions
 
     /// <summary>Maximum retry attempts for transient failures (429, 503, timeout).</summary>
     public int MaxRetries { get; set; } = 3;
+
+    /// <summary>
+    /// Embedding provider type: "OpenAI" (default) or "Ollama".
+    /// Not marked required to maintain backward compatibility with existing configs.
+    /// </summary>
+    public string Provider { get; set; } = "Ollama";
 }

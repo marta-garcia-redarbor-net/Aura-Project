@@ -34,7 +34,7 @@ internal sealed class InMemoryCalendarEventStore : ICalendarEventStore
         ct.ThrowIfCancellationRequested();
 
         var upcoming = _events.Values
-            .Where(e => e.StartUtc >= from && e.StartUtc <= to)
+            .Where(e => e.StartUtc <= to && e.EndUtc >= from)
             .OrderBy(e => e.StartUtc)
             .ToList();
 

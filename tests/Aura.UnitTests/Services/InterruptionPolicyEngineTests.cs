@@ -1,6 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
-using Aura.Domain.FocusState;
+using FocusStateDomain = Aura.Domain.FocusState.FocusState;
+using FocusStateType = Aura.Domain.FocusState.FocusStateType;
 using Aura.Domain.WorkItems;
 using Aura.Infrastructure.Adapters.Services;
 using NSubstitute;
@@ -9,9 +10,9 @@ namespace Aura.UnitTests.Services;
 
 public class InterruptionPolicyEngineTests
 {
-    private sealed class StubFocusStateResolver(FocusState state) : IFocusStateResolver
+    private sealed class StubFocusStateResolver(FocusStateDomain state) : IFocusStateResolver
     {
-        public Task<FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<FocusStateDomain> ResolveAsync(string userId, CancellationToken cancellationToken = default)
             => Task.FromResult(state);
     }
 
@@ -55,9 +56,9 @@ public class InterruptionPolicyEngineTests
                 ["assignedTo"] = "user-1"
             });
 
-    private static FocusState CreateFocusState(FocusStateType type)
+    private static FocusStateDomain CreateFocusState(FocusStateType type)
     {
-        var state = new FocusState();
+        var state = new FocusStateDomain();
         return type switch
         {
             FocusStateType.WindowOfOpportunity => state,
@@ -68,20 +69,20 @@ public class InterruptionPolicyEngineTests
         };
     }
 
-    private static FocusState TransitionToAway(FocusState state)
+    private static FocusStateDomain TransitionToAway(FocusStateDomain state)
     {
         state.GoToAway();
         return state;
     }
 
-    private static FocusState TransitionToRecovery(FocusState state)
+    private static FocusStateDomain TransitionToRecovery(FocusStateDomain state)
     {
         state.GoToAway();
         state.GoToRecovery();
         return state;
     }
 
-    private static FocusState TransitionToDeepWork(FocusState state)
+    private static FocusStateDomain TransitionToDeepWork(FocusStateDomain state)
     {
         state.GoToAway();
         state.TryEnterDeepWork();
@@ -284,5 +285,79 @@ public class InterruptionPolicyEngineTests
         Assert.Equal(InterruptionDecision.InterruptNow, verdict.Decision);
         Assert.Contains("override", verdict.Explanation, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("reviewer-1", verdict.TargetUserId);
+    }
+
+    // ============================================================
+    // W3-H3: DeepWork gate + Recovery passthrough
+    // ============================================================
+
+    [Fact]
+    public async Task EvaluateAsync_DeepWorkNonCritical_ReturnsDefer()
+    {
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.DeepWork)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("queue-only", 10, false, false, "routine", [])));
+        var item = CreateWorkItem();
+
+        var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Equal(InterruptionDecision.Defer, verdict.Decision);
+        Assert.Contains("DeepWork", verdict.Explanation, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_DeepWorkCriticalInterrupt_BypassesGateAndEvaluatesRules()
+    {
+        var rule1 = new StubRule("Rule1", 10, CreateResult("Rule1", true));
+        var engine = new InterruptionPolicyEngine(
+            new[] { rule1 },
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.DeepWork)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("critical-alert", 100, true, true, "critical", [])));
+        var item = CreateWorkItem();
+
+        var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
+
+        // Critical interruptions bypass focus state gate and go to rule evaluation
+        Assert.Equal(InterruptionDecision.InterruptNow, verdict.Decision);
+        Assert.Equal("Rule1", verdict.TriggerRule);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_RecoveryNonCritical_EvaluatesRulesNormally()
+    {
+        var rule1 = new StubRule("Rule1", 10, CreateResult("Rule1", false));
+        var engine = new InterruptionPolicyEngine(
+            new[] { rule1 },
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.Recovery)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])));
+        var item = CreateWorkItem();
+
+        var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
+
+        // Recovery passes through to rule evaluation like WindowOfOpportunity
+        Assert.Equal(InterruptionDecision.Queue, verdict.Decision);
+        Assert.Single(verdict.Report.Results);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_RecoveryWithRuleMatch_ReturnsInterruptNow()
+    {
+        var rule1 = new StubRule("Rule1", 10, CreateResult("Rule1", true));
+        var engine = new InterruptionPolicyEngine(
+            new[] { rule1 },
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.Recovery)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])));
+        var item = CreateWorkItem();
+
+        var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
+
+        // Recovery should not prevent rule evaluation
+        Assert.Equal(InterruptionDecision.InterruptNow, verdict.Decision);
+        Assert.Equal("Rule1", verdict.TriggerRule);
     }
 }

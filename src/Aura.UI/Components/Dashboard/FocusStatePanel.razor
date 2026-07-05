@@ -1,0 +1,71 @@
+@using Aura.UI.Models
+@using Aura.UI.Services
+@inject IFocusStateApiClient FocusStateApiClient
+@inject IFocusStateRefreshScheduler RefreshScheduler
+
+<section class="dashboard-panel" data-testid="focus-state-panel" aria-live="polite">
+    <h2>Focus state</h2>
+    <p>Current interruption posture from the focus-state resolver.</p>
+
+    @if (_loadError is not null)
+    {
+        <p role="alert" data-testid="focus-state-error">@_loadError</p>
+    }
+    else if (_state is null)
+    {
+        <p data-testid="focus-state-loading">Loading focus state...</p>
+    }
+    else
+    {
+        <div class="focus-state-badge @GetBadgeClass(_state.CurrentState)" data-testid="focus-state-badge">
+            <span class="focus-state-badge__dot" data-testid="focus-state-dot"></span>
+            <span data-testid="focus-state-label">@_state.CurrentState</span>
+        </div>
+    }
+</section>
+
+@code {
+    internal static readonly TimeSpan RefreshInterval = TimeSpan.FromMinutes(5);
+
+    private FocusStateResponse? _state;
+    private string? _loadError;
+    private IDisposable? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+
+        _refreshTimer = RefreshScheduler.StartRecurring(RefreshInterval, () => InvokeAsync(async () =>
+        {
+            await LoadAsync();
+            StateHasChanged();
+        }));
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+            _loadError = null;
+        }
+        catch
+        {
+            _loadError = "Focus state is currently unavailable.";
+        }
+    }
+
+    private static string GetBadgeClass(string currentState)
+        => currentState switch
+        {
+            "DeepWork" => "focus-state-badge--deepwork",
+            "Away" => "focus-state-badge--away",
+            "Recovery" => "focus-state-badge--recovery",
+            _ => "focus-state-badge--window"
+        };
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

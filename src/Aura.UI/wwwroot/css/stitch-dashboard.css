@@ -1071,6 +1071,68 @@ a {
     flex-direction: column;
 }
 
+.focus-state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    width: fit-content;
+    margin-top: 0.5rem;
+    font-family: var(--aura-font-code);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.focus-state-badge__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.focus-state-badge--deepwork {
+    color: var(--aura-priority-critical);
+    border-color: rgba(255, 75, 75, 0.4);
+    background: var(--aura-priority-critical-bg);
+}
+
+.focus-state-badge--deepwork .focus-state-badge__dot {
+    background: var(--aura-priority-critical);
+    box-shadow: 0 0 6px var(--aura-priority-critical);
+}
+
+.focus-state-badge--away {
+    color: var(--aura-priority-high);
+    border-color: rgba(245, 158, 11, 0.4);
+    background: var(--aura-priority-high-bg);
+}
+
+.focus-state-badge--away .focus-state-badge__dot {
+    background: var(--aura-priority-high);
+    box-shadow: 0 0 6px var(--aura-priority-high);
+}
+
+.focus-state-badge--recovery {
+    color: var(--aura-priority-medium);
+    border-color: rgba(173, 198, 255, 0.4);
+    background: var(--aura-priority-medium-bg);
+}
+
+.focus-state-badge--recovery .focus-state-badge__dot {
+    background: var(--aura-priority-medium);
+}
+
+.focus-state-badge--window {
+    color: var(--aura-priority-low);
+    border-color: rgba(100, 116, 139, 0.4);
+    background: var(--aura-priority-low-bg);
+}
+
+.focus-state-badge--window .focus-state-badge__dot {
+    background: var(--aura-priority-low);
+}
+
 /* PR card spans full width of the priority-summary-cards grid */
 .priority-card--pr-review {
     grid-column: 1 / -1;

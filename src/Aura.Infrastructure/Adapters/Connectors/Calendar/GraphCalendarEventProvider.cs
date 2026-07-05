@@ -88,7 +88,8 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
                 OrganizerAddress = graphEvent.Organizer?.EmailAddress?.Address,
                 LocationDisplayName = graphEvent.Location?.DisplayName,
                 IsCancelled = graphEvent.IsCancelled ?? false,
-                OriginalTimeZone = graphEvent.OriginalStartTimeZone
+                OriginalTimeZone = graphEvent.OriginalStartTimeZone,
+                UserId = request.Identity.UserOid
             };
 
             results.Add(dto);

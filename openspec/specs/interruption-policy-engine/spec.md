@@ -25,6 +25,19 @@ The system MUST evaluate a normalized context that includes priority-scoring out
 - THEN the final verdict is `DEFER`
 - AND the explanation cites focus-state constraints and the evaluated signals
 
+#### Scenario: DeepWork defers non-critical interruptions
+
+- GIVEN a user is in `DeepWork`
+- AND the item is non-critical
+- WHEN the engine evaluates the item
+- THEN the final verdict is `DEFER`
+
+#### Scenario: Recovery behaves like WindowOfOpportunity
+
+- GIVEN a user is in `Recovery`
+- WHEN the engine evaluates the item
+- THEN it evaluates as if the user were in `WindowOfOpportunity`
+
 ---
 
 ### Requirement: Explicit Per-User Adjustment Handling

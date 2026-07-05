@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Ingestion.Embedding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Aura.UnitTests.Infrastructure;
 
@@ -11,6 +13,26 @@ public class EmbeddingDependencyInjectionTests
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
+                ["EmbeddingProvider:Endpoint"] = "http://localhost:11434",
+                ["EmbeddingProvider:DeploymentName"] = "nomic-embed-text"
+            })
+            .Build();
+
+    private static IConfiguration CreateOllamaConfig() =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["EmbeddingProvider:Provider"] = "Ollama",
+                ["EmbeddingProvider:Endpoint"] = "http://localhost:11434",
+                ["EmbeddingProvider:DeploymentName"] = "nomic-embed-text"
+            })
+            .Build();
+
+    private static IConfiguration CreateConfigWithProvider(string provider) =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["EmbeddingProvider:Provider"] = provider,
                 ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
                 ["EmbeddingProvider:ApiKey"] = "test-key"
@@ -90,6 +112,50 @@ public class EmbeddingDependencyInjectionTests
 
         var services = new ServiceCollection();
         services.AddEmbeddingAdapter(config);
+        using var provider = services.BuildServiceProvider();
+
+        var embedder = provider.GetRequiredService<IEmbeddingProvider>();
+
+        Assert.NotNull(embedder);
+        Assert.IsType<MeaiEmbeddingProvider>(embedder);
+    }
+
+    // ──────────────────────────────────────────────
+    // Phase 3: Provider Selection (TDD)
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public void OpenAI_Provider_ResolvesPipeline()
+    {
+        var services = new ServiceCollection();
+        services.AddEmbeddingAdapter(CreateConfigWithProvider("OpenAI"));
+        using var provider = services.BuildServiceProvider();
+
+        var embedder = provider.GetRequiredService<IEmbeddingProvider>();
+
+        Assert.NotNull(embedder);
+        Assert.IsType<MeaiEmbeddingProvider>(embedder);
+    }
+
+    [Fact]
+    public void Ollama_Provider_ResolvesPipeline()
+    {
+        var services = new ServiceCollection();
+        services.AddEmbeddingAdapter(CreateOllamaConfig());
+        using var provider = services.BuildServiceProvider();
+
+        var embedder = provider.GetRequiredService<IEmbeddingProvider>();
+
+        Assert.NotNull(embedder);
+        Assert.IsType<MeaiEmbeddingProvider>(embedder);
+    }
+
+    [Fact]
+    public void DefaultProvider_IsOllama()
+    {
+        // Config without Provider key — should default to Ollama pipeline
+        var services = new ServiceCollection();
+        services.AddEmbeddingAdapter(CreateConfig());
         using var provider = services.BuildServiceProvider();
 
         var embedder = provider.GetRequiredService<IEmbeddingProvider>();

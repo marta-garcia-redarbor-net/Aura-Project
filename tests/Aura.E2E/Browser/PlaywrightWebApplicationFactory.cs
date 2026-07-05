@@ -102,6 +102,14 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         builder.Services.AddScoped<ISyncApiClient>(_ =>
             new StubSyncApiClient());
 
+        builder.Services.AddScoped<IFocusStateApiClient>(_ =>
+            new StubFocusStateApiClient(new FocusStateResponse(
+                CurrentState: "WindowOfOpportunity",
+                Label: null,
+                Since: DateTimeOffset.UtcNow,
+                Signals: ["stub"])));
+        builder.Services.AddSingleton<IFocusStateRefreshScheduler, NoopFocusStateRefreshScheduler>();
+
         builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
 
         // Calendar use case — dashboard display only
@@ -207,6 +215,24 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
         public Task TriggerSyncAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
+    }
+
+    private sealed class StubFocusStateApiClient(FocusStateResponse response) : IFocusStateApiClient
+    {
+        public Task<FocusStateResponse> GetCurrentAsync(CancellationToken cancellationToken)
+            => Task.FromResult(response);
+    }
+
+    private sealed class NoopFocusStateRefreshScheduler : IFocusStateRefreshScheduler
+    {
+        public IDisposable StartRecurring(TimeSpan interval, Func<Task> callback)
+            => EmptyDisposable.Instance;
+
+        private sealed class EmptyDisposable : IDisposable
+        {
+            public static readonly EmptyDisposable Instance = new();
+            public void Dispose() { }
+        }
     }
 
     internal static Task EnsureHostReachableAsync(string baseUrl, HttpMessageHandler? httpMessageHandler = null)

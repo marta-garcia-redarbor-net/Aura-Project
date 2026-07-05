@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OllamaSharp;
 using OpenAI;
 using Polly.Registry;
 
@@ -44,29 +45,24 @@ internal static class DependencyInjection
         // Polly resilience pipeline: retry on transient HTTP errors + timeout
         services.AddEmbeddingResiliencePolicy(options);
 
-        // MEAI embedding generator pipeline: OpenAI client → OTel → registered as singleton
+        // MEAI embedding generator pipeline: provider-specific inner generator → OTel
         services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
         {
             var embeddingOptions = sp.GetRequiredService<IOptions<EmbeddingProviderOptions>>().Value;
 
-            // OpenAI SDK v2 supports Azure OpenAI via Endpoint override
-            var clientOptions = new OpenAIClientOptions
+            IEmbeddingGenerator<string, Embedding<float>> innerGenerator = embeddingOptions.Provider switch
             {
-                Endpoint = new Uri(embeddingOptions.Endpoint)
+                "OpenAI" => CreateOpenAIGenerator(configuration, embeddingOptions),
+                "Ollama" => CreateOllamaGenerator(embeddingOptions),
+                _ => throw new InvalidOperationException(
+                    $"Unsupported embedding provider: '{embeddingOptions.Provider}'. " +
+                    $"Supported values: 'OpenAI', 'Ollama'.")
             };
 
-            var apiKey = configuration[$"{EmbeddingProviderOptions.SectionName}:ApiKey"] ?? "";
-            var client = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
-
-            IEmbeddingGenerator<string, Embedding<float>> generator =
-                client.GetEmbeddingClient(embeddingOptions.DeploymentName).AsIEmbeddingGenerator();
-
-            // Build pipeline with OTel middleware
-            var pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>(generator)
+            // Same OTel middleware for both providers
+            return new EmbeddingGeneratorBuilder<string, Embedding<float>>(innerGenerator)
                 .UseOpenTelemetry()
                 .Build();
-
-            return pipeline;
         });
 
         // Resolve the named resilience pipeline for injection into the adapter
@@ -80,5 +76,25 @@ internal static class DependencyInjection
         services.AddSingleton<IEmbeddingProvider, MeaiEmbeddingProvider>();
 
         return services;
+    }
+
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateOpenAIGenerator(
+        IConfiguration configuration, EmbeddingProviderOptions options)
+    {
+        var clientOptions = new OpenAIClientOptions
+        {
+            Endpoint = new Uri(options.Endpoint)
+        };
+        var apiKey = configuration[$"{EmbeddingProviderOptions.SectionName}:ApiKey"] ?? "";
+        var client = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
+        return client.GetEmbeddingClient(options.DeploymentName).AsIEmbeddingGenerator();
+    }
+
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateOllamaGenerator(
+        EmbeddingProviderOptions options)
+    {
+        // OllamaApiClient directly implements IEmbeddingGenerator<string, Embedding<float>>
+        // No .AsIEmbeddingGenerator() call needed (unlike OpenAI)
+        return new OllamaApiClient(options.Endpoint, options.DeploymentName);
     }
 }
