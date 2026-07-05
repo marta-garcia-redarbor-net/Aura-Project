@@ -70,4 +70,29 @@ public class ScoreThresholdRuleTests
 
         Assert.Equal(10, rule.Priority);
     }
+
+    [Fact]
+    public async Task EvaluateAsync_UsesPriorityScoreInterruptCandidate_InsteadOfRawMetadataThresholds()
+    {
+        var options = Options.Create(new InterruptionOptions { UrgentThreshold = 99.0 });
+        var rule = new ScoreThresholdRule(options);
+        var context = new EvaluationContext(
+            CreateWorkItem("Priority Rule", 0.1),
+            userId: "user-1",
+            focusState: null,
+            normalizedSignals: null,
+            priorityScore: new PriorityScore(
+                "urgent-action-needed",
+                100,
+                true,
+                true,
+                "priority rule matched",
+                []),
+            approvedPolicy: UserTriagePolicy.Empty);
+
+        var result = await rule.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.True(result.Matched);
+        Assert.Contains("urgent-action-needed", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
 }

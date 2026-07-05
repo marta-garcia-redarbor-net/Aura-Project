@@ -167,6 +167,32 @@ public class DependencyInjectionTests
         Assert.Equal("UTC", result.ResolvedTimezoneId);
     }
 
+    [Fact]
+    public void AddAuraApplication_RegistersPriorityScoringService_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IPriorityScoringService));
+        Assert.NotNull(descriptor);
+        Assert.Equal(typeof(PriorityScoringService), descriptor!.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddAuraApplication_RegistersUserTriagePolicyProvider_AsScoped()
+    {
+        var services = new ServiceCollection();
+
+        services.AddAuraApplication();
+
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IUserTriagePolicyProvider));
+        Assert.NotNull(descriptor);
+        Assert.Equal(typeof(DefaultUserTriagePolicyProvider), descriptor!.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
     private sealed class StubMorningSummarySettingsProvider : IMorningSummarySettingsProvider
     {
         private readonly MorningSummarySettings _settings;

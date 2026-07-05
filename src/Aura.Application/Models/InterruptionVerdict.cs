@@ -16,6 +16,10 @@ public sealed class InterruptionVerdict
     /// </summary>
     public string? TriggerRule { get; }
 
+    public string? Explanation { get; }
+
+    public string? TargetUserId { get; }
+
     /// <summary>
     /// Full evaluation report containing results from ALL rules that ran.
     /// </summary>
@@ -24,13 +28,17 @@ public sealed class InterruptionVerdict
     public InterruptionVerdict(
         InterruptionDecision decision,
         EvaluationReport report,
-        string? triggerRule = null)
+        string? triggerRule = null,
+        string? explanation = null,
+        string? targetUserId = null)
     {
         ArgumentNullException.ThrowIfNull(report);
 
         Decision = decision;
         Report = report;
         TriggerRule = triggerRule;
+        Explanation = explanation;
+        TargetUserId = targetUserId;
     }
 }
 
@@ -43,7 +51,10 @@ public enum InterruptionDecision
     InterruptNow,
 
     /// <summary>Queue the notification for later delivery (non-urgent).</summary>
-    Queue
+    Queue,
+
+    /// <summary>Defer delivery because the user context is currently unreceptive.</summary>
+    Defer
 }
 
 /// <summary>

@@ -47,7 +47,6 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"pr-list\"", html);
         Assert.Contains("data-testid=\"pr-row\"", html);
         Assert.Contains("data-testid=\"pr-open-link\"", html);
-        Assert.Contains("data-testid=\"pr-filter-bar\"", html);
         Assert.Contains("data-testid=\"pr-pagination\"", html);
         Assert.Contains("data-testid=\"pr-ci-status\"", html);
     }

@@ -4,6 +4,7 @@ using System.Globalization;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.ConnectorExecution;
+using Aura.Domain.WorkItems;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -598,6 +599,94 @@ public class ExecuteConnectorUseCaseTests
         Assert.NotNull(secondSaved);
         Assert.True(secondSaved!.MaxProcessedAt >= firstSaved!.MaxProcessedAt);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_QueueOrDeferVerdict_DoesNotEnqueueNotification()
+    {
+        var identity = new CheckpointIdentity("teams", "messages", "acme");
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>()).Returns((IngestionCheckpoint?)null);
+
+        var adapter = new StubConnectorAdapter(identity.Connector, new ConnectorExecutionResult(identity, 1, ConnectorExecutionStatus.Success));
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        buffer.Drain().Returns([CreateBufferedWorkItem(new Dictionary<string, string> { ["assignedTo"] = "user-1" })]);
+        var store = Substitute.For<IWorkItemStore>();
+        store.SaveAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>()).Returns(WorkItemPersistenceResult.Success());
+        var outbox = Substitute.For<INotificationOutboxStore>();
+
+        var engine = Substitute.For<IInterruptionPolicyEngine>();
+        engine.EvaluateAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>())
+            .Returns(
+                new InterruptionVerdict(InterruptionDecision.Queue, new EvaluationReport([]), explanation: "queue"),
+                new InterruptionVerdict(InterruptionDecision.Defer, new EvaluationReport([]), explanation: "defer"));
+
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            [adapter],
+            buffer,
+            store,
+            engine,
+            outbox,
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await outbox.DidNotReceive().EnqueueAsync(Arg.Any<NotificationOutboxEntry>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_InterruptVerdict_EnqueuesUsingResolvedTargetUser()
+    {
+        var identity = new CheckpointIdentity("pr", "azdo", "acme");
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>()).Returns((IngestionCheckpoint?)null);
+
+        var adapter = new StubConnectorAdapter(identity.Connector, new ConnectorExecutionResult(identity, 1, ConnectorExecutionStatus.Success));
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        buffer.Drain().Returns([
+            CreateBufferedWorkItem(new Dictionary<string, string>
+            {
+                [WorkItemSignalKeys.TargetResponsibleUserId] = "reviewer-1"
+            }, source: "pr")
+        ]);
+        var store = Substitute.For<IWorkItemStore>();
+        store.SaveAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>()).Returns(WorkItemPersistenceResult.Success());
+        var outbox = Substitute.For<INotificationOutboxStore>();
+
+        var engine = Substitute.For<IInterruptionPolicyEngine>();
+        engine.EvaluateAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>())
+            .Returns(new InterruptionVerdict(
+                InterruptionDecision.InterruptNow,
+                new EvaluationReport([]),
+                triggerRule: "ExplicitOverrideRule",
+                explanation: "override matched",
+                targetUserId: "reviewer-1"));
+
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            [adapter],
+            buffer,
+            store,
+            engine,
+            outbox,
+            new RecordingLogger<ExecuteConnectorUseCase>());
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        await outbox.Received(1).EnqueueAsync(
+            Arg.Is<NotificationOutboxEntry>(entry => entry.UserId == "reviewer-1" && entry.SourceType == WorkItemSourceType.PrReview.ToString()),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static WorkItem CreateBufferedWorkItem(IReadOnlyDictionary<string, string> metadata, string source = "messages")
+        => new(
+            externalId: Guid.NewGuid().ToString("N"),
+            title: "Buffered item",
+            source: source,
+            sourceType: source == "pr" ? WorkItemSourceType.PrReview : WorkItemSourceType.TeamsMessage,
+            priority: WorkItemPriority.High,
+            metadata: metadata);
 
     private sealed class StubConnectorAdapter(string connectorName, ConnectorExecutionResult result) : IConnectorAdapter
     {

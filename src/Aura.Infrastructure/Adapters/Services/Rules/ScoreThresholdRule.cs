@@ -25,6 +25,16 @@ public sealed class ScoreThresholdRule : IInterruptionRule
     {
         ct.ThrowIfCancellationRequested();
 
+        if (context.PriorityScore is not null)
+        {
+            return Task.FromResult(new RuleResult(
+                ruleName: nameof(ScoreThresholdRule),
+                matched: context.PriorityScore.IsInterruptCandidate,
+                score: context.PriorityScore.InterruptionRank,
+                confidence: 0.9,
+                reason: $"Priority rule '{context.PriorityScore.RuleKey}' produced rank {context.PriorityScore.InterruptionRank}."));
+        }
+
         // Try to extract the preliminary score from the WorkItem's metadata
         double score = 0;
         foreach (var key in context.Item.Metadata.Keys)

@@ -1,4 +1,5 @@
 using Aura.Domain.WorkItems;
+using Aura.Application.Models;
 using Aura.Infrastructure.Adapters.Connectors.Teams;
 
 namespace Aura.UnitTests.Ingestion.Teams;
@@ -254,5 +255,403 @@ public class TeamsWorkItemMapperTests
         Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageAt"));
         Assert.False(workItem.Metadata.ContainsKey("messages.lastMessageReadAt"));
         Assert.False(workItem.Metadata.ContainsKey("messages.unreadCount"));
+    }
+
+    [Fact]
+    public void TryMap_WritesCanonicalTriageMetadata()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "msg-11",
+            Title = "Need response",
+            Source = "messages",
+            Priority = "high",
+            Sender = "Alice Smith",
+            BodyPreview = "Please review the incident and respond"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("Alice Smith", workItem!.Metadata[WorkItemSignalKeys.CanonicalSender]);
+        Assert.Equal("Please review the incident and respond", workItem.Metadata[WorkItemSignalKeys.CanonicalSnippet]);
+        Assert.Equal(SignalLevel.High.ToString(), workItem.Metadata[WorkItemSignalKeys.TimeCriticalitySignal]);
+        Assert.Equal("short", workItem.Metadata[WorkItemSignalKeys.MessageLengthBucketSignal]);
+    }
+
+    // === Phase 1: Signal keys ===
+
+    [Fact]
+    public void WorkItemSignalKeys_TeamsScoringKeys_AreDefined()
+    {
+        Assert.Equal("teams.scoring.titleCues", WorkItemSignalKeys.TeamsScoringTitleCues);
+        Assert.Equal("teams.scoring.bodyCues", WorkItemSignalKeys.TeamsScoringBodyCues);
+        Assert.Equal("teams.scoring.mentionDetected", WorkItemSignalKeys.TeamsScoringMentionDetected);
+        Assert.Equal("teams.scoring.totalScore", WorkItemSignalKeys.TeamsScoringTotalScore);
+        Assert.Equal("teams.deadline.cue", WorkItemSignalKeys.TeamsDeadlineCue);
+        Assert.Equal("teams.deadline.source", WorkItemSignalKeys.TeamsDeadlineSource);
+    }
+
+    // === Phase 2: Cue Arrays and Scoring Logic ===
+
+    [Fact]
+    public void TryMap_ContentScore_EmitsScoringMetadata()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "sc-01",
+            Title = "URGENT: server incident",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "sev1 issue affecting production @John"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringTotalScore),
+            "Scoring metadata should be emitted");
+    }
+
+    // === Phase 3.1: Title scoring ===
+
+    [Fact]
+    public void TryMap_StrongTitleUrgency_Weight3()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "t3-01",
+            Title = "URGENT: production is down",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Please check"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("3", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    [Fact]
+    public void TryMap_SingleStrongTitleCue_Weight3()
+    {
+        // All TitlePriorityCues are strong tokens, so any single match yields weight 3.
+        // Weight 1 is reserved for non-strong title tokens in future extension.
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "t3-02",
+            Title = "Review the incident report",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "No body cues here"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        // "incident" is a strong token → title weight 3; no body/mention → total = 3
+        Assert.Equal("3", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    [Fact]
+    public void TryMap_NoTitleCues_Weight0()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "t3-03",
+            Title = "Weekly status update",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "All good, nothing urgent"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("0", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    // === Phase 3.2: Body scoring ===
+
+    [Fact]
+    public void TryMap_BodyHighCue_Weight3()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "b3-01",
+            Title = "Quick update",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "This is sev1 incident, immediate action needed"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        // High cue (3) + no title cue (0) + no mention (0) = 3
+        Assert.Equal("3", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    [Fact]
+    public void TryMap_BodyMediumCue_Weight1()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "b3-02",
+            Title = "Status check",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Please follow up on this request"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        // Medium cue (1) + no title cue (0) + no mention (0) = 1
+        Assert.Equal("1", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    [Fact]
+    public void TryMap_NoBodyCues_Weight0()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "b3-03",
+            Title = "Lunch menu",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Pizza today in the cafeteria"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("0", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    // === Phase 3.3: Mention detection ===
+
+    [Fact]
+    public void TryMap_MentionDetected_SetsTrue()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "m3-01",
+            Title = "Review needed",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Can you look at this @John?"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("True", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringMentionDetected]);
+        Assert.Equal("1", workItem.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+    }
+
+    [Fact]
+    public void TryMap_NoMention_SetsFalse()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "m3-02",
+            Title = "General notice",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Please review the document"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("False", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringMentionDetected]);
+    }
+
+    // === Phase 3.4: Deadline detection ===
+
+    [Fact]
+    public void TryMap_DeadlineInTitle_EmitSourceTitle()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "d3-01",
+            Title = "Report due Friday",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "See attached"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsDeadlineCue));
+        Assert.Equal("title", workItem.Metadata[WorkItemSignalKeys.TeamsDeadlineSource]);
+    }
+
+    [Fact]
+    public void TryMap_DeadlineInBody_WhenTitleNoMatch()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "d3-02",
+            Title = "Quick question",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Meeting on 05/15"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsDeadlineCue));
+        Assert.Equal("body", workItem.Metadata[WorkItemSignalKeys.TeamsDeadlineSource]);
+    }
+
+    [Fact]
+    public void TryMap_NoDeadline_SkipsMetadata()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "d3-03",
+            Title = "Weekly update",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "All good here"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.False(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsDeadlineCue));
+        Assert.False(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsDeadlineSource));
+    }
+
+    [Fact]
+    public void TryMap_DeadlineByEod_EmitCue()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "d3-04",
+            Title = "Submit by EOD",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "No rush otherwise"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsDeadlineCue));
+        Assert.Equal("title", workItem.Metadata[WorkItemSignalKeys.TeamsDeadlineSource]);
+    }
+
+    // === Phase 3.5: Scoring metadata emission ===
+
+    [Fact]
+    public void TryMap_AllScoringKeysEmitted()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "sm-01",
+            Title = "URGENT: sev1 incident",
+            Source = "messages",
+            Priority = "high",
+            BodyPreview = "Production is down, immediate fix needed @Alice"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringTitleCues));
+        Assert.True(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringBodyCues));
+        Assert.True(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringMentionDetected));
+        Assert.True(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringTotalScore));
+        Assert.Equal("True", workItem.Metadata[WorkItemSignalKeys.ActionNeededSignal]);
+    }
+
+    [Fact]
+    public void TryMap_NoInputData_SkipsOptionalKeys()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "sm-02",
+            Title = null,
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = null
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        // TotalScore is always emitted when scoring runs
+        Assert.True(workItem!.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringTotalScore));
+        // Title/body scoring keys should be absent when inputs are null
+        Assert.False(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringTitleCues));
+        Assert.False(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringBodyCues));
+        Assert.False(workItem.Metadata.ContainsKey(WorkItemSignalKeys.TeamsScoringMentionDetected));
+        // action_needed requires a cue match — no cues should mean absent
+        Assert.False(workItem.Metadata.ContainsKey(WorkItemSignalKeys.ActionNeededSignal));
+    }
+
+    [Fact]
+    public void TryMap_ActionNeededSet_WhenCuesDetected()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "sm-03",
+            Title = "Blocker in production",
+            Source = "messages",
+            Priority = "medium",
+            BodyPreview = "Needs attention urgently"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        Assert.Equal("True", workItem!.Metadata[WorkItemSignalKeys.ActionNeededSignal]);
+    }
+
+    // === Phase 3.6: Priority boundary ===
+
+    [Fact]
+    public void TryMap_Score7WithLowPriority_WorkItemPriorityIsLow()
+    {
+        var message = new TeamsMessageDto
+        {
+            ExternalId = "bp-01",
+            Title = "URGENT: asap blocker incident",
+            Source = "messages",
+            Priority = "low",
+            BodyPreview = "sev1 production down broken @John"
+        };
+
+        var mapped = _mapper.TryMap(message, out var workItem);
+
+        Assert.True(mapped);
+        Assert.NotNull(workItem);
+        // Content score should be 7 (3 title + 3 body + 1 mention)
+        Assert.Equal("7", workItem!.Metadata[WorkItemSignalKeys.TeamsScoringTotalScore]);
+        // But WorkItem.Priority must remain Low (from priority flag)
+        Assert.Equal(WorkItemPriority.Low, workItem.Priority);
     }
 }

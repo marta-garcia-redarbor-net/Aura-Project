@@ -27,6 +27,8 @@ public class WorkersHostCompositionTests
 
     private static ServiceProvider BuildWorkerServiceProvider()
     {
+        var dbPath = Path.Combine(Path.GetTempPath(), $"aura-workers-{Guid.NewGuid():N}.db");
+
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -34,7 +36,7 @@ public class WorkersHostCompositionTests
                 ["Qdrant:GrpcPort"] = "6334",
                 ["Qdrant:VectorSize"] = "768",
                 ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
-                ["ConnectionStrings:Aura"] = "Data Source=:memory:",
+                ["ConnectionStrings:Aura"] = $"Data Source={dbPath}",
                 ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
                 ["EmbeddingProvider:ApiKey"] = "test-key",
@@ -106,5 +108,20 @@ public class WorkersHostCompositionTests
         var hostedServices = sp.GetServices<IHostedService>().ToList();
 
         Assert.Contains(hostedServices, service => service is MorningSummarySchedulingWorker);
+    }
+
+    [Fact]
+    public void WorkerHost_ResolvesInterruptionPolicyScoringDependencies()
+    {
+        using var sp = BuildWorkerServiceProvider();
+        using var scope = sp.CreateScope();
+
+        var scorer = scope.ServiceProvider.GetRequiredService<IPriorityScoringService>();
+        var policyProvider = scope.ServiceProvider.GetRequiredService<IUserTriagePolicyProvider>();
+        var engine = scope.ServiceProvider.GetRequiredService<IInterruptionPolicyEngine>();
+
+        Assert.NotNull(scorer);
+        Assert.NotNull(policyProvider);
+        Assert.NotNull(engine);
     }
 }

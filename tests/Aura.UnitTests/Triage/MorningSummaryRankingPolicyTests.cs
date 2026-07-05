@@ -82,7 +82,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.85"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.85"
             });
 
         var second = CreateWorkItem(
@@ -90,7 +90,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.45"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.45"
             });
 
         var ranked = policy.Rank([second, first]);
@@ -114,7 +114,7 @@ public sealed class MorningSummaryRankingPolicyTests
             new Dictionary<string, string>
             {
                 [WorkItemSignalKeys.TeamsPriorityRaw] = "absent",
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.80"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.80"
             });
 
         var withoutScore = CreateWorkItem(
@@ -141,7 +141,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50",
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50",
                 ["outlook.deadline.atUtc"] = "2026-06-23T09:00:00Z"
             });
 
@@ -150,7 +150,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50",
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50",
                 ["outlook.deadline.atUtc"] = "2026-06-22T09:00:00Z"
             });
 
@@ -162,7 +162,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50"
             },
             capturedAt: new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
         SetCreatedAt(oldCreated, new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
@@ -172,7 +172,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50"
             },
             capturedAt: new DateTimeOffset(2026, 6, 21, 8, 0, 0, TimeSpan.Zero));
         SetCreatedAt(newCreated, new DateTimeOffset(2026, 6, 21, 8, 0, 0, TimeSpan.Zero));
@@ -185,7 +185,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50"
             },
             capturedAt: new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
         SetCreatedAt(idB, new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
@@ -195,7 +195,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.50"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.50"
             },
             capturedAt: new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
         SetCreatedAt(idA, new DateTimeOffset(2026, 6, 20, 8, 0, 0, TimeSpan.Zero));
@@ -214,7 +214,7 @@ public sealed class MorningSummaryRankingPolicyTests
             WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.30"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.30"
             });
 
         var insufficient = CreateWorkItem(

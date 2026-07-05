@@ -11,7 +11,7 @@ namespace Aura.Api.Adapters;
 /// Dispatches work item notifications to the user via SignalR on the unified <see cref="AlertHub"/>.
 /// Sends "UrgentWorkItem" event to the user's group.
 /// </summary>
-internal sealed partial class SignalRWorkItemNotificationDispatcher : IWorkItemNotificationDispatcher
+public sealed partial class SignalRWorkItemNotificationDispatcher : IWorkItemNotificationDispatcher
 {
     private readonly IHubContext<AlertHub> _hubContext;
     private readonly ILogger<SignalRWorkItemNotificationDispatcher> _logger;
@@ -43,7 +43,11 @@ internal sealed partial class SignalRWorkItemNotificationDispatcher : IWorkItemN
                 entry.SourceType,
                 entry.Priority,
                 entry.TriggerRule,
-                Reason = verdict.TriggerRule ?? "Policy evaluation"
+                Reason = verdict.TriggerRule ?? "Policy evaluation",
+                Explanation = verdict.Explanation,
+                Decision = verdict.Decision.ToString(),
+                TargetUserId = verdict.TargetUserId,
+                RuleResults = entry.RuleResults
             },
             ct);
 

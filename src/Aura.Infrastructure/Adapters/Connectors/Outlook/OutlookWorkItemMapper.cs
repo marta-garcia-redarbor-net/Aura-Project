@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Domain.WorkItems;
 
 namespace Aura.Infrastructure.Adapters.Connectors.Outlook;
@@ -84,8 +85,8 @@ internal sealed class OutlookWorkItemMapper
             return email.Subject;
         }
 
-        metadata["outlook.subject.raw"] = "absent";
-        metadata["outlook.subject.resolution"] = "defaulted";
+        metadata[WorkItemSignalKeys.OutlookSubjectRaw] = "absent";
+        metadata[WorkItemSignalKeys.OutlookSubjectResolution] = "defaulted";
         return $"Outlook email {email.ExternalId}";
     }
 
@@ -95,23 +96,25 @@ internal sealed class OutlookWorkItemMapper
 
         if (!string.IsNullOrWhiteSpace(email.SenderAddress))
         {
-            metadata["outlook.sender"] = email.SenderAddress;
+            metadata[WorkItemSignalKeys.OutlookSender] = email.SenderAddress;
+            metadata[WorkItemSignalKeys.CanonicalSender] = email.SenderAddress;
         }
 
         if (!string.IsNullOrWhiteSpace(email.ConversationId))
         {
-            metadata["outlook.conversationId"] = email.ConversationId;
+            metadata[WorkItemSignalKeys.OutlookConversationId] = email.ConversationId;
         }
 
         // New Graph-sourced fields
         if (!string.IsNullOrWhiteSpace(email.WebLink))
         {
-            metadata["outlook.deepLink"] = email.WebLink;
+            metadata[WorkItemSignalKeys.OutlookDeepLink] = email.WebLink;
         }
 
         if (!string.IsNullOrWhiteSpace(email.BodyPreview))
         {
-            metadata["outlook.snippet"] = email.BodyPreview;
+            metadata[WorkItemSignalKeys.OutlookSnippet] = email.BodyPreview;
+            metadata[WorkItemSignalKeys.CanonicalSnippet] = email.BodyPreview;
         }
 
         return metadata;
@@ -131,11 +134,21 @@ internal sealed class OutlookWorkItemMapper
 
         var totalScore = importanceWeight + subjectWeight + senderWeight + bodyWeight;
 
-        metadata["outlook.importance.raw"] = string.IsNullOrWhiteSpace(importance) ? "absent" : importance;
-        metadata["outlook.scoring.subjectCues"] = subjectTokens.Count == 0 ? "none" : string.Join(',', subjectTokens);
-        metadata["outlook.scoring.senderWeight"] = senderWeight.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        metadata["outlook.scoring.bodyCues"] = bodyTokens.Count == 0 ? "none" : string.Join(',', bodyTokens);
-        metadata["outlook.scoring.totalScore"] = totalScore.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        metadata[WorkItemSignalKeys.OutlookImportanceRaw] = string.IsNullOrWhiteSpace(importance) ? "absent" : importance;
+        if (!string.IsNullOrWhiteSpace(importance))
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = importance.Equals("High", StringComparison.OrdinalIgnoreCase)
+                ? SignalLevel.Critical.ToString()
+                : SignalLevel.Medium.ToString();
+        }
+        metadata[WorkItemSignalKeys.OutlookScoringSubjectCues] = subjectTokens.Count == 0 ? "none" : string.Join(',', subjectTokens);
+        metadata[WorkItemSignalKeys.OutlookScoringSenderWeight] = senderWeight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        metadata[WorkItemSignalKeys.OutlookScoringBodyCues] = bodyTokens.Count == 0 ? "none" : string.Join(',', bodyTokens);
+        metadata[WorkItemSignalKeys.OutlookScoringTotalScore] = totalScore.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        metadata[WorkItemSignalKeys.ActionNeededSignal] = (subjectTokens.Count > 0 || bodyTokens.Count > 0).ToString();
+        metadata[WorkItemSignalKeys.MessageLengthBucketSignal] = string.IsNullOrWhiteSpace(body)
+            ? "short"
+            : body.Length > 160 ? "long" : "short";
 
         if (totalScore >= 6) return WorkItemPriority.Critical;
         if (totalScore >= 2) return WorkItemPriority.High;
@@ -192,15 +205,15 @@ internal sealed class OutlookWorkItemMapper
     {
         if (TryFindDeadlineCue(subject, out var subjectCue))
         {
-            metadata["outlook.deadline.cue"] = subjectCue;
-            metadata["outlook.deadline.source"] = "subject";
+            metadata[WorkItemSignalKeys.OutlookDeadlineCue] = subjectCue;
+            metadata[WorkItemSignalKeys.OutlookDeadlineSource] = "subject";
             return;
         }
 
         if (TryFindDeadlineCue(body, out var bodyCue))
         {
-            metadata["outlook.deadline.cue"] = bodyCue;
-            metadata["outlook.deadline.source"] = "body";
+            metadata[WorkItemSignalKeys.OutlookDeadlineCue] = bodyCue;
+            metadata[WorkItemSignalKeys.OutlookDeadlineSource] = "body";
         }
     }
 

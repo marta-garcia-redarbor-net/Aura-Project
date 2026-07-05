@@ -248,9 +248,13 @@ public sealed partial class ExecuteConnectorUseCase
 
             if (verdict.Decision is InterruptionDecision.InterruptNow)
             {
-                var userId = item.Metadata.TryGetValue("assignedTo", out var assignedTo)
-                    ? assignedTo
-                    : item.Source;
+                var userId = verdict.TargetUserId
+                    ?? ResolveTargetUserId(item);
+
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return;
+                }
 
                 var priorityValue = item.Priority switch
                 {
@@ -261,13 +265,19 @@ public sealed partial class ExecuteConnectorUseCase
                     _ => 1.0
                 };
 
+                var ruleResultsJson = System.Text.Json.JsonSerializer.Serialize(verdict.Report.Results);
+
                 var entry = new NotificationOutboxEntry(
                     workItemId: item.Id,
                     userId: userId,
                     sourceType: item.SourceType.ToString(),
                     title: item.Title,
                     priority: priorityValue,
-                    triggerRule: verdict.TriggerRule);
+                    triggerRule: verdict.TriggerRule,
+                    explanation: verdict.Explanation,
+                    decision: verdict.Decision.ToString(),
+                    targetUserId: verdict.TargetUserId,
+                    ruleResults: ruleResultsJson);
 
                 await _outboxStore.EnqueueAsync(entry, ct);
                 Log.NotificationEnqueued(_logger, entry.Id, verdict.Decision.ToString());
@@ -278,6 +288,26 @@ public sealed partial class ExecuteConnectorUseCase
             // Swallow evaluation failures gracefully — do not block ingestion
             Log.EvaluationFailed(_logger, item.ExternalId ?? "unknown", ex);
         }
+    }
+
+    private static string? ResolveTargetUserId(WorkItem item)
+    {
+        if (item.Metadata.TryGetValue("assignedTo", out var assignedTo) && !string.IsNullOrWhiteSpace(assignedTo))
+        {
+            return assignedTo;
+        }
+
+        if (item.Metadata.TryGetValue(WorkItemSignalKeys.TargetResponsibleUserId, out var responsibleUserId) && !string.IsNullOrWhiteSpace(responsibleUserId))
+        {
+            return responsibleUserId;
+        }
+
+        if (item.Metadata.TryGetValue(WorkItemSignalKeys.TargetOwnerUserId, out var ownerUserId) && !string.IsNullOrWhiteSpace(ownerUserId))
+        {
+            return ownerUserId;
+        }
+
+        return null;
     }
 
     private async Task RunDiffLifecycleAsync(WorkItemSourceType sourceType, IReadOnlySet<string> batchExternalIds, CancellationToken ct)

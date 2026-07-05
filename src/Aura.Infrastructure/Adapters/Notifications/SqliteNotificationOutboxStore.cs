@@ -34,6 +34,12 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
 
             CREATE INDEX IF NOT EXISTS IX_NotificationOutbox_Pending
                 ON NotificationOutbox (DispatchedAt, Priority DESC, CreatedAt ASC);
+
+            -- W3-H2-B: audit trail verdict columns (nullable, backward-compatible)
+            ALTER TABLE NotificationOutbox ADD COLUMN Explanation TEXT NULL;
+            ALTER TABLE NotificationOutbox ADD COLUMN Decision TEXT NULL;
+            ALTER TABLE NotificationOutbox ADD COLUMN TargetUserId TEXT NULL;
+            ALTER TABLE NotificationOutbox ADD COLUMN RuleResults TEXT NULL;
             """;
         cmd.ExecuteNonQuery();
     }
@@ -45,8 +51,8 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO NotificationOutbox (Id, WorkItemId, UserId, SourceType, Title, Priority, TriggerRule, CreatedAt, DispatchedAt)
-            VALUES (@Id, @WorkItemId, @UserId, @SourceType, @Title, @Priority, @TriggerRule, @CreatedAt, @DispatchedAt)
+            INSERT INTO NotificationOutbox (Id, WorkItemId, UserId, SourceType, Title, Priority, TriggerRule, CreatedAt, DispatchedAt, Explanation, Decision, TargetUserId, RuleResults)
+            VALUES (@Id, @WorkItemId, @UserId, @SourceType, @Title, @Priority, @TriggerRule, @CreatedAt, @DispatchedAt, @Explanation, @Decision, @TargetUserId, @RuleResults)
             """;
         cmd.Parameters.AddWithValue("@Id", entry.Id.ToString());
         cmd.Parameters.AddWithValue("@WorkItemId", entry.WorkItemId.ToString());
@@ -57,6 +63,10 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
         cmd.Parameters.AddWithValue("@TriggerRule", (object?)entry.TriggerRule ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@CreatedAt", entry.CreatedAt.ToString("O"));
         cmd.Parameters.AddWithValue("@DispatchedAt", DBNull.Value);
+        cmd.Parameters.AddWithValue("@Explanation", (object?)entry.Explanation ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Decision", (object?)entry.Decision ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@TargetUserId", (object?)entry.TargetUserId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@RuleResults", (object?)entry.RuleResults ?? DBNull.Value);
         cmd.ExecuteNonQuery();
 
         return Task.CompletedTask;
@@ -68,7 +78,7 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            SELECT Id, WorkItemId, UserId, SourceType, Title, Priority, TriggerRule, CreatedAt, DispatchedAt
+            SELECT Id, WorkItemId, UserId, SourceType, Title, Priority, TriggerRule, CreatedAt, DispatchedAt, Explanation, Decision, TargetUserId, RuleResults
             FROM NotificationOutbox
             WHERE DispatchedAt IS NULL
             ORDER BY Priority DESC, CreatedAt ASC
@@ -106,8 +116,11 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
     private static NotificationOutboxEntry ReadEntryFromReader(SqliteDataReader reader)
     {
         var dispatchedAt = reader.IsDBNull(8) ? null : (DateTimeOffset?)DateTimeOffset.Parse(reader.GetString(8));
+        var explanation = reader.IsDBNull(9) ? null : reader.GetString(9);
+        var decision = reader.IsDBNull(10) ? null : reader.GetString(10);
+        var targetUserId = reader.IsDBNull(11) ? null : reader.GetString(11);
+        var ruleResults = reader.IsDBNull(12) ? null : reader.GetString(12);
 
-        // Use InternalsVisibleTo or the internal constructor
         return new NotificationOutboxEntry(
             id: Guid.Parse(reader.GetString(0)),
             workItemId: Guid.Parse(reader.GetString(1)),
@@ -117,6 +130,10 @@ internal sealed class SqliteNotificationOutboxStore : INotificationOutboxStore
             priority: reader.GetDouble(5),
             triggerRule: reader.IsDBNull(6) ? null : reader.GetString(6),
             createdAt: DateTimeOffset.Parse(reader.GetString(7)),
-            dispatchedAt: dispatchedAt);
+            dispatchedAt: dispatchedAt,
+            explanation: explanation,
+            decision: decision,
+            targetUserId: targetUserId,
+            ruleResults: ruleResults);
     }
 }

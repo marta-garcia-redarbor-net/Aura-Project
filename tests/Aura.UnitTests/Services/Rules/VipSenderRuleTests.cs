@@ -72,4 +72,26 @@ public class VipSenderRuleTests
 
         Assert.Equal(20, rule.Priority);
     }
+
+    [Fact]
+    public async Task EvaluateAsync_UsesNormalizedVipSenderSignal_WhenContextProvidesTypedSignals()
+    {
+        var store = Substitute.For<IAlertRuleStore>();
+        var rule = new VipSenderRule(store);
+        var context = new EvaluationContext(
+            CreateWorkItem("regular@company.com"),
+            userId: "user-1",
+            focusState: null,
+            normalizedSignals: new Dictionary<string, NormalizedSignal>
+            {
+                [WorkItemSignalKeys.VipSenderSignal] = new BooleanSignal(WorkItemSignalKeys.VipSenderSignal, true, "sender is vip")
+            },
+            priorityScore: null,
+            approvedPolicy: UserTriagePolicy.Empty);
+
+        var result = await rule.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.True(result.Matched);
+        Assert.Contains("vip", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
 }

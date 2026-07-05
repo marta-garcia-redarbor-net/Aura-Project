@@ -91,4 +91,26 @@ public class KeywordMatchRuleTests
 
         Assert.Equal(30, rule.Priority);
     }
+
+    [Fact]
+    public async Task EvaluateAsync_UsesActionNeededSignal_WhenTypedContextIsAvailable()
+    {
+        var store = Substitute.For<IAlertRuleStore>();
+        var rule = new KeywordMatchRule(store);
+        var context = new EvaluationContext(
+            CreateWorkItem("Status update"),
+            userId: "user-1",
+            focusState: null,
+            normalizedSignals: new Dictionary<string, NormalizedSignal>
+            {
+                [WorkItemSignalKeys.ActionNeededSignal] = new BooleanSignal(WorkItemSignalKeys.ActionNeededSignal, true, "action needed")
+            },
+            priorityScore: null,
+            approvedPolicy: UserTriagePolicy.Empty);
+
+        var result = await rule.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.True(result.Matched);
+        Assert.Contains("action", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
 }

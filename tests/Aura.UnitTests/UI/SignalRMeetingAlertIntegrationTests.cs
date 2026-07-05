@@ -1,6 +1,7 @@
 using Aura.UI.Components.Dashboard;
 using Aura.UI.Services;
 using Bunit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NSubstitute;
@@ -18,6 +19,7 @@ public class SignalRMeetingAlertIntegrationTests : TestContext
     public void SignalR_ShouldAcquireToken_DuringInitialization()
     {
         // Arrange
+        Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         var tokenService = Substitute.For<ITokenAcquisitionService>();
         tokenService.AcquireTokenAsync(Arg.Any<CancellationToken>())
             .Returns("integration-test-token");
@@ -35,6 +37,7 @@ public class SignalRMeetingAlertIntegrationTests : TestContext
     public void SignalR_ShouldHandleConnectionFailure_Gracefully()
     {
         // Arrange — token service returns a valid token, but hub URL doesn't exist in test
+        Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         var tokenService = Substitute.For<ITokenAcquisitionService>();
         tokenService.AcquireTokenAsync(Arg.Any<CancellationToken>())
             .Returns("test-token");
