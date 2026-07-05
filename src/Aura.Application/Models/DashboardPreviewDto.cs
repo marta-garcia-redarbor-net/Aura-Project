@@ -5,7 +5,17 @@ namespace Aura.Application.Models;
 /// </summary>
 public sealed record DashboardPreviewDto(
     IReadOnlyList<InboxSourceGroupDto> InboxGroups,
-    IReadOnlyList<SummaryPreviewEntryDto> SummaryEntries);
+    IReadOnlyList<SummaryPreviewEntryDto> SummaryEntries)
+{
+    /// <summary>Total count of pending items across all inbox groups.</summary>
+    public int TotalPendingCount { get; init; }
+
+    /// <summary>Count of pending items considered high priority (effective score &gt;= 75).</summary>
+    public int HighPriorityCount { get; init; }
+
+    /// <summary>Top 3 highest-priority items by PriorityScore DESC.</summary>
+    public IReadOnlyList<InboxItemPreviewDto> TopItems { get; init; } = Array.Empty<InboxItemPreviewDto>();
+}
 
 /// <summary>
 /// Source-keyed inbox group for dashboard preview rendering.
@@ -24,11 +34,13 @@ public sealed record InboxItemPreviewDto(
     double Score,
     string SuggestedAction)
 {
+    public DateTimeOffset CapturedAtUtc { get; init; }
     public string? Sender { get; init; }
     public string? Snippet { get; init; }
     public string? DeepLink { get; init; }
     public string? PriorityHint { get; init; }
     public string? SyncState { get; init; }
+    public int? PriorityScore { get; init; }
 
     /// <summary>Number of unread messages (applicable to chat-based sources).</summary>
     public int? UnreadCount { get; init; }

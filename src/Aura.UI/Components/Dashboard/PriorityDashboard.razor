@@ -1,6 +1,7 @@
 @page "/"
 @using Microsoft.AspNetCore.Components.Authorization
 @using Aura.UI.Components.Auth
+@inject IDashboardPreviewApiClient DashboardPreviewApiClient
 
 <AuthorizeView>
     <Authorized>
@@ -10,11 +11,45 @@
             <div>
                 <h1 class="dashboard-page-header__title">Priority Dashboard</h1>
             </div>
-            <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
-                <span class="dashboard-page-header__badge-dot"></span>
-                Live Sync
-            </span>
+            @if (_previewSummary is null)
+            {
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    Live Sync
+                </span>
+            }
+            else
+            {
+                <div class="dashboard-page-header__badges" data-testid="priority-dashboard-counts">
+                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live" data-testid="priority-dashboard-pending">
+                        <span class="dashboard-page-header__badge-dot"></span>
+                        @_previewSummary.TotalPendingCount pending
+                    </span>
+                    <span class="dashboard-page-header__badge dashboard-page-header__badge--high" data-testid="priority-dashboard-high-priority">
+                        @_previewSummary.HighPriorityCount high priority
+                    </span>
+                </div>
+            }
         </div>
+
+        @if (_previewSummary?.TopItems.Count > 0)
+        {
+            <section class="dashboard-panel" data-testid="priority-dashboard-top-items">
+                <h2>Top priority queue</h2>
+                <ul class="priority-top-items">
+                    @foreach (var item in PriorityPresentation.SelectTopPriority(_previewSummary.TopItems))
+                    {
+                        <li class="priority-top-items__item" data-testid="priority-dashboard-top-item">
+                            <div>
+                                <strong>@item.Title</strong>
+                                <p>@item.RelativeTimestamp • @item.Source</p>
+                            </div>
+                            <span class="priority-top-items__badge" data-testid="priority-dashboard-importance-badge">Important</span>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
 
         <PrioritySummaryCards />
     </Authorized>
@@ -23,3 +58,12 @@
         <RestrictedAccessView />
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    private DashboardPreviewResponse? _previewSummary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _previewSummary = await DashboardPreviewApiClient.GetPreviewAsync(CancellationToken.None);
+    }
+}

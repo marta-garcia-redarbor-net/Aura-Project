@@ -1,5 +1,6 @@
 using Aura.Domain.FocusState;
 using Aura.Application.Ports;
+using NSubstitute;
 
 namespace Aura.UnitTests.Triage;
 
@@ -269,7 +270,10 @@ public sealed class FocusStateMachineTests
     [Fact]
     public async Task ResolveAsync_AnyUserId_ReturnsWindowOfOpportunity()
     {
-        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver();
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
 
         var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
 
@@ -280,7 +284,10 @@ public sealed class FocusStateMachineTests
     [Fact]
     public async Task ResolveAsync_SameInputs_SameState()
     {
-        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver();
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
 
         var first = await resolver.ResolveAsync("user-123", CancellationToken.None);
         var second = await resolver.ResolveAsync("user-123", CancellationToken.None);
@@ -290,6 +297,33 @@ public sealed class FocusStateMachineTests
         Assert.Equal(first.CurrentState, second.CurrentState);
     }
 
+    [Fact]
+    public async Task ResolveAsync_WithPersistedOverride_ReturnsOverrideBeforeAutoComputedState()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync("user-123", Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)FocusStateType.DeepWork);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.Equal(FocusStateType.DeepWork, result.CurrentState);
+        await overrideStore.Received(1).GetAsync("user-123", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WhenOverrideCleared_FallsBackToAutoComputedState()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
+    }
+
     // ============================================================
     // Edge cases: empty user ID
     // ============================================================
@@ -297,7 +331,10 @@ public sealed class FocusStateMachineTests
     [Fact]
     public async Task ResolveAsync_EmptyUserId_DoesNotThrow()
     {
-        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver();
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
 
         var result = await resolver.ResolveAsync("", CancellationToken.None);
 
@@ -308,7 +345,10 @@ public sealed class FocusStateMachineTests
     [Fact]
     public async Task ResolveAsync_NullUserId_DoesNotThrow()
     {
-        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver();
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
 
         var result = await resolver.ResolveAsync(null!, CancellationToken.None);
 

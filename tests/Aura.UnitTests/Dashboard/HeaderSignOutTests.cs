@@ -1,4 +1,6 @@
 using Aura.UI.Components.Layout;
+using Aura.UI.Models;
+using Aura.UI.Services;
 using Bunit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -33,6 +35,11 @@ public class HeaderSignOutTests : TestContext
         Services.AddSingleton(CreateConfig(useEntraId));
         Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         Services.AddSingleton<IHttpContextAccessor>(new HttpContextAccessor());
+
+        var focusStateApi = Substitute.For<IFocusStateApiClient>();
+        focusStateApi.GetCurrentAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new FocusStateResponse("WindowOfOpportunity", false, "user-123")));
+        Services.AddSingleton(focusStateApi);
     }
 
     [Fact]

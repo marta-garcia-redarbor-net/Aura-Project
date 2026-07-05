@@ -192,6 +192,8 @@ public static class Program
         var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
         calendarHttpClientBuilder.AddStandardResilienceHandler();
         var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
+        var focusStateHttpClientBuilder = AddApiHttpClient<FocusStateApiClient, IFocusStateApiClient>(builder.Services, apiBaseUrl);
+        var decisionLogHttpClientBuilder = AddApiHttpClient<DecisionLogApiClient, IDecisionLogApiClient>(builder.Services, apiBaseUrl);
 
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
@@ -213,6 +215,8 @@ public static class Program
             syncHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             calendarHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             workItemsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            focusStateHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            decisionLogHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();

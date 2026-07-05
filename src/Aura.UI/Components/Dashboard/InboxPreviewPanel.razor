@@ -21,10 +21,11 @@
         <div data-testid="inbox-preview-populated">
             @foreach (var group in _preview.InboxGroups)
             {
+                var topItems = PriorityPresentation.SelectTopPriority(group.Items);
                 <section class="dashboard-preview-source-group" data-testid="inbox-preview-group">
                     <h3 data-testid="inbox-preview-group-source">@group.Source</h3>
                     <ul data-testid="inbox-preview-items">
-                        @foreach (var item in group.Items)
+                        @foreach (var item in group.Items.OrderByDescending(i => i.PriorityScore ?? int.MinValue))
                         {
                             <li data-testid="inbox-preview-item">
                                 <strong data-testid="inbox-preview-item-title">@item.Title</strong>
@@ -47,6 +48,10 @@
                                 @if (item.PriorityHint is not null)
                                 {
                                     <PriorityBadge Level="@item.PriorityHint" />
+                                }
+                                @if (topItems.Contains(item))
+                                {
+                                    <span class="priority-top-items__badge" data-testid="inbox-preview-importance-badge">Important</span>
                                 }
                                 @if (item.SyncState is not null)
                                 {

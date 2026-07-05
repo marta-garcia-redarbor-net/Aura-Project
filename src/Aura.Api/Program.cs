@@ -94,8 +94,10 @@ app.MapGet("/", () => "Hello World!");
 
 app.MapAuthEndpoints(app.Environment);
 app.MapDashboardEndpoints();
+app.MapFocusStateEndpoints();
 app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
+app.MapTriageEndpoints();
 app.MapWorkItemsEndpoints();
 app.MapHub<AlertHub>("/hubs/alerts");
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
+using Aura.Domain.WorkItems;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -152,9 +153,37 @@ public static partial class DashboardEndpoints
             activity?.SetTag("dashboard.preview.inbox_group_count", preview.InboxGroups.Count);
             activity?.SetTag("dashboard.preview.summary_entry_count", preview.SummaryEntries.Count);
 
+            // ── Compute priority fields ──────────────────────────────────
+            var allItems = preview.InboxGroups
+                .SelectMany(g => g.Items)
+                .ToList();
+
+            var totalPendingCount = allItems.Count;
+            var highPriorityCount = allItems.Count(i => ResolveEffectivePriorityScore(i) >= 75);
+
+            var topItems = allItems
+                .OrderByDescending(ResolveEffectivePriorityScore)
+                .ThenByDescending(i => i.CapturedAtUtc)
+                .ToList();
+
+            var cutoffScore = topItems.Count >= 3
+                ? ResolveEffectivePriorityScore(topItems[2])
+                : int.MinValue;
+
+            var highlighted = topItems
+                .Where(i => ResolveEffectivePriorityScore(i) >= cutoffScore)
+                .ToList();
+
+            var enriched = preview with
+            {
+                TotalPendingCount = totalPendingCount,
+                HighPriorityCount = highPriorityCount,
+                TopItems = highlighted,
+            };
+
             Log.DashboardPreviewSucceeded(logger, preview.InboxGroups.Count, preview.SummaryEntries.Count);
 
-            return Results.Ok(preview);
+            return Results.Ok(enriched);
         }
         catch (OperationCanceledException)
         {
@@ -168,6 +197,23 @@ public static partial class DashboardEndpoints
             Log.DashboardPreviewFailed(logger, ex);
             return Results.Problem(title: "Dashboard preview request failed", statusCode: StatusCodes.Status500InternalServerError);
         }
+    }
+
+    private static int ResolveEffectivePriorityScore(Aura.Application.Models.InboxItemPreviewDto item)
+    {
+        if (item.PriorityScore.HasValue)
+        {
+            return item.PriorityScore.Value;
+        }
+
+        return item.PriorityHint switch
+        {
+            nameof(WorkItemPriority.Critical) => WorkItemPriority.Critical.GetDefaultScore(),
+            nameof(WorkItemPriority.High) => WorkItemPriority.High.GetDefaultScore(),
+            nameof(WorkItemPriority.Medium) => WorkItemPriority.Medium.GetDefaultScore(),
+            nameof(WorkItemPriority.Low) => WorkItemPriority.Low.GetDefaultScore(),
+            _ => 0
+        };
     }
 
     private static async Task<IResult> GetUpcomingMeetingsAsync(

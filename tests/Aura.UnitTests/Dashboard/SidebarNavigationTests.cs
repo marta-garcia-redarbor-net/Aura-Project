@@ -31,4 +31,14 @@ public class SidebarNavigationTests : TestContext
         var healthLink = cut.Find("a[href='/health']");
         Assert.Contains("dashboard-sidebar__nav-item", healthLink.GetAttribute("class"));
     }
+
+    [Fact]
+    public void Sidebar_InterruptionLogLink_IsAnchorWithDecisionsHref()
+    {
+        var cut = RenderComponent<Sidebar>();
+
+        var decisionsLink = cut.Find("a[href='/triage/decisions']");
+        Assert.NotNull(decisionsLink);
+        Assert.Contains("Interruption Log", decisionsLink.TextContent);
+    }
 }

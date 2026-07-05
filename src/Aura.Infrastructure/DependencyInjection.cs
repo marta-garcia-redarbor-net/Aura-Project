@@ -12,6 +12,8 @@ using Aura.Infrastructure.Adapters.Notifications;
 using Aura.Infrastructure.Adapters.Rules;
 using Aura.Infrastructure.Adapters.SeedData;
 using Aura.Infrastructure.Adapters.Options;
+using Aura.Infrastructure.Adapters.Decisions;
+using Aura.Infrastructure.Adapters.FocusState;
 using Aura.Infrastructure.Adapters.Services;
 using Aura.Infrastructure.Adapters.Services.Rules;
 using Microsoft.Data.Sqlite;
@@ -64,6 +66,26 @@ public static class DependencyInjection
         services.AddScoped<IInterruptionRule, VipSenderRule>();
         services.AddScoped<IInterruptionRule, KeywordMatchRule>();
         services.AddScoped<IInterruptionRule, DeadlineUrgencyRule>();
+
+        // Focus state override store (SQLite)
+        services.AddSingleton<IFocusStateOverrideStore>(sp =>
+        {
+            var connString = ResolveDbPath(configuration, environment, "Aura");
+            var connection = new SqliteConnection(connString);
+            connection.Open();
+            SqliteFocusStateOverrideStore.InitializeSchema(connection);
+            return new SqliteFocusStateOverrideStore(connection);
+        });
+
+        // Interruption decision store (SQLite)
+        services.AddSingleton<IInterruptionDecisionStore>(sp =>
+        {
+            var connString = ResolveDbPath(configuration, environment, "Aura");
+            var connection = new SqliteConnection(connString);
+            connection.Open();
+            SqliteInterruptionDecisionStore.InitializeSchema(connection);
+            return new SqliteInterruptionDecisionStore(connection);
+        });
 
         // Alert rule store (SQLite)
         services.AddSingleton<IAlertRuleStore>(sp =>

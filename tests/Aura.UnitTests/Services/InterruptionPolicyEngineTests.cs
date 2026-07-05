@@ -9,6 +9,20 @@ namespace Aura.UnitTests.Services;
 
 public class InterruptionPolicyEngineTests
 {
+    private sealed class StubInterruptionDecisionStore : IInterruptionDecisionStore
+    {
+        public List<InterruptionDecisionRecord> Records { get; } = [];
+
+        public Task RecordAsync(InterruptionDecisionRecord record, CancellationToken cancellationToken = default)
+        {
+            Records.Add(record);
+            return Task.CompletedTask;
+        }
+
+        public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PagedResult<InterruptionDecisionRecord>());
+    }
+
     private sealed class StubFocusStateResolver(FocusState state) : IFocusStateResolver
     {
         public Task<FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
@@ -97,7 +111,8 @@ public class InterruptionPolicyEngineTests
             new[] { rule1, rule2 },
             new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
             new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
-            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])));
+            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])),
+            new StubInterruptionDecisionStore());
         var item = CreateWorkItem();
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
@@ -115,7 +130,8 @@ public class InterruptionPolicyEngineTests
             new[] { rule1, rule2 },
             new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
             new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
-            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])));
+            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])),
+            new StubInterruptionDecisionStore());
         var item = CreateWorkItem();
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
@@ -133,7 +149,8 @@ public class InterruptionPolicyEngineTests
             new[] { rule1, rule2 },
             new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
             new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
-            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])));
+            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])),
+            new StubInterruptionDecisionStore());
         var item = CreateWorkItem();
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
@@ -152,7 +169,8 @@ public class InterruptionPolicyEngineTests
             new[] { rule1, rule2 },
             new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
             new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
-            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])));
+            new StubPriorityScoringService(new PriorityScore("rule1", 100, true, true, "rule1", [])),
+            new StubInterruptionDecisionStore());
         var item = CreateWorkItem();
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
@@ -173,7 +191,8 @@ public class InterruptionPolicyEngineTests
             Array.Empty<IInterruptionRule>(),
             new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
             new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
-            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])));
+            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])),
+            new StubInterruptionDecisionStore());
         var item = CreateWorkItem();
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
@@ -208,7 +227,8 @@ public class InterruptionPolicyEngineTests
                 true,
                 true,
                 "urgent + action_needed",
-                [new PriorityFactorContribution(WorkItemSignalKeys.ActionNeededSignal, "action needed")])));
+                [new PriorityFactorContribution(WorkItemSignalKeys.ActionNeededSignal, "action needed")])),
+            new StubInterruptionDecisionStore());
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
 
@@ -232,7 +252,8 @@ public class InterruptionPolicyEngineTests
                 false,
                 false,
                 "routine",
-                [])));
+                [])),
+            new StubInterruptionDecisionStore());
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
 
@@ -277,12 +298,177 @@ public class InterruptionPolicyEngineTests
                 false,
                 false,
                 "routine",
-                [])));
+                [])),
+            new StubInterruptionDecisionStore());
 
         var verdict = await engine.EvaluateAsync(item, CancellationToken.None);
 
         Assert.Equal(InterruptionDecision.InterruptNow, verdict.Decision);
         Assert.Contains("override", verdict.Explanation, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("reviewer-1", verdict.TargetUserId);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_OverrideDecision_PersistsRecord()
+    {
+        var item = new WorkItem(
+            "ext-override", "Override Item", "inbox",
+            WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
+            new Dictionary<string, string>
+            {
+                [WorkItemSignalKeys.ExplicitPatternKey] = "always-interrupt",
+                [WorkItemSignalKeys.TargetResponsibleUserId] = "user-1"
+            });
+        var policy = new UserTriagePolicy
+        {
+            ExplicitOverrides =
+            [
+                new ExplicitTriageOverride(
+                    "always-interrupt",
+                    InterruptionDecision.InterruptNow,
+                    "Always interrupt",
+                    true)
+            ]
+        };
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.DeepWork)),
+            new StubUserTriagePolicyProvider(policy),
+            new StubPriorityScoringService(new PriorityScore("default", 0, false, false, "default", [])),
+            store);
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.Equal(item.Id, record.WorkItemId);
+        Assert.Equal("Override Item", record.Title);
+        Assert.Equal("INTERRUPT", record.Decision);
+        Assert.Null(record.PriorityScore);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_QueueDecision_PersistsRecord()
+    {
+        var item = CreateWorkItem();
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("default-queue", 0, false, false, "default", [])),
+            store);
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.Equal(item.Id, record.WorkItemId);
+        Assert.Equal("QUEUE", record.Decision);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_DeferDecision_PersistsRecord()
+    {
+        var item = CreateWorkItem();
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.Away)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("queue-only", 10, false, false, "routine", [])),
+            store);
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.Equal(item.Id, record.WorkItemId);
+        Assert.Equal("DEFER", record.Decision);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_InterruptDecision_PersistsRecord()
+    {
+        var item = CreateWorkItem();
+        var store = new StubInterruptionDecisionStore();
+        var interruptingRule = new StubRule("InterruptRule", 10, CreateResult("InterruptRule", true));
+
+        var engine = new InterruptionPolicyEngine(
+            new[] { interruptingRule },
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("interrupt", 90, true, true, "urgent", [])),
+            store);
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.Equal(item.Id, record.WorkItemId);
+        Assert.Equal("INTERRUPT", record.Decision);
+        Assert.Equal(90, record.PriorityScore);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_PersistRecordContainsPriorityScore()
+    {
+        var rule1 = new StubRule("Rule1", 10, CreateResult("Rule1", true));
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            new[] { rule1 },
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("rule1", 75, true, false, "matched", [])),
+            store);
+        var item = CreateWorkItem();
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.NotNull(record.PriorityScore);
+        Assert.Equal(75, record.PriorityScore);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_PersistRecordContainsTimestamp()
+    {
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("default", 0, false, false, "default", [])),
+            store);
+        var item = CreateWorkItem();
+
+        var before = DateTimeOffset.UtcNow;
+        await engine.EvaluateAsync(item, CancellationToken.None);
+        var after = DateTimeOffset.UtcNow;
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.InRange(record.Timestamp, before, after);
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_PersistRecordContainsSourceType()
+    {
+        var item = CreateWorkItem();
+        var store = new StubInterruptionDecisionStore();
+        var engine = new InterruptionPolicyEngine(
+            Array.Empty<IInterruptionRule>(),
+            new StubFocusStateResolver(CreateFocusState(FocusStateType.WindowOfOpportunity)),
+            new StubUserTriagePolicyProvider(UserTriagePolicy.Empty),
+            new StubPriorityScoringService(new PriorityScore("default", 0, false, false, "default", [])),
+            store);
+
+        await engine.EvaluateAsync(item, CancellationToken.None);
+
+        Assert.Single(store.Records);
+        var record = store.Records[0];
+        Assert.Equal("OutlookEmail", record.SourceType);
     }
 }
