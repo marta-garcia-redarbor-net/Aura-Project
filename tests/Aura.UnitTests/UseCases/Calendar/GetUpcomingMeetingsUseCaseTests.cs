@@ -8,6 +8,8 @@ namespace Aura.UnitTests.UseCases.Calendar;
 
 public class GetUpcomingMeetingsUseCaseTests
 {
+    private const string UserId = "user-1";
+
     [Fact]
     public async Task ExecuteAsync_ReturnsEventsSortedByStartUtcAscending()
     {
@@ -18,14 +20,14 @@ public class GetUpcomingMeetingsUseCaseTests
             new CalendarEvent("1", "Earlier meeting", new DateTimeOffset(2026, 6, 24, 10, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 6, 24, 11, 0, 0, TimeSpan.Zero), false),
             new CalendarEvent("3", "Latest meeting", new DateTimeOffset(2026, 6, 24, 16, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 6, 24, 17, 0, 0, TimeSpan.Zero), true)
         };
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(events));
 
         var useCase = new GetUpcomingMeetingsUseCase(store);
         var from = new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero);
 
-        var result = await useCase.ExecuteAsync(from, to, CancellationToken.None);
+        var result = await useCase.ExecuteAsync(UserId, from, to, CancellationToken.None);
 
         Assert.Equal(3, result.Count);
         Assert.IsType<UpcomingMeetingDto>(result[0]);
@@ -38,14 +40,14 @@ public class GetUpcomingMeetingsUseCaseTests
     public async Task ExecuteAsync_EmptyStore_ReturnsEmptyList()
     {
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(new List<CalendarEvent>()));
 
         var useCase = new GetUpcomingMeetingsUseCase(store);
         var from = new DateTimeOffset(2026, 6, 24, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 6, 24, 23, 59, 59, TimeSpan.Zero);
 
-        var result = await useCase.ExecuteAsync(from, to, CancellationToken.None);
+        var result = await useCase.ExecuteAsync(UserId, from, to, CancellationToken.None);
 
         Assert.Empty(result);
     }
@@ -54,15 +56,15 @@ public class GetUpcomingMeetingsUseCaseTests
     public async Task ExecuteAsync_CallsStoreWithCorrectTimeWindow()
     {
         var store = Substitute.For<ICalendarEventStore>();
-        store.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        store.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<CalendarEvent>>(new List<CalendarEvent>()));
 
         var useCase = new GetUpcomingMeetingsUseCase(store);
         var from = new DateTimeOffset(2026, 6, 24, 8, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 6, 24, 16, 0, 0, TimeSpan.Zero);
 
-        await useCase.ExecuteAsync(from, to, CancellationToken.None);
+        await useCase.ExecuteAsync(UserId, from, to, CancellationToken.None);
 
-        await store.Received(1).GetUpcomingAsync(from, to, Arg.Any<CancellationToken>());
+        await store.Received(1).GetUpcomingAsync(UserId, from, to, Arg.Any<CancellationToken>());
     }
 }

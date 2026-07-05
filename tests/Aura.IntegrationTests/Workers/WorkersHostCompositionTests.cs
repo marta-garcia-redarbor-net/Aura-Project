@@ -37,6 +37,7 @@ public class WorkersHostCompositionTests
                 ["Qdrant:VectorSize"] = "768",
                 ["ConnectionStrings:SemanticOutbox"] = "Data Source=:memory:",
                 ["ConnectionStrings:Aura"] = $"Data Source={dbPath}",
+                ["EmbeddingProvider:Provider"] = "OpenAI",
                 ["EmbeddingProvider:Endpoint"] = "https://test.openai.azure.com",
                 ["EmbeddingProvider:DeploymentName"] = "text-embedding-ada-002",
                 ["EmbeddingProvider:ApiKey"] = "test-key",
@@ -119,9 +120,11 @@ public class WorkersHostCompositionTests
         var scorer = scope.ServiceProvider.GetRequiredService<IPriorityScoringService>();
         var policyProvider = scope.ServiceProvider.GetRequiredService<IUserTriagePolicyProvider>();
         var engine = scope.ServiceProvider.GetRequiredService<IInterruptionPolicyEngine>();
+        var resolver = scope.ServiceProvider.GetRequiredService<IFocusStateResolver>();
 
         Assert.NotNull(scorer);
         Assert.NotNull(policyProvider);
         Assert.NotNull(engine);
+        Assert.NotNull(resolver);
     }
 }

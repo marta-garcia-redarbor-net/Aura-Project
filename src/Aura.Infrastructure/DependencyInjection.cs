@@ -61,6 +61,9 @@ public static class DependencyInjection
 
         // Interruption policy engine
         services.Configure<InterruptionOptions>(configuration.GetSection(InterruptionOptions.SectionName));
+        services.Configure<FocusStateOptions>(configuration.GetSection(FocusStateOptions.SectionName));
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<IFocusStateResolver, SignalBasedFocusStateResolver>();
         services.AddScoped<IInterruptionPolicyEngine, InterruptionPolicyEngine>();
         services.AddScoped<IInterruptionRule, ScoreThresholdRule>();
         services.AddScoped<IInterruptionRule, VipSenderRule>();

@@ -40,10 +40,12 @@ public class GraphCalendarEventProviderTests
         Assert.Equal("Conference Room A", results[0].LocationDisplayName);
         Assert.False(results[0].IsCancelled);
         Assert.Equal("Eastern Standard Time", results[0].OriginalTimeZone);
+        Assert.Null(results[0].UserId);
 
         Assert.Equal("event-2", results[1].ExternalId);
         Assert.Equal("Planning", results[1].Subject);
         Assert.False(results[1].IsOnlineMeeting);
+        Assert.Null(results[1].UserId);
     }
 
     [Fact]
@@ -116,6 +118,24 @@ public class GraphCalendarEventProviderTests
 
         // Assert
         await factory.Received(1).CreateClientAsync("oid-cal-99", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAsync_WhenIdentityHasUserOid_MapsUserIdOnDtos()
+    {
+        var responseJson = BuildCalendarViewResponse(
+            new FakeEvent("event-oid", "Owned meeting", "2026-06-24T10:00:00Z", "2026-06-24T11:00:00Z", false, null, null, null, null, false, null));
+
+        var provider = CreateProvider(responseJson);
+        var request = new ConnectorExecutionRequest(
+            new CheckpointIdentity("calendar", "calendar", "acme", userOid: "oid-777"),
+            DateTimeOffset.UtcNow.AddHours(-1),
+            DateTimeOffset.UtcNow);
+
+        var results = await provider.FetchAsync(request, CancellationToken.None);
+
+        Assert.Single(results);
+        Assert.Equal("oid-777", results[0].UserId);
     }
 
     [Fact]

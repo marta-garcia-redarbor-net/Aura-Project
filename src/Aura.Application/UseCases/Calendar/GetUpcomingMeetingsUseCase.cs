@@ -14,9 +14,11 @@ public class GetUpcomingMeetingsUseCase
         _store = store;
     }
 
-    public async Task<IReadOnlyList<UpcomingMeetingDto>> ExecuteAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    public async Task<IReadOnlyList<UpcomingMeetingDto>> ExecuteAsync(string userId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
-        var events = await _store.GetUpcomingAsync(from, to, ct);
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+
+        var events = await _store.GetUpcomingAsync(userId, from, to, ct);
 
         return events
             .OrderBy(e => e.StartUtc)

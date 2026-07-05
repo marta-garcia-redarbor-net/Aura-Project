@@ -24,6 +24,7 @@ public static class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();
+        builder.Services.AddSingleton<IFocusStateRefreshScheduler, TimerFocusStateRefreshScheduler>();
 
         var useEntraId = builder.Configuration.GetValue<bool>("UseEntraId");
 
@@ -188,6 +189,7 @@ public static class Program
         var dashboardPreviewHttpClientBuilder = AddApiHttpClient<DashboardPreviewApiClient, IDashboardPreviewApiClient>(builder.Services, apiBaseUrl);
         var systemStatusHttpClientBuilder = AddApiHttpClient<SystemStatusApiClient, ISystemStatusApiClient>(builder.Services, apiBaseUrl);
         var moduleProgressHttpClientBuilder = AddApiHttpClient<ModuleProgressApiClient, IModuleProgressApiClient>(builder.Services, apiBaseUrl);
+        var focusStateHttpClientBuilder = AddApiHttpClient<FocusStateApiClient, IFocusStateApiClient>(builder.Services, apiBaseUrl);
         var syncHttpClientBuilder = AddApiHttpClient<SyncApiClient, ISyncApiClient>(builder.Services, apiBaseUrl);
         var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
         calendarHttpClientBuilder.AddStandardResilienceHandler();
@@ -212,6 +214,7 @@ public static class Program
             dashboardPreviewHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             systemStatusHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             moduleProgressHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            focusStateHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             syncHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             calendarHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             workItemsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();

@@ -32,6 +32,9 @@ public sealed class EmbeddingProviderOptionsValidator : IValidateOptions<Embeddi
         if (options.MaxRetries < 0)
             failures.Add("MaxRetries must be >= 0.");
 
+        if (options.Provider is not ("OpenAI" or "Ollama"))
+            failures.Add("Provider must be 'OpenAI' or 'Ollama'.");
+
         return failures.Count > 0
             ? ValidateOptionsResult.Fail(failures)
             : ValidateOptionsResult.Success;

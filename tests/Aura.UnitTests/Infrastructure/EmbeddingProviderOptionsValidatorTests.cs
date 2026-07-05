@@ -9,13 +9,46 @@ public class EmbeddingProviderOptionsValidatorTests
 
     private static EmbeddingProviderOptions ValidOptions() => new()
     {
-        Endpoint = "https://test.openai.azure.com",
-        DeploymentName = "text-embedding-ada-002",
+        Endpoint = "http://localhost:11434",
+        DeploymentName = "nomic-embed-text",
         MaxBatchSize = 16,
         MaxTokensPerBatch = 8192,
         TimeoutSeconds = 30,
-        MaxRetries = 3
+        MaxRetries = 3,
+        Provider = "Ollama"
     };
+
+    [Fact]
+    public void Validate_OpenAIProvider_Succeeds()
+    {
+        var options = ValidOptions();
+        options.Provider = "OpenAI";
+        var result = _validator.Validate(null, options);
+        Assert.True(result.Succeeded, result.FailureMessage);
+    }
+
+    [Fact]
+    public void Validate_OllamaProvider_Succeeds()
+    {
+        var options = ValidOptions();
+        options.Provider = "Ollama";
+        var result = _validator.Validate(null, options);
+        Assert.True(result.Succeeded, result.FailureMessage);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Anthropic")]
+    [InlineData("ollama")] // case-sensitive
+    [InlineData("openai")]
+    public void Validate_InvalidProvider_Fails(string provider)
+    {
+        var options = ValidOptions();
+        options.Provider = provider;
+        var result = _validator.Validate(null, options);
+        Assert.True(result.Failed);
+        Assert.Contains("Provider", result.FailureMessage);
+    }
 
     [Fact]
     public void Validate_ValidOptions_Succeeds()
@@ -118,5 +151,6 @@ public class EmbeddingProviderOptionsValidatorTests
         Assert.Equal(8192, options.MaxTokensPerBatch);
         Assert.Equal(30, options.TimeoutSeconds);
         Assert.Equal(3, options.MaxRetries);
+        Assert.Equal("Ollama", options.Provider);
     }
 }

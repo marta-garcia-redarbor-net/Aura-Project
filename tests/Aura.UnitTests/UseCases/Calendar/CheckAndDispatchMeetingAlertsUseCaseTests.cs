@@ -7,6 +7,8 @@ namespace Aura.UnitTests.UseCases.Calendar;
 
 public class CheckAndDispatchMeetingAlertsUseCaseTests
 {
+    private const string UserId = "user-1";
+
     private readonly ICalendarEventStore _eventStore = Substitute.For<ICalendarEventStore>();
     private readonly IMeetingAlertStore _alertStore = Substitute.For<IMeetingAlertStore>();
     private readonly IMeetingAlertDispatcher _dispatcher = Substitute.For<IMeetingAlertDispatcher>();
@@ -26,14 +28,14 @@ public class CheckAndDispatchMeetingAlertsUseCaseTests
         var eventStart = now.AddMinutes(60);
         var calendarEvent = CreateEvent("evt-1", "Team standup", eventStart);
 
-        _eventStore.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        _eventStore.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(new[] { calendarEvent });
 
         _alertStore.GetUnsentAlertAsync("evt-1", MeetingAlertTrigger.SixtyMinutes, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns((MeetingAlert?)null);
 
         // Act
-        await _sut.ExecuteAsync(now, CancellationToken.None);
+        await _sut.ExecuteAsync(UserId, now, CancellationToken.None);
 
         // Assert
         await _dispatcher.Received(1).DispatchAsync(
@@ -58,7 +60,7 @@ public class CheckAndDispatchMeetingAlertsUseCaseTests
         var eventStart = now.AddMinutes(60); // 13:00 — triggers at 12:00, 12:50, 12:55
         var calendarEvent = CreateEvent("evt-1", "Sprint planning", eventStart);
 
-        _eventStore.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        _eventStore.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(new[] { calendarEvent });
 
         // All three triggers already sent
@@ -70,7 +72,7 @@ public class CheckAndDispatchMeetingAlertsUseCaseTests
         }
 
         // Act
-        await _sut.ExecuteAsync(now, CancellationToken.None);
+        await _sut.ExecuteAsync(UserId, now, CancellationToken.None);
 
         // Assert — dispatcher NOT called
         await _dispatcher.DidNotReceive().DispatchAsync(Arg.Any<MeetingAlert>(), Arg.Any<CancellationToken>());
@@ -84,7 +86,7 @@ public class CheckAndDispatchMeetingAlertsUseCaseTests
         var event1 = CreateEvent("evt-1", "Standup", now.AddMinutes(60));
         var event2 = CreateEvent("evt-2", "Review", now.AddMinutes(10));
 
-        _eventStore.GetUpcomingAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        _eventStore.GetUpcomingAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(new[] { event1, event2 });
 
         _alertStore.GetUnsentAlertAsync("evt-1", MeetingAlertTrigger.SixtyMinutes, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
@@ -93,7 +95,7 @@ public class CheckAndDispatchMeetingAlertsUseCaseTests
             .Returns((MeetingAlert?)null);
 
         // Act
-        await _sut.ExecuteAsync(now, CancellationToken.None);
+        await _sut.ExecuteAsync(UserId, now, CancellationToken.None);
 
         // Assert — dispatcher called twice
         await _dispatcher.Received(1).DispatchAsync(
