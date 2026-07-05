@@ -150,7 +150,7 @@ public sealed class MorningSummaryRankingPolicy : IMorningSummaryRankingPolicy
 
     private static (bool HasPreliminaryScore, double Score) GetPreliminaryScore(IReadOnlyDictionary<string, string> metadata)
     {
-        if (TryParseDouble(metadata, WorkItemSignalKeys.OutlookTotalScore, out var score))
+        if (TryParseDouble(metadata, WorkItemSignalKeys.OutlookScoringTotalScore, out var score))
         {
             return (true, score);
         }

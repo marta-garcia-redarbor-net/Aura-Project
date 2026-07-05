@@ -1,3 +1,4 @@
+using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.Calendar;
 using Aura.Domain.WorkItems;
@@ -294,14 +295,14 @@ internal sealed partial class SeedDataHostedService : IHostedService
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["teams.sender"] = sender,
-            ["teams.snippet"] = body,
-            ["teams.deepLink"] = $"https://teams.microsoft.com/l/message/{externalId}",
-            ["teams.teamId"] = teamId ?? "general",
-            ["teams.channelId"] = channelId ?? "general",
-            ["teams.messageUrl"] = $"https://teams.microsoft.com/l/message/{externalId}",
-            ["teams.priority.raw"] = priority.ToString(),
-            ["teams.priority.resolution"] = "explicit"
+            [WorkItemSignalKeys.TeamsSender] = sender,
+            [WorkItemSignalKeys.TeamsSnippet] = body,
+            [WorkItemSignalKeys.TeamsDeepLink] = $"https://teams.microsoft.com/l/message/{externalId}",
+            [WorkItemSignalKeys.TeamsTeamId] = teamId ?? "general",
+            [WorkItemSignalKeys.TeamsChannelId] = channelId ?? "general",
+            [WorkItemSignalKeys.TeamsMessageUrl] = $"https://teams.microsoft.com/l/message/{externalId}",
+            [WorkItemSignalKeys.TeamsPriorityRaw] = priority.ToString(),
+            [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
         };
 
         return new WorkItem(
@@ -328,12 +329,12 @@ internal sealed partial class SeedDataHostedService : IHostedService
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["outlook.sender"] = senderAddress,
-            ["outlook.snippet"] = bodyPreview,
-            ["outlook.deepLink"] = $"https://outlook.office.com/mail/{externalId}",
-            ["outlook.conversationId"] = conversationId,
-            ["outlook.importance.raw"] = importance ?? "normal",
-            ["outlook.scoring.totalScore"] = priority switch
+            [WorkItemSignalKeys.OutlookSender] = senderAddress,
+            [WorkItemSignalKeys.OutlookSnippet] = bodyPreview,
+            [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/{externalId}",
+            [WorkItemSignalKeys.OutlookConversationId] = conversationId,
+            [WorkItemSignalKeys.OutlookImportanceRaw] = importance ?? "normal",
+            [WorkItemSignalKeys.OutlookScoringTotalScore] = priority switch
             {
                 WorkItemPriority.Critical => "7",
                 WorkItemPriority.High => "4",
@@ -344,8 +345,8 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
         if (hasDeadline)
         {
-            metadata["outlook.deadline.cue"] = "by eod";
-            metadata["outlook.deadline.source"] = "body";
+            metadata[WorkItemSignalKeys.OutlookDeadlineCue] = "by eod";
+            metadata[WorkItemSignalKeys.OutlookDeadlineSource] = "body";
         }
 
         return new WorkItem(
