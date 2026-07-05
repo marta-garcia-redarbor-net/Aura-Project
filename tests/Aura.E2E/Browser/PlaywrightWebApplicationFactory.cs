@@ -104,10 +104,9 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
         builder.Services.AddScoped<IFocusStateApiClient>(_ =>
             new StubFocusStateApiClient(new FocusStateResponse(
-                CurrentState: "WindowOfOpportunity",
-                Label: null,
-                Since: DateTimeOffset.UtcNow,
-                Signals: ["stub"])));
+                State: "WindowOfOpportunity",
+                IsOverridden: false,
+                UserId: "system")));
         builder.Services.AddSingleton<IFocusStateRefreshScheduler, NoopFocusStateRefreshScheduler>();
 
         builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
@@ -221,6 +220,10 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
     {
         public Task<FocusStateResponse> GetCurrentAsync(CancellationToken cancellationToken)
             => Task.FromResult(response);
+
+        public Task SetOverrideAsync(string state, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task ClearOverrideAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
     private sealed class NoopFocusStateRefreshScheduler : IFocusStateRefreshScheduler

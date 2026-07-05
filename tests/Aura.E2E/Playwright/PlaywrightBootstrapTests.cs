@@ -120,7 +120,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         var panel = page.Locator("[data-testid='focus-state-panel']");
         await panel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
 
-        var badge = page.Locator("[data-testid='focus-state-badge']");
+        var badge = panel.Locator("[data-testid='focus-state-badge']");
         await badge.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
 
         Assert.True(await badge.IsVisibleAsync());

@@ -44,6 +44,16 @@ public class PriorityDashboardRenderOrderTests : TestContext
                     "https://outlook.office.com/calendar/view/day", "/calendar/day", null, [])
             }));
         Services.AddSingleton<IPrioritySummaryService>(priorityService);
+
+        var previewClient = Substitute.For<IDashboardPreviewApiClient>();
+        previewClient.GetPreviewAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new DashboardPreviewResponse([], [])
+            {
+                TotalPendingCount = 0,
+                HighPriorityCount = 0,
+                TopItems = []
+            }));
+        Services.AddSingleton(previewClient);
     }
 
     private static AuthenticationState CreateAuthorizedState()

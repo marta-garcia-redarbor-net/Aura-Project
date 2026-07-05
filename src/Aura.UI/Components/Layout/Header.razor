@@ -1,12 +1,20 @@
+@using Aura.UI.Services
+
 <header class="dashboard-header" data-testid="dashboard-header">
     <div class="dashboard-header__identity">
         <span class="dashboard-header__brand">Aura</span>
         <nav class="dashboard-header__nav">
-            <span class="dashboard-header__nav-active">Development / Week 1</span>
+            <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
+                    data-testid="header-top-priority-counter"
+                    @onclick="NavigateToTopPriority"
+                    title="Open top priority queue">
+                Top priority queue
+            </button>
         </nav>
     </div>
 
     <div class="dashboard-header__actions">
+        <FocusStateBadge />
         <span class="material-symbols-outlined dashboard-header__icon-btn">terminal</span>
         <span class="material-symbols-outlined dashboard-header__icon-btn">settings</span>
         @if (!string.IsNullOrEmpty(UserDisplayName))
@@ -25,6 +33,9 @@
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IConfiguration Configuration { get; set; } = default!;
+
+    private void NavigateToTopPriority()
+        => Navigation.NavigateTo("/top-priority");
 
     private void HandleSignOut()
     {

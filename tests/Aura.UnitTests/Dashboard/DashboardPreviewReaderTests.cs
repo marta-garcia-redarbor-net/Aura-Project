@@ -60,6 +60,41 @@ public class DashboardPreviewReaderTests
     }
 
     [Fact]
+    public async Task GetAsync_WithExplicitPriorityScore_ProjectsPriorityScoreIntoInboxPreviewDto()
+    {
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.GetCurrentUser().Returns(new AuraUser
+        {
+            UserId = "user-42",
+            DisplayName = "Preview User",
+            Email = "preview@aura.test"
+        });
+
+        var workItemReader = Substitute.For<IWorkItemReader>();
+        workItemReader.ReadForWindowAsync(Arg.Any<MorningSummaryQuery>(), WorkItemStatus.Pending, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<WorkItem>>([
+                new WorkItem("prio-1", "Scored", "outlook",
+                    WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
+                    new Dictionary<string, string>(), "corr-1",
+                    new DateTimeOffset(2026, 6, 23, 9, 30, 0, TimeSpan.Zero),
+                    priorityScore: 85)
+            ]));
+
+        var reader = new DashboardPreviewReader(
+            workItemReader,
+            new MorningSummaryRankingPolicy(),
+            currentUser,
+            utcNow: () => new DateTimeOffset(2026, 6, 23, 10, 0, 0, TimeSpan.Zero));
+
+        var result = await reader.GetAsync(CancellationToken.None);
+
+        var group = Assert.Single(result.InboxGroups);
+        var item = Assert.Single(group.Items);
+        Assert.Equal(85, item.PriorityScore);
+        Assert.Equal(new DateTimeOffset(2026, 6, 23, 9, 30, 0, TimeSpan.Zero), item.CapturedAtUtc);
+    }
+
+    [Fact]
     public async Task GetAsync_WithoutWorkItemReaderRegistration_ReturnsEmptyPreview()
     {
         var currentUser = Substitute.For<ICurrentUserService>();

@@ -356,6 +356,95 @@ public class WorkItemTests
         Assert.Equal("v1", item.SchemaVersion);
     }
 
+    // ============================================================
+    // Phase: W3-H3 — PriorityScore
+    // ============================================================
+
+    [Fact]
+    public void Constructor_WithoutPriorityScore_DefaultsToNull()
+    {
+        var item = CreateValidWorkItem();
+
+        Assert.Null(item.PriorityScore);
+    }
+
+    [Fact]
+    public void Constructor_WithExplicitPriorityScore_PreservesValue()
+    {
+        var item = new WorkItem(
+            "ext-ps-1",
+            "Priority Item",
+            "inbox",
+            WorkItemSourceType.OutlookEmail,
+            WorkItemPriority.High,
+            new Dictionary<string, string>(),
+            null,
+            null,
+            priorityScore: 85);
+
+        Assert.Equal(85, item.PriorityScore);
+    }
+
+    [Fact]
+    public void PriorityScore_CanBeNull_AfterConstruction()
+    {
+        var item = new WorkItem(
+            "ext-ps-2",
+            "Null Score Item",
+            "inbox",
+            WorkItemSourceType.OutlookEmail,
+            WorkItemPriority.Medium,
+            new Dictionary<string, string>(),
+            null,
+            null,
+            priorityScore: null);
+
+        Assert.Null(item.PriorityScore);
+    }
+
+    [Fact]
+    public void Constructor_WithZeroPriorityScore_PreservesZero()
+    {
+        var item = new WorkItem(
+            "ext-ps-zero",
+            "Zero Score",
+            "inbox",
+            WorkItemSourceType.OutlookEmail,
+            WorkItemPriority.Low,
+            new Dictionary<string, string>(),
+            null,
+            null,
+            priorityScore: 0);
+
+        Assert.Equal(0, item.PriorityScore);
+    }
+
+    [Fact]
+    public void PriorityScore_DoesNotAffectStatusTransitions()
+    {
+        var item = new WorkItem(
+            "ext-ps-trans",
+            "Transitions",
+            "inbox",
+            WorkItemSourceType.OutlookEmail,
+            WorkItemPriority.High,
+            new Dictionary<string, string>(),
+            null,
+            null,
+            priorityScore: 100);
+
+        Assert.Equal(WorkItemStatus.Pending, item.Status);
+        Assert.Equal(100, item.PriorityScore);
+
+        item.MarkProcessing();
+        Assert.Equal(WorkItemStatus.Processing, item.Status);
+        Assert.Equal(100, item.PriorityScore); // unchanged
+
+        item.MarkCompleted();
+        Assert.Equal(WorkItemStatus.Completed, item.Status);
+        Assert.Equal(100, item.PriorityScore); // unchanged
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData(null)]

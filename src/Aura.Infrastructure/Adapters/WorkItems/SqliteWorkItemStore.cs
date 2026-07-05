@@ -58,6 +58,18 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         {
             // Column already exists — ignore
         }
+
+        // Migration: add PriorityScore column (W3-H3)
+        try
+        {
+            using var migrateCmd = connection.CreateCommand();
+            migrateCmd.CommandText = "ALTER TABLE WorkItems ADD COLUMN PriorityScore INTEGER NULL;";
+            migrateCmd.ExecuteNonQuery();
+        }
+        catch
+        {
+            // Column already exists — ignore
+        }
     }
 
     public Task<WorkItem?> FindByExternalIdAsync(string externalId, CancellationToken ct)
@@ -67,7 +79,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore
             FROM WorkItems
             WHERE ExternalId = @ExternalId
             """;
@@ -89,9 +101,9 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
             INSERT INTO WorkItems (Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
-                                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason)
+                                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason, PriorityScore)
             VALUES (@Id, @ExternalId, @Title, @Source, @SourceType, @Priority, @MetadataJson,
-                    @CorrelationId, @CapturedAtUtc, @SchemaVersion, @Status, @CreatedAt, @FaultReason)
+                    @CorrelationId, @CapturedAtUtc, @SchemaVersion, @Status, @CreatedAt, @FaultReason, @PriorityScore)
             ON CONFLICT(ExternalId) DO UPDATE SET
                 Title = excluded.Title,
                 Source = excluded.Source,
@@ -99,7 +111,8 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                 MetadataJson = excluded.MetadataJson,
                 CapturedAtUtc = excluded.CapturedAtUtc,
                 Status = excluded.Status,
-                FaultReason = excluded.FaultReason;
+                FaultReason = excluded.FaultReason,
+                PriorityScore = excluded.PriorityScore;
             """;
         cmd.Parameters.AddWithValue("@Id", item.Id.ToString());
         cmd.Parameters.AddWithValue("@ExternalId", item.ExternalId);
@@ -114,6 +127,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         cmd.Parameters.AddWithValue("@Status", item.Status.ToString());
         cmd.Parameters.AddWithValue("@CreatedAt", item.CreatedAt.ToString("O"));
         cmd.Parameters.AddWithValue("@FaultReason", (object?)item.FaultReason ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@PriorityScore", (object?)item.PriorityScore ?? DBNull.Value);
         cmd.ExecuteNonQuery();
 
         return Task.FromResult(WorkItemPersistenceResult.Success());
@@ -129,17 +143,20 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
             SELECT Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
-                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason
+                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason, PriorityScore
             FROM WorkItems
             WHERE SourceType = @SourceType
               AND (@Status IS NULL OR Status = @Status)
             ORDER BY
-              CASE Priority
-                WHEN 'Critical' THEN 0
-                WHEN 'High' THEN 1
-                WHEN 'Medium' THEN 2
-                WHEN 'Low' THEN 3
-              END,
+              COALESCE(PriorityScore,
+                CASE Priority
+                  WHEN 'Critical' THEN 100
+                  WHEN 'High' THEN 75
+                  WHEN 'Medium' THEN 50
+                  WHEN 'Low' THEN 25
+                  ELSE 0
+                END
+              ) DESC,
               CapturedAtUtc DESC;
             """;
         cmd.Parameters.AddWithValue("@SourceType", sourceType.ToString());
@@ -160,8 +177,9 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                            ?? new Dictionary<string, string>();
             var correlationId = reader.GetString(7);
             var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(8));
+            int? priorityScore = reader.IsDBNull(13) ? null : reader.GetInt32(13);
 
-            items.Add(new WorkItem(externalId, title, source, sourceTypeValue, priority, metadata, correlationId, capturedAtUtc));
+            items.Add(new WorkItem(externalId, title, source, sourceTypeValue, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore));
         }
 
         return Task.FromResult<IReadOnlyList<WorkItem>>(items);
@@ -186,7 +204,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         }
 
         cmd.CommandText = $"""
-            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore
             FROM WorkItems
             WHERE {whereClause}
             ORDER BY CapturedAtUtc DESC;
@@ -221,7 +239,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         }
 
         cmd.CommandText = $"""
-            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore
             FROM WorkItems
             WHERE {string.Join(" AND ", filters)}
             ORDER BY CapturedAtUtc DESC;
@@ -301,7 +319,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
 
     /// <summary>Reads a single WorkItem from the current row of a SqliteDataReader.
     /// Assumes columns: 0=ExternalId, 1=Title, 2=Source, 3=SourceType, 4=Priority,
-    /// 5=MetadataJson, 6=CorrelationId, 7=CapturedAtUtc.</summary>
+    /// 5=MetadataJson, 6=CorrelationId, 7=CapturedAtUtc, 8=PriorityScore (nullable).</summary>
     private static WorkItem ReadWorkItemFromReader(SqliteDataReader reader)
     {
         var externalId = reader.GetString(0);
@@ -314,7 +332,8 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                        ?? new Dictionary<string, string>();
         var correlationId = reader.GetString(6);
         var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(7));
+        int? priorityScore = reader.IsDBNull(8) ? null : reader.GetInt32(8);
 
-        return new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc);
+        return new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore);
     }
 }

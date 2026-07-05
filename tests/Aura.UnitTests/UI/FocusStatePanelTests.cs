@@ -15,10 +15,9 @@ public sealed class FocusStatePanelTests : TestContext
         var client = Substitute.For<IFocusStateApiClient>();
         client.GetCurrentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new FocusStateResponse(
-                CurrentState: "DeepWork",
-                Label: null,
-                Since: DateTimeOffset.UtcNow,
-                Signals: ["resolved:DeepWork"])));
+                State: "DeepWork",
+                IsOverridden: false,
+                UserId: "user-123")));
 
         Services.AddSingleton<IFocusStateRefreshScheduler>(Substitute.For<IFocusStateRefreshScheduler>());
         Services.AddSingleton(client);
@@ -46,8 +45,8 @@ public sealed class FocusStatePanelTests : TestContext
         var client = Substitute.For<IFocusStateApiClient>();
         client.GetCurrentAsync(Arg.Any<CancellationToken>())
             .Returns(
-                Task.FromResult(new FocusStateResponse("WindowOfOpportunity", null, DateTimeOffset.UtcNow, ["resolved:WindowOfOpportunity"])),
-                Task.FromResult(new FocusStateResponse("DeepWork", null, DateTimeOffset.UtcNow, ["resolved:DeepWork"])));
+                Task.FromResult(new FocusStateResponse("WindowOfOpportunity", false, "user-123")),
+                Task.FromResult(new FocusStateResponse("DeepWork", false, "user-123")));
 
         var scheduler = new TestRefreshScheduler();
 

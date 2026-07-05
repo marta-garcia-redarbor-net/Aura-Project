@@ -2,7 +2,12 @@ namespace Aura.UI.Models;
 
 public sealed record DashboardPreviewResponse(
     IReadOnlyList<InboxSourceGroupResponse> InboxGroups,
-    IReadOnlyList<SummaryPreviewEntryResponse> SummaryEntries);
+    IReadOnlyList<SummaryPreviewEntryResponse> SummaryEntries)
+{
+    public int TotalPendingCount { get; init; }
+    public int HighPriorityCount { get; init; }
+    public IReadOnlyList<InboxItemPreviewResponse> TopItems { get; init; } = Array.Empty<InboxItemPreviewResponse>();
+}
 
 public sealed record InboxSourceGroupResponse(
     string Source,
@@ -20,6 +25,7 @@ public sealed record InboxItemPreviewResponse(
     public string? DeepLink { get; init; }
     public string? PriorityHint { get; init; }
     public string? SyncState { get; init; }
+    public int? PriorityScore { get; init; }
 }
 
 public sealed record SummaryPreviewEntryResponse(

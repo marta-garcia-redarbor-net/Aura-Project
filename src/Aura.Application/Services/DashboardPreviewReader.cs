@@ -68,10 +68,12 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
                     entry.Score,
                     BuildSuggestedAction(entry.Item.Source))
                 {
+                    CapturedAtUtc = entry.Item.CapturedAtUtc,
                     Sender = ExtractMetadata(entry.Item, "sender"),
                     Snippet = ExtractMetadata(entry.Item, "snippet"),
                     DeepLink = ExtractMetadata(entry.Item, "deepLink"),
                     PriorityHint = entry.Item.Priority.ToString(),
+                    PriorityScore = entry.Item.PriorityScore,
                     SyncState = HasSyncedMetadata(entry.Item) ? "synced" : null,
                     UnreadCount = ParseUnreadCount(entry.Item)
                 })

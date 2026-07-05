@@ -18,6 +18,16 @@ public sealed class FocusState
         CurrentState = FocusStateType.WindowOfOpportunity;
     }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="FocusState"/> with the specified state.
+    /// Bypasses transition guards for override/resolution scenarios.
+    /// </summary>
+    /// <param name="initialState">The initial focus state.</param>
+    public FocusState(FocusStateType initialState)
+    {
+        CurrentState = initialState;
+    }
+
     /// <summary>Transition to <see cref="FocusStateType.DeepWork"/> from <see cref="FocusStateType.Away"/> or <see cref="FocusStateType.Recovery"/>.</summary>
     public void TryEnterDeepWork()
     {

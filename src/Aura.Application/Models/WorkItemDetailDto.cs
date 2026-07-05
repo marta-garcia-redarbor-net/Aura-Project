@@ -16,4 +16,5 @@ public sealed record WorkItemDetailDto(
     public string? Snippet { get; init; }
     public string? DeepLink { get; init; }
     public string? SuggestedAction { get; init; }
+    public int? PriorityScore { get; init; }
 }

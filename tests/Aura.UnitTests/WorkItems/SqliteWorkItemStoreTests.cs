@@ -366,6 +366,167 @@ public class SqliteWorkItemStoreTests : IDisposable
         Assert.Empty(outlookPending);
     }
 
+    // ---- W3-H3: PriorityScore persistence ----
+
+    [Fact]
+    public async Task SaveAsync_WithPriorityScore_PersistsAndReadsBack()
+    {
+        var item = new WorkItem("ext-ps-1", "Scored Item", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Critical,
+            new Dictionary<string, string>(), priorityScore: 95);
+
+        await _store.SaveAsync(item, CancellationToken.None);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT PriorityScore FROM WorkItems WHERE ExternalId = @ExternalId";
+        cmd.Parameters.AddWithValue("@ExternalId", "ext-ps-1");
+        var score = cmd.ExecuteScalar();
+
+        Assert.Equal(95, Convert.ToInt32(score));
+    }
+
+    [Fact]
+    public async Task SaveAsync_WithNullPriorityScore_PersistsNull()
+    {
+        var item = new WorkItem("ext-ps-null", "Null Score Item", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
+            new Dictionary<string, string>(), priorityScore: null);
+
+        await _store.SaveAsync(item, CancellationToken.None);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT PriorityScore FROM WorkItems WHERE ExternalId = @ExternalId";
+        cmd.Parameters.AddWithValue("@ExternalId", "ext-ps-null");
+        var score = cmd.ExecuteScalar();
+
+        Assert.Equal(DBNull.Value, score);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WithPriorityScore_UpsertRetainsScore()
+    {
+        var item1 = new WorkItem("ext-ps-upd", "First", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            new Dictionary<string, string>(), priorityScore: 80);
+        var item2 = new WorkItem("ext-ps-upd", "Second", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            new Dictionary<string, string>(), priorityScore: 90);
+
+        await _store.SaveAsync(item1, CancellationToken.None);
+        await _store.SaveAsync(item2, CancellationToken.None);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT PriorityScore, Title FROM WorkItems WHERE ExternalId = @ExternalId";
+        cmd.Parameters.AddWithValue("@ExternalId", "ext-ps-upd");
+        using var reader = cmd.ExecuteReader();
+        Assert.True(reader.Read());
+        Assert.Equal(90, reader.GetInt32(0));
+        Assert.Equal("Second", reader.GetString(1));
+    }
+
+    [Fact]
+    public async Task FindByExternalIdAsync_ReturnsPriorityScore()
+    {
+        var item = new WorkItem("ext-ps-find", "Findable Score", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Critical,
+            new Dictionary<string, string>(), priorityScore: 88);
+
+        await _store.SaveAsync(item, CancellationToken.None);
+        var found = await _store.FindByExternalIdAsync("ext-ps-find", CancellationToken.None);
+
+        Assert.NotNull(found);
+        Assert.Equal(88, found!.PriorityScore);
+    }
+
+    [Fact]
+    public async Task FindByExternalIdAsync_WhenNoScore_ReturnsNull()
+    {
+        var item = CreateWorkItem("ext-ps-noscore", "No Score");
+        await _store.SaveAsync(item, CancellationToken.None);
+        var found = await _store.FindByExternalIdAsync("ext-ps-noscore", CancellationToken.None);
+
+        Assert.NotNull(found);
+        Assert.Null(found!.PriorityScore);
+    }
+
+    [Fact]
+    public async Task ReadBySourceAsync_SortsByPriorityScoreDescWithCoalesce()
+    {
+        // Critical default = 100, High default = 75, Medium default = 50
+        var critical = new WorkItem("ext-crit", "Critical", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Critical,
+            new Dictionary<string, string>(), priorityScore: null);
+        var high = new WorkItem("ext-high", "High", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            new Dictionary<string, string>(), priorityScore: null);
+        var medium = new WorkItem("ext-med", "Medium", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
+            new Dictionary<string, string>(), priorityScore: null);
+
+        await _store.SaveAsync(medium, CancellationToken.None);
+        await _store.SaveAsync(critical, CancellationToken.None);
+        await _store.SaveAsync(high, CancellationToken.None);
+
+        var results = await _store.ReadBySourceAsync(
+            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+
+        // Critical (100) > High (75) > Medium (50)
+        Assert.Equal("Critical", results[0].Priority.ToString());
+        Assert.Equal("High", results[1].Priority.ToString());
+        Assert.Equal("Medium", results[2].Priority.ToString());
+    }
+
+    [Fact]
+    public async Task ReadBySourceAsync_ExplicitScoreWinsOverDefault()
+    {
+        // Medium with explicit 90 should sort before Critical with default 100
+        // Actually, 90 < 100, so Critical still comes first. Let me fix this.
+        // Medium with 90, High with null (default 75), Critical null (100)
+        var mediumHighScore = new WorkItem("ext-med-hi", "Medium High", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
+            new Dictionary<string, string>(), priorityScore: 90);
+        var critical = new WorkItem("ext-crit", "Critical", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Critical,
+            new Dictionary<string, string>(), priorityScore: null);
+        var high = new WorkItem("ext-high", "High", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            new Dictionary<string, string>(), priorityScore: null);
+
+        await _store.SaveAsync(high, CancellationToken.None);
+        await _store.SaveAsync(mediumHighScore, CancellationToken.None);
+        await _store.SaveAsync(critical, CancellationToken.None);
+
+        var results = await _store.ReadBySourceAsync(
+            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+
+        // COALESCE: Critical (100) > Medium(90) > High(75)
+        Assert.Equal("Critical", results[0].Priority.ToString());
+        Assert.Equal("Medium", results[1].Priority.ToString());
+        Assert.Equal("High", results[2].Priority.ToString());
+    }
+
+    [Fact]
+    public async Task ReadBySourceAsync_DefaultDerivationOrdersItems_WithoutMutatingNullPriorityScore()
+    {
+        var criticalNull = new WorkItem("ext-derive-crit", "Critical Null", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Critical,
+            new Dictionary<string, string>(), priorityScore: null);
+        var lowNull = new WorkItem("ext-derive-low", "Low Null", "messages",
+            WorkItemSourceType.TeamsMessage, WorkItemPriority.Low,
+            new Dictionary<string, string>(), priorityScore: null);
+
+        await _store.SaveAsync(lowNull, CancellationToken.None);
+        await _store.SaveAsync(criticalNull, CancellationToken.None);
+
+        var results = await _store.ReadBySourceAsync(
+            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+
+        Assert.Equal("ext-derive-crit", results[0].ExternalId);
+        Assert.Equal("ext-derive-low", results[1].ExternalId);
+        Assert.Null(results[0].PriorityScore);
+        Assert.Null(results[1].PriorityScore);
+    }
+
     private static WorkItem CreateWorkItem(string externalId, string title) =>
         new(externalId, title, "messages",
             WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,

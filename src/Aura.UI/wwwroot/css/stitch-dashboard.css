@@ -214,6 +214,152 @@ a {
     gap: 1rem;
 }
 
+.dashboard-header__top-priority-link {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dashboard-header__top-priority-link .dashboard-page-header__badge {
+    padding: 0.125rem 0.5rem;
+}
+
+.top-priority-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.top-priority-single-column {
+    max-width: 56rem;
+    margin: 0 auto;
+}
+
+.top-priority-list__item {
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.top-priority-list__item-main {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.top-priority-list__title {
+    color: var(--aura-on-surface);
+    font-size: 14px;
+}
+
+.top-priority-list__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--aura-on-surface-variant);
+    font-size: 12px;
+}
+
+.top-priority-list__source {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.top-priority-list__score {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    color: var(--aura-primary);
+    font-weight: 700;
+}
+
+.top-priority-detail-layout .top-priority-list__item {
+    align-items: flex-start;
+}
+
+.top-priority-detail-layout .top-priority-list__meta {
+    flex-wrap: wrap;
+}
+
+.focus-state {
+    position: relative;
+}
+
+.focus-state__badge {
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: 999px;
+    padding: 0.25rem 0.625rem;
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    text-transform: uppercase;
+    background: var(--aura-surface-container-high);
+    color: var(--aura-on-surface);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+}
+
+.focus-state__badge--window { color: var(--aura-primary); }
+.focus-state__badge--deep-work { color: var(--aura-secondary); }
+.focus-state__badge--away { color: var(--aura-error); }
+.focus-state__badge--recovery { color: var(--aura-tertiary); }
+
+.focus-state__dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.focus-state__override-tag {
+    font-size: 9px;
+    opacity: 0.8;
+}
+
+.focus-state__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    min-width: 14rem;
+    z-index: 10;
+    padding: 0.25rem;
+}
+
+.focus-state__option {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--aura-on-surface);
+    padding: 0.5rem;
+    border-radius: var(--aura-radius);
+    cursor: pointer;
+}
+
+.focus-state__option:hover {
+    background: var(--aura-surface-container-high);
+}
+
+.focus-state__option--clear {
+    color: var(--aura-error);
+}
+
 .dashboard-header__icon-btn {
     background: none;
     border: none;
@@ -387,6 +533,17 @@ a {
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+.dashboard-page-header__badge--high {
+    background: var(--aura-priority-high-bg);
+    color: var(--aura-priority-high);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.dashboard-page-header__badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .dashboard-page-header__badge-dot {
     width: 0.5rem;
     height: 0.5rem;
@@ -510,6 +667,90 @@ a {
 
 .dashboard-panel--error {
     border-color: rgba(255, 180, 171, 0.35);
+}
+
+.priority-top-items {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.priority-top-items__item {
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-lg);
+    background: var(--aura-surface-container);
+    padding: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.priority-top-items__item p {
+    margin: 0.25rem 0 0;
+}
+
+.priority-top-items__badge {
+    background: var(--aura-priority-high-bg);
+    color: var(--aura-priority-high);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 999px;
+    padding: 0.125rem 0.5rem;
+    font-size: 10px;
+    font-family: var(--aura-font-code);
+    text-transform: uppercase;
+}
+
+.decision-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.decision-log-table th,
+.decision-log-table td {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--aura-border-subtle);
+}
+
+.decision-log-table__row {
+    cursor: pointer;
+}
+
+.decision-log-table__row:hover {
+    background: var(--aura-surface-container);
+}
+
+.decision-log__retry {
+    margin-top: 0.75rem;
+    background: var(--aura-primary-container);
+    color: var(--aura-on-primary-container);
+    border: none;
+    border-radius: var(--aura-radius);
+    padding: 0.375rem 0.75rem;
+    cursor: pointer;
+}
+
+.decision-log__pagination {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.75rem;
+}
+
+.decision-log__page {
+    border: 1px solid var(--aura-border-subtle);
+    background: transparent;
+    color: var(--aura-on-surface-variant);
+    border-radius: var(--aura-radius);
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
+.decision-log__page--active {
+    background: var(--aura-primary-container);
+    color: var(--aura-on-primary-container);
 }
 
 .dashboard-status-list,
@@ -1172,6 +1413,37 @@ a {
     line-height: 16px;
     letter-spacing: 0.05em;
     color: var(--aura-on-surface-variant);
+}
+
+.priority-card__header-counts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.priority-card__high-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-family: var(--aura-font-code);
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.03em;
+    color: var(--aura-on-surface-variant);
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    text-transform: lowercase;
+}
+
+.top-priority-indicator {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--aura-error);
+    display: inline-block;
+    margin-right: 0.5rem;
+    opacity: 0.85;
 }
 
 .priority-card__items {

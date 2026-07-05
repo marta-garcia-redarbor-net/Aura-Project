@@ -165,6 +165,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
 
                 services.AddAuthenticatedUiTestUser();
 
+                services.AddStubFocusStateApiClient();
                 services.RemoveAll<IAzureDevOpsPrClient>();
                 services.AddScoped(_ => prClient);
 

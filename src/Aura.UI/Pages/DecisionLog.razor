@@ -1,0 +1,139 @@
+@page "/triage/decisions"
+@using Aura.UI.Components.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IDecisionLogApiClient DecisionLogApiClient
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Interruption Log</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Interruption Log</h1>
+                <p class="dashboard-page-header__subtitle">Audit trail of interruption decisions.</p>
+            </div>
+            @if (_data is not null)
+            {
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    @_data.TotalCount TOTAL
+                </span>
+            }
+        </div>
+
+        @if (_isLoading)
+        {
+            <section class="dashboard-panel dashboard-panel--loading" data-testid="decision-log-loading">
+                <p>Loading interruption decisions...</p>
+            </section>
+        }
+        else if (_error is not null)
+        {
+            <section class="dashboard-panel dashboard-panel--error" data-testid="decision-log-error">
+                <p role="alert">@_error</p>
+                <button class="decision-log__retry" data-testid="decision-log-retry" @onclick="LoadAsync">Retry</button>
+            </section>
+        }
+        else if (_data is null || _data.Items.Count == 0)
+        {
+            <section class="dashboard-panel" data-testid="decision-log-empty">
+                <p>No decisions recorded yet.</p>
+            </section>
+        }
+        else
+        {
+            <section class="dashboard-panel" data-testid="decision-log-populated">
+                <table class="decision-log-table" data-testid="decision-log-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Title</th>
+                            <th>Source</th>
+                            <th>Priority Score</th>
+                            <th>Decision</th>
+                            <th>Focus State</th>
+                            <th>Explanation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _data.Items)
+                        {
+                            <tr class="decision-log-table__row"
+                                data-testid="decision-log-row"
+                                @onclick="() => NavigateToWorkItem(item.WorkItemId)">
+                                <td>@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.Title</td>
+                                <td>@item.SourceType</td>
+                                <td>@(item.PriorityScore?.ToString() ?? "-")</td>
+                                <td>@item.Decision</td>
+                                <td>@item.FocusState</td>
+                                <td>@item.Explanation</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (_data.TotalPages > 1)
+                {
+                    <nav class="decision-log__pagination" data-testid="decision-log-pagination" aria-label="Decision log pages">
+                        @for (var p = 1; p <= _data.TotalPages; p++)
+                        {
+                            <button class="decision-log__page @(p == _page ? "decision-log__page--active" : string.Empty)"
+                                    @onclick="() => GoToPageAsync(p)">
+                                @p
+                            </button>
+                        }
+                    </nav>
+                }
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RestrictedAccessView />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private const int DefaultPageSize = 20;
+    private int _page = 1;
+    private bool _isLoading = true;
+    private string? _error;
+    private DecisionLogResponse? _data;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task GoToPageAsync(int page)
+    {
+        _page = page;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            _data = await DecisionLogApiClient.GetDecisionsAsync(_page, DefaultPageSize, CancellationToken.None);
+        }
+        catch
+        {
+            _error = "Interruption decision log is currently unavailable.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void NavigateToWorkItem(Guid workItemId)
+    {
+        Navigation.NavigateTo($"/workitems/{workItemId}");
+    }
+}

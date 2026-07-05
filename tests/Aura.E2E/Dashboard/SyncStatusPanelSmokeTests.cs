@@ -94,7 +94,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             builder.ConfigureTestServices(services =>
             {
                 services.AddAuthenticatedUiTestUser();
-
+                services.AddStubFocusStateApiClient();
                 services.RemoveAll<IDashboardApiClient>();
                 services.RemoveAll<ISystemStatusApiClient>();
                 services.RemoveAll<IModuleProgressApiClient>();

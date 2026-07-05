@@ -97,6 +97,7 @@ app.MapDashboardEndpoints();
 app.MapFocusStateEndpoints();
 app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
+app.MapTriageEndpoints();
 app.MapWorkItemsEndpoints();
 app.MapHub<AlertHub>("/hubs/alerts");
 

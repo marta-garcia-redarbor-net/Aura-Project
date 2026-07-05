@@ -97,7 +97,7 @@
         try
         {
             var items = await WorkItemsApiClient.GetBySourceAsync("OutlookEmail", "Pending", CancellationToken.None);
-            _items = items.ToList();
+            _items = items.OrderByDescending(i => i.PriorityScore ?? int.MinValue).ThenByDescending(i => i.CapturedAtUtc).ToList();
         }
         catch
         {

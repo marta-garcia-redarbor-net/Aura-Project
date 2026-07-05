@@ -22,6 +22,12 @@ public sealed class WorkItem
     public DateTimeOffset CreatedAt { get; }
     public string? FaultReason { get; private set; }
 
+    /// <summary>
+    /// Priority score assigned during triage evaluation (W3-H3).
+    /// Null means no explicit score has been assigned yet.
+    /// </summary>
+    public int? PriorityScore { get; }
+
     public WorkItem(
         string externalId,
         string title,
@@ -30,7 +36,8 @@ public sealed class WorkItem
         WorkItemPriority priority,
         IReadOnlyDictionary<string, string> metadata,
         string? correlationId = null,
-        DateTimeOffset? capturedAtUtc = null)
+        DateTimeOffset? capturedAtUtc = null,
+        int? priorityScore = null)
     {
         if (string.IsNullOrWhiteSpace(externalId))
             throw new ArgumentException("ExternalId must not be null or empty.", nameof(externalId));
@@ -50,6 +57,7 @@ public sealed class WorkItem
         Source = source;
         SourceType = sourceType;
         Priority = priority;
+        PriorityScore = priorityScore;
         Metadata = metadata;
         CorrelationId = string.IsNullOrWhiteSpace(correlationId)
             ? Guid.NewGuid().ToString()

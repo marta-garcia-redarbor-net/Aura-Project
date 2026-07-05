@@ -1,0 +1,105 @@
+@inject IFocusStateApiClient? FocusStateApiClient
+
+<div class="focus-state" data-testid="focus-state-container">
+    @if (_state is null)
+    {
+        <span class="focus-state__badge focus-state__badge--loading" data-testid="focus-state-loading">Loading focus state...</span>
+    }
+    else
+    {
+        <button class="focus-state__badge focus-state__badge--@CssClassFor(_state.State)"
+                data-testid="focus-state-badge"
+                @onclick="ToggleDropdown"
+                aria-expanded="@_dropdownOpen"
+                aria-label="Current focus state">
+            <span class="focus-state__dot"></span>
+            @DisplayState(_state.State)
+            @if (_state.IsOverridden)
+            {
+                <span class="focus-state__override-tag">OVERRIDE</span>
+            }
+        </button>
+
+        @if (_dropdownOpen)
+        {
+            <div class="focus-state__dropdown" data-testid="focus-state-dropdown">
+                @foreach (var state in _availableStates)
+                {
+                    <button class="focus-state__option"
+                            data-testid="focus-state-option-@state"
+                            @onclick="() => SetOverrideAsync(state)">
+                        @DisplayState(state)
+                    </button>
+                }
+
+                @if (_state.IsOverridden)
+                {
+                    <button class="focus-state__option focus-state__option--clear"
+                            data-testid="focus-state-clear-override"
+                            @onclick="ClearOverrideAsync">
+                        Clear override
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private static readonly string[] _availableStates = ["DeepWork", "WindowOfOpportunity", "Away", "Recovery"];
+    private FocusStateResponse? _state;
+    private bool _dropdownOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FocusStateApiClient is null)
+        {
+            _state = new FocusStateResponse("WindowOfOpportunity", false, "system");
+            return;
+        }
+
+        _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+    }
+
+    private async Task SetOverrideAsync(string state)
+    {
+        if (FocusStateApiClient is null)
+        {
+            return;
+        }
+
+        await FocusStateApiClient.SetOverrideAsync(state, CancellationToken.None);
+        _state = _state is null ? null : _state with { State = state, IsOverridden = true };
+        _dropdownOpen = false;
+    }
+
+    private async Task ClearOverrideAsync()
+    {
+        if (FocusStateApiClient is null)
+        {
+            return;
+        }
+
+        await FocusStateApiClient.ClearOverrideAsync(CancellationToken.None);
+        _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+        _dropdownOpen = false;
+    }
+
+    private void ToggleDropdown() => _dropdownOpen = !_dropdownOpen;
+
+    private static string DisplayState(string state) => state switch
+    {
+        "DeepWork" => "Deep Work",
+        "WindowOfOpportunity" => "Window of Opportunity",
+        _ => state
+    };
+
+    private static string CssClassFor(string state) => state switch
+    {
+        "DeepWork" => "deep-work",
+        "WindowOfOpportunity" => "window",
+        "Away" => "away",
+        "Recovery" => "recovery",
+        _ => "window"
+    };
+}

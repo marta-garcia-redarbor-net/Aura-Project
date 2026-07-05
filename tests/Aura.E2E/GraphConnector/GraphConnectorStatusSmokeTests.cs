@@ -49,7 +49,7 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
             builder.ConfigureTestServices(services =>
             {
                 services.AddAuthenticatedUiTestUser();
-
+                services.AddStubFocusStateApiClient();
                 services.RemoveAll<IGraphConnectorApiClient>();
                 services.AddScoped(_ => graphConnectorApiClient);
                 services.AddScoped<ISyncApiClient>(_ => new StubSyncClient());

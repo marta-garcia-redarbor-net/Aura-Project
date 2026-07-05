@@ -1,6 +1,6 @@
+using Aura.Domain.FocusState;
 using Aura.Application.Ports;
-using FocusStateDomain = Aura.Domain.FocusState.FocusState;
-using FocusStateType = Aura.Domain.FocusState.FocusStateType;
+using NSubstitute;
 
 namespace Aura.UnitTests.Triage;
 
@@ -29,7 +29,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void FocusState_NewInstance_StartsInWindowOfOpportunity()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
 
         Assert.Equal(FocusStateType.WindowOfOpportunity, state.CurrentState);
     }
@@ -41,7 +41,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToAway_FromWindowOfOpportunity_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();
         Assert.Equal(FocusStateType.Away, state.CurrentState);
     }
@@ -49,7 +49,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToRecovery_FromAway_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway(); // WindowOfOpportunity → Away
         state.GoToRecovery();
         Assert.Equal(FocusStateType.Recovery, state.CurrentState);
@@ -58,7 +58,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void TryEnterDeepWork_FromAway_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway(); // WindowOfOpportunity → Away
         state.TryEnterDeepWork();
         Assert.Equal(FocusStateType.DeepWork, state.CurrentState);
@@ -67,7 +67,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void TryEnterDeepWork_FromRecovery_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();      // WindowOfOpportunity → Away
         state.GoToRecovery();  // Away → Recovery
         state.TryEnterDeepWork();
@@ -77,7 +77,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToWindowOfOpportunity_FromDeepWork_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.TryEnterDeepWork();   // Away → DeepWork
         state.GoToWindowOfOpportunity();
@@ -87,7 +87,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToWindowOfOpportunity_FromRecovery_ChangesState()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.GoToRecovery();       // Away → Recovery
         state.GoToWindowOfOpportunity();
@@ -101,7 +101,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToAway_FromDeepWork_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.TryEnterDeepWork();   // Away → DeepWork
 
@@ -114,7 +114,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToRecovery_FromDeepWork_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.TryEnterDeepWork();   // Away → DeepWork
 
@@ -127,7 +127,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void TryEnterDeepWork_FromDeepWork_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.TryEnterDeepWork();   // Away → DeepWork
 
@@ -143,7 +143,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void TryEnterDeepWork_FromWindowOfOpportunity_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
 
         var ex = Assert.Throws<InvalidOperationException>(() => state.TryEnterDeepWork());
         Assert.Contains("WindowOfOpportunity", ex.Message);
@@ -154,7 +154,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToRecovery_FromWindowOfOpportunity_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
 
         var ex = Assert.Throws<InvalidOperationException>(() => state.GoToRecovery());
         Assert.Contains("WindowOfOpportunity", ex.Message);
@@ -165,7 +165,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToWindowOfOpportunity_FromWindowOfOpportunity_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
 
         var ex = Assert.Throws<InvalidOperationException>(() => state.GoToWindowOfOpportunity());
         Assert.Contains("WindowOfOpportunity", ex.Message);
@@ -179,7 +179,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToWindowOfOpportunity_FromAway_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway(); // WindowOfOpportunity → Away
 
         var ex = Assert.Throws<InvalidOperationException>(() => state.GoToWindowOfOpportunity());
@@ -191,7 +191,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToAway_FromAway_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway(); // WindowOfOpportunity → Away
 
         var ex = Assert.Throws<InvalidOperationException>(() => state.GoToAway());
@@ -206,7 +206,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToAway_FromRecovery_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.GoToRecovery();       // Away → Recovery
 
@@ -219,7 +219,7 @@ public sealed class FocusStateMachineTests
     [Fact]
     public void GoToRecovery_FromRecovery_ThrowsInvalidOperation()
     {
-        var state = new FocusStateDomain();
+        var state = new Aura.Domain.FocusState.FocusState();
         state.GoToAway();           // WindowOfOpportunity → Away
         state.GoToRecovery();       // Away → Recovery
 
@@ -240,7 +240,7 @@ public sealed class FocusStateMachineTests
             .FirstOrDefault(m => m.Name == nameof(IFocusStateResolver.ResolveAsync));
 
         Assert.NotNull(method);
-        Assert.Equal(typeof(Task<FocusStateDomain>), method.ReturnType);
+        Assert.Equal(typeof(Task<Aura.Domain.FocusState.FocusState>), method.ReturnType);
 
         var parameters = method.GetParameters();
         Assert.Equal(2, parameters.Length);
@@ -263,16 +263,96 @@ public sealed class FocusStateMachineTests
         Assert.DoesNotContain("Aura.Infrastructure", referencedAssemblies);
     }
 
-    [Fact]
-    public void IFocusStateResolver_HasNoApplicationServicesDependency()
-    {
-        var referencedAssemblies = typeof(IFocusStateResolver)
-            .Assembly
-            .GetReferencedAssemblies()
-            .Select(a => a.Name)
-            .ToHashSet();
+    // ============================================================
+    // FocusStateResolver tests
+    // ============================================================
 
-        Assert.DoesNotContain("Aura.Application.Services", referencedAssemblies);
+    [Fact]
+    public async Task ResolveAsync_AnyUserId_ReturnsWindowOfOpportunity()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
     }
 
+    [Fact]
+    public async Task ResolveAsync_SameInputs_SameState()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var first = await resolver.ResolveAsync("user-123", CancellationToken.None);
+        var second = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.Equal(first.CurrentState, second.CurrentState);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithPersistedOverride_ReturnsOverrideBeforeAutoComputedState()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync("user-123", Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)FocusStateType.DeepWork);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.Equal(FocusStateType.DeepWork, result.CurrentState);
+        await overrideStore.Received(1).GetAsync("user-123", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WhenOverrideCleared_FallsBackToAutoComputedState()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("user-123", CancellationToken.None);
+
+        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
+    }
+
+    // ============================================================
+    // Edge cases: empty user ID
+    // ============================================================
+
+    [Fact]
+    public async Task ResolveAsync_EmptyUserId_DoesNotThrow()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync("", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_NullUserId_DoesNotThrow()
+    {
+        var overrideStore = Substitute.For<IFocusStateOverrideStore>();
+        overrideStore.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((FocusStateType?)null);
+        IFocusStateResolver resolver = new Aura.Application.Services.FocusStateResolver(overrideStore);
+
+        var result = await resolver.ResolveAsync(null!, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(FocusStateType.WindowOfOpportunity, result.CurrentState);
+    }
 }

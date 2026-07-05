@@ -110,7 +110,8 @@ public static partial class WorkItemsEndpoints
             Channel = ExtractMetadata(item, metadataPrefix, "channelId"),
             Snippet = ExtractMetadata(item, metadataPrefix, "snippet"),
             DeepLink = ExtractMetadata(item, metadataPrefix, "deepLink"),
-            SuggestedAction = BuildSuggestedAction(item.Source)
+            SuggestedAction = BuildSuggestedAction(item.Source),
+            PriorityScore = item.PriorityScore
         };
     }
 

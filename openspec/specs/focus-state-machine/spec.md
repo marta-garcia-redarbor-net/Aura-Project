@@ -108,6 +108,76 @@ The system MUST define `IFocusStateResolver` in `Aura.Application.Ports` exposin
 
 ---
 
+### Requirement: FocusStateOverride Persistence
+
+The system MUST persist user focus-state overrides so they survive application restarts. The persistence store SHALL follow the existing SQLite pattern. An absent or `null` persisted value SHALL be treated as "no override."
+
+#### Scenario: Override survives restart
+
+- GIVEN a user sets an override to `DeepWork`
+- WHEN the application is restarted
+- THEN `ResolveAsync` still returns `DeepWork`
+
+#### Scenario: Null override has no effect
+
+- GIVEN no override has ever been set for a user
+- WHEN `ResolveAsync` is called
+- THEN the result is the auto-computed state
+
+---
+
+### Requirement: Focus State API Endpoints
+
+`GET /api/focus-state` MUST return current resolved focus state, whether an override is active, and the user identity. `PUT /api/focus-state` MUST accept a `FocusStateType` value and persist it as the override. Sending `null` SHALL clear any active override.
+
+#### Scenario: GET returns state with override flag
+
+- GIVEN a user with an active `DeepWork` override
+- WHEN `GET /api/focus-state` is called
+- THEN the response contains `state: "DeepWork"` and `isOverridden: true`
+
+#### Scenario: PUT persists override
+
+- GIVEN a user with no existing override
+- WHEN `PUT /api/focus-state` with body `{ "state": "Away" }` is called
+- THEN the response is HTTP 200
+- AND subsequent `GET` calls return `state: "Away"` with `isOverridden: true`
+
+#### Scenario: PUT with null clears override
+
+- GIVEN a user with an active override
+- WHEN `PUT /api/focus-state` with body `null` is called
+- THEN the response is HTTP 200
+- AND subsequent `ResolveAsync` falls back to auto-computed state
+
+---
+
+### Requirement: Header Focus State Badge
+
+The application header MUST display the current focus state as a color-coded badge. The badge MUST include a dropdown allowing the user to override to any of the four focus states. When an override is active, the dropdown SHALL include a "Clear override" option.
+
+#### Scenario: Badge renders current state
+
+- GIVEN the user is in `WindowOfOpportunity`
+- WHEN the header renders
+- THEN a color-coded badge displays "Window of Opportunity"
+
+#### Scenario: Dropdown sets override
+
+- GIVEN the header dropdown is open
+- WHEN the user selects "Deep Work"
+- THEN `PUT /api/focus-state` is called with `{ "state": "DeepWork" }`
+- AND the badge updates to show `DeepWork`
+
+#### Scenario: Override badge shows "Clear override"
+
+- GIVEN an override is active
+- WHEN the user opens the header dropdown
+- THEN a "Clear override" option is visible
+- AND selecting it clears the override via API
+
+---
+
 ### Requirement: Deterministic State Resolution
 
 Given identical signals (calendars, time, preferences), `FocusStateResolver` MUST return the same `FocusState`. Resolution logic SHALL be a pure function of its signal inputs.

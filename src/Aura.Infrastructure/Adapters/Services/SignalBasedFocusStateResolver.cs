@@ -43,7 +43,7 @@ public sealed partial class SignalBasedFocusStateResolver : IFocusStateResolver
     }
 
     /// <inheritdoc />
-    public async Task<FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<Aura.Domain.FocusState.FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("UserId must not be null or whitespace.", nameof(userId));
@@ -53,7 +53,7 @@ public sealed partial class SignalBasedFocusStateResolver : IFocusStateResolver
 
         var utcNow = _timeProvider.GetUtcNow();
         var opts = _options.Value;
-        var state = new FocusState();
+        var state = new Aura.Domain.FocusState.FocusState();
 
         // Signal 1: Calendar meeting → Away
         var buffer = TimeSpan.FromMinutes(opts.MeetingBufferMinutes);

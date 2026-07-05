@@ -35,7 +35,7 @@ public sealed class FocusStateCurrentEndpointTests : IClassFixture<WebApplicatio
     {
         var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("/api/focus-state/current");
+        var response = await client.GetAsync("/api/focus-state");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -45,16 +45,16 @@ public sealed class FocusStateCurrentEndpointTests : IClassFixture<WebApplicatio
     {
         var client = CreateAuthenticatedClient(new StubFocusStateResolver(FocusStateType.DeepWork));
 
-        var response = await client.GetAsync("/api/focus-state/current");
+        var response = await client.GetAsync("/api/focus-state");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
 
-        Assert.Equal("DeepWork", doc.RootElement.GetProperty("currentState").GetString());
-        Assert.True(doc.RootElement.TryGetProperty("since", out _));
-        Assert.True(doc.RootElement.TryGetProperty("signals", out _));
+        Assert.Equal("DeepWork", doc.RootElement.GetProperty("state").GetString());
+        Assert.True(doc.RootElement.TryGetProperty("isOverridden", out _));
+        Assert.True(doc.RootElement.TryGetProperty("userId", out _));
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class FocusStateCurrentEndpointTests : IClassFixture<WebApplicatio
         var resolver = new CapturingFocusStateResolver();
         var client = CreateAuthenticatedClient(resolver);
 
-        var response = await client.GetAsync("/api/focus-state/current");
+        var response = await client.GetAsync("/api/focus-state");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("mock-user-001", resolver.LastUserId);
