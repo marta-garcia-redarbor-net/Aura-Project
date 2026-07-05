@@ -18,7 +18,7 @@ public sealed class MorningSummaryComposerTests
             WorkItemPriority.Medium,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.90"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.90"
             });
 
         var lowScore = CreateWorkItem(
@@ -26,7 +26,7 @@ public sealed class MorningSummaryComposerTests
             WorkItemPriority.Medium,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookTotalScore] = "0.20"
+                [WorkItemSignalKeys.OutlookScoringTotalScore] = "0.20"
             });
 
         var reader = new StubWorkItemReader([lowScore, highScore]);
