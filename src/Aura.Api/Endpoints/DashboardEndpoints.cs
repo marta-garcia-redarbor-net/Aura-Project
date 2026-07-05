@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
-using Aura.Domain.WorkItems;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -208,10 +207,10 @@ public static partial class DashboardEndpoints
 
         return item.PriorityHint switch
         {
-            nameof(WorkItemPriority.Critical) => WorkItemPriority.Critical.GetDefaultScore(),
-            nameof(WorkItemPriority.High) => WorkItemPriority.High.GetDefaultScore(),
-            nameof(WorkItemPriority.Medium) => WorkItemPriority.Medium.GetDefaultScore(),
-            nameof(WorkItemPriority.Low) => WorkItemPriority.Low.GetDefaultScore(),
+            "Critical" => 100,
+            "High" => 75,
+            "Medium" => 50,
+            "Low" => 25,
             _ => 0
         };
     }

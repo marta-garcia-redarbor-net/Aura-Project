@@ -175,7 +175,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             builder.ConfigureTestServices(services =>
             {
                 services.AddAuthenticatedUiTestUser();
-
+                services.AddStubFocusStateApiClient();
                 // Swap only the HTTP transport — keep DashboardApiClient as the
                 // real typed client implementation under test.
                 services.AddHttpClient<IDashboardApiClient, DashboardApiClient>(client =>
@@ -465,7 +465,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             builder.ConfigureTestServices(services =>
             {
                 services.AddAuthenticatedUiTestUser();
-
+                services.AddStubFocusStateApiClient();
                 services.RemoveAll<IDashboardApiClient>();
                 services.AddScoped(_ => dashboardApiClient);
 

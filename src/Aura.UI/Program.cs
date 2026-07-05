@@ -194,7 +194,6 @@ public static class Program
         var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
         calendarHttpClientBuilder.AddStandardResilienceHandler();
         var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
-        var focusStateHttpClientBuilder = AddApiHttpClient<FocusStateApiClient, IFocusStateApiClient>(builder.Services, apiBaseUrl);
         var decisionLogHttpClientBuilder = AddApiHttpClient<DecisionLogApiClient, IDecisionLogApiClient>(builder.Services, apiBaseUrl);
 
         // Calendar use case — dashboard display only

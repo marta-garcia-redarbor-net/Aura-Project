@@ -1,6 +1,8 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.FocusState;
+using FocusState = Aura.Domain.FocusState.FocusState;
+using FocusStateType = Aura.Domain.FocusState.FocusStateType;
 using Aura.Domain.WorkItems;
 using Aura.Infrastructure.Adapters.Services;
 using NSubstitute;
@@ -23,10 +25,17 @@ public class InterruptionPolicyEngineTests
             => Task.FromResult(new PagedResult<InterruptionDecisionRecord>());
     }
 
-    private sealed class StubFocusStateResolver(FocusState state) : IFocusStateResolver
+    private sealed class StubFocusStateResolver : IFocusStateResolver
     {
-        public Task<FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
-            => Task.FromResult(state);
+        private readonly Aura.Domain.FocusState.FocusState _state;
+
+        public StubFocusStateResolver(Aura.Domain.FocusState.FocusState state)
+        {
+            _state = state;
+        }
+
+        public Task<Aura.Domain.FocusState.FocusState> ResolveAsync(string userId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_state);
     }
 
     private sealed class StubPriorityScoringService(PriorityScore score) : IPriorityScoringService
@@ -69,9 +78,9 @@ public class InterruptionPolicyEngineTests
                 ["assignedTo"] = "user-1"
             });
 
-    private static FocusState CreateFocusState(FocusStateType type)
+    private static Aura.Domain.FocusState.FocusState CreateFocusState(FocusStateType type)
     {
-        var state = new FocusState();
+        var state = new Aura.Domain.FocusState.FocusState();
         return type switch
         {
             FocusStateType.WindowOfOpportunity => state,
@@ -82,20 +91,20 @@ public class InterruptionPolicyEngineTests
         };
     }
 
-    private static FocusState TransitionToAway(FocusState state)
+    private static Aura.Domain.FocusState.FocusState TransitionToAway(Aura.Domain.FocusState.FocusState state)
     {
         state.GoToAway();
         return state;
     }
 
-    private static FocusState TransitionToRecovery(FocusState state)
+    private static Aura.Domain.FocusState.FocusState TransitionToRecovery(Aura.Domain.FocusState.FocusState state)
     {
         state.GoToAway();
         state.GoToRecovery();
         return state;
     }
 
-    private static FocusState TransitionToDeepWork(FocusState state)
+    private static Aura.Domain.FocusState.FocusState TransitionToDeepWork(Aura.Domain.FocusState.FocusState state)
     {
         state.GoToAway();
         state.TryEnterDeepWork();
