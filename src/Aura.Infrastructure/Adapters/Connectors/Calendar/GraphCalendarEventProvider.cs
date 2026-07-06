@@ -40,10 +40,27 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
         }
         catch (Microsoft.Identity.Client.MsalUiRequiredException)
         {
-            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown");
+            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown", "calendar");
             s_tokenExpired.Add(1,
                 new KeyValuePair<string, object?>("connector", "calendar"),
                 new KeyValuePair<string, object?>("oid", request.Identity.UserOid ?? "unknown"));
+            throw;
+        }
+        catch (Exception ex) when (TryResolveStatusCode(ex, out var statusCode) && statusCode is >= 400 and < 600)
+        {
+            if (statusCode >= 500)
+            {
+                Log.GraphHttpServerError(_logger, statusCode, "me/calendarView", "calendar");
+            }
+            else
+            {
+                Log.GraphHttpClientError(_logger, statusCode, "me/calendarView", "calendar");
+            }
+
+            s_graphHttpError.Add(1,
+                new KeyValuePair<string, object?>("connector", "calendar"),
+                new KeyValuePair<string, object?>("status_code", statusCode),
+                new KeyValuePair<string, object?>("endpoint", "me/calendarView"));
             throw;
         }
 
@@ -57,12 +74,20 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
                 requestConfig.QueryParameters.Top = 50;
             }, ct);
         }
-        catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+        catch (Exception ex) when (TryResolveStatusCode(ex, out var statusCode) && statusCode is >= 400 and < 600)
         {
-            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/calendarView");
+            if (statusCode >= 500)
+            {
+                Log.GraphHttpServerError(_logger, statusCode, "me/calendarView", "calendar");
+            }
+            else
+            {
+                Log.GraphHttpClientError(_logger, statusCode, "me/calendarView", "calendar");
+            }
+
             s_graphHttpError.Add(1,
                 new KeyValuePair<string, object?>("connector", "calendar"),
-                new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
+                new KeyValuePair<string, object?>("status_code", statusCode),
                 new KeyValuePair<string, object?>("endpoint", "me/calendarView"));
             throw;
         }
@@ -125,11 +150,55 @@ internal sealed partial class GraphCalendarEventProvider : IMessageSourceProvide
         public static partial void NoCalendarEvents(ILogger logger);
 
         [LoggerMessage(EventId = 3403, Level = LogLevel.Warning,
-            Message = "GraphCalendarEventProvider token expired for oid={Oid}. Re-authentication required.")]
-        public static partial void TokenExpired(ILogger logger, string oid);
+            Message = "GraphCalendarEventProvider token expired for oid={Oid} connector={Connector}. Re-authentication required.")]
+        public static partial void TokenExpired(ILogger logger, string oid, string connector);
 
         [LoggerMessage(EventId = 3404, Level = LogLevel.Warning,
-            Message = "GraphCalendarEventProvider HTTP {StatusCode} from {Endpoint}")]
-        public static partial void GraphHttpError(ILogger logger, int statusCode, string endpoint);
+            Message = "GraphCalendarEventProvider HTTP {StatusCode} from {Endpoint} connector={Connector}")]
+        public static partial void GraphHttpClientError(ILogger logger, int statusCode, string endpoint, string connector);
+
+        [LoggerMessage(EventId = 3405, Level = LogLevel.Error,
+            Message = "GraphCalendarEventProvider HTTP {StatusCode} from {Endpoint} connector={Connector}")]
+        public static partial void GraphHttpServerError(ILogger logger, int statusCode, string endpoint, string connector);
+    }
+
+    private static bool TryResolveStatusCode(Exception exception, out int statusCode)
+    {
+        if (exception is ODataError odata && odata.ResponseStatusCode > 0)
+        {
+            statusCode = odata.ResponseStatusCode;
+            return true;
+        }
+
+        var statusProperty = exception.GetType().GetProperty("ResponseStatusCode");
+        if (statusProperty is not null)
+        {
+            var value = statusProperty.GetValue(exception);
+            if (value is int intValue)
+            {
+                statusCode = intValue;
+                return true;
+            }
+        }
+
+        var statusCodeProperty = exception.GetType().GetProperty("StatusCode");
+        if (statusCodeProperty is not null)
+        {
+            var value = statusCodeProperty.GetValue(exception);
+            if (value is int intValue)
+            {
+                statusCode = intValue;
+                return true;
+            }
+
+            if (value is System.Net.HttpStatusCode enumValue)
+            {
+                statusCode = (int)enumValue;
+                return true;
+            }
+        }
+
+        statusCode = 0;
+        return false;
     }
 }

@@ -28,7 +28,7 @@ public static partial class DashboardEndpoints
         group.MapGet("/system-status", GetSystemStatusAsync);
         group.MapGet("/module-progress", GetModuleProgressAsync);
         group.MapGet("/upcoming-meetings", GetUpcomingMeetingsAsync);
-        group.MapGet("/today-calendar", GetTodayCalendarAsync);
+        group.MapGet("/recent-errors", GetRecentErrorsAsync);
 
         return endpoints;
     }
@@ -303,6 +303,14 @@ public static partial class DashboardEndpoints
             Log.TodayCalendarFailed(logger, ex);
             return Results.Problem(title: "Today calendar request failed", statusCode: StatusCodes.Status500InternalServerError);
         }
+    }
+
+    private static async Task<IResult> GetRecentErrorsAsync(
+        IErrorStore errorStore,
+        CancellationToken cancellationToken)
+    {
+        var errors = await errorStore.GetRecentAsync(50, cancellationToken);
+        return Results.Ok(errors);
     }
 
     private static partial class Log

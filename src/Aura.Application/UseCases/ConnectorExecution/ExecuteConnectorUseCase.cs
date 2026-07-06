@@ -133,6 +133,9 @@ public sealed partial class ExecuteConnectorUseCase
         ArgumentNullException.ThrowIfNull(identity);
 
         using var activity = ActivitySource.StartActivity("connector.execution.run", ActivityKind.Internal);
+        var correlationId = activity?.Id ?? Activity.Current?.Id ?? Guid.NewGuid().ToString("N");
+        using var _ = _logger.BeginScope("{CorrelationId}", correlationId);
+
         activity?.SetTag("connector.name", identity.Connector);
         activity?.SetTag("connector.source", identity.Source);
         activity?.SetTag("connector.tenant", identity.Tenant);
@@ -152,7 +155,7 @@ public sealed partial class ExecuteConnectorUseCase
                 ConnectorExecutionStatus.Failure,
                 $"No registered connector adapter for '{identity.Connector}'.");
 
-            EmitTelemetry(activity, failure);
+            EmitTelemetry(activity, failure, correlationId: correlationId);
             return failure;
         }
 
@@ -169,7 +172,7 @@ public sealed partial class ExecuteConnectorUseCase
             }
 
             await PersistCheckpointAsync(identity, checkpoint, finalResult, now, ct);
-            EmitTelemetry(activity, finalResult);
+            EmitTelemetry(activity, finalResult, correlationId);
             return finalResult;
         }
         catch (Exception ex)
@@ -180,7 +183,7 @@ public sealed partial class ExecuteConnectorUseCase
                 ConnectorExecutionStatus.Failure,
                 ex.Message);
 
-            EmitTelemetry(activity, failure, ex);
+            EmitTelemetry(activity, failure, correlationId, ex);
             return failure;
         }
     }
@@ -364,10 +367,8 @@ public sealed partial class ExecuteConnectorUseCase
         await _checkpointStore.SaveAsync(identity, successCheckpoint, ct);
     }
 
-    private void EmitTelemetry(Activity? activity, ConnectorExecutionResult result, Exception? exception = null)
+    private void EmitTelemetry(Activity? activity, ConnectorExecutionResult result, string correlationId, Exception? exception = null)
     {
-        var correlationId = activity?.Id ?? Activity.Current?.Id ?? Guid.NewGuid().ToString("N");
-
         activity?.SetTag("correlation.id", correlationId);
         activity?.SetTag("execution.status", result.Status.ToString());
         activity?.SetTag("execution.item_count", result.ItemCount);

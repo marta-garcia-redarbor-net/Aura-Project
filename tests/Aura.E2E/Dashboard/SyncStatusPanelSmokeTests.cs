@@ -127,6 +127,9 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok")));
+
+        public Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken ct)
+            => Task.FromResult(new List<ErrorEntryDto>());
     }
 
     private sealed class StubModuleProgressClient : IModuleProgressApiClient

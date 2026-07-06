@@ -8,7 +8,7 @@ namespace Aura.Workers;
 /// Fire-once background worker that validates the kernel pipeline wiring.
 /// Creates a dummy <see cref="WorkItem"/>, executes the plugin pipeline, logs the result, and stops.
 /// </summary>
-public sealed class HelloKernelWorker : BackgroundService
+public sealed partial class HelloKernelWorker : BackgroundService
 {
     private readonly IPluginRegistry _registry;
     private readonly IHostApplicationLifetime _lifetime;
@@ -26,7 +26,7 @@ public sealed class HelloKernelWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("HelloKernelWorker started — executing kernel pipeline validation");
+        Log.WorkerStarted(_logger);
 
         var correlationId = Guid.NewGuid().ToString();
         var workItem = new WorkItem(
@@ -47,8 +47,7 @@ public sealed class HelloKernelWorker : BackgroundService
         {
             await _registry.ExecuteAsync(workItem, stoppingToken);
 
-            _logger.LogInformation(
-                "HelloKernelWorker completed. WorkItem {WorkItemId} final status: {Status}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}",
+            Log.WorkerCompleted(_logger,
                 workItem.Id,
                 workItem.Status,
                 workItem.ExternalId,
@@ -58,15 +57,34 @@ public sealed class HelloKernelWorker : BackgroundService
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            _logger.LogWarning("HelloKernelWorker cancelled before completion");
+            Log.WorkerCancelled(_logger);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "HelloKernelWorker failed unexpectedly");
+            Log.WorkerFailed(_logger, ex);
         }
         finally
         {
             _lifetime.StopApplication();
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 3201, Level = LogLevel.Information,
+            Message = "HelloKernelWorker started — executing kernel pipeline validation")]
+        public static partial void WorkerStarted(ILogger logger);
+
+        [LoggerMessage(EventId = 3202, Level = LogLevel.Information,
+            Message = "HelloKernelWorker completed. WorkItem {WorkItemId} final status: {Status}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}")]
+        public static partial void WorkerCompleted(ILogger logger, Guid workItemId, WorkItemStatus status, string externalId, WorkItemSourceType sourceType, WorkItemPriority priority, string correlationId);
+
+        [LoggerMessage(EventId = 3203, Level = LogLevel.Warning,
+            Message = "HelloKernelWorker cancelled before completion")]
+        public static partial void WorkerCancelled(ILogger logger);
+
+        [LoggerMessage(EventId = 3204, Level = LogLevel.Error,
+            Message = "HelloKernelWorker failed unexpectedly")]
+        public static partial void WorkerFailed(ILogger logger, Exception exception);
     }
 }

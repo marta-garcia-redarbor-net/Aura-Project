@@ -27,10 +27,10 @@ public class QdrantOptionsTests
     }
 
     [Fact]
-    public void DefaultVectorSize_Is1536()
+    public void DefaultVectorSize_Is768()
     {
         var options = new QdrantOptions();
-        Assert.Equal(1536, options.VectorSize);
+        Assert.Equal(768, options.VectorSize);
     }
 
     [Fact]

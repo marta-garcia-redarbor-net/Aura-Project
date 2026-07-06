@@ -8,7 +8,7 @@ namespace Aura.Application.Kernel;
 /// Processes all registered plugins in order. On failure, marks the work item as faulted
 /// and aborts remaining plugins, preserving worker process stability.
 /// </summary>
-public sealed class PluginRegistry : IPluginRegistry
+public sealed partial class PluginRegistry : IPluginRegistry
 {
     private readonly IReadOnlyList<IPlugin> _plugins;
     private readonly ILogger<PluginRegistry> _logger;
@@ -39,9 +39,7 @@ public sealed class PluginRegistry : IPluginRegistry
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError(
-                    ex,
-                    "Plugin {PluginType} failed for WorkItem {WorkItemId}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}",
+                Log.PluginFailed(_logger, ex,
                     plugin.GetType().Name,
                     item.Id,
                     item.ExternalId,
@@ -54,5 +52,20 @@ public sealed class PluginRegistry : IPluginRegistry
         }
 
         item.MarkCompleted();
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 3401, Level = LogLevel.Error,
+            Message = "Plugin {PluginType} failed for WorkItem {WorkItemId}. ExternalId: {ExternalId}. SourceType: {SourceType}. Priority: {Priority}. CorrelationId: {CorrelationId}")]
+        public static partial void PluginFailed(
+            ILogger logger,
+            Exception exception,
+            string pluginType,
+            Guid workItemId,
+            string externalId,
+            WorkItemSourceType sourceType,
+            WorkItemPriority priority,
+            string correlationId);
     }
 }
