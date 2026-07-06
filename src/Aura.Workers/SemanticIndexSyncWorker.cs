@@ -14,7 +14,7 @@ namespace Aura.Workers;
 /// Uses IServiceScopeFactory to resolve scoped dependencies (ISemanticIndexWriter) per batch,
 /// avoiding the hosted-service singleton → scoped service lifetime mismatch.
 /// </summary>
-public sealed class SemanticIndexSyncWorker : BackgroundService
+public sealed partial class SemanticIndexSyncWorker : CorrelatedWorkerBase
 {
     private readonly ISemanticOutboxRepository _outbox;
     private readonly ISemanticChunkExtractor _extractor;
@@ -31,6 +31,7 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
         IEmbeddingProvider embedder,
         IServiceScopeFactory scopeFactory,
         ILogger<SemanticIndexSyncWorker> logger)
+        : base(logger)
     {
         _outbox = outbox ?? throw new ArgumentNullException(nameof(outbox));
         _extractor = extractor ?? throw new ArgumentNullException(nameof(extractor));
@@ -39,29 +40,22 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteCorrelatedAsync(string correlationId, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("SemanticIndexSyncWorker started");
-
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
-            {
-                await ProcessBatchAsync(stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unhandled error in SemanticIndexSyncWorker polling loop");
-            }
-
-            await Task.Delay(PollingInterval, stoppingToken);
+            await ProcessBatchAsync(stoppingToken);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            Log.UnhandledPollingError(_logger, ex);
         }
 
-        _logger.LogInformation("SemanticIndexSyncWorker stopped");
+        await Task.Delay(PollingInterval, stoppingToken);
     }
 
     /// <summary>
@@ -81,7 +75,7 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var writer = scope.ServiceProvider.GetRequiredService<ISemanticIndexWriter>();
 
-        _logger.LogDebug("Processing {Count} outbox entries", entries.Count);
+        Log.ProcessingBatch(_logger, entries.Count);
 
         // Phase 1: Extract chunks per entry, tracking association.
         // Entries where extraction fails are marked immediately and excluded from embedding.
@@ -101,9 +95,7 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex,
-                    "Failed to extract chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})",
-                    entry.Id, entry.CanonicalSourceId);
+                Log.ExtractionFailed(_logger, ex, entry.Id, entry.CanonicalSourceId);
                 entry.MarkFailed(ex.Message);
                 await _outbox.UpdateAsync(entry, ct);
             }
@@ -129,7 +121,7 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Batch embedding failed for {ChunkCount} accumulated chunks", allChunks.Count);
+                Log.BatchEmbeddingFailed(_logger, ex, allChunks.Count);
 
                 // All entries with chunks fail when embedding fails.
                 foreach (var (entry, chunks) in extractionResults)
@@ -172,8 +164,7 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
                 }
 
                 entry.MarkProcessed();
-                _logger.LogDebug("Processed outbox entry {EntryId} for canonical source {CanonicalSourceId}",
-                    entry.Id, entry.CanonicalSourceId);
+                Log.EntryProcessed(_logger, entry.Id, entry.CanonicalSourceId);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -181,14 +172,39 @@ public sealed class SemanticIndexSyncWorker : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex,
-                    "Failed to write enriched chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})",
-                    entry.Id, entry.CanonicalSourceId);
+                Log.WriteFailed(_logger, ex, entry.Id, entry.CanonicalSourceId);
                 entry.MarkFailed(ex.Message);
                 offset += chunks.Count;
             }
 
             await _outbox.UpdateAsync(entry, ct);
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 3101, Level = LogLevel.Error,
+            Message = "Unhandled error in SemanticIndexSyncWorker polling loop")]
+        public static partial void UnhandledPollingError(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 3102, Level = LogLevel.Debug,
+            Message = "Processing {Count} outbox entries")]
+        public static partial void ProcessingBatch(ILogger logger, int count);
+
+        [LoggerMessage(EventId = 3103, Level = LogLevel.Warning,
+            Message = "Failed to extract chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})")]
+        public static partial void ExtractionFailed(ILogger logger, Exception exception, Guid entryId, string canonicalSourceId);
+
+        [LoggerMessage(EventId = 3104, Level = LogLevel.Error,
+            Message = "Batch embedding failed for {ChunkCount} accumulated chunks")]
+        public static partial void BatchEmbeddingFailed(ILogger logger, Exception exception, int chunkCount);
+
+        [LoggerMessage(EventId = 3105, Level = LogLevel.Debug,
+            Message = "Processed outbox entry {EntryId} for canonical source {CanonicalSourceId}")]
+        public static partial void EntryProcessed(ILogger logger, Guid entryId, string canonicalSourceId);
+
+        [LoggerMessage(EventId = 3106, Level = LogLevel.Warning,
+            Message = "Failed to write enriched chunks for outbox entry {EntryId} (canonical source {CanonicalSourceId})")]
+        public static partial void WriteFailed(ILogger logger, Exception exception, Guid entryId, string canonicalSourceId);
     }
 }

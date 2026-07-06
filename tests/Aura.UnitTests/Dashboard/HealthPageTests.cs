@@ -50,6 +50,8 @@ public class HealthPageTests : TestContext
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API running"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant healthy"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "Mock auth"))));
+        systemStatusApi.GetRecentErrorsAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new List<ErrorEntryDto>()));
         Services.AddSingleton<ISystemStatusApiClient>(systemStatusApi);
 
         // ModuleProgressPanel dependency

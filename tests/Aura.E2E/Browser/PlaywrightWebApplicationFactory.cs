@@ -183,6 +183,9 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
     {
         public Task<SystemStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
             => Task.FromResult(response);
+
+        public Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new List<ErrorEntryDto>());
     }
 
     private sealed class StubModuleProgressApiClient(ModuleProgressResponse response) : IModuleProgressApiClient

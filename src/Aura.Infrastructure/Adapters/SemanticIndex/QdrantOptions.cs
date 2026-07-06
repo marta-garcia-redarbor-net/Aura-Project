@@ -25,8 +25,8 @@ public sealed class QdrantOptions
     /// <summary>Collection name for fast-moving activity memory.</summary>
     public string ActivityMemoryCollection { get; set; } = "aura_activity_memory";
 
-    /// <summary>Embedding vector dimension. Must match the embedding provider output.</summary>
-    public int VectorSize { get; set; } = 1536;
+    /// <summary>Embedding vector dimension. Must match the embedding provider output (nomic-embed-text => 768).</summary>
+    public int VectorSize { get; set; } = 768;
 
     /// <summary>
     /// Maps a domain collection type to the configured Qdrant collection name.

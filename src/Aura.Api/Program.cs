@@ -1,6 +1,7 @@
 using Aura.Api.Adapters;
 using Aura.Api.Endpoints;
 using Aura.Api.Hubs;
+using Aura.Api.Middleware;
 using Aura.Api.Workers;
 using Aura.Application;
 using Aura.Application.Ports;
@@ -45,8 +46,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.Api.DashboardPipeline");
+var errorStore = app.Services.GetRequiredService<IErrorStore>();
 
 app.UseCors("AllowUiOrigin");
+app.UseMiddleware<CorrelationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -68,6 +71,17 @@ app.Use(async (context, next) =>
     {
         await next();
         activity.SetTag("http.status_code", context.Response.StatusCode);
+
+        if (context.Response.StatusCode >= StatusCodes.Status500InternalServerError)
+        {
+            await errorStore.RecordAsync(
+                new ErrorEntry(
+                    context.TraceIdentifier,
+                    DateTimeOffset.UtcNow,
+                    $"{context.Request.Method} {context.Request.Path}: HTTP {context.Response.StatusCode}"),
+                context.RequestAborted);
+        }
+
         Aura.Api.DashboardRequestLog.RequestCompleted(
             logger,
             context.Request.Method,
@@ -78,6 +92,13 @@ app.Use(async (context, next) =>
     catch (Exception ex)
     {
         activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+        await errorStore.RecordAsync(
+            new ErrorEntry(
+                context.TraceIdentifier,
+                DateTimeOffset.UtcNow,
+                $"{context.Request.Method} {context.Request.Path}: {ex.Message}"),
+            context.RequestAborted);
+
         Aura.Api.DashboardRequestLog.RequestFailed(
             logger,
             ex,

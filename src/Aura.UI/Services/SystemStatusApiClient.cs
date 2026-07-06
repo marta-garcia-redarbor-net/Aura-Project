@@ -22,4 +22,13 @@ public sealed class SystemStatusApiClient : ISystemStatusApiClient
         var payload = await response.Content.ReadFromJsonAsync<SystemStatusResponse>(SerializerOptions, cancellationToken);
         return payload ?? throw new InvalidOperationException("Aura.Api returned an empty system status payload.");
     }
+
+    public async Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken cancellationToken)
+    {
+        using var response = await _httpClient.GetAsync("/api/dashboard/recent-errors", cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var payload = await response.Content.ReadFromJsonAsync<List<ErrorEntryDto>>(SerializerOptions, cancellationToken);
+        return payload ?? [];
+    }
 }
