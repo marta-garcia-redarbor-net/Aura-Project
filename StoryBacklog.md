@@ -435,22 +435,22 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 **Resultado esperado:** checkpoints de ejecución de conectores persistidos durablemente en BD.
 
-- [ ] **W4-H1bis-T1** Diseñar entidad EF Core `ConnectorCheckpointEntity`.  
+- [x] **W4-H1bis-T1** Diseñar entidad EF Core `ConnectorCheckpointEntity`.  
    **DoD:** entidad con índice compuesto (Connector, Source, Tenant) definida.  
    **Riesgo:** esquema insuficiente para recuperación por tenant.
-- [ ] **W4-H1bis-T2** Implementar `DatabaseIngestionCheckpointStore` reemplazando in-memory.  
+- [x] **W4-H1bis-T2** Implementar `DatabaseIngestionCheckpointStore` reemplazando in-memory.  
    **DoD:** implementa `IIngestionCheckpointStore` con persistencia real.  
    **Riesgo:** transacciones race o deadlock en concurrencia.
-- [ ] **W4-H1bis-T3** Crear migration de EF Core para tabla de checkpoints.  
+- [x] **W4-H1bis-T3** Crear migration de EF Core para tabla de checkpoints.  
    **DoD:** migración ejecutable y versionada.  
    **Riesgo:** inconsistencia entre entornos.
-- [ ] **W4-H1bis-T4** Añadir tests de integración para recuperación desde cursor anterior.  
+- [x] **W4-H1bis-T4** Añadir tests de integración para recuperación desde cursor anterior.  
    **DoD:** prueba verifica idempotencia en reinicio de worker.  
    **Riesgo:** pérdida de checkpoint o duplicidad silenciosa.
-- [ ] **W4-H1bis-T5** Registrar implementación en DI para producción.  
+- [x] **W4-H1bis-T5** Registrar implementación en DI para producción.  
    **DoD:** `IIngestionCheckpointStore` resuelve a `DatabaseIngestionCheckpointStore` en Prod.  
    **Riesgo:** seguir usando in-memory en producción por olvido.
-- [ ] **W4-H1bis-T6** Documentar estrategia de recuperación ante corrupción de checkpoint.  
+- [x] **W4-H1bis-T6** Documentar estrategia de recuperación ante corrupción de checkpoint.  
    **DoD:** manual de troubleshooting para operación.  
    **Riesgo:** incidente sin playbook.
 

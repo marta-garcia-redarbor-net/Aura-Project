@@ -1,0 +1,94 @@
+name: Build and Deploy Aura Containers
+
+on:
+  push:
+    branches: [release/*]
+    paths-ignore:
+      - 'infra/**'
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Docker image tag'
+        required: true
+        default: 'latest'
+      deployToAca:
+        description: 'Deploy to ACA after build'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  AZURE_RESOURCE_GROUP: aura-rg
+  REGISTRY_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [aura-api, aura-ui, aura-workers]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and Push to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build Image
+        run: |
+          TAG="${{ github.event.inputs.imageTag || github.sha }}"
+          docker build \
+            -f src/${{ matrix.service }}/Dockerfile \
+            -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}:$TAG \
+            -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}:latest \
+            .
+
+      - name: Push Image
+        run: |
+          docker push --all-tags ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}
+
+  deploy:
+    needs: build
+    if: ${{ github.event.inputs.deployToAca != 'false' }}
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to ACA
+        run: |
+          TAG="${{ github.event.inputs.imageTag || github.sha }}"
+
+          az containerapp update \
+            --name aura-api-dev \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-api:$TAG
+
+          az containerapp update \
+            --name aura-ui-dev \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-ui:$TAG
+
+          az containerapp update \
+            --name aura-workers-dev \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-workers:$TAG
