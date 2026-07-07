@@ -18,4 +18,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["dotnet", "Aura.Api.dll"]

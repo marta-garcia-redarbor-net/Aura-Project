@@ -1,0 +1,34 @@
+{
+  "properties": {
+    "template": {
+      "containers": [
+        {
+          "name": "aura-ui",
+          "env": [
+            { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production" },
+            { "name": "ASPNETCORE_URLS", "value": "http://+:8080" },
+            { "name": "AzureAd__TenantId", "value": "c03d78d4-498a-4809-a833-6e766f0a0781" },
+            { "name": "AzureAd__ClientId", "value": "c18afd14-a708-4ec9-bc95-6826495b918d" },
+            { "name": "UseEntraId", "value": "true" },
+            { "name": "AURA_API_BASE_URL", "value": "https://aura-api-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io" },
+            { "name": "GRAPH_SCOPES", "value": "User.Read Calendars.Read Mail.Read Chat.Read Presence.Read" },
+            { "name": "ENTRA_TENANT_ID", "value": "c03d78d4-498a-4809-a833-6e766f0a0781" },
+            { "name": "ENTRA_CLIENT_ID", "value": "c18afd14-a708-4ec9-bc95-6826495b918d" }
+          ]
+        }
+      ],
+      "scale": {
+        "minReplicas": 0,
+        "maxReplicas": 3
+      }
+    },
+    "configuration": {
+      "ingress": {
+        "external": true,
+        "targetPort": 8080,
+        "transport": "Http",
+        "allowInsecure": false
+      }
+    }
+  }
+}

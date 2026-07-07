@@ -2,12 +2,15 @@ using Aura.Api.Adapters;
 using Aura.Api.Endpoints;
 using Aura.Api.Hubs;
 using Aura.Api.Middleware;
+using Aura.Api.Validation;
 using Aura.Api.Workers;
 using Aura.Application;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.Calendar;
 using Aura.Infrastructure;
+using FluentValidation;
 using System.Diagnostics;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,7 @@ builder.Services.AddAuraApplication();
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddSignalR();
 builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
+builder.Services.AddValidatorsFromAssembly(typeof(Aura.Api.ApiMarker).Assembly);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -43,13 +47,73 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Rate limiting — sliding window per client IP
+builder.Services.AddRateLimiter(options =>
+{
+    var defaultLimit = builder.Configuration.GetValue<int>("RateLimiting:Default:PermitLimit", 100);
+    var defaultWindow = builder.Configuration.GetValue<int>("RateLimiting:Default:WindowSeconds", 60);
+    var authLimit = builder.Configuration.GetValue<int>("RateLimiting:Auth:PermitLimit", 10);
+    var authWindow = builder.Configuration.GetValue<int>("RateLimiting:Auth:WindowSeconds", 60);
+
+    // Global limiter — applies to all endpoints unless overridden
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        return RateLimitPartition.GetSlidingWindowLimiter(clientIp,
+            _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = defaultLimit,
+                Window = TimeSpan.FromSeconds(defaultWindow),
+                SegmentsPerWindow = 4,
+                QueueLimit = 0
+            });
+    });
+
+    // Named policy for auth endpoints — stricter limits
+    options.AddPolicy("auth", context =>
+    {
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        return RateLimitPartition.GetSlidingWindowLimiter(clientIp,
+            _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = authLimit,
+                Window = TimeSpan.FromSeconds(authWindow),
+                SegmentsPerWindow = 4,
+                QueueLimit = 0
+            });
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString("0");
+        }
+        else
+        {
+            context.HttpContext.Response.Headers.RetryAfter = "60";
+        }
+        return ValueTask.CompletedTask;
+    };
+});
+
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.Api.DashboardPipeline");
 var errorStore = app.Services.GetRequiredService<IErrorStore>();
 
-app.UseCors("AllowUiOrigin");
+app.UseRateLimiter();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseMiddleware<CorrelationMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+app.UseCors("AllowUiOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 

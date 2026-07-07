@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Aura.Api.Validation;
 using Aura.Domain.FocusState;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +26,8 @@ public static partial class FocusStateEndpoints
             .RequireAuthorization();
 
         group.MapGet("/", GetFocusStateAsync);
-        group.MapPut("/", SetFocusStateAsync);
+        group.MapPut("/", SetFocusStateAsync)
+            .AddEndpointFilter<ValidationEndpointFilter<SetFocusStateRequest>>();
         group.MapDelete("/", ClearFocusStateAsync);
 
         return endpoints;

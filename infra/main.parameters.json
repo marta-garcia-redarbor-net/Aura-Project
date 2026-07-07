@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "francecentral"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "namePrefix": {
+      "value": "aura"
+    },
+    "entraTenantId": {
+      "value": ""
+    },
+    "entraClientId": {
+      "value": ""
+    },
+    "sqlAdminLogin": {
+      "value": "auraadmin"
+    },
+    "sqlSkuName": {
+      "value": "GP_S_Gen5_1"
+    },
+    "sqlMaxSizeGb": {
+      "value": 32
+    },
+    "imageTag": {
+      "value": "latest"
+    },
+    "autoPauseDelay": {
+      "value": 60
+    }
+  }
+}
