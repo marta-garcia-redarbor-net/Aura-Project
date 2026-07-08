@@ -71,7 +71,6 @@ jobs:
     needs: build
     if: ${{ github.event.inputs.deployToAca != 'false' }}
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
 
