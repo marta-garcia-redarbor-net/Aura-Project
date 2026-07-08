@@ -1,6 +1,6 @@
 namespace Aura.Workers;
 
-public class Worker : BackgroundService
+public sealed partial class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
 
@@ -15,9 +15,16 @@ public class Worker : BackgroundService
         {
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                Log.WorkerRunning(_logger, DateTimeOffset.Now);
             }
             await Task.Delay(1000, stoppingToken);
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 3301, Level = LogLevel.Information,
+            Message = "Worker running at: {time}")]
+        public static partial void WorkerRunning(ILogger logger, DateTimeOffset time);
     }
 }

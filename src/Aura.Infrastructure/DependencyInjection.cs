@@ -52,6 +52,9 @@ public static class DependencyInjection
         services.AddDashboardAdapters(configuration, environment);
         services.AddMorningSummarySchedulingAdapters(configuration);
 
+        // In-memory error store (dashboard error correlation)
+        services.AddSingleton<IErrorStore, InMemoryErrorStore>();
+
         // Sync infrastructure
         services.AddSingleton<ISyncStateStore, InMemorySyncStateStore>();
         services.AddScoped<TriggerSyncUseCase>(sp => new TriggerSyncUseCase(

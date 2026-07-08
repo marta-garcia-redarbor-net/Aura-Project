@@ -44,10 +44,27 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
         }
         catch (Microsoft.Identity.Client.MsalUiRequiredException)
         {
-            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown");
+            Log.TokenExpired(_logger, request.Identity.UserOid ?? "unknown", "teams");
             s_tokenExpired.Add(1,
                 new KeyValuePair<string, object?>("connector", "teams"),
                 new KeyValuePair<string, object?>("oid", request.Identity.UserOid ?? "unknown"));
+            throw;
+        }
+        catch (Exception ex) when (TryResolveStatusCode(ex, out var statusCode) && statusCode is >= 400 and < 600)
+        {
+            if (statusCode >= 500)
+            {
+                Log.GraphHttpServerError(_logger, statusCode, "me/chats", "teams");
+            }
+            else
+            {
+                Log.GraphHttpClientError(_logger, statusCode, "me/chats", "teams");
+            }
+
+            s_graphHttpError.Add(1,
+                new KeyValuePair<string, object?>("connector", "teams"),
+                new KeyValuePair<string, object?>("status_code", statusCode),
+                new KeyValuePair<string, object?>("endpoint", "me/chats"));
             throw;
         }
 
@@ -59,12 +76,20 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
                 requestConfig.QueryParameters.Top = 50;
             }, ct);
         }
-        catch (ODataError ex) when (ex.ResponseStatusCode is >= 400 and < 600)
+        catch (Exception ex) when (TryResolveStatusCode(ex, out var statusCode) && statusCode is >= 400 and < 600)
         {
-            Log.GraphHttpError(_logger, ex.ResponseStatusCode, "me/chats");
+            if (statusCode >= 500)
+            {
+                Log.GraphHttpServerError(_logger, statusCode, "me/chats", "teams");
+            }
+            else
+            {
+                Log.GraphHttpClientError(_logger, statusCode, "me/chats", "teams");
+            }
+
             s_graphHttpError.Add(1,
                 new KeyValuePair<string, object?>("connector", "teams"),
-                new KeyValuePair<string, object?>("status_code", ex.ResponseStatusCode),
+                new KeyValuePair<string, object?>("status_code", statusCode),
                 new KeyValuePair<string, object?>("endpoint", "me/chats"));
             throw;
         }
@@ -116,11 +141,55 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
         public static partial void NoTeamsMessages(ILogger logger);
 
         [LoggerMessage(EventId = 3305, Level = LogLevel.Warning,
-            Message = "GraphTeamsSourceProvider token expired for oid={Oid}. Re-authentication required.")]
-        public static partial void TokenExpired(ILogger logger, string oid);
+            Message = "GraphTeamsSourceProvider token expired for oid={Oid} connector={Connector}. Re-authentication required.")]
+        public static partial void TokenExpired(ILogger logger, string oid, string connector);
 
         [LoggerMessage(EventId = 3306, Level = LogLevel.Warning,
-            Message = "GraphTeamsSourceProvider HTTP {StatusCode} from {Endpoint}")]
-        public static partial void GraphHttpError(ILogger logger, int statusCode, string endpoint);
+            Message = "GraphTeamsSourceProvider HTTP {StatusCode} from {Endpoint} connector={Connector}")]
+        public static partial void GraphHttpClientError(ILogger logger, int statusCode, string endpoint, string connector);
+
+        [LoggerMessage(EventId = 3309, Level = LogLevel.Error,
+            Message = "GraphTeamsSourceProvider HTTP {StatusCode} from {Endpoint} connector={Connector}")]
+        public static partial void GraphHttpServerError(ILogger logger, int statusCode, string endpoint, string connector);
+    }
+
+    private static bool TryResolveStatusCode(Exception exception, out int statusCode)
+    {
+        if (exception is ODataError odata && odata.ResponseStatusCode > 0)
+        {
+            statusCode = odata.ResponseStatusCode;
+            return true;
+        }
+
+        var statusProperty = exception.GetType().GetProperty("ResponseStatusCode");
+        if (statusProperty is not null)
+        {
+            var value = statusProperty.GetValue(exception);
+            if (value is int intValue)
+            {
+                statusCode = intValue;
+                return true;
+            }
+        }
+
+        var statusCodeProperty = exception.GetType().GetProperty("StatusCode");
+        if (statusCodeProperty is not null)
+        {
+            var value = statusCodeProperty.GetValue(exception);
+            if (value is int intValue)
+            {
+                statusCode = intValue;
+                return true;
+            }
+
+            if (value is System.Net.HttpStatusCode enumValue)
+            {
+                statusCode = (int)enumValue;
+                return true;
+            }
+        }
+
+        statusCode = 0;
+        return false;
     }
 }

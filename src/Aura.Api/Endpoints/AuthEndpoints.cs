@@ -19,7 +19,8 @@ public static class AuthEndpoints
         this IEndpointRouteBuilder endpoints,
         IHostEnvironment environment)
     {
-        var group = endpoints.MapGroup("/api/auth");
+        var group = endpoints.MapGroup("/api/auth")
+            .RequireRateLimiting("auth");
 
         // Mock login — development only
         if (environment.IsDevelopment())

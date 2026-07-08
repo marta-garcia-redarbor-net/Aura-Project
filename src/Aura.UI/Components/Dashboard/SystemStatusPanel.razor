@@ -30,12 +30,32 @@
                 </li>
             }
         </ul>
+
+        @if (_recentErrors.Count > 0)
+        {
+            <h3>Recent errors</h3>
+            <ul class="dashboard-error-list" data-testid="recent-errors-list">
+                @foreach (var error in _recentErrors)
+                {
+                    <li class="dashboard-error-item" data-testid="recent-error-item">
+                        <span class="dashboard-error-item__correlation" data-testid="error-correlation-id">@error.CorrelationId</span>
+                        <span class="dashboard-error-item__timestamp" data-testid="error-timestamp">@error.Timestamp.ToString("g")</span>
+                        <span class="dashboard-error-item__message" data-testid="error-message">@error.Message</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p data-testid="no-recent-errors">No recent errors.</p>
+        }
     }
 </section>
 
 @code {
     private SystemStatusResponse? _status;
     private string? _loadError;
+    private List<ErrorEntryDto> _recentErrors = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,6 +66,17 @@
         catch
         {
             _loadError = "System status is currently unavailable.";
+            return;
+        }
+
+        try
+        {
+            _recentErrors = await SystemStatusApiClient.GetRecentErrorsAsync(CancellationToken.None);
+        }
+        catch
+        {
+            // Errors section is best-effort; don't block the panel
+            _recentErrors = [];
         }
     }
 

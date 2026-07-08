@@ -312,29 +312,29 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W3-H2 — Construir motor de interrupciones
 
-- [ ] **W3-H2-T1** Definir scoring de prioridad y atención.  
+- [x] **W3-H2-T1** Definir scoring de prioridad y atención.  
   **DoD:** fórmula/reglas explicitadas en tests.  
   **Riesgo:** ruido excesivo.
-- [ ] **W3-H2-T2** Implementar reglas de interrupción vs cola diferida.  
+- [x] **W3-H2-T2** Implementar reglas de interrupción vs cola diferida.  
   **DoD:** el motor produce decisión explicable.  
   **Riesgo:** falta de confianza del usuario.
-- [ ] **W3-H2-T3** Registrar razón de decisión para auditoría.  
+- [x] **W3-H2-T3** Registrar razón de decisión para auditoría.  
   **DoD:** cada decisión incluye explicación trazable.  
   **Riesgo:** caja negra difícil de defender.
 
-- [ ] **W3-H2-T4** Add Teams connector content-based preliminary scoring (future, non-authoritative).  
+- [x] **W3-H2-T4** Add Teams connector content-based preliminary scoring (future, non-authoritative).  
   **DoD:** Teams connector extracts content signals and writes preliminary score metadata only; final `INTERRUPT|QUEUE|DEFER` remains owned by `IInterruptionPolicyEngine`; evidence includes docs + tests for metadata mapping.  
   **Riesgo:** accidentally pushing final triage authority into connector logic.
 
 #### Historia W3-H3 — Exponer foco y cola priorizada en UI
 
-- [ ] **W3-H3-T1** Mostrar estado de foco actual en dashboard.  
+- [x] **W3-H3-T1** Mostrar estado de foco actual en dashboard.  
   **DoD:** UI indica modo actual y su significado.  
   **Riesgo:** motor invisible.
-- [ ] **W3-H3-T2** Mostrar cola diferida y motivo de interrupción.  
+- [x] **W3-H3-T2** Mostrar cola diferida y motivo de interrupción.  
   **DoD:** cada item visible con explicación.  
   **Riesgo:** decisiones no auditables.
-- [ ] **W3-H3-T3** Añadir Playwright para cambio de estado y decisiones.  
+- [x] **W3-H3-T3** Añadir Playwright para cambio de estado y decisiones.  
   **DoD:** flujo E2E cubre al menos un caso Deep Work.  
   **Riesgo:** UX rota pese a lógica correcta.
 
@@ -360,9 +360,50 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** adaptador mockeable, página con estados loading/empty/error/populated cubiertos, Playwright verifica card + vista detalle.  
   **Riesgo:** tests flaky por depender de datos mock que no reflejen el schema real de ADO.
 
-### Postpuesto — Reviewer completo (backlog)
+### Épica W3-E3 — Índice semántico y embeddings
 
-Las siguientes historias se mueven a backlog para después de la Semana 4. Están planificadas pero no comprometidas para este sprint.
+> Provider de embeddings cambiable vía DI (`Ollama` | `OpenAI`), usando OllamaSharp con modelo `nomic-embed-text`. El pipeline de chunking, embedding y escritura a Qdrant ya existe; lo que falta es conectar la outbox desde el flujo de ingestión.
+
+#### Historia W3-H7 — Hacer switchable el provider de embeddings
+
+- [x] **W3-H7-T1** Añadir propiedad `Provider` a `EmbeddingProviderOptions` (default `"Ollama"`).  
+  **DoD:** configurable desde appsettings, validado por `EmbeddingProviderOptionsValidator`.  
+  **Riesgo:** provider incorrecto silencioso.
+- [x] **W3-H7-T2** Implementar switch DI que selecciona OpenAI u Ollama según config.  
+  **DoD:** `CreateOpenAIGenerator` / `CreateOllamaGenerator`; OTel middleware común.  
+  **Riesgo:** fuga de dependencia de SDK.
+- [x] **W3-H7-T3** Añadir appsettings con default Ollama + `nomic-embed-text`.  
+  **DoD:** ambos hosts (Api, Workers) tienen la sección `EmbeddingProvider`.  
+  **Riesgo:** desincronización entre entornos.
+- [x] **W3-H7-T4** Tests de selección de provider y validación.  
+  **DoD:** `EmbeddingDependencyInjectionTests` + `EmbeddingProviderOptionsValidatorTests`.  
+  **Riesgo:** falso positivo por mock incompleto.
+
+#### Historia W3-H8 — Ajustar VectorSize a nomic-embed-text
+
+- [x] **W3-H8-T1** Corregir `QdrantOptions.VectorSize` 1536 → 768.  
+  **DoD:** `nomic-embed-text` produce vectores de 768 dimensiones.  
+  **Riesgo:** mismatch con colecciones Qdrant existentes (hoy vacías, seguro).
+- [x] **W3-H8-T2** Actualizar test `DefaultVectorSize_Is1536` → `Is768`.  
+  **DoD:** tests verdes.  
+  **Riesgo:** olvidar actualizar test de integración.
+
+#### Historia W3-H9 — [Backlog] Conectar outbox semántica al flujo de ingestión
+
+- [ ] **W3-H9-T1** Inyectar `ISemanticOutboxRepository` en `ExecuteConnectorUseCase`.  
+  **DoD:** dependencia registrada y construida.  
+  **Riesgo:** no inyectar en el contenedor.
+- [ ] **W3-H9-T2** Encolar `SemanticOutboxEntry` tras persistir cada `WorkItem` (Title + CanonicalSnippet).  
+  **DoD:** `EnqueueSemanticIndexingAsync` llamada tras `EvaluateAndEnqueueAsync`. Fallos no bloquean ingestión.  
+  **Riesgo:** duplicidad si el worker y el encolado se solapan.
+- [ ] **W3-H9-T3** Mapear `WorkItemSourceType` → `SemanticCollectionType` (PrReview → ProjectKnowledge, resto → ActivityMemory).  
+  **DoD:** mapping explícito y testeado.  
+  **Riesgo:** colección incorrecta para el tipo de item.
+- [ ] **W3-H9-T4** Tests de integración del encolado.  
+  **DoD:** el `SemanticIndexSyncWorker` procesa lo encolado.  
+  **Riesgo:** flaky por timing.
+
+### Postpuesto — Reviewer (backlog)
 
 - **W3-H5** — Integrar SonarQube y reglas OWASP (puertos, adaptadores, reglas, decisión).
 - **W3-H6** — Panel de reviewer en dashboard con evidencias multi-fuente.
@@ -378,13 +419,13 @@ Las siguientes historias se mueven a backlog para después de la Semana 4. Está
 
 #### Historia W4-H1 — Añadir logs estructurados con correlación
 
-- [ ] **W4-H1-T1** Definir formato mínimo de logs.  
+- [x] **W4-H1-T1** Definir formato mínimo de logs.  
    **DoD:** eventos clave comparten estructura.  
    **Riesgo:** diagnósticos inconsistentes.
-- [ ] **W4-H1-T2** Introducir correlation id en API y workers.  
+- [x] **W4-H1-T2** Introducir correlation id en API y workers.  
    **DoD:** se puede seguir un flujo extremo a extremo.  
    **Riesgo:** imposible reconstruir incidencias.
-- [ ] **W4-H1-T3** Mostrar errores/estado relevante en dashboard o panel técnico.  
+- [x] **W4-H1-T3** Mostrar errores/estado relevante en dashboard o panel técnico.  
    **DoD:** fallos importantes visibles para demo y depuración.  
    **Riesgo:** soporte totalmente dependiente de consola.
 
@@ -394,22 +435,22 @@ Las siguientes historias se mueven a backlog para después de la Semana 4. Está
 
 **Resultado esperado:** checkpoints de ejecución de conectores persistidos durablemente en BD.
 
-- [ ] **W4-H1bis-T1** Diseñar entidad EF Core `ConnectorCheckpointEntity`.  
+- [x] **W4-H1bis-T1** Diseñar entidad EF Core `ConnectorCheckpointEntity`.  
    **DoD:** entidad con índice compuesto (Connector, Source, Tenant) definida.  
    **Riesgo:** esquema insuficiente para recuperación por tenant.
-- [ ] **W4-H1bis-T2** Implementar `DatabaseIngestionCheckpointStore` reemplazando in-memory.  
+- [x] **W4-H1bis-T2** Implementar `DatabaseIngestionCheckpointStore` reemplazando in-memory.  
    **DoD:** implementa `IIngestionCheckpointStore` con persistencia real.  
    **Riesgo:** transacciones race o deadlock en concurrencia.
-- [ ] **W4-H1bis-T3** Crear migration de EF Core para tabla de checkpoints.  
+- [x] **W4-H1bis-T3** Crear migration de EF Core para tabla de checkpoints.  
    **DoD:** migración ejecutable y versionada.  
    **Riesgo:** inconsistencia entre entornos.
-- [ ] **W4-H1bis-T4** Añadir tests de integración para recuperación desde cursor anterior.  
+- [x] **W4-H1bis-T4** Añadir tests de integración para recuperación desde cursor anterior.  
    **DoD:** prueba verifica idempotencia en reinicio de worker.  
    **Riesgo:** pérdida de checkpoint o duplicidad silenciosa.
-- [ ] **W4-H1bis-T5** Registrar implementación en DI para producción.  
+- [x] **W4-H1bis-T5** Registrar implementación en DI para producción.  
    **DoD:** `IIngestionCheckpointStore` resuelve a `DatabaseIngestionCheckpointStore` en Prod.  
    **Riesgo:** seguir usando in-memory en producción por olvido.
-- [ ] **W4-H1bis-T6** Documentar estrategia de recuperación ante corrupción de checkpoint.  
+- [x] **W4-H1bis-T6** Documentar estrategia de recuperación ante corrupción de checkpoint.  
    **DoD:** manual de troubleshooting para operación.  
    **Riesgo:** incidente sin playbook.
 
@@ -460,4 +501,4 @@ Las siguientes historias se mueven a backlog para después de la Semana 4. Está
 
 ## Siguiente paso recomendado
 
-Empezar por **W2-H9-T1** y cerrar **W2-H9** completo antes de abrir **W2-H10** o **W2-H11**. Esa secuencia evita seguir construyendo features sobre una identidad o un despliegue que ya sabemos que cambiaron.
+**Semana 3 completada.** El siguiente hito es **Fase 2: Azure Container Apps** para tener el despliegue visible para el evaluador del TFM.

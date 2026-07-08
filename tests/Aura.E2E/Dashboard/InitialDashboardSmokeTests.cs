@@ -548,12 +548,18 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
 
         public Task<SystemStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
             => Task.FromResult(_response);
+
+        public Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new List<ErrorEntryDto>());
     }
 
     private sealed class ThrowingSystemStatusApiClient : ISystemStatusApiClient
     {
         public Task<SystemStatusResponse> GetStatusAsync(CancellationToken cancellationToken)
             => Task.FromException<SystemStatusResponse>(new HttpRequestException("System status unavailable"));
+
+        public Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken cancellationToken)
+            => Task.FromResult(new List<ErrorEntryDto>());
     }
 
     private sealed class StubModuleProgressApiClient : IModuleProgressApiClient

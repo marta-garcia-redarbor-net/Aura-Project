@@ -5,6 +5,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.ConnectorExecution;
 using Aura.Domain.WorkItems;
+using Aura.UnitTests.TestDoubles.Observability;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -433,6 +434,37 @@ public class ExecuteConnectorUseCaseTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_OpensCorrelationScope_BeforeAdapterExecution()
+    {
+        var identity = new CheckpointIdentity("teams", "messages-scope", "acme-scope");
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(identity, Arg.Any<CancellationToken>()).Returns((IngestionCheckpoint?)null);
+
+        var logger = new ScopeAwareTestLogger<ExecuteConnectorUseCase>();
+        string? correlationIdObservedInsideAdapter = null;
+
+        var adapter = new CapturingConnectorAdapter("teams", new ConnectorExecutionResult(identity, 1, ConnectorExecutionStatus.Success))
+        {
+            OnExecute = _ =>
+            {
+                if (logger.TryGetCurrentScopeValue("CorrelationId", out var scopeValue))
+                {
+                    correlationIdObservedInsideAdapter = scopeValue?.ToString();
+                }
+            }
+        };
+
+        var useCase = new ExecuteConnectorUseCase(checkpointStore, new[] { adapter }, logger);
+
+        await useCase.ExecuteAsync(identity, CancellationToken.None);
+
+        Assert.False(string.IsNullOrWhiteSpace(correlationIdObservedInsideAdapter));
+
+        var successLog = logger.Entries.Single(e => e.EventId.Id == 2201);
+        Assert.Equal(correlationIdObservedInsideAdapter, successLog.Scope["CorrelationId"]?.ToString());
+    }
+
+    [Fact]
     public async Task ExecuteAsync_FullSuccessWithItems_PersistsBothCheckpointTimestamps()
     {
         var identity = new CheckpointIdentity("teams", "messages", "acme");
@@ -704,10 +736,12 @@ public class ExecuteConnectorUseCaseTests
     {
         public string ConnectorName => connectorName;
         public ConnectorExecutionRequest? LastRequest { get; private set; }
+        public Action<ConnectorExecutionRequest>? OnExecute { get; init; }
 
         public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
         {
             LastRequest = request;
+            OnExecute?.Invoke(request);
             return Task.FromResult(result);
         }
     }
