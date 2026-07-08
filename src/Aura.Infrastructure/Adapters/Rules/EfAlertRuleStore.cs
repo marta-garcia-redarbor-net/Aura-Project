@@ -1,5 +1,5 @@
 using Aura.Application.Ports;
-using Aura.Infrastructure.Persistence;
+using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aura.Infrastructure.Adapters.Rules;
