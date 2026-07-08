@@ -31,7 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [aura-api, aura-ui, aura-workers]
+        include:
+          - service: aura-api
+            dockerfile: src/Aura.Api/Dockerfile
+          - service: aura-ui
+            dockerfile: src/Aura.UI/Dockerfile
+          - service: aura-workers
+            dockerfile: src/Aura.Workers/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +57,7 @@ jobs:
           ACR=${{ secrets.ACR_NAME }}.azurecr.io
           TAG="${{ github.event.inputs.imageTag || github.sha }}"
           docker build \
-            -f src/${{ matrix.service }}/Dockerfile \
+            -f ${{ matrix.dockerfile }} \
             -t $ACR/${{ matrix.service }}:$TAG \
             -t $ACR/${{ matrix.service }}:latest \
             .
