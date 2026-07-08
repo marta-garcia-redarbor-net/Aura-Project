@@ -116,9 +116,9 @@ public class RestrictedAccessViewTests : TestContext
     }
 
     [Fact]
-    public void MicrosoftLogin_PopupBlocked_ShowsFallbackMessage()
+    public void MicrosoftLogin_NavigatesToChallenge()
     {
-        // Arrange
+        // Arrange — Blazor Server redirect instead of popup
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -126,14 +126,8 @@ public class RestrictedAccessViewTests : TestContext
             })
             .Build();
 
-        var mockPopupService = Substitute.For<IAuthPopupService>();
-        var blockedTask = Task.FromException(new InvalidOperationException("Popup blocked"));
-        mockPopupService
-            .OpenMicrosoftLoginPopupAsync(Arg.Any<string>())
-            .Returns(blockedTask);
-
         Services.AddSingleton<IConfiguration>(config);
-        Services.AddSingleton<IAuthPopupService>(mockPopupService);
+        Services.AddSingleton(Substitute.For<IAuthPopupService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         Services.AddSingleton(Substitute.For<IHttpContextAccessor>());
         Services.AddSingleton(Substitute.For<HttpClient>());
@@ -142,12 +136,8 @@ public class RestrictedAccessViewTests : TestContext
         var cut = RenderComponent<RestrictedAccessView>();
         cut.Find("[data-testid='login-microsoft-btn']").Click();
 
-        // Assert — blocked popup message and toast are shown
-        Assert.NotNull(cut.Find("[data-testid='popup-blocked-message']"));
-        Assert.Contains("Pop-ups blocked", cut.Find("[data-testid='popup-blocked-message']").TextContent);
-        Assert.NotNull(cut.Find("[data-testid='fallback-redirect-link']"));
-        Assert.NotNull(cut.Find("[data-testid='blocked-toast']"));
-        Assert.Contains("Pop-up blocked", cut.Find("[data-testid='blocked-toast']").TextContent);
+        // Assert — direct redirect to the OIDC challenge endpoint
+        Assert.EndsWith("/login/challenge", Services.GetRequiredService<NavigationManager>().Uri, StringComparison.Ordinal);
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -184,9 +174,9 @@ public class RestrictedAccessViewTests : TestContext
     }
 
     [Fact]
-    public async Task MicrosoftLoginButton_Redesign_CallsPopupServiceWithLoginChallengeUrl()
+    public void MicrosoftLogin_NavigatesToChallengeEndpoint()
     {
-        // Arrange — UseEntraId=true; after redesign, popup URL must be "/login/challenge"
+        // Arrange — UseEntraId=true; Microsoft login redirects directly
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -194,17 +184,8 @@ public class RestrictedAccessViewTests : TestContext
             })
             .Build();
 
-        IAuthPopupService mockPopupService = Substitute.For<IAuthPopupService>();
-        mockPopupService
-            .OpenMicrosoftLoginPopupAsync(Arg.Any<string>())
-            .Returns(Task.CompletedTask);
-        // WaitForPopupResultAsync returns null by default — no crash expected
-        mockPopupService
-            .WaitForPopupResultAsync(Arg.Any<CancellationToken>())
-            .Returns((AuthResult?)null);
-
         Services.AddSingleton(config);
-        Services.AddSingleton(mockPopupService);
+        Services.AddSingleton(Substitute.For<IAuthPopupService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
         Services.AddSingleton(Substitute.For<IHttpContextAccessor>());
         Services.AddSingleton(Substitute.For<HttpClient>());
@@ -214,15 +195,10 @@ public class RestrictedAccessViewTests : TestContext
         // Act — click the Microsoft login button
         cut.Find("[data-testid='login-microsoft-btn']").Click();
 
-        // Wait briefly for async handler to complete
-        cut.WaitForAssertion(() =>
-            mockPopupService.Received(1)
-                .OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true"),
-            TimeSpan.FromSeconds(2));
-
-        // Assert — also verify directly via NSubstitute
-        await mockPopupService.Received(1)
-            .OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true");
+        // Assert — direct nav to challenge endpoint (no popup)
+        Assert.EndsWith("/login/challenge",
+            Services.GetRequiredService<NavigationManager>().Uri,
+            StringComparison.Ordinal);
     }
 
 }
