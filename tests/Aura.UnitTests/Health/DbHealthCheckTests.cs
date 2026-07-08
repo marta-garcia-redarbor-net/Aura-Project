@@ -1,4 +1,4 @@
-using Aura.Infrastructure.Adapters.Persistence;
+using Aura.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

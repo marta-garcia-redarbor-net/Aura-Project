@@ -16,7 +16,7 @@ using Aura.Infrastructure.Adapters.Decisions;
 using Aura.Infrastructure.Adapters.FocusState;
 using Aura.Infrastructure.Adapters.Services;
 using Aura.Infrastructure.Adapters.Services.Rules;
-using Aura.Infrastructure.Adapters.Persistence;
+using Aura.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

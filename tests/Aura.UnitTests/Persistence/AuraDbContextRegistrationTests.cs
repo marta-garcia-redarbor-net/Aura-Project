@@ -47,7 +47,7 @@ public class AuraDbContextRegistrationTests
     public void AuraDbContext_HasExpectedDbSets()
     {
         var infraAssembly = Assembly.Load(InfrastructureAssemblyName);
-        var dbContextType = infraAssembly.GetType("Aura.Infrastructure.Adapters.Persistence.AuraDbContext");
+        var dbContextType = infraAssembly.GetType("Aura.Infrastructure.Persistence.AuraDbContext");
 
         Assert.NotNull(dbContextType);
 
@@ -79,7 +79,7 @@ public class AuraDbContextRegistrationTests
     public void AllEntityConfigurations_ExistAndImplementIEntityTypeConfiguration()
     {
         var infraAssembly = Assembly.Load(InfrastructureAssemblyName);
-        var configNamespace = "Aura.Infrastructure.Adapters.Persistence.EntityConfigurations";
+        var configNamespace = "Aura.Infrastructure.Persistence.EntityConfigurations";
 
         var expectedConfigs = new[]
         {

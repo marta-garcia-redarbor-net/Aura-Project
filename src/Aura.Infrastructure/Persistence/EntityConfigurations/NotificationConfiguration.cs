@@ -1,8 +1,8 @@
-using Aura.Infrastructure.Adapters.Persistence;
+using Aura.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Aura.Infrastructure.Adapters.Persistence.EntityConfigurations;
+namespace Aura.Infrastructure.Persistence.EntityConfigurations;
 
 /// <summary>
 /// EF Core configuration for the <c>NotificationOutbox</c> table.

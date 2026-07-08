@@ -7,7 +7,7 @@ using Aura.Infrastructure.Adapters.Calendar;
 using Aura.Infrastructure.Adapters.FocusState;
 using Aura.Infrastructure.Adapters.MorningSummaryScheduling;
 using Aura.Infrastructure.Adapters.WorkItems;
-using Aura.Infrastructure.Adapters.Persistence;
+using Aura.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

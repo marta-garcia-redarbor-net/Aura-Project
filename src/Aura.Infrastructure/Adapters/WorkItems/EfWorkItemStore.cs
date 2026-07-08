@@ -2,7 +2,7 @@ using System.Text.Json;
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
-using Aura.Infrastructure.Adapters.Persistence;
+using Aura.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aura.Infrastructure.Adapters.WorkItems;
