@@ -18,14 +18,48 @@ public partial class RestrictedAccessView : ComponentBase
     }
 
     /// <summary>
-    /// Opens Microsoft OIDC login via full-page redirect.
-    /// Blazor Server cannot use popups because SignalR breaks the synchronous
-    /// click-to-popup chain required by browsers — window.open is always blocked.
-    /// A redirect ensures the OIDC flow completes reliably.
+    /// Returns the challenge endpoint URL with popup context indicator.
+    /// The OIDC middleware owns state/nonce/correlation.
+    /// The ?popup=true query param survives the full OIDC redirect chain and
+    /// tells the callback page it should close itself instead of redirecting to /.
     /// </summary>
-    private void HandleMicrosoftLogin()
+    private static string BuildAuthUrl() => "/login/challenge?popup=true";
+
+    private async Task HandleMicrosoftLogin()
     {
-        Navigation.NavigateTo("/login/challenge", forceLoad: true);
+        try
+        {
+            _errorMessage = null;
+            _popupBlocked = false;
+            _blockedToastMessage = null;
+
+            string authUrl = BuildAuthUrl();
+            await AuthPopupService.OpenMicrosoftLoginPopupAsync(authUrl);
+
+            AuthResult? result = await AuthPopupService.WaitForPopupResultAsync(CancellationToken.None);
+
+            if (result is { Success: true })
+            {
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else if (result is not null)
+            {
+                _errorMessage = result.Error ?? "Authentication failed. Please try again.";
+                StateHasChanged();
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            _popupBlocked = true;
+            _blockedToastMessage = "Pop-up blocked. Redirecting to login...";
+            StateHasChanged();
+        }
+        catch (JSException)
+        {
+            _popupBlocked = true;
+            _blockedToastMessage = "Pop-up blocked. Redirecting to login...";
+            StateHasChanged();
+        }
     }
 
     private void HandleDevLogin()
