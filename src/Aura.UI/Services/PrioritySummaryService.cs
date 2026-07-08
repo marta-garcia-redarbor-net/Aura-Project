@@ -9,13 +9,13 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
     private static readonly ActivitySource ActivitySource = new("Aura.UI.PrioritySummary");
     private readonly IDashboardPreviewApiClient _previewApiClient;
     private readonly ICalendarApiClient _calendarApiClient;
-    private readonly IAzureDevOpsPrClient _prClient;
+    private readonly IPullRequestsApiClient _prClient;
     private readonly ILogger<PrioritySummaryService> _logger;
 
     public PrioritySummaryService(
         IDashboardPreviewApiClient previewApiClient,
         ICalendarApiClient calendarApiClient,
-        IAzureDevOpsPrClient prClient,
+        IPullRequestsApiClient prClient,
         ILogger<PrioritySummaryService> logger)
     {
         _previewApiClient = previewApiClient;
@@ -63,7 +63,7 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
     private static List<PrioritySummaryCard> BuildCards(
         DashboardPreviewResponse preview,
         IReadOnlyList<UpcomingMeetingResponse> calendar,
-        List<PullRequestResponse> prs)
+        IReadOnlyList<PullRequestResponse> prs)
     {
         var allItems = preview.InboxGroups
             .SelectMany(g => g.Items)

@@ -27,7 +27,8 @@ internal sealed class HttpContextCurrentUserService : ICurrentUserService
         if (principal?.Identity?.IsAuthenticated != true)
             return null;
 
-        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = principal.FindFirstValue(EntraIdClaims.ObjectId)
+            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
             return null;
 

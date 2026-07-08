@@ -34,41 +34,63 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        await TryConnectWithRetryAsync();
+    }
+
+    private async Task TryConnectWithRetryAsync(int maxRetries = 3, int delayMs = 1000)
+    {
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            var token = await TokenService.AcquireTokenAsync();
-            
-            var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
-                          ?? string.Empty;
-            var hubUrl = string.IsNullOrEmpty(baseUrl)
-                ? "/hubs/alerts"
-                : $"{baseUrl}/hubs/alerts";
-
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl(hubUrl, options =>
-                {
-                    options.AccessTokenProvider = () => Task.FromResult(token)!;
-                })
-                .WithAutomaticReconnect()
-                .Build();
-
-            _hubConnection.On<MeetingAlertInfo>("MeetingAlert", alert =>
+            try
             {
-                _currentAlert = alert;
-                InvokeAsync(async () =>
+                var token = await TokenService.AcquireTokenAsync();
+                
+                if (string.IsNullOrEmpty(token))
                 {
-                    StateHasChanged();
-                    await ShowBrowserNotification(alert);
-                    await PlayAlertSound();
-                });
-            });
+                    Console.WriteLine($"SignalR: Token not available for meeting toast (attempt {attempt}/{maxRetries})");
+                    if (attempt < maxRetries)
+                        await Task.Delay(delayMs);
+                    continue;
+                }
 
-            await _hubConnection.StartAsync();
+                var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
+                              ?? string.Empty;
+                var hubUrl = string.IsNullOrEmpty(baseUrl)
+                    ? "/hubs/alerts"
+                    : $"{baseUrl}/hubs/alerts";
+
+                _hubConnection = new HubConnectionBuilder()
+                    .WithUrl(hubUrl, options =>
+                    {
+                        options.AccessTokenProvider = () => Task.FromResult(token)!;
+                    })
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                _hubConnection.On<MeetingAlertInfo>("MeetingAlert", alert =>
+                {
+                    _currentAlert = alert;
+                    InvokeAsync(async () =>
+                    {
+                        StateHasChanged();
+                        await ShowBrowserNotification(alert);
+                        await PlayAlertSound();
+                    });
+                });
+
+                await _hubConnection.StartAsync();
+                Console.WriteLine("SignalR: Meeting toast connection established");
+                return; // Success
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR: Meeting toast connection failed (attempt {attempt}/{maxRetries}): {ex.Message}");
+                if (attempt < maxRetries)
+                    await Task.Delay(delayMs);
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
-        }
+        
+        Console.WriteLine("SignalR: Failed to establish meeting toast connection after all retries - meeting alerts will not be shown");
     }
 
     private async Task ShowBrowserNotification(MeetingAlertInfo alert)

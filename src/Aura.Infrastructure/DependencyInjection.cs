@@ -16,9 +16,11 @@ using Aura.Infrastructure.Adapters.Decisions;
 using Aura.Infrastructure.Adapters.FocusState;
 using Aura.Infrastructure.Adapters.Services;
 using Aura.Infrastructure.Adapters.Services.Rules;
+using Aura.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace Aura.Infrastructure;
@@ -111,9 +113,31 @@ public static class DependencyInjection
         });
 
         services.AddHealthChecks()
-            .AddCheck<QdrantHealthCheck>("qdrant");
+            .AddCheck<QdrantHealthCheck>("qdrant")
+            .Add(new HealthCheckRegistration(
+                "database",
+                sp =>
+                {
+                    var cfg = sp.GetRequiredService<IConfiguration>();
+                    var env = sp.GetRequiredService<IHostEnvironment>();
+                    var connString = ResolveDbPath(cfg, env, "Aura");
+                    return new DbHealthCheck(connString);
+                },
+                failureStatus: null,
+                tags: null));
+
+        // EF Core schema initializer — must run before SeedData to ensure tables exist
+        if (string.Equals(configuration["Persistence:Provider"], "EntityFramework", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<EfSchemaInitializer>();
+            // Insert at the beginning so it runs before SeedDataHostedService
+            services.AddHostedService(sp => sp.GetRequiredService<EfSchemaInitializer>());
+        }
 
         AddSeedDataIfDevelopment(services, configuration, environment);
+
+        // Demo mode — conditionally registers fallback semantic handlers and DemoService
+        services.AddDemoMode(configuration);
 
         return services;
     }
@@ -155,6 +179,14 @@ public static class DependencyInjection
         IHostEnvironment environment)
     {
         if (!environment.IsDevelopment())
+        {
+            return;
+        }
+
+        // When Demo Mode is enabled, skip SeedData to avoid duplicate data.
+        // Demo data is loaded on-demand via demo endpoints and simulation.
+        var demoEnabled = configuration.GetValue<bool>("DemoMode:Enabled");
+        if (demoEnabled)
         {
             return;
         }

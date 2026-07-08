@@ -38,7 +38,9 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                 Status TEXT NOT NULL,
                 CreatedAt TEXT NOT NULL,
                 UpdatedAt TEXT NULL,
-                FaultReason TEXT NULL
+                FaultReason TEXT NULL,
+                PriorityScore INTEGER NULL,
+                OwnerUserId TEXT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_WorkItems_ExternalId
                 ON WorkItems (ExternalId);
@@ -70,6 +72,18 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         {
             // Column already exists — ignore
         }
+
+        // Migration: add OwnerUserId column
+        try
+        {
+            using var migrateCmd = connection.CreateCommand();
+            migrateCmd.CommandText = "ALTER TABLE WorkItems ADD COLUMN OwnerUserId TEXT NULL;";
+            migrateCmd.ExecuteNonQuery();
+        }
+        catch
+        {
+            // Column already exists — ignore
+        }
     }
 
     public Task<WorkItem?> FindByExternalIdAsync(string externalId, CancellationToken ct)
@@ -79,7 +93,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore, OwnerUserId
             FROM WorkItems
             WHERE ExternalId = @ExternalId
             """;
@@ -101,9 +115,11 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
             INSERT INTO WorkItems (Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
-                                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason, PriorityScore)
+                                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, 
+                                   FaultReason, PriorityScore, OwnerUserId)
             VALUES (@Id, @ExternalId, @Title, @Source, @SourceType, @Priority, @MetadataJson,
-                    @CorrelationId, @CapturedAtUtc, @SchemaVersion, @Status, @CreatedAt, @FaultReason, @PriorityScore)
+                    @CorrelationId, @CapturedAtUtc, @SchemaVersion, @Status, @CreatedAt, 
+                    @FaultReason, @PriorityScore, @OwnerUserId)
             ON CONFLICT(ExternalId) DO UPDATE SET
                 Title = excluded.Title,
                 Source = excluded.Source,
@@ -112,7 +128,8 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
                 CapturedAtUtc = excluded.CapturedAtUtc,
                 Status = excluded.Status,
                 FaultReason = excluded.FaultReason,
-                PriorityScore = excluded.PriorityScore;
+                PriorityScore = excluded.PriorityScore,
+                OwnerUserId = excluded.OwnerUserId;
             """;
         cmd.Parameters.AddWithValue("@Id", item.Id.ToString());
         cmd.Parameters.AddWithValue("@ExternalId", item.ExternalId);
@@ -128,6 +145,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         cmd.Parameters.AddWithValue("@CreatedAt", item.CreatedAt.ToString("O"));
         cmd.Parameters.AddWithValue("@FaultReason", (object?)item.FaultReason ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@PriorityScore", (object?)item.PriorityScore ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@OwnerUserId", (object?)item.OwnerUserId ?? DBNull.Value);
         cmd.ExecuteNonQuery();
 
         return Task.FromResult(WorkItemPersistenceResult.Success());
@@ -143,7 +161,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
             SELECT Id, ExternalId, Title, Source, SourceType, Priority, MetadataJson,
-                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason, PriorityScore
+                   CorrelationId, CapturedAtUtc, SchemaVersion, Status, CreatedAt, FaultReason, PriorityScore, OwnerUserId
             FROM WorkItems
             WHERE SourceType = @SourceType
               AND (@Status IS NULL OR Status = @Status)
@@ -203,8 +221,15 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
             cmd.Parameters.AddWithValue("@Status", statusFilter.Value.ToString());
         }
 
+        // Filter by OwnerUserId: only items owned by the query user, or items visible to all
+        if (!string.IsNullOrEmpty(query.UserId))
+        {
+            whereClause += " AND (OwnerUserId IS NULL OR OwnerUserId = @UserId)";
+            cmd.Parameters.AddWithValue("@UserId", query.UserId);
+        }
+
         cmd.CommandText = $"""
-            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore
+            SELECT ExternalId, Title, Source, SourceType, Priority, MetadataJson, CorrelationId, CapturedAtUtc, PriorityScore, OwnerUserId
             FROM WorkItems
             WHERE {whereClause}
             ORDER BY CapturedAtUtc DESC;
@@ -319,7 +344,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
 
     /// <summary>Reads a single WorkItem from the current row of a SqliteDataReader.
     /// Assumes columns: 0=ExternalId, 1=Title, 2=Source, 3=SourceType, 4=Priority,
-    /// 5=MetadataJson, 6=CorrelationId, 7=CapturedAtUtc, 8=PriorityScore (nullable).</summary>
+    /// 5=MetadataJson, 6=CorrelationId, 7=CapturedAtUtc, 8=PriorityScore (nullable), 9=OwnerUserId (nullable).</summary>
     private static WorkItem ReadWorkItemFromReader(SqliteDataReader reader)
     {
         var externalId = reader.GetString(0);
@@ -333,7 +358,8 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
         var correlationId = reader.GetString(6);
         var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(7));
         int? priorityScore = reader.IsDBNull(8) ? null : reader.GetInt32(8);
+        string? ownerUserId = reader.IsDBNull(9) ? null : reader.GetString(9);
 
-        return new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore);
+        return new WorkItem(externalId, title, source, sourceType, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore, ownerUserId: ownerUserId);
     }
 }

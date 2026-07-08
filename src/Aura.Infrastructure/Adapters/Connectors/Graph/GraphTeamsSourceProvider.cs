@@ -87,6 +87,7 @@ internal sealed partial class GraphTeamsSourceProvider : IMessageSourceProvider<
                 ChannelId = null,
                 MessageUrl = chat.WebUrl,
                 WebUrl = chat.WebUrl,
+                UserOid = request.Identity.UserOid,
                 Sender = chat.LastMessagePreview?.From?.User?.DisplayName,
                 BodyPreview = chat.LastMessagePreview?.Body?.Content?.Length > 200
                     ? chat.LastMessagePreview.Body.Content[..200]

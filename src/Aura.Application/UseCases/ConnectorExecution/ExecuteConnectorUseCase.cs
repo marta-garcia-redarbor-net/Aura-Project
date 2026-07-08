@@ -20,6 +20,7 @@ public sealed partial class ExecuteConnectorUseCase
     private readonly ILogger<ExecuteConnectorUseCase> _logger;
     private readonly Func<DateTimeOffset> _utcNow;
     private readonly IInterruptionPolicyEngine _interruptionEngine;
+    private readonly IDashboardRefreshDispatcher _dashboardRefreshDispatcher;
     private readonly INotificationOutboxStore _outboxStore;
 
     public ExecuteConnectorUseCase(
@@ -33,6 +34,7 @@ public sealed partial class ExecuteConnectorUseCase
             new NoopWorkItemBuffer(),
             new NoopWorkItemStore(),
             new NoopInterruptionEngine(),
+            new NoopDashboardRefreshDispatcher(),
             new NoopNotificationOutboxStore(),
             logger,
             utcNow)
@@ -52,6 +54,7 @@ public sealed partial class ExecuteConnectorUseCase
             workItemBuffer,
             workItemStore,
             new NoopInterruptionEngine(),
+            new NoopDashboardRefreshDispatcher(),
             new NoopNotificationOutboxStore(),
             logger,
             utcNow)
@@ -64,6 +67,7 @@ public sealed partial class ExecuteConnectorUseCase
         IWorkItemBuffer workItemBuffer,
         IWorkItemStore workItemStore,
         IInterruptionPolicyEngine interruptionEngine,
+        IDashboardRefreshDispatcher dashboardRefreshDispatcher,
         INotificationOutboxStore outboxStore,
         ILogger<ExecuteConnectorUseCase> logger,
         Func<DateTimeOffset>? utcNow = null)
@@ -73,6 +77,7 @@ public sealed partial class ExecuteConnectorUseCase
         ArgumentNullException.ThrowIfNull(workItemBuffer);
         ArgumentNullException.ThrowIfNull(workItemStore);
         ArgumentNullException.ThrowIfNull(interruptionEngine);
+        ArgumentNullException.ThrowIfNull(dashboardRefreshDispatcher);
         ArgumentNullException.ThrowIfNull(outboxStore);
         ArgumentNullException.ThrowIfNull(logger);
 
@@ -81,6 +86,7 @@ public sealed partial class ExecuteConnectorUseCase
         _workItemBuffer = workItemBuffer;
         _workItemStore = workItemStore;
         _interruptionEngine = interruptionEngine;
+        _dashboardRefreshDispatcher = dashboardRefreshDispatcher;
         _outboxStore = outboxStore;
         _logger = logger;
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
@@ -118,6 +124,11 @@ public sealed partial class ExecuteConnectorUseCase
                 InterruptionDecision.Queue,
                 new EvaluationReport([]),
                 triggerRule: "NoopEngine"));
+    }
+
+    private sealed class NoopDashboardRefreshDispatcher : IDashboardRefreshDispatcher
+    {
+        public Task DispatchAsync(string? userId, CancellationToken ct) => Task.CompletedTask;
     }
 
     private sealed class NoopNotificationOutboxStore : INotificationOutboxStore
@@ -213,6 +224,7 @@ public sealed partial class ExecuteConnectorUseCase
 
             // After successful persistence, evaluate interruption and enqueue notification
             await EvaluateAndEnqueueAsync(item, ct);
+            await _dashboardRefreshDispatcher.DispatchAsync(item.OwnerUserId, ct);
         }
 
         if (failureReasons.Count == 0)

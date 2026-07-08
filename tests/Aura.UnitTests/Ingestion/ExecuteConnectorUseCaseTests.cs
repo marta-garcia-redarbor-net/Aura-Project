@@ -613,6 +613,7 @@ public class ExecuteConnectorUseCaseTests
         var store = Substitute.For<IWorkItemStore>();
         store.SaveAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>()).Returns(WorkItemPersistenceResult.Success());
         var outbox = Substitute.For<INotificationOutboxStore>();
+        var dashboardRefresh = Substitute.For<IDashboardRefreshDispatcher>();
 
         var engine = Substitute.For<IInterruptionPolicyEngine>();
         engine.EvaluateAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>())
@@ -626,6 +627,7 @@ public class ExecuteConnectorUseCaseTests
             buffer,
             store,
             engine,
+            dashboardRefresh,
             outbox,
             new RecordingLogger<ExecuteConnectorUseCase>());
 
@@ -653,6 +655,7 @@ public class ExecuteConnectorUseCaseTests
         var store = Substitute.For<IWorkItemStore>();
         store.SaveAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>()).Returns(WorkItemPersistenceResult.Success());
         var outbox = Substitute.For<INotificationOutboxStore>();
+        var dashboardRefresh = Substitute.For<IDashboardRefreshDispatcher>();
 
         var engine = Substitute.For<IInterruptionPolicyEngine>();
         engine.EvaluateAsync(Arg.Any<WorkItem>(), Arg.Any<CancellationToken>())
@@ -669,6 +672,7 @@ public class ExecuteConnectorUseCaseTests
             buffer,
             store,
             engine,
+            dashboardRefresh,
             outbox,
             new RecordingLogger<ExecuteConnectorUseCase>());
 

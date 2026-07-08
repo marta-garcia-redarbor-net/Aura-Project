@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using System.Net;
 
 namespace Aura.UnitTests.Dashboard;
 
@@ -34,6 +35,16 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
     {
         Services.AddAuthorizationCore();
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
+        Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+
+        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        var httpClient = new HttpClient(new StubHttpMessageHandler())
+        {
+            BaseAddress = new Uri("http://localhost:5180/")
+        };
+        httpClientFactory.CreateClient("AuraApi").Returns(httpClient);
+        Services.AddSingleton(httpClientFactory);
 
         var summary = Substitute.For<IPrioritySummaryService>();
         summary.GetCardsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(new List<PrioritySummaryCard>()));
@@ -42,6 +53,15 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         var previewClient = Substitute.For<IDashboardPreviewApiClient>();
         previewClient.GetPreviewAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(preview));
         Services.AddSingleton(previewClient);
+    }
+
+    private sealed class StubHttpMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"enabled\":true}")
+            });
     }
 
     [Fact]

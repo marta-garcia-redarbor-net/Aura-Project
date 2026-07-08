@@ -30,6 +30,7 @@ public class PrioritySummaryCardsRenderingTests : TestContext
 
     private void RegisterService(List<PrioritySummaryCard> cards)
     {
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         var service = Substitute.For<IPrioritySummaryService>();
         service.GetCardsAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(cards));

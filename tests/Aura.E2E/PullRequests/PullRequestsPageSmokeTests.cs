@@ -169,6 +169,10 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 services.RemoveAll<IAzureDevOpsPrClient>();
                 services.AddScoped(_ => prClient);
 
+                // The page now uses IPullRequestsApiClient — bridge from the existing stub
+                services.RemoveAll<IPullRequestsApiClient>();
+                services.AddScoped<IPullRequestsApiClient>(_ => new PullRequestsApiClientBridge(prClient));
+
                 // Stub out other required services
                 services.RemoveAll<IDashboardPreviewApiClient>();
                 services.RemoveAll<ICalendarApiClient>();
@@ -230,6 +234,18 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
     {
         public Task<List<PullRequestResponse>> GetPendingPullRequestsAsync(CancellationToken ct)
             => Task.FromException<List<PullRequestResponse>>(new HttpRequestException("Connection refused"));
+    }
+
+    /// <summary>
+    /// Bridge from legacy IAzureDevOpsPrClient to IPullRequestsApiClient for E2E tests.
+    /// Preserves existing StubPrClient/ThrowingPrClient while the page uses the new port.
+    /// </summary>
+    private sealed class PullRequestsApiClientBridge : IPullRequestsApiClient
+    {
+        private readonly IAzureDevOpsPrClient _inner;
+        public PullRequestsApiClientBridge(IAzureDevOpsPrClient inner) => _inner = inner;
+        public async Task<IReadOnlyList<PullRequestResponse>> GetPendingPullRequestsAsync(CancellationToken ct = default)
+            => await _inner.GetPendingPullRequestsAsync(ct);
     }
 
     private sealed class StubPreviewClient : IDashboardPreviewApiClient

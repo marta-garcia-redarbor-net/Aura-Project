@@ -73,7 +73,8 @@ internal sealed class OutlookWorkItemMapper
             priority: priority,
             metadata: metadata,
             correlationId: email.CorrelationId,
-            capturedAtUtc: email.ReceivedDateTime);
+            capturedAtUtc: email.ReceivedDateTime,
+            ownerUserId: email.UserOid);
 
         return true;
     }
@@ -98,6 +99,11 @@ internal sealed class OutlookWorkItemMapper
         {
             metadata[WorkItemSignalKeys.OutlookSender] = email.SenderAddress;
             metadata[WorkItemSignalKeys.CanonicalSender] = email.SenderAddress;
+        }
+
+        if (!string.IsNullOrWhiteSpace(email.UserOid))
+        {
+            metadata[WorkItemSignalKeys.TargetOwnerUserId] = email.UserOid;
         }
 
         if (!string.IsNullOrWhiteSpace(email.ConversationId))

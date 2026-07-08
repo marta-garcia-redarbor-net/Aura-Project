@@ -2400,3 +2400,64 @@ a {
     background: var(--aura-priority-low);
     color: #fff;
 }
+
+/* ============================================================
+   New-item highlight animation
+   Items get a brief pulse when they first appear in the DOM.
+   ============================================================ */
+@keyframes new-item-pulse {
+    0%   { background-color: rgba(255, 200, 50, 0.25); transform: translateX(-4px); }
+    50%  { background-color: rgba(255, 200, 50, 0.10); }
+    100% { background-color: transparent; transform: translateX(0); }
+}
+
+.demo-new-item {
+    animation: new-item-pulse 2s ease-out;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: 2px -8px;
+    transition: background-color 0.3s ease;
+}
+
+.demo-new-item:hover {
+    background-color: rgba(255, 200, 50, 0.08);
+}
+
+/* Badge for "new" items */
+.demo-new-badge {
+    display: inline-block;
+    background: #ffc832;
+    color: #1a1a2e;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: new-item-pulse 2s ease-out;
+}
+
+/* Demo mode bar */
+.demo-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #ffc83215, #ff8c0015);
+    border: 1px solid #ffc83240;
+    border-radius: 8px;
+}
+
+.demo-bar__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b8860b;
+}
+
+.demo-bar__message {
+    font-size: 0.8rem;
+    color: #666;
+    margin-left: auto;
+}

@@ -41,10 +41,10 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
             .Returns(_ => Task.Delay(5000, _.Arg<CancellationToken>())
-                .ContinueWith(_ => new List<PullRequestResponse>()));
+                .ContinueWith(_ => (IReadOnlyList<PullRequestResponse>)Array.Empty<PullRequestResponse>()));
         Services.AddSingleton(prClient);
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
@@ -62,9 +62,9 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new List<PullRequestResponse>()));
+            .Returns(Task.FromResult<IReadOnlyList<PullRequestResponse>>(Array.Empty<PullRequestResponse>()));
         Services.AddSingleton(prClient);
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
@@ -83,7 +83,7 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         var prs = new List<PullRequestResponse>
         {
             new(
@@ -130,7 +130,7 @@ public class PullRequestsPageTests : TestContext
             )
         };
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(prs));
+            .Returns(Task.FromResult<IReadOnlyList<PullRequestResponse>>(prs));
         Services.AddSingleton(prClient);
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
@@ -162,9 +162,9 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new List<PullRequestResponse>
+            .Returns(Task.FromResult<IReadOnlyList<PullRequestResponse>>(new List<PullRequestResponse>
             {
                 new(
                     Id: 142,
@@ -206,9 +206,9 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<List<PullRequestResponse>>(new HttpRequestException("Connection failed")));
+            .Returns(Task.FromException<IReadOnlyList<PullRequestResponse>>(new HttpRequestException("Connection failed")));
         Services.AddSingleton(prClient);
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
@@ -228,9 +228,9 @@ public class PullRequestsPageTests : TestContext
     {
         // Arrange
         SetupAuthorization();
-        var prClient = Substitute.For<IAzureDevOpsPrClient>();
+        var prClient = Substitute.For<IPullRequestsApiClient>();
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new List<PullRequestResponse>
+            .Returns(Task.FromResult<IReadOnlyList<PullRequestResponse>>(new List<PullRequestResponse>
             {
                 new(142, "PR 1", "Aura", "Alice",
                     DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow,

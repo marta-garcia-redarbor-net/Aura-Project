@@ -92,6 +92,7 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
                     : msg.BodyPreview,
                 ReceivedDateTime = msg.ReceivedDateTime,
                 ConversationId = msg.ConversationId,
+                UserOid = request.Identity.UserOid,
                 WebLink = msg.WebLink,
                 IsRead = msg.IsRead ?? false
             };

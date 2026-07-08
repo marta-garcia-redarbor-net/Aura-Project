@@ -23,6 +23,7 @@ else
     builder.Services.Configure<ConnectorExecutionOptions>(builder.Configuration.GetSection("ConnectorExecution"));
     builder.Services.AddHostedService<Worker>();
     builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
+    builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
     builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
