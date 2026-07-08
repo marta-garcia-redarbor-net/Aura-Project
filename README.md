@@ -191,7 +191,7 @@ Los conectores de Teams, Outlook y Calendar llaman a Microsoft Graph **con el to
 
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
-| ⭐ **Evaluador TFM** | `evaluador.tfm@garciasanmartagmail.onmicrosoft.com` | `AuraTFM2024!` |
+| ⭐ **Evaluador TFM** | Se proporciona en el formulario de entrega del TFM | Se proporciona en el formulario de entrega del TFM |
 | 🛠️ **Admin Azure** | Tu cuenta personal | La de tu cuenta Microsoft |
 
 > **Nota:** La aplicación está desplegada en Azure Container Apps. Si al acceder no responde, puede estar detenida para ahorrar costes. Ejecuta `./scripts/start-aura.ps1` desde el repositorio para iniciarla y espera 1-2 minutos.

@@ -39,10 +39,46 @@ Reglas que todo agente debe respetar al trabajar en el código de Aura. Son no n
 
 ## Reglas de seguridad
 
+### Principios generales
+
 - Autenticación recomendada: **Managed Identity / Entra ID** para Graph, **GitHub App** para PRs.
-- Validar toda entrada antes de procesar.
+- Validar toda entrada antes de procesar (OWASP Input Validation).
 - No loguear secretos, tokens ni PII.
 - Aplicar least privilege en permisos de Graph y GitHub.
+- No committear credenciales, tokens, API keys ni secretos en el repositorio.
+
+### OWASP Top 10 — Cobertura obligatoria
+
+| OWASP | Medida | Verificación |
+|-------|--------|-------------|
+| **A01** Broken Access Control | Endpoints requieren auth por defecto; autorización explícita por rol | Cada endpoint nuevo debe tener `.RequireAuthorization()` o justificación documentada |
+| **A02** Cryptographic Failures | HTTPS en producción, JWT con algoritmo seguro, secrets fuera del repo | Todo endpoint en producción debe servir por HTTPS |
+| **A03** Injection | Consultas parametrizadas (SQLite/EF Core), FluentValidation en DTOs | No concatenar strings en queries SQL |
+| **A04** Insecure Design | Rate limiting, validación de entrada, principio de mínimo privilegio | Toda entrada de usuario pasa por validador |
+| **A05** Security Misconfiguration | Security headers (CSP, X-Frame-Options, HSTS), CORS acotado | No deshabilitar security headers sin aprobación |
+| **A06** Vulnerable Components | Dependabot semanal + `dotnet list package --vulnerable` en CI | No mergear PRs con vulnerabilidades critical/high |
+| **A07** Identification/Auth Failures | Entra ID delegado, MSAL token cache, renovación silent | No implementar auth custom ni almacenar passwords |
+| **A09** Logging/Monitoring | Correlation ID en toda request, logs estructurados, panel de errores | Cada flujo completo debe tener trazabilidad |
+
+### MITRE ATT&CK — Defensas implementadas
+
+| Táctica MITRE | Defensa en Aura |
+|---------------|-----------------|
+| **TA0001** Initial Access | Autenticación Entra ID delegada; sin endpoints públicos sin auth |
+| **TA0005** Defense Evasion | Logs estructurados con correlation ID; auditoría de decisiones de triaje |
+| **TA0006** Credential Access | Secrets fuera del repo; MSAL cache en SQLite cifrada por el SO |
+| **TA0007** Discovery | Rate limiting evita enumeración de endpoints |
+| **TA0009** Collection | CORS acotado impide exfiltración desde otros orígenes |
+| **TA0010** Exfiltration | Rate limiting + security headers mitigan filtración de datos |
+
+### Checklist pre-commit para el agente
+
+- [ ] ¿El código expone credenciales, tokens o secretos?
+- [ ] ¿Las queries usan parámetros (no concatenación)?
+- [ ] ¿Los endpoints nuevos requieren autenticación?
+- [ ] ¿Las respuestas HTTP incluyen security headers?
+- [ ] ¿Los DTOs de entrada tienen validación?
+- [ ] ¿Se ha ejecutado `dotnet list package --vulnerable` y no hay critical/high?
 
 ---
 

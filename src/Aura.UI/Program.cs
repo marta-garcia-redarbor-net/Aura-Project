@@ -7,6 +7,7 @@ using Aura.UI.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Identity.Client;
 
@@ -232,7 +233,20 @@ public static class Program
             pullRequestsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
+        // ACA/Load Balancer proxy: trust X-Forwarded-Proto and X-Forwarded-Host
+        // so the OIDC middleware generates HTTPS redirect URIs even though
+        // ACA terminates SSL at the edge and forwards HTTP to the container.
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+            // Only trust known proxies — ACA env is implicitly known.
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
         var app = builder.Build();
+
+        app.UseForwardedHeaders();
 
         if (!app.Environment.IsDevelopment())
         {
