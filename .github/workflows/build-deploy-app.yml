@@ -21,7 +21,6 @@ on:
 
 env:
   AZURE_RESOURCE_GROUP: aura-rg
-  REGISTRY_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
 
 jobs:
   build:
@@ -39,25 +38,24 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and Push to ACR
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Login to ACR via az
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
 
       - name: Build Image
         run: |
+          ACR=${{ secrets.ACR_NAME }}.azurecr.io
           TAG="${{ github.event.inputs.imageTag || github.sha }}"
           docker build \
             -f src/${{ matrix.service }}/Dockerfile \
-            -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}:$TAG \
-            -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}:latest \
+            -t $ACR/${{ matrix.service }}:$TAG \
+            -t $ACR/${{ matrix.service }}:latest \
             .
 
       - name: Push Image
         run: |
-          docker push --all-tags ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.service }}
+          ACR=${{ secrets.ACR_NAME }}.azurecr.io
+          docker push --all-tags $ACR/${{ matrix.service }}
 
   deploy:
     needs: build
@@ -76,19 +74,20 @@ jobs:
 
       - name: Deploy to ACA
         run: |
+          ACR=${{ secrets.ACR_NAME }}.azurecr.io
           TAG="${{ github.event.inputs.imageTag || github.sha }}"
 
           az containerapp update \
             --name aura-api-dev \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-api:$TAG
+            --image $ACR/aura-api:$TAG
 
           az containerapp update \
             --name aura-ui-dev \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-ui:$TAG
+            --image $ACR/aura-ui:$TAG
 
           az containerapp update \
             --name aura-workers-dev \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY_LOGIN_SERVER }}/aura-workers:$TAG
+            --image $ACR/aura-workers:$TAG
