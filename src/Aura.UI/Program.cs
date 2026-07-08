@@ -20,7 +20,7 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddRazorComponents()
-            .AddInteractiveServerComponents(o => o.DetailedErrors = true);
+            .AddInteractiveServerComponents();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
