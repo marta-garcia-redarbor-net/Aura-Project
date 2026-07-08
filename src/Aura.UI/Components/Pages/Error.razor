@@ -1,0 +1,13 @@
+@page "/Error"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@attribute [AllowAnonymous]
+@layout AnonymousLayout
+
+<div class="error-container">
+    <h1>Something went wrong</h1>
+    <p>An unhandled error occurred while processing your request.</p>
+    <p>
+        <a href="/">Return to home</a>
+    </p>
+</div>
