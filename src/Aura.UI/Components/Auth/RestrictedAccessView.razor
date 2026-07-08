@@ -52,5 +52,29 @@
             }
         </div>
 
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="login-card__error" data-testid="login-error">
+                @_errorMessage
+            </div>
+        }
+
+        @if (_popupBlocked)
+        {
+            <div class="login-card__blocked-message" data-testid="popup-blocked-message">
+                <p>Pop-ups blocked. Allow pop-ups for this site, or
+                    <a href="javascript:void(0)" @onclick="HandleFallbackRedirect" data-testid="fallback-redirect-link">
+                        click here to sign in directly
+                    </a>.
+                </p>
+            </div>
+        }
     </div>
+
+    @if (!string.IsNullOrEmpty(_blockedToastMessage))
+    {
+        <div class="login-card__error" data-testid="blocked-toast" style="position:fixed;bottom:24px;right:24px;z-index:1002;">
+            @_blockedToastMessage
+        </div>
+    }
 </div>
