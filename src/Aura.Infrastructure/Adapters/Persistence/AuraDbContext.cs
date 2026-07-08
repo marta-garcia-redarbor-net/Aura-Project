@@ -5,7 +5,7 @@ using Aura.Application.Models;
 using Aura.Domain.SemanticIndex.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Aura.Infrastructure.Persistence;
+namespace Aura.Infrastructure.Adapters.Persistence;
 
 /// <summary>
 /// Single <see cref="DbContext"/> for all Aura data stores in Azure SQL.
