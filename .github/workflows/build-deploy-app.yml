@@ -71,9 +71,17 @@ jobs:
     needs: build
     if: ${{ github.event.inputs.deployToAca != 'false' }}
     runs-on: ubuntu-latest
+    environment: dev
+    strategy:
+      matrix:
+        include:
+          - service: aura-api
+            acaName: aura-api-dev
+          - service: aura-ui
+            acaName: aura-ui-dev
+          - service: aura-workers
+            acaName: aura-workers-dev
     steps:
-      - uses: actions/checkout@v4
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -81,22 +89,21 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Debug Azure context
+        run: |
+          echo "=== Azure context ==="
+          az account show --query "{sub:name, subId:id, tenantId:tenantId}" -o json
+          echo "=== Resource group ==="
+          az group exists -n ${{ env.AZURE_RESOURCE_GROUP }}
+          echo "=== Container apps ==="
+          az containerapp list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "[].name" -o tsv
+
       - name: Deploy to ACA
         run: |
           ACR=${{ secrets.ACR_NAME }}.azurecr.io
           TAG="${{ github.event.inputs.imageTag || github.sha }}"
-
+          echo "Deploying ${{ matrix.service }} to ${{ matrix.acaName }}..."
           az containerapp update \
-            --name aura-api-dev \
+            --name ${{ matrix.acaName }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image $ACR/aura-api:$TAG
-
-          az containerapp update \
-            --name aura-ui-dev \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image $ACR/aura-ui:$TAG
-
-          az containerapp update \
-            --name aura-workers-dev \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image $ACR/aura-workers:$TAG
+            --image $ACR/${{ matrix.service }}:$TAG
