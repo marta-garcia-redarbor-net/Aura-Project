@@ -28,6 +28,12 @@ public sealed class WorkItem
     /// </summary>
     public int? PriorityScore { get; }
 
+    /// <summary>
+    /// The user who owns / is assigned this work item.
+    /// Null means visible to all users (backward compat for seed data).
+    /// </summary>
+    public string? OwnerUserId { get; }
+
     public WorkItem(
         string externalId,
         string title,
@@ -37,7 +43,8 @@ public sealed class WorkItem
         IReadOnlyDictionary<string, string> metadata,
         string? correlationId = null,
         DateTimeOffset? capturedAtUtc = null,
-        int? priorityScore = null)
+        int? priorityScore = null,
+        string? ownerUserId = null)
     {
         if (string.IsNullOrWhiteSpace(externalId))
             throw new ArgumentException("ExternalId must not be null or empty.", nameof(externalId));
@@ -68,6 +75,7 @@ public sealed class WorkItem
         SchemaVersion = CurrentSchemaVersion;
         Status = WorkItemStatus.Pending;
         CreatedAt = DateTimeOffset.UtcNow;
+        OwnerUserId = ownerUserId;
     }
 
     /// <summary>Transition from <see cref="WorkItemStatus.Pending"/> to <see cref="WorkItemStatus.Processing"/>.</summary>

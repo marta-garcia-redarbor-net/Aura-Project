@@ -1,12 +1,18 @@
 @page "/"
 @using Microsoft.AspNetCore.Components.Authorization
 @using Aura.UI.Components.Auth
+@using Aura.UI.Services
+@using System.Net.Http.Json
 @inject IDashboardPreviewApiClient DashboardPreviewApiClient
 @inject NavigationManager Navigation
+@inject IDashboardEventBus EventBus
+@inject IHttpClientFactory HttpClientFactory
+@inject IDashboardRealtimeStatus RealtimeStatus
+@implements IDisposable
 
 <AuthorizeView>
-        <Authorized>
-            <PageTitle>Aura - Priority Dashboard</PageTitle>
+    <Authorized>
+        <PageTitle>Aura - Priority Dashboard</PageTitle>
 
         @if (_showLoginOverlay)
         {
@@ -18,20 +24,44 @@
                 <div>
                     <h1 class="dashboard-page-header__title">Priority Dashboard</h1>
                 </div>
-                <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
-                        data-testid="priority-dashboard-top-priority-counter"
-                        @onclick="NavigateToTopPriority"
-                        aria-label="Open top priority queue"
-                        title="Open top priority queue">
-                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
-                          data-testid="priority-dashboard-pending-badge">
-                        @_previewSummary?.TotalPendingCount pending
-                    </span>
-                    <span class="dashboard-page-header__badge dashboard-page-header__badge--high"
-                          data-testid="priority-dashboard-high-badge">
-                        @_previewSummary?.HighPriorityCount high priority
-                    </span>
-                </button>
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    @if (_demoAvailable)
+                    {
+                        <div class="demo-bar" style="margin-bottom:0;padding:0.35rem 0.75rem;">
+                            <span class="demo-bar__label" style="font-size:0.8rem;">🧪 Demo</span>
+                            <button class="btn btn-sm btn-outline-primary" disabled="@_simulationRunning" @onclick="StartSimulationAsync" style="font-size:0.75rem;padding:2px 8px;">
+                                @if (_simulationRunning) { <text>⏳</text> } else { <text>▶ Iniciar</text> }
+                            </button>
+                            @if (!string.IsNullOrEmpty(_simulationMessage))
+                            {
+                                <span class="demo-bar__message" style="font-size:0.75rem;">@_simulationMessage</span>
+                            }
+                            <span class="demo-bar__message" style="font-size:0.75rem;">
+                                SignalR: @(RealtimeStatus.IsConnected ? "connected" : RealtimeStatus.LastState)
+                            </span>
+                            @if (RealtimeStatus.LastRefreshUtc is not null)
+                            {
+                                <span class="demo-bar__message" style="font-size:0.75rem;">
+                                    refresh @ToRelative(RealtimeStatus.LastRefreshUtc.Value)
+                                </span>
+                            }
+                        </div>
+                    }
+                    <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
+                            data-testid="priority-dashboard-top-priority-counter"
+                            @onclick="NavigateToTopPriority"
+                            aria-label="Open top priority queue"
+                            title="Open top priority queue">
+                        <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
+                              data-testid="priority-dashboard-pending-badge">
+                            @_previewSummary?.TotalPendingCount pending
+                        </span>
+                        <span class="dashboard-page-header__badge dashboard-page-header__badge--high"
+                              data-testid="priority-dashboard-high-badge">
+                            @_previewSummary?.HighPriorityCount high priority
+                        </span>
+                    </button>
+                </div>
             </div>
 
             <PrioritySummaryCards />
@@ -46,8 +76,73 @@
 @code {
     private DashboardPreviewResponse? _previewSummary;
     private bool _showLoginOverlay;
+    private bool _demoAvailable;
+    private bool _simulationRunning;
+    private string? _simulationMessage;
 
     protected override async Task OnInitializedAsync()
+    {
+        EventBus.OnDashboardRefresh += HandleDashboardRefresh;
+        await CheckDemoStatusAsync();
+        await RefreshDataAsync();
+    }
+
+    private async Task CheckDemoStatusAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuraApi");
+            var status = await client.GetFromJsonAsync<DemoStatus>("api/demo/status");
+            _demoAvailable = status?.Enabled == true;
+        }
+        catch
+        {
+            _demoAvailable = false;
+        }
+    }
+
+    private async Task StartSimulationAsync()
+    {
+        _simulationRunning = true;
+        _simulationMessage = null;
+        try
+        {
+            var beforePending = _previewSummary?.TotalPendingCount ?? 0;
+            var client = HttpClientFactory.CreateClient("AuraApi");
+            var response = await client.PostAsync("api/demo/start-simulation", null);
+            response.EnsureSuccessStatusCode();
+            await EventBus.RaiseDashboardRefreshAsync();
+            await RefreshDataAsync();
+            for (var attempt = 0; attempt < 10; attempt++)
+            {
+                await Task.Delay(1000);
+                await EventBus.RaiseDashboardRefreshAsync();
+                await RefreshDataAsync();
+                if ((_previewSummary?.TotalPendingCount ?? 0) > beforePending)
+                {
+                    break;
+                }
+            }
+            await InvokeAsync(StateHasChanged);
+            _simulationMessage = $"✅ Simulación iniciada ({_previewSummary?.TotalPendingCount ?? 0} pending)";
+        }
+        catch
+        {
+            _simulationMessage = "❌ Error al iniciar";
+        }
+        finally
+        {
+            _simulationRunning = false;
+        }
+    }
+
+    private async Task HandleDashboardRefresh()
+    {
+        await RefreshDataAsync();
+        StateHasChanged();
+    }
+
+    private async Task RefreshDataAsync()
     {
         try
         {
@@ -56,11 +151,29 @@
         }
         catch (UnauthorizedAccessException)
         {
-            // Show login overlay with blurred background
             _showLoginOverlay = true;
         }
+        catch
+        {
+            // Keep last known state on transient errors
+        }
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
 
     private void NavigateToTopPriority()
         => Navigation.NavigateTo("/top-priority");
+
+    private static string ToRelative(DateTimeOffset timestamp)
+    {
+        var diff = DateTimeOffset.UtcNow - timestamp;
+        if (diff.TotalSeconds < 60) return $"{Math.Max(0, (int)diff.TotalSeconds)}s ago";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        return $"{(int)diff.TotalHours}h ago";
+    }
+
+    private sealed record DemoStatus(bool Enabled);
 }

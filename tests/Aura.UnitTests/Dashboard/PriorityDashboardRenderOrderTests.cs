@@ -5,6 +5,7 @@ using Aura.UI.Services;
 using Bunit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -31,6 +32,16 @@ public class PriorityDashboardRenderOrderTests : TestContext
     {
         Services.AddAuthorizationCore();
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
+        Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+
+        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        var httpClient = new HttpClient(new StubHttpMessageHandler())
+        {
+            BaseAddress = new Uri("http://localhost:5180/")
+        };
+        httpClientFactory.CreateClient("AuraApi").Returns(httpClient);
+        Services.AddSingleton(httpClientFactory);
 
         var priorityService = Substitute.For<IPrioritySummaryService>();
         priorityService.GetCardsAsync(Arg.Any<CancellationToken>())
@@ -54,6 +65,21 @@ public class PriorityDashboardRenderOrderTests : TestContext
                 TopItems = []
             }));
         Services.AddSingleton(previewClient);
+    }
+
+    private sealed class StubHttpMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var content = request.RequestUri?.AbsolutePath.Contains("/api/demo/status", StringComparison.OrdinalIgnoreCase) == true
+                ? "{\"enabled\":true}"
+                : "{}";
+
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(content)
+            });
+        }
     }
 
     private static AuthenticationState CreateAuthorizedState()

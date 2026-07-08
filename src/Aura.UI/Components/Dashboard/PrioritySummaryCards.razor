@@ -1,6 +1,8 @@
 @using Aura.UI.Models
 @using Aura.UI.Services
 @inject IPrioritySummaryService PrioritySummaryService
+@inject IDashboardEventBus EventBus
+@implements IDisposable
 
 <section class="priority-summary-cards" data-testid="priority-summary-cards" aria-label="Items grouped by source">
     @if (_loadError is not null)
@@ -98,10 +100,15 @@
                             <tbody>
                                 @foreach (var item in card.PrItems!.Take(3))
                                 {
-                                    <tr>
+                                    var prIsNew = EventBus.IsNewItem($"pr-{item.PrDisplayName}");
+                                    <tr class="@(prIsNew ? "demo-new-item" : "")">
                                         <td>
                                             <span class="pr-mini-table__name">@item.PrDisplayName</span>
                                             <span class="pr-mini-table__author">@@@item.Author</span>
+                                            @if (prIsNew)
+                                            {
+                                                <span class="demo-new-badge">NEW</span>
+                                            }
                                         </td>
                                         <td>
                                             <span class="pr-mini-table__branch">@item.BranchName</span>
@@ -140,9 +147,16 @@
                     <ul class="priority-card__items" data-testid="priority-card-preview-items">
                         @foreach (var item in card.PreviewItems!.Take(3))
                         {
-                            <li class="priority-card__item" data-testid="priority-card-item">
+                            var itemIsNew = EventBus.IsNewItem($"{card.CssClass}-{item.Title}");
+                            <li class="priority-card__item @(itemIsNew ? "demo-new-item" : "")" data-testid="priority-card-item">
                                 <span class="priority-card__item-title" data-testid="priority-card-item-title"
-                                      title="@item.Title">@item.Title</span>
+                                      title="@item.Title">
+                                    @item.Title
+                                    @if (itemIsNew)
+                                    {
+                                        <span class="demo-new-badge">NEW</span>
+                                    }
+                                </span>
                                 <div class="priority-card__item-detail">
                                     @if (item.Sender is not null)
                                     {
@@ -208,13 +222,37 @@
 
     protected override async Task OnInitializedAsync()
     {
+        EventBus.OnDashboardRefresh += HandleDashboardRefresh;
+        await LoadCardsAsync();
+    }
+
+    private async Task HandleDashboardRefresh()
+    {
+        await LoadCardsAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadCardsAsync()
+    {
         try
         {
             _cards = await PrioritySummaryService.GetCardsAsync(CancellationToken.None);
+            _loadError = null;
         }
         catch
         {
-            _loadError = "Priority summary is currently unavailable.";
+            _loadError ??= "Priority summary is currently unavailable.";
         }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Refresh manual: limpiar tracking
+        EventBus.ClearTracking();
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
 }

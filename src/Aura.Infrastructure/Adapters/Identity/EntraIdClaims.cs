@@ -4,7 +4,7 @@ namespace Aura.Infrastructure.Adapters.Identity;
 /// Microsoft Entra ID claim type URIs.
 /// Centralized to avoid magic string duplication across identity adapters.
 /// </summary>
-internal static class EntraIdClaims
+public static class EntraIdClaims
 {
     /// <summary>Entra ID object identifier — immutable across tenants and email changes.</summary>
     public const string ObjectId = "http://schemas.microsoft.com/identity/claims/objectidentifier";

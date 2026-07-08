@@ -195,6 +195,12 @@ public static class Program
         calendarHttpClientBuilder.AddStandardResilienceHandler();
         var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
         var decisionLogHttpClientBuilder = AddApiHttpClient<DecisionLogApiClient, IDecisionLogApiClient>(builder.Services, apiBaseUrl);
+        var pullRequestsHttpClientBuilder = AddApiHttpClient<PullRequestsApiClient, IPullRequestsApiClient>(builder.Services, apiBaseUrl);
+        builder.Services.AddHttpClient("AuraApi", client =>
+        {
+            client.BaseAddress = new Uri(apiBaseUrl, UriKind.Absolute);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        }).AddHttpMessageHandler<ForwardedAccessTokenHandler>();
 
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
@@ -202,6 +208,10 @@ public static class Program
 
         // Priority Summary — composes preview + calendar + PRs into source-based cards
         builder.Services.AddScoped<IPrioritySummaryService, PrioritySummaryService>();
+
+        // Dashboard event bus — singleton to share events and item tracking across all components
+        builder.Services.AddSingleton<Aura.UI.Services.IDashboardEventBus, Aura.UI.Services.DashboardEventBus>();
+        builder.Services.AddSingleton<Aura.UI.Services.IDashboardRealtimeStatus, Aura.UI.Services.DashboardRealtimeStatus>();
 
         // PR Review connector — v1 mock client for Azure DevOps PRs
         builder.Services.AddScoped<IAzureDevOpsPrClient, AzureDevOpsPrClient>();
@@ -219,6 +229,7 @@ public static class Program
             workItemsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             focusStateHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             decisionLogHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
+            pullRequestsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         var app = builder.Build();
@@ -313,7 +324,7 @@ public static class Program
                 var principal = new ClaimsPrincipal(identity);
 
                 await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-                ctx.Response.Redirect("/test-dashboard");
+                ctx.Response.Redirect("/");
             }).AllowAnonymous();
         }
 
