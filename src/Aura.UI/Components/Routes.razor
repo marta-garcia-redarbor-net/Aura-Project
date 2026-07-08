@@ -5,10 +5,4 @@
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
-    <NotFound>
-        <PageTitle>Not Found</PageTitle>
-        <LayoutView Layout="@typeof(AnonymousLayout)">
-            <p role="alert">The page you requested was not found.</p>
-        </LayoutView>
-    </NotFound>
 </Router>
