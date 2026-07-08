@@ -38,24 +38,22 @@ No Infrastructure, SDK, or store-technology type MAY appear in the port contract
 
 ---
 
-### Requirement: Infrastructure Store Implementation
+### Requirement: Store Implementation
 
-The Infrastructure layer MUST provide a concrete implementation of the Work Item persistence
-port. All store-technology dependencies MUST be confined to `Aura.Infrastructure`. The
-implementation MUST be registerable via the DI container without exposing store-specific
-types to any other layer.
+Provide ADO.NET SQLite AND EF Core/Azure SQL. DI-registerable, types in Infra.
+(Previously: single ADO.NET)
 
-#### Scenario: Store persists the WorkItem and returns success
+#### Scenario: Both persist
 
-- GIVEN a canonical `WorkItem` is provided to the store implementation
-- WHEN the port is invoked through the registered DI binding
-- THEN the `WorkItem` is persisted and a success result is returned
+- GIVEN canonical `WorkItem`
+- WHEN stored via either
+- THEN item persists, success
 
-#### Scenario: Architecture test rejects store-technology leakage
+#### Scenario: Architecture guard
 
-- GIVEN the store implementation type dependencies are inspected
-- WHEN architecture tests run
-- THEN no store-specific dependency is found outside `Aura.Infrastructure`
+- GIVEN store deps inspected
+- WHEN arch tests run
+- THEN no type leaks outside Infra
 
 ---
 
@@ -195,3 +193,21 @@ WorkItemSourceType source, CancellationToken ct)` to mark matching pending items
 - GIVEN one WorkItem with `ExternalId = "19:abc@thread.v2"` exists
 - WHEN the store persists another with `ExternalId = "19:def@thread.v2"`
 - THEN both entries exist independently
+
+---
+
+### Requirement: EF Core Store
+
+EF Core `IWorkItemStore` for Azure SQL alongside SQLite. `StoreProvider` selects.
+
+#### Scenario: EF Core persists
+
+- GIVEN toggle `AzureSql`
+- WHEN `WorkItem` stored
+- THEN persists to Azure SQL
+
+#### Scenario: SQLite toggle
+
+- GIVEN toggle `Sqlite`
+- WHEN store resolved
+- THEN ADO.NET injected

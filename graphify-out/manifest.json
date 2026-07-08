@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Routes.razor": {
-    "mtime": 1782938342.2732089,
-    "ast_hash": "c8c81358d14148ea8847461bf8af196c",
+    "mtime": 1783524595.2511454,
+    "ast_hash": "61924e2263798f36ff7ef703ae1c3311",
     "semantic_hash": ""
   },
   "src/Aura.UI/Models/DashboardViewState.cs": {
@@ -520,7 +520,7 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Program.cs": {
-    "mtime": 1783520338.2979722,
+    "mtime": 1783520949.767433,
     "ast_hash": "1fdf0e1c2ae5df5f0d4df605fb551de0",
     "semantic_hash": ""
   },
@@ -925,7 +925,7 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1783520338.2782564,
+    "mtime": 1783520949.7443707,
     "ast_hash": "bb233f55ce05621686c7ce7253e67237",
     "semantic_hash": ""
   },
@@ -950,7 +950,7 @@
     "semantic_hash": ""
   },
   "docs/ai/01-operating-rules.md": {
-    "mtime": 1783520338.282256,
+    "mtime": 1783520949.7483723,
     "ast_hash": "c103933df6044783bd624edef66d4b28",
     "semantic_hash": ""
   },
@@ -4960,8 +4960,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/build-deploy-app.yml": {
-    "mtime": 1783520637.587772,
-    "ast_hash": "6949cc28ff91f97759a24c6d94c5d2ec",
+    "mtime": 1783524634.1990871,
+    "ast_hash": "11d0c4f6162c22db81b5ce2e1d710f69",
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
@@ -4970,8 +4970,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-infra.yml": {
-    "mtime": 1783520637.587772,
-    "ast_hash": "417cad90105066071a7eaca1244c9134",
+    "mtime": 1783520949.7373033,
+    "ast_hash": "ed847d13bbd5664012bceb121cd9b454",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-07-06-w4-h1-structured-logging/apply-progress.md": {
@@ -5472,6 +5472,11 @@
   "openspec/specs/pull-request-api/spec.md": {
     "mtime": 1783519799.0961244,
     "ast_hash": "87a94583602fb3b62ab763c67acb1cf1",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Components/Pages/Error.razor": {
+    "mtime": 1783524632.0257897,
+    "ast_hash": "4f07a23125e543f2332bc71df062cf2d",
     "semantic_hash": ""
   }
 }

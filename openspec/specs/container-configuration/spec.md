@@ -147,3 +147,47 @@ The `docker-compose.yml` MUST expose an HTTPS port mapping for the API service (
 - GIVEN `.env.example` exists at the repository root
 - WHEN its contents are inspected
 - THEN an `API_HTTPS_PORT` (or equivalent) variable is listed with a placeholder and comment
+
+---
+
+### Requirement: ACA Health Probes
+
+Expose `GET /health`: 200 healthy, 503 if deps fail.
+
+#### Scenario: Healthy
+
+- GIVEN container running
+- WHEN `GET /health`
+- THEN 200 `{"status":"Healthy"}`
+
+#### Scenario: Unhealthy
+
+- GIVEN db unreachable
+- WHEN `GET /health`
+- THEN 503
+
+---
+
+### Requirement: Multi-Arch
+
+Dockerfiles MUST support `buildx` for amd64 and arm64.
+(Previously: single-arch)
+
+#### Scenario: Buildx manifest
+
+- GIVEN `buildx build --platform linux/amd64,linux/arm64`
+- WHEN manifest inspected
+- THEN both platforms present
+
+---
+
+### Requirement: ASPNETCORE_URLS
+
+Add `ASPNETCORE_URLS=http://*:8080` for ACA.
+(Previously: no constraint)
+
+#### Scenario: Port
+
+- GIVEN container on ACA
+- WHEN port checked
+- THEN binds `http://*:8080`
