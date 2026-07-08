@@ -1,8 +1,8 @@
-using Aura.Infrastructure.Persistence;
+using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Aura.Infrastructure.Persistence.EntityConfigurations;
+namespace Aura.Infrastructure.Adapters.Persistence.EntityConfigurations;
 
 /// <summary>
 /// EF Core configuration for the <c>WorkItems</c> table.

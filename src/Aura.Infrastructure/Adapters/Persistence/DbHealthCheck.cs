@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Aura.Infrastructure.Persistence;
+namespace Aura.Infrastructure.Adapters.Persistence;
 
 /// <summary>
 /// ASP.NET Core health check that verifies connectivity to the primary database.

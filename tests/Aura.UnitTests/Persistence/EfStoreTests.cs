@@ -13,7 +13,7 @@ using Aura.Infrastructure.Adapters.Notifications;
 using Aura.Infrastructure.Adapters.Rules;
 using Aura.Infrastructure.Adapters.SemanticOutbox;
 using Aura.Infrastructure.Adapters.WorkItems;
-using Aura.Infrastructure.Persistence;
+using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aura.UnitTests.Persistence;

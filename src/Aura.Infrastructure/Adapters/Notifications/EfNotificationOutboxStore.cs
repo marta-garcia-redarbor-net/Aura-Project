@@ -1,6 +1,6 @@
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
-using Aura.Infrastructure.Persistence;
+using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aura.Infrastructure.Adapters.Notifications;
