@@ -155,7 +155,7 @@ public class HttpContextCurrentUserServiceTests
         // Assert
         Assert.NotNull(user);
         Assert.Equal("entra-oid-abc-123", user.Oid);
-        Assert.Equal("user-789", user.UserId);
+        Assert.Equal("entra-oid-abc-123", user.UserId);
     }
 
     [Fact]

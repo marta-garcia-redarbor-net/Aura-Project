@@ -139,7 +139,7 @@
     private List<PullRequestResponse> _prs = [];
 
     [Inject]
-    private Services.IAzureDevOpsPrClient PrClient { get; set; } = null!;
+    private Services.IPullRequestsApiClient PrClient { get; set; } = null!;
 
     private List<PullRequestResponse> Prs => _prs;
 
@@ -164,13 +164,7 @@
             else
             {
                 _state = PrListState.Populated;
-                _prs = [.. prs.OrderByDescending(p => p.Priority switch
-                {
-                    "critical" => 4,
-                    "high" => 3,
-                    "medium" => 2,
-                    _ => 1
-                }).ThenByDescending(p => p.UpdatedAt)];
+                _prs = [.. prs];
             }
         }
         catch (Exception ex)

@@ -1,4 +1,5 @@
 using Aura.Application.Ports;
+using Aura.Infrastructure.Adapters.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -28,7 +29,8 @@ public sealed class AlertHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = Context.User?.FindFirst(EntraIdClaims.ObjectId)?.Value
+            ?? Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (!string.IsNullOrEmpty(userId))
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, userId);
@@ -42,7 +44,8 @@ public sealed class AlertHub : Hub
     /// </summary>
     public async Task<bool> AcknowledgeAlert(string alertId, CancellationToken ct)
     {
-        var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = Context.User?.FindFirst(EntraIdClaims.ObjectId)?.Value
+            ?? Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             return false;

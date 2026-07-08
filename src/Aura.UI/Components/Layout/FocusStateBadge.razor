@@ -1,3 +1,5 @@
+@using System.Net
+@using System.Net.Http
 @inject IFocusStateApiClient? FocusStateApiClient
 
 <div class="focus-state" data-testid="focus-state-container">
@@ -58,7 +60,20 @@
             return;
         }
 
-        _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+        try
+        {
+            _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            // Usuario no autenticado - mostrar estado por defecto
+            _state = new FocusStateResponse("WindowOfOpportunity", false, "unauthenticated");
+        }
+        catch (Exception)
+        {
+            // Otros errores - mostrar estado por defecto
+            _state = new FocusStateResponse("WindowOfOpportunity", false, "error");
+        }
     }
 
     private async Task SetOverrideAsync(string state)
@@ -80,8 +95,19 @@
             return;
         }
 
-        await FocusStateApiClient.ClearOverrideAsync(CancellationToken.None);
-        _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+        try
+        {
+            await FocusStateApiClient.ClearOverrideAsync(CancellationToken.None);
+            _state = await FocusStateApiClient.GetCurrentAsync(CancellationToken.None);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _state = _state with { State = _state.State, IsOverridden = false, UserId = "unauthenticated" };
+        }
+        catch (Exception)
+        {
+            _state = _state with { State = _state.State, IsOverridden = false, UserId = "error" };
+        }
         _dropdownOpen = false;
     }
 

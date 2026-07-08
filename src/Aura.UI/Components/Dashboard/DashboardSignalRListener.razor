@@ -1,0 +1,103 @@
+@using Microsoft.AspNetCore.SignalR.Client
+@using Aura.UI.Services
+@inject IConfiguration Configuration
+@inject ITokenAcquisitionService TokenService
+@implements IAsyncDisposable
+
+@code {
+    private HubConnection? _hubConnection;
+    private HashSet<string> _seenItemIds = new();
+    private readonly object _lock = new();
+    private bool _initialized = false;
+
+    public event Func<Task>? OnDashboardRefresh;
+
+    public async Task InitializeAsync()
+    {
+        if (_initialized) return;
+        _initialized = true;
+        await TryConnectWithRetryAsync();
+    }
+
+    private async Task TryConnectWithRetryAsync(int maxRetries = 3, int delayMs = 1000)
+    {
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                var token = await TokenService.AcquireTokenAsync();
+                
+                if (string.IsNullOrEmpty(token))
+                {
+                    Console.WriteLine($"SignalR: Token not available (attempt {attempt}/{maxRetries})");
+                    if (attempt < maxRetries)
+                        await Task.Delay(delayMs);
+                    continue;
+                }
+
+                var baseUrl = Configuration.GetValue<string>("AuraApi:BaseUrl")?.TrimEnd('/')
+                              ?? string.Empty;
+                var hubUrl = string.IsNullOrEmpty(baseUrl)
+                    ? "/hubs/alerts"
+                    : $"{baseUrl}/hubs/alerts";
+
+                _hubConnection = new HubConnectionBuilder()
+                    .WithUrl(hubUrl, options =>
+                    {
+                        options.AccessTokenProvider = () => Task.FromResult(token)!;
+                    })
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                _hubConnection.On<object>("DashboardRefresh", _ =>
+                {
+                    InvokeAsync(async () => 
+                    {
+                        if (OnDashboardRefresh is not null)
+                            await OnDashboardRefresh.Invoke();
+                    });
+                });
+
+                await _hubConnection.StartAsync();
+                Console.WriteLine("SignalR: Dashboard connection established");
+                return; // Success
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR: Connection failed (attempt {attempt}/{maxRetries}): {ex.Message}");
+                if (attempt < maxRetries)
+                    await Task.Delay(delayMs);
+            }
+        }
+        
+        Console.WriteLine("SignalR: Failed to establish connection after all retries - dashboard will not receive real-time updates");
+    }
+
+    public bool IsNewItem(string itemId)
+    {
+        lock (_lock)
+        {
+            if (string.IsNullOrEmpty(itemId) || _seenItemIds.Contains(itemId))
+                return false;
+
+            _seenItemIds.Add(itemId);
+            return true;
+        }
+    }
+
+    public void ClearTracking()
+    {
+        lock (_lock)
+        {
+            _seenItemIds.Clear();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}

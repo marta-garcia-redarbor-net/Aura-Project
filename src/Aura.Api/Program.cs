@@ -3,6 +3,7 @@ using Aura.Api.Endpoints;
 using Aura.Api.Hubs;
 using Aura.Api.Middleware;
 using Aura.Api.Validation;
+using Aura.Api.Services;
 using Aura.Api.Workers;
 using Aura.Application;
 using Aura.Application.Ports;
@@ -16,7 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuraApplication();
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
+builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
 builder.Services.AddSignalR();
+
+// Demo simulation — singleton service for gradual data injection
+builder.Services.AddSingleton<DemoSimulationService>();
 builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
 builder.Services.AddValidatorsFromAssembly(typeof(Aura.Api.ApiMarker).Assembly);
 
@@ -30,6 +35,7 @@ builder.Services.AddSingleton<IMeetingAlertDispatcher, SignalRMeetingAlertDispat
 
 // Work item notification pipeline
 builder.Services.AddSingleton<IWorkItemNotificationDispatcher, SignalRWorkItemNotificationDispatcher>();
+builder.Services.AddSingleton<IDashboardRefreshDispatcher, SignalRDashboardRefreshDispatcher>();
 
 // Background workers
 builder.Services.AddHostedService<WorkItemNotificationWorker>();
@@ -184,11 +190,18 @@ app.MapGraphConnectorEndpoints();
 app.MapSyncEndpoints();
 app.MapTriageEndpoints();
 app.MapWorkItemsEndpoints();
+app.MapPullRequestsEndpoints();
 app.MapHub<AlertHub>("/hubs/alerts");
 
 if (app.Environment.IsDevelopment())
 {
     app.MapDebugEndpoints();
+}
+
+// Demo mode endpoints — only mapped when DemoMode:Enabled=true
+if (app.Configuration.GetValue<bool>("DemoMode:Enabled"))
+{
+    app.MapDemoEndpoints();
 }
 
 app.Run();

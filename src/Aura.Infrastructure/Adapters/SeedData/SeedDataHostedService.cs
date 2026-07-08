@@ -2,6 +2,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.Calendar;
 using Aura.Domain.WorkItems;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,24 +11,20 @@ namespace Aura.Infrastructure.Adapters.SeedData;
 
 internal sealed partial class SeedDataHostedService : IHostedService
 {
-    private readonly IWorkItemStore _workItemStore;
-    private readonly ICalendarEventStore _calendarEventStore;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SeedDataHostedService> _logger;
     private readonly SeedDataOptions _options;
 
     public SeedDataHostedService(
-        IWorkItemStore workItemStore,
-        ICalendarEventStore calendarEventStore,
+        IServiceScopeFactory scopeFactory,
         IOptions<SeedDataOptions> options,
         ILogger<SeedDataHostedService> logger)
     {
-        ArgumentNullException.ThrowIfNull(workItemStore);
-        ArgumentNullException.ThrowIfNull(calendarEventStore);
+        ArgumentNullException.ThrowIfNull(scopeFactory);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _workItemStore = workItemStore;
-        _calendarEventStore = calendarEventStore;
+        _scopeFactory = scopeFactory;
         _options = options.Value;
         _logger = logger;
     }
@@ -40,19 +37,23 @@ internal sealed partial class SeedDataHostedService : IHostedService
             return;
         }
 
+        // Create a scope to resolve scoped stores (supports both SQLite singletons and EF Core scoped)
+        using var scope = _scopeFactory.CreateScope();
+        var workItemStore = scope.ServiceProvider.GetRequiredService<IWorkItemStore>();
+        var calendarEventStore = scope.ServiceProvider.GetRequiredService<ICalendarEventStore>();
         var now = DateTimeOffset.UtcNow;
 
-        await SeedTeamsMessagesAsync(now, cancellationToken);
-        await SeedOutlookEmailsAsync(now, cancellationToken);
-        await SeedCalendarEventsAsync(now, cancellationToken);
-        await SeedPullRequestsAsync(now, cancellationToken);
+        await SeedTeamsMessagesAsync(now, workItemStore, cancellationToken);
+        await SeedOutlookEmailsAsync(now, workItemStore, cancellationToken);
+        await SeedCalendarEventsAsync(now, calendarEventStore, cancellationToken);
+        await SeedPullRequestsAsync(now, workItemStore, cancellationToken);
 
         Log.SeedDataCompleted(_logger);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task SeedTeamsMessagesAsync(DateTimeOffset now, CancellationToken ct)
+    private async Task SeedTeamsMessagesAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var teamsMessages = new[]
         {
@@ -88,13 +89,13 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
         foreach (var item in teamsMessages)
         {
-            await _workItemStore.SaveAsync(item, ct);
+            await workItemStore.SaveAsync(item, ct);
         }
 
         Log.SeedDataInserted(_logger, "Teams", teamsMessages.Length);
     }
 
-    private async Task SeedOutlookEmailsAsync(DateTimeOffset now, CancellationToken ct)
+    private async Task SeedOutlookEmailsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var outlookEmails = new[]
         {
@@ -130,13 +131,13 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
         foreach (var item in outlookEmails)
         {
-            await _workItemStore.SaveAsync(item, ct);
+            await workItemStore.SaveAsync(item, ct);
         }
 
         Log.SeedDataInserted(_logger, "Outlook", outlookEmails.Length);
     }
 
-    private async Task SeedCalendarEventsAsync(DateTimeOffset now, CancellationToken ct)
+    private async Task SeedCalendarEventsAsync(DateTimeOffset now, ICalendarEventStore calendarEventStore, CancellationToken ct)
     {
         var events = new[]
         {
@@ -195,11 +196,11 @@ internal sealed partial class SeedDataHostedService : IHostedService
                 Location: "Comedor — Piso 2"),
         };
 
-        await _calendarEventStore.SaveBatchAsync(events, ct);
+        await calendarEventStore.SaveBatchAsync(events, ct);
         Log.SeedDataInserted(_logger, "Calendar", events.Length);
     }
 
-    private async Task SeedPullRequestsAsync(DateTimeOffset now, CancellationToken ct)
+    private async Task SeedPullRequestsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var prItems = new[]
         {
@@ -225,7 +226,7 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
         foreach (var item in prItems)
         {
-            await _workItemStore.SaveAsync(item, ct);
+            await workItemStore.SaveAsync(item, ct);
         }
 
         Log.SeedDataInserted(_logger, "PrReview", prItems.Length);

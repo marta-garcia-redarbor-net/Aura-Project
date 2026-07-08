@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
+using System.Net;
 
 namespace Aura.E2E.Browser;
 
@@ -114,6 +115,10 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
+        builder.Services.AddSingleton<IDashboardEventBus, DashboardEventBus>();
+        builder.Services.AddSingleton<IDashboardRealtimeStatus, DashboardRealtimeStatus>();
+        builder.Services.AddHttpClient("AuraApi")
+            .ConfigurePrimaryHttpMessageHandler(() => new StubAuraApiMessageHandler());
 
         _app = builder.Build();
 
@@ -238,6 +243,21 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         {
             public static readonly EmptyDisposable Instance = new();
             public void Dispose() { }
+        }
+    }
+
+    private sealed class StubAuraApiMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var body = request.RequestUri?.AbsolutePath.Contains("/api/demo/status", StringComparison.OrdinalIgnoreCase) == true
+                ? "{\"enabled\":true}"
+                : "{}";
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body)
+            });
         }
     }
 

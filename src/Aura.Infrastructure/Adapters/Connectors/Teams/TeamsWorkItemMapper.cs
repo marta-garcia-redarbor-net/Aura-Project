@@ -92,7 +92,8 @@ internal sealed class TeamsWorkItemMapper
             priority,
             metadata,
             message.CorrelationId,
-            message.CapturedAtUtc);
+            message.CapturedAtUtc,
+            ownerUserId: message.UserOid);
 
         return true;
     }
@@ -125,6 +126,11 @@ internal sealed class TeamsWorkItemMapper
         {
             metadata[WorkItemSignalKeys.TeamsSender] = message.Sender;
             metadata[WorkItemSignalKeys.CanonicalSender] = message.Sender;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.UserOid))
+        {
+            metadata[WorkItemSignalKeys.TargetOwnerUserId] = message.UserOid;
         }
 
         if (!string.IsNullOrWhiteSpace(message.BodyPreview))

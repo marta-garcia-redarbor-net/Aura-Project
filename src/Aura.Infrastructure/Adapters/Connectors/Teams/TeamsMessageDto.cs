@@ -18,6 +18,9 @@ internal sealed record TeamsMessageDto
 
     public string? CorrelationId { get; init; }
 
+    /// <summary>Canonical Entra oid of the user whose Teams data is being synchronized.</summary>
+    public string? UserOid { get; init; }
+
     public DateTimeOffset? CapturedAtUtc { get; init; }
 
     /// <summary>Display name of the message sender (from Graph API).</summary>

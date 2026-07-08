@@ -12,6 +12,7 @@ public class InboxPreviewPanelPriorityTests : TestContext
     [Fact]
     public void RendersImportanceBadge_ForTopPriorityItemsInGroup()
     {
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         var previewClient = Substitute.For<IDashboardPreviewApiClient>();
         previewClient.GetPreviewAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new DashboardPreviewResponse(

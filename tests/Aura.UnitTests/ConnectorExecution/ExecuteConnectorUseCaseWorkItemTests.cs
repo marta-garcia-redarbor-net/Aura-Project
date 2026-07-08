@@ -104,12 +104,13 @@ public class ExecuteConnectorUseCaseWorkItemTests
 
         NotificationOutboxEntry? captured = null;
         var outbox = Substitute.For<INotificationOutboxStore>();
+        var dashboardRefresh = Substitute.For<IDashboardRefreshDispatcher>();
         outbox.EnqueueAsync(Arg.Any<NotificationOutboxEntry>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(callInfo => captured = callInfo.Arg<NotificationOutboxEntry>());
 
         var useCase = new ExecuteConnectorUseCase(
-            checkpointStore, [adapter], buffer, store, engine, outbox,
+            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox,
             Substitute.For<ILogger<ExecuteConnectorUseCase>>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);
@@ -152,12 +153,13 @@ public class ExecuteConnectorUseCaseWorkItemTests
 
         NotificationOutboxEntry? captured = null;
         var outbox = Substitute.For<INotificationOutboxStore>();
+        var dashboardRefresh = Substitute.For<IDashboardRefreshDispatcher>();
         outbox.EnqueueAsync(Arg.Any<NotificationOutboxEntry>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(callInfo => captured = callInfo.Arg<NotificationOutboxEntry>());
 
         var useCase = new ExecuteConnectorUseCase(
-            checkpointStore, [adapter], buffer, store, engine, outbox,
+            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox,
             Substitute.For<ILogger<ExecuteConnectorUseCase>>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);
