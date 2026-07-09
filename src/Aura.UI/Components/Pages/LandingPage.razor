@@ -1,0 +1,236 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Aura.UI.Components.Auth
+@using Aura.UI.Components.Layout
+@attribute [AllowAnonymous]
+@layout AnonymousLayout
+@inject NavigationManager Navigation
+
+<PageTitle>Aura | Reclaim Your Deep Work</PageTitle>
+
+<!-- Fixed Header -->
+<header class="landing-header" data-testid="landing-header">
+    <div class="landing-header__brand">
+        <span class="landing-header__title">Aura</span>
+        <span class="landing-header__version">v2.4</span>
+    </div>
+    <LoginButton ButtonText="Login / Access Aura" CssClass="landing-header__cta" DataTestId="landing-login-btn" />
+</header>
+
+<main class="landing-main">
+    <!-- Hero Section -->
+    <section class="landing-hero" data-testid="landing-hero">
+        <div class="landing-hero__content">
+            <h1 class="landing-hero__title">
+                Reclaim Your Deep Work.<br/>
+                <span class="landing-hero__gradient-text">Let Aura Filter the Noise.</span>
+            </h1>
+            <p class="landing-hero__subtitle">
+                A semantic orchestration engine built on <span class="landing-hero__emphasis">Microsoft Graph</span>,
+                <span class="landing-hero__emphasis">Qdrant Vector DB</span>, and
+                <span class="landing-hero__emphasis">Semantic Kernel</span>.
+                Your enterprise consciousness, distilled.
+            </p>
+            <div class="landing-hero__ctas">
+                <LoginButton ButtonText="Login / Access Aura" CssClass="landing-hero__cta-primary" DataTestId="hero-login-btn" />
+                <button class="landing-hero__cta-secondary"
+                        data-testid="hero-demo-btn"
+                        @onclick="HandleDemoLogin">
+                    Explore Demo Mode
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem vs Solution -->
+    <section class="landing-problems" data-testid="landing-problems">
+        <div class="landing-problems__grid">
+            <!-- The Chaos -->
+            <div class="landing-problems__chaos">
+                <div class="landing-problems__section-header">
+                    <span class="material-symbols-outlined landing-problems__icon-error">error</span>
+                    <h2 class="landing-problems__heading">The Chaos</h2>
+                </div>
+                <ul class="landing-problems__list">
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--error">
+                            <span class="material-symbols-outlined">notifications_active</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Notification Fatigue</h4>
+                            <p class="landing-problems__item-text">450+ daily pings from Teams, Outlook, and Jira drowning out real architectural focus.</p>
+                        </div>
+                    </li>
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--error">
+                            <span class="material-symbols-outlined">shuffle</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Context Fragmentation</h4>
+                            <p class="landing-problems__item-text">Losing 23 minutes of focus every time you switch apps to find a single PR comment.</p>
+                        </div>
+                    </li>
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--error">
+                            <span class="material-symbols-outlined">psychology_alt</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Cognitive Overflow</h4>
+                            <p class="landing-problems__item-text">The human brain isn't built to parse terabytes of enterprise unstructured data.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- The Aura Way -->
+            <div class="landing-problems__solution">
+                <div class="landing-problems__section-header">
+                    <span class="material-symbols-outlined landing-problems__icon-success">check_circle</span>
+                    <h2 class="landing-problems__heading">The Aura Way</h2>
+                </div>
+                <ul class="landing-problems__list">
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--success">
+                            <span class="material-symbols-outlined">filter_list</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Semantic Triage</h4>
+                            <p class="landing-problems__item-text">Aura understands intent. Low-value noise is archived; critical blockers are surfaced.</p>
+                        </div>
+                    </li>
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--success">
+                            <span class="material-symbols-outlined">hub</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Unified Intelligence Stream</h4>
+                            <p class="landing-problems__item-text">Microsoft Graph data distilled through LLMs into a single, actionable feed.</p>
+                        </div>
+                    </li>
+                    <li class="landing-problems__item">
+                        <div class="landing-problems__item-icon landing-problems__item-icon--success">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                        </div>
+                        <div>
+                            <h4 class="landing-problems__item-title">Autonomous Reasoning</h4>
+                            <p class="landing-problems__item-text">Semantic Kernel planners solve multi-step problems before you even open the ticket.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Bento Grid -->
+    <section class="landing-features" data-testid="landing-features">
+        <div class="landing-features__header">
+            <h2 class="landing-features__title">Engineered for the .NET Enterprise</h2>
+            <p class="landing-features__subtitle">High-performance signals, zero-trust security, and absolute technical precision.</p>
+        </div>
+        <div class="landing-features__grid">
+            <div class="landing-features__card">
+                <span class="material-symbols-outlined landing-features__card-icon">model_training</span>
+                <h3 class="landing-features__card-title">Cognitive Load Reduction</h3>
+                <p class="landing-features__card-text">Advanced vector search indexing across your entire org history to triage tasks based on actual urgency, not just loudness.</p>
+            </div>
+            <div class="landing-features__card">
+                <span class="material-symbols-outlined landing-features__card-icon">all_inclusive</span>
+                <h3 class="landing-features__card-title">Zero Context Switching</h3>
+                <p class="landing-features__card-text">Integrated stream technology that pulls from Graph APIs into a centralized HUD, eliminating the need to toggle between 12 different tabs.</p>
+            </div>
+            <div class="landing-features__card">
+                <span class="material-symbols-outlined landing-features__card-icon">neurology</span>
+                <h3 class="landing-features__card-title">LLM-Powered Decision Making</h3>
+                <p class="landing-features__card-text">Leverage state-of-the-art Semantic Kernel plugins that don't just summarize—they execute complex workflows and suggest code-level solutions.</p>
+            </div>
+            <div class="landing-features__card">
+                <span class="material-symbols-outlined landing-features__card-icon">verified_user</span>
+                <h3 class="landing-features__card-title">Enterprise Zero-Trust AI</h3>
+                <p class="landing-features__card-text">Built on .NET 9 with isolated tenant protection. Your data never leaves your infrastructure, ensuring sovereign compliance by default.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="landing-cta" data-testid="landing-cta">
+        <h2 class="landing-cta__title">Ready to end the noise?</h2>
+        <div class="landing-cta__content">
+            <LoginButton ButtonText="Login / Access Aura" CssClass="landing-cta__button" DataTestId="cta-login-btn" />
+            <p class="landing-cta__hint">SSO Integrated with Azure AD / Microsoft 365</p>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="landing-footer" data-testid="landing-footer">
+    <div class="landing-footer__grid">
+        <div class="landing-footer__brand-col">
+            <div class="landing-footer__brand">
+                <span class="landing-footer__brand-title">Aura</span>
+            </div>
+            <p class="landing-footer__description">
+                Aura is an observability-driven productivity platform built for high-stakes engineering environments.
+                Distilling enterprise chaos into human focus.
+            </p>
+            <div class="landing-footer__badges">
+                <div class="landing-footer__badge landing-footer__badge--dotnet">
+                    <div class="landing-footer__badge-icon">.NET</div>
+                    <span class="landing-footer__badge-text">Core 9.0 Compliant</span>
+                </div>
+                <div class="landing-footer__badge">
+                    <span class="material-symbols-outlined landing-footer__badge-icon-sm">security</span>
+                    <span class="landing-footer__badge-text">SOC2 Ready</span>
+                </div>
+            </div>
+        </div>
+        <div class="landing-footer__col">
+            <h5 class="landing-footer__col-title">Platform</h5>
+            <ul class="landing-footer__links">
+                <li><a href="#">Semantic Kernel</a></li>
+                <li><a href="#">Qdrant Storage</a></li>
+                <li><a href="#">Microsoft Graph</a></li>
+                <li><a href="#">API Reference</a></li>
+            </ul>
+        </div>
+        <div class="landing-footer__col">
+            <h5 class="landing-footer__col-title">Company</h5>
+            <ul class="landing-footer__links">
+                <li><a href="#">Security Ethics</a></li>
+                <li><a href="#">Architecture Blog</a></li>
+                <li><a href="#">Case Studies</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="landing-footer__bottom">
+        <span>&copy; 2024 Aura Intelligence Systems. All rights reserved.</span>
+        <div class="landing-footer__bottom-links">
+            <a href="#">Status: Operational</a>
+            <a href="#">Twitter / X</a>
+            <a href="#">GitHub</a>
+        </div>
+    </div>
+</footer>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/dashboard", forceLoad: true);
+            }
+        }
+    }
+
+    private void HandleDemoLogin()
+    {
+        Navigation.NavigateTo("/login/demo", forceLoad: true);
+    }
+}

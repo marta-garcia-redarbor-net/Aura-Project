@@ -58,8 +58,8 @@ public partial class AuthenticationCallback : ComponentBase, IAsyncDisposable
         }
         else
         {
-            Logger.LogInformation("Auth callback in non-popup context — redirecting to /.");
-            Navigation.NavigateTo("/", forceLoad: true);
+            Logger.LogInformation("Auth callback in non-popup context — redirecting to /dashboard.");
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
         }
     }
 

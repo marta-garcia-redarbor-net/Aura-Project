@@ -1,4 +1,4 @@
-@page "/"
+@page "/dashboard"
 @using Microsoft.AspNetCore.Components.Authorization
 @using Aura.UI.Components.Auth
 @using Aura.UI.Services
@@ -7,7 +7,6 @@
 @inject NavigationManager Navigation
 @inject IDashboardEventBus EventBus
 @inject IHttpClientFactory HttpClientFactory
-@inject IDashboardRealtimeStatus RealtimeStatus
 @implements IDisposable
 
 <AuthorizeView>
@@ -27,25 +26,20 @@
                 <div style="display:flex;align-items:center;gap:0.75rem;">
                     @if (_demoAvailable)
                     {
-                        <div class="demo-bar" style="margin-bottom:0;padding:0.35rem 0.75rem;">
-                            <span class="demo-bar__label" style="font-size:0.8rem;">🧪 Demo</span>
-                            <button class="btn btn-sm btn-outline-primary" disabled="@_simulationRunning" @onclick="StartSimulationAsync" style="font-size:0.75rem;padding:2px 8px;">
-                                @if (_simulationRunning) { <text>⏳</text> } else { <text>▶ Iniciar</text> }
-                            </button>
-                            @if (!string.IsNullOrEmpty(_simulationMessage))
-                            {
-                                <span class="demo-bar__message" style="font-size:0.75rem;">@_simulationMessage</span>
-                            }
-                            <span class="demo-bar__message" style="font-size:0.75rem;">
-                                SignalR: @(RealtimeStatus.IsConnected ? "connected" : RealtimeStatus.LastState)
-                            </span>
-                            @if (RealtimeStatus.LastRefreshUtc is not null)
-                            {
-                                <span class="demo-bar__message" style="font-size:0.75rem;">
-                                    refresh @ToRelative(RealtimeStatus.LastRefreshUtc.Value)
-                                </span>
-                            }
-                        </div>
+                        <button class="dashboard-header__demo-btn"
+                                disabled="@_simulationRunning"
+                                @onclick="StartSimulationAsync"
+                                title="@_simulationMessage">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            Demo Mode
+                        </button>
+                        <button class="dashboard-header__reset-btn"
+                                disabled="@_simulationRunning"
+                                @onclick="ResetDemoAsync"
+                                title="Delete demo items">
+                            <span class="material-symbols-outlined">delete</span>
+                            Reset
+                        </button>
                     }
                     <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
                             data-testid="priority-dashboard-top-priority-counter"
@@ -74,11 +68,15 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
     private DashboardPreviewResponse? _previewSummary;
     private bool _showLoginOverlay;
     private bool _demoAvailable;
     private bool _simulationRunning;
     private string? _simulationMessage;
+    private bool _demoDataExists;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,15 +87,10 @@
 
     private async Task CheckDemoStatusAsync()
     {
-        try
+        if (AuthenticationState is not null)
         {
-            var client = HttpClientFactory.CreateClient("AuraApi");
-            var status = await client.GetFromJsonAsync<DemoStatus>("api/demo/status");
-            _demoAvailable = status?.Enabled == true;
-        }
-        catch
-        {
-            _demoAvailable = false;
+            var authState = await AuthenticationState;
+            _demoAvailable = authState.User.HasClaim("aura_demo_mode", "true");
         }
     }
 
@@ -113,22 +106,48 @@
             response.EnsureSuccessStatusCode();
             await EventBus.RaiseDashboardRefreshAsync();
             await RefreshDataAsync();
-            for (var attempt = 0; attempt < 10; attempt++)
+            for (var attempt = 0; attempt < 6; attempt++)
             {
-                await Task.Delay(1000);
-                await EventBus.RaiseDashboardRefreshAsync();
+                await Task.Delay(3000);
                 await RefreshDataAsync();
                 if ((_previewSummary?.TotalPendingCount ?? 0) > beforePending)
                 {
+                    await EventBus.RaiseDashboardRefreshAsync();
+                    await RefreshDataAsync();
                     break;
                 }
             }
             await InvokeAsync(StateHasChanged);
             _simulationMessage = $"✅ Simulación iniciada ({_previewSummary?.TotalPendingCount ?? 0} pending)";
+            _demoDataExists = true;
         }
         catch
         {
             _simulationMessage = "❌ Error al iniciar";
+        }
+        finally
+        {
+            _simulationRunning = false;
+        }
+    }
+
+    private async Task ResetDemoAsync()
+    {
+        _simulationRunning = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuraApi");
+            var response = await client.PostAsync("api/demo/reset", null);
+            response.EnsureSuccessStatusCode();
+            _demoDataExists = false;
+            _simulationMessage = null;
+            EventBus.ClearTracking();
+            await EventBus.RaiseDashboardRefreshAsync();
+            await RefreshDataAsync();
+        }
+        catch
+        {
+            _simulationMessage = "❌ Error al resetear demo";
         }
         finally
         {
@@ -166,14 +185,4 @@
 
     private void NavigateToTopPriority()
         => Navigation.NavigateTo("/top-priority");
-
-    private static string ToRelative(DateTimeOffset timestamp)
-    {
-        var diff = DateTimeOffset.UtcNow - timestamp;
-        if (diff.TotalSeconds < 60) return $"{Math.Max(0, (int)diff.TotalSeconds)}s ago";
-        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
-        return $"{(int)diff.TotalHours}h ago";
-    }
-
-    private sealed record DemoStatus(bool Enabled);
 }

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Identity.Client;
 
@@ -55,11 +56,25 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
                 return await base.SendAsync(request, cancellationToken);
             }
 
+            // 3. Cookie identity "token" claim (dev/demo login pre-fetches a mock JWT)
+            var cookieIdentity = httpContext.User.Identity?.Name ?? "(null)";
+            var tokenClaim = httpContext.User.FindFirstValue("token");
+            _logger.LogInformation(
+                "Token resolution: user={User}, hasTokenClaim={HasToken}, uri={Uri}",
+                cookieIdentity, tokenClaim is not null, request.RequestUri);
+            if (!string.IsNullOrWhiteSpace(tokenClaim))
+            {
+                _logger.LogInformation("Forwarded cookie token claim for {Uri}", request.RequestUri);
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", tokenClaim);
+                return await base.SendAsync(request, cancellationToken);
+            }
+
             _logger.LogInformation(
                 "No access_token in OIDC session for {Uri}. Attempting client-credentials fallback.",
                 request.RequestUri);
 
-            // 3. Client-credentials fallback
+            // 4. Client-credentials fallback
             try
             {
                 var msalClient = httpContext.RequestServices.GetService<IConfidentialClientApplication>();

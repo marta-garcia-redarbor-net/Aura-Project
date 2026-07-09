@@ -25,56 +25,25 @@
         </header>
     </div>
 
-    <!-- Fullscreen blur backdrop behind the popup (blocks interaction with background) -->
+    <!-- Fullscreen blur backdrop -->
     <div class="login-overlay-backdrop" data-testid="login-overlay-backdrop" style="position:fixed;inset:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(255,255,255,0.06);z-index:1000;pointer-events:auto;"></div>
 
     <!-- Login card overlay (on top of blur) -->
     <div class="login-card" data-testid="login-card" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;">
         <h1 class="login-card__title">Aura</h1>
-        <p class="login-card__subtitle">Sign in to continue</p>
+        <p class="login-card__subtitle">Unable to load dashboard. Check that the API server is running.</p>
 
         <div class="login-card__actions">
-            <button class="login-card__button login-card__button--microsoft"
-                    data-testid="login-microsoft-btn"
-                    @onclick="HandleMicrosoftLogin">
+            <a href="/" class="login-card__button login-card__button--landing"
+               data-testid="restricted-go-login-btn">
                 <span class="material-symbols-outlined">login</span>
-                Sign in with Microsoft
-            </button>
-
-            @if (!_useEntraId)
-            {
-                <button class="login-card__button login-card__button--dev"
-                        data-testid="login-dev-btn"
-                        @onclick="HandleDevLogin">
-                    <span class="material-symbols-outlined">developer_mode</span>
-                    Login with Entra ID
-                </button>
-            }
+                Go to Login Page
+            </a>
+            <a href="/logout" class="login-card__button login-card__button--logout"
+               data-testid="restricted-logout-btn" style="margin-top:0.5rem;">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
         </div>
-
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="login-card__error" data-testid="login-error">
-                @_errorMessage
-            </div>
-        }
-
-        @if (_popupBlocked)
-        {
-            <div class="login-card__blocked-message" data-testid="popup-blocked-message">
-                <p>Pop-ups blocked. Allow pop-ups for this site, or
-                    <a href="javascript:void(0)" @onclick="HandleFallbackRedirect" data-testid="fallback-redirect-link">
-                        click here to sign in directly
-                    </a>.
-                </p>
-            </div>
-        }
     </div>
-
-    @if (!string.IsNullOrEmpty(_blockedToastMessage))
-    {
-        <div class="login-card__error" data-testid="blocked-toast" style="position:fixed;bottom:24px;right:24px;z-index:1002;">
-            @_blockedToastMessage
-        </div>
-    }
 </div>

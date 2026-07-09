@@ -193,7 +193,7 @@ public static class Program
         var focusStateHttpClientBuilder = AddApiHttpClient<FocusStateApiClient, IFocusStateApiClient>(builder.Services, apiBaseUrl);
         var syncHttpClientBuilder = AddApiHttpClient<SyncApiClient, ISyncApiClient>(builder.Services, apiBaseUrl);
         var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
-        calendarHttpClientBuilder.AddStandardResilienceHandler();
+        // Calendar uses SafeGetUpcomingMeetingsAsync with its own timeout — no resilience handler needed
         var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
         var decisionLogHttpClientBuilder = AddApiHttpClient<DecisionLogApiClient, IDecisionLogApiClient>(builder.Services, apiBaseUrl);
         var pullRequestsHttpClientBuilder = AddApiHttpClient<PullRequestsApiClient, IPullRequestsApiClient>(builder.Services, apiBaseUrl);
@@ -338,9 +338,55 @@ public static class Program
                 var principal = new ClaimsPrincipal(identity);
 
                 await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-                ctx.Response.Redirect("/");
+                ctx.Response.Redirect("/dashboard");
             }).AllowAnonymous();
         }
+
+        // Demo login endpoint: creates a fake authentication cookie with demo claims
+        // and redirects to /dashboard. Available regardless of UseEntraId setting.
+        app.MapGet("/login/demo", async (HttpContext ctx, IConfiguration config) =>
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, "Demo User"),
+                new(ClaimTypes.Email, "demo@aura.local"),
+                new(ClaimTypes.Role, "Demo"),
+                new("aura_demo_mode", "true"),
+                new("oid", "demo-user-001")
+            };
+
+            // Acquire mock JWT for API authentication (available when API runs in Development mode)
+            var demoLogger = ctx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.UI.DemoLogin");
+            try
+            {
+                var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+                using var httpClient = new HttpClient();
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                using var json = System.Text.Json.JsonDocument.Parse(content);
+                var token = json.RootElement.GetProperty("token").GetString();
+                if (token is not null)
+                {
+                    claims.Add(new("token", token));
+                    demoLogger.LogInformation("Demo login: mock JWT acquired ({Length} chars)", token.Length);
+                }
+                else
+                {
+                    demoLogger.LogWarning("Demo login: mock-login returned empty token");
+                }
+            }
+            catch (Exception ex)
+            {
+                demoLogger.LogWarning(ex, "Demo login: failed to acquire mock JWT");
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            ctx.Response.Redirect("/dashboard");
+        }).AllowAnonymous();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();

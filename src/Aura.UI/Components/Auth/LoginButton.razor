@@ -1,0 +1,92 @@
+@using Aura.UI.Services
+@using Microsoft.JSInterop
+@using Microsoft.Extensions.Configuration
+@inject IAuthPopupService AuthPopupService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+
+<button class="@CssClass"
+        data-testid="@DataTestId"
+        disabled="@_loading"
+        @onclick="HandleClick">
+    @if (_loading)
+    {
+        <span>Signing in...</span>
+    }
+    else
+    {
+        @ButtonText
+    }
+</button>
+
+@if (_popupBlocked)
+{
+    <div class="login-button__blocked" data-testid="login-button-blocked">
+        Pop-ups blocked. <a href="/login/challenge" data-testid="login-button-fallback-link">Click here to sign in directly</a>.
+    </div>
+}
+
+@code {
+    [Parameter] public string ButtonText { get; set; } = "Login";
+    [Parameter] public string CssClass { get; set; } = "btn-primary";
+    [Parameter] public string? DataTestId { get; set; }
+
+    private bool _loading;
+    private bool _popupBlocked;
+    private bool _initialized;
+    private bool _useEntraId;
+
+    protected override void OnInitialized()
+    {
+        _useEntraId = Configuration.GetValue<bool>("UseEntraId");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized && _useEntraId)
+        {
+            _initialized = true;
+            await AuthPopupService.InitializeAsync(JSRuntime);
+        }
+    }
+
+    private async Task HandleClick()
+    {
+        // Dev mode: no Microsoft Entra ID — use direct /login/dev redirect
+        if (!_useEntraId)
+        {
+            Navigation.NavigateTo("/login/dev", forceLoad: true);
+            return;
+        }
+
+        // Production mode: OIDC popup flow
+        try
+        {
+            _loading = true;
+            _popupBlocked = false;
+            StateHasChanged();
+
+            await AuthPopupService.OpenMicrosoftLoginPopupAsync("/login/challenge?popup=true");
+            var result = await AuthPopupService.WaitForPopupResultAsync(CancellationToken.None);
+
+            if (result?.Success == true)
+            {
+                Navigation.NavigateTo("/dashboard", forceLoad: true);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            _popupBlocked = true;
+        }
+        catch (JSException)
+        {
+            _popupBlocked = true;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+}

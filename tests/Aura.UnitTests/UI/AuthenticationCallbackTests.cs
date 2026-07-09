@@ -61,6 +61,23 @@ public class AuthenticationCallbackTests : TestContext
     }
 
     [Fact]
+    public void CallbackPage_WithoutPopupQuery_NavigatesToDashboard()
+    {
+        // Arrange — URL does NOT contain popup=true (direct navigation)
+        var navManager = new TrackingNavigationManager("http://localhost/authentication/callback");
+        Services.AddSingleton<NavigationManager>(navManager);
+        Services.AddSingleton(Substitute.For<IJSRuntime>());
+        Services.AddSingleton(Substitute.For<ILogger<AuthenticationCallback>>());
+
+        // Act
+        RenderComponent<AuthenticationCallback>();
+
+        // Assert — must navigate to /dashboard, not /
+        Assert.True(navManager.NavigateToCalled, "NavigateTo should have been called");
+        Assert.Equal("/dashboard", navManager.LastUri);
+    }
+
+    [Fact]
     public void CallbackPage_WithoutPopupQuery_DoesNotCloseWindow()
     {
         // Arrange — URL does NOT contain popup=true (direct navigation)
@@ -175,6 +192,26 @@ public class AuthenticationCallbackTests : TestContext
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             // No-op — no Blazor circuit in test context
+        }
+    }
+
+    /// <summary>
+    /// NavigationManager that tracks NavigateTo calls for assertion.
+    /// </summary>
+    private sealed class TrackingNavigationManager : NavigationManager
+    {
+        public bool NavigateToCalled { get; private set; }
+        public string? LastUri { get; private set; }
+
+        public TrackingNavigationManager(string uri)
+        {
+            Initialize("http://localhost/", uri);
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            NavigateToCalled = true;
+            LastUri = uri;
         }
     }
 }
