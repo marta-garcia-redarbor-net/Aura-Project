@@ -27,37 +27,38 @@ public static class Program
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();
         builder.Services.AddSingleton<IFocusStateRefreshScheduler, TimerFocusStateRefreshScheduler>();
 
-        var useEntraId = builder.Configuration.GetValue<bool>("UseEntraId");
-
         // Always register CascadingAuthenticationState so App.razor's wrapper works in all modes.
-        // The backing AuthenticationStateProvider varies by mode:
-        // - UseEntraId=true: OIDC-backed provider from AddMicrosoftIdentityWebApp
-        // - UseEntraId=false (dev): cookie-based provider (anonymous by default)
         builder.Services.AddCascadingAuthenticationState();
         builder.Services.AddScoped<IAuthPopupService, AuthPopupService>();
 
-        if (useEntraId)
+        // ── Cookie authentication — always registered ──
+        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.Events.OnRedirectToAccessDenied = ctx =>
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return Task.CompletedTask;
+                };
+            });
+
+        // ── OIDC — registered conditionally on AzureAd config presence ──
+        var azureAd = builder.Configuration.GetSection("AzureAd");
+        var clientId = azureAd["ClientId"];
+        var tenantId = azureAd["TenantId"];
+        var clientSecret = azureAd["ClientSecret"];
+        var hasAzureAdConfig = !string.IsNullOrEmpty(clientId)
+                               && !string.IsNullOrEmpty(tenantId)
+                               && !string.IsNullOrEmpty(clientSecret);
+
+        if (hasAzureAdConfig)
         {
             // OIDC pipeline: Authorization Code flow via challenge endpoint.
-            // The middleware owns state/nonce/correlation — no manual URL construction.
-            var azureAd = builder.Configuration.GetSection("AzureAd");
-            var clientId = azureAd["ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId not configured");
-            var tenantId = azureAd["TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId not configured");
-            var clientSecret = azureAd["ClientSecret"] ?? throw new InvalidOperationException("AzureAd:ClientSecret not configured");
-
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.Events.OnRedirectToAccessDenied = ctx =>
-                    {
-                        ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
-                        return Task.CompletedTask;
-                    };
-                })
+            builder.Services
+                .AddAuthentication()
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {
                     options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
-                    // Force v2.0 metadata discovery to avoid v1.0 fallback
                     options.MetadataAddress = $"https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration";
                     options.ClientId = clientId;
                     options.ClientSecret = clientSecret;
@@ -68,29 +69,15 @@ public static class Program
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
-                    // Request the API scope so the access_token saved by SaveTokens
-                    // has audience api://{clientId} — required by the API JWT Bearer validator.
                     options.Scope.Add($"api://{clientId}/MeetingAlerts");
-                    // Graph delegated scopes — consented during OIDC login.
-                    // The access token for Graph is acquired separately via refresh token
-                    // in OnTokenValidated and cached in the MSAL SQLite user token cache.
-                    //options.Scope.Add("Mail.Read");
-                    //options.Scope.Add("Chat.Read");
-                    //options.Scope.Add("Calendars.Read");
                     options.Scope.Add("User.Read");
 
-                    // Add resource parameter so Entra ID returns an access_token
-                    // for our API instead of the default Microsoft Graph token.
                     options.Events.OnRedirectToIdentityProvider = context =>
                     {
                         context.ProtocolMessage.SetParameter("resource", $"api://{clientId}");
                         return Task.CompletedTask;
                     };
 
-                    // After OIDC login, acquire Graph tokens using the refresh token
-                    // and cache them in the MSAL SQLite user token cache.
-                    // This allows GraphClientFactory.AcquireTokenSilent to find cached
-                    // tokens for delegated Graph operations (sync, workers, etc.).
                     options.Events.OnTokenValidated = async context =>
                     {
                         var refreshToken = context.TokenEndpointResponse?.RefreshToken;
@@ -107,9 +94,6 @@ public static class Program
                                 "Mail.Read", "Chat.Read", "Calendars.Read", "User.Read"
                             };
 
-                            // AcquireTokenByRefreshToken is an explicit interface
-                            // implementation on IByRefreshToken. The refresh token is
-                            // a direct parameter, not chained via WithRefreshToken.
                             var byRefreshToken = (IByRefreshToken)msalApp;
                             var result = await byRefreshToken
                                 .AcquireTokenByRefreshToken(graphScopes, refreshToken)
@@ -135,43 +119,28 @@ public static class Program
                     };
                 });
 
-            builder.Services.AddAuthorization();
-
             // Register IConfidentialClientApplication for client-credentials fallback.
-            // When SaveTokens=true doesn't produce an access_token (e.g. MeetingAlerts scope
-            // not yet registered in Entra ID), ForwardedAccessTokenHandler falls back to
-            // client credentials to obtain a valid bearer token for the API.
             builder.Services.AddSingleton<IConfidentialClientApplication>(
                 ConfidentialClientApplicationBuilder
                     .Create(clientId)
                     .WithClientSecret(clientSecret)
                     .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
                     .Build());
+        }
 
-            // Register ITokenAcquisitionService for components that need it (e.g. MeetingAlertToast)
-            builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
+        // ── Token acquisition service ──
+        // In dev, use DevTokenAcquisitionService; otherwise MSAL-based.
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddTransient<DevAccessTokenHandler>();
+            builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
         }
         else
         {
-            // CRITICAL-01: Register cookie authentication so HttpContext.SignInAsync("Cookies", ...)
-            // works in RestrictedAccessView.HandleDevLogin(). Without this, the sign-in call silently
-            // fails because no "Cookies" authentication scheme is registered.
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
-
-            // DEV-ONLY: auto-acquire a mock JWT so the UI can call protected API endpoints
-            // without a real browser token. Remove when real auth (e.g. MSAL) is wired up.
-            if (builder.Environment.IsDevelopment())
-            {
-                builder.Services.AddTransient<DevAccessTokenHandler>();
-                builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
-            }
-            else
-            {
-                // Register MSAL-based token acquisition for production
-                builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
-            }
+            builder.Services.AddScoped<ITokenAcquisitionService, MsalTokenAcquisitionService>();
         }
+
+        builder.Services.AddAuthorization();
 
         var apiBaseUrl = builder.Configuration["AuraApi:BaseUrl"] ?? "http://localhost:5180";
 
@@ -193,7 +162,6 @@ public static class Program
         var focusStateHttpClientBuilder = AddApiHttpClient<FocusStateApiClient, IFocusStateApiClient>(builder.Services, apiBaseUrl);
         var syncHttpClientBuilder = AddApiHttpClient<SyncApiClient, ISyncApiClient>(builder.Services, apiBaseUrl);
         var calendarHttpClientBuilder = AddApiHttpClient<CalendarApiClient, ICalendarApiClient>(builder.Services, apiBaseUrl);
-        // Calendar uses SafeGetUpcomingMeetingsAsync with its own timeout — no resilience handler needed
         var workItemsHttpClientBuilder = AddApiHttpClient<WorkItemsApiClient, IWorkItemsApiClient>(builder.Services, apiBaseUrl);
         var decisionLogHttpClientBuilder = AddApiHttpClient<DecisionLogApiClient, IDecisionLogApiClient>(builder.Services, apiBaseUrl);
         var pullRequestsHttpClientBuilder = AddApiHttpClient<PullRequestsApiClient, IPullRequestsApiClient>(builder.Services, apiBaseUrl);
@@ -217,7 +185,8 @@ public static class Program
         // PR Review connector — v1 mock client for Azure DevOps PRs
         builder.Services.AddScoped<IAzureDevOpsPrClient, AzureDevOpsPrClient>();
 
-        if (!useEntraId && builder.Environment.IsDevelopment())
+        // Dev access token handler — only in development
+        if (builder.Environment.IsDevelopment())
         {
             httpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             graphHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
@@ -228,18 +197,14 @@ public static class Program
             syncHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             calendarHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             workItemsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
-            focusStateHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             decisionLogHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
             pullRequestsHttpClientBuilder.AddHttpMessageHandler<DevAccessTokenHandler>();
         }
 
         // ACA/Load Balancer proxy: trust X-Forwarded-Proto and X-Forwarded-Host
-        // so the OIDC middleware generates HTTPS redirect URIs even though
-        // ACA terminates SSL at the edge and forwards HTTP to the container.
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-            // Only trust known proxies — ACA env is implicitly known.
             options.KnownNetworks.Clear();
             options.KnownProxies.Clear();
         });
@@ -258,17 +223,10 @@ public static class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
-        // CRITICAL-03: Authentication/Authorization middleware must always be registered,
-        // regardless of UseEntraId. When UseEntraId=false, cookie authentication is registered
-        // in the else block above, and the middleware is required for cookie sign-in/claims
-        // population to work. Without it, [Authorize] attributes fail even after successful sign-in.
         app.UseAuthentication();
         app.UseAuthorization();
 
         // OIDC challenge endpoint: opens the popup flow by triggering an OIDC challenge.
-        // The OIDC middleware owns state/nonce/correlation — no manual URL construction needed.
-        // When ?popup=true is present (popup context), the RedirectUri carries the flag
-        // through the full OIDC redirect chain so the callback page knows to close itself.
         app.MapGet("/login/challenge", async (HttpContext ctx) =>
         {
             var redirect = ctx.Request.Query.ContainsKey("popup")
@@ -280,70 +238,56 @@ public static class Program
                 new AuthenticationProperties { RedirectUri = redirect });
         }).AllowAnonymous();
 
-        // Sign-out endpoint: performs server-side sign-out then redirects home.
-        // Blazor Server components cannot call SignOutAsync directly because the HTTP
-        // response has already started (SignalR circuit). This minimal endpoint runs
-        // in a fresh HTTP request where redirect is valid.
-        app.MapGet("/logout", async (HttpContext ctx, bool? useEntraId) =>
+        // ── Logout — signs out from both OIDC and Cookie unconditionally ──
+        app.MapGet("/logout", async (HttpContext ctx) =>
         {
-            if (useEntraId == true)
+            // OIDC scheme triggers Entra ID end-session redirect.
+            // Wrap in try-catch: if OIDC is not configured or the end-session
+            // endpoint is unreachable, fall through to cookie-only sign-out.
+            try
             {
-                // OIDC scheme triggers Entra ID end-session redirect.
-                // Wrap in try-catch: if the OIDC config is incomplete or
-                // the end-session endpoint is unreachable, fall through
-                // to cookie-only sign-out so the user is still logged out locally.
-                try
-                {
-                    await ctx.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-                }
-                catch (InvalidOperationException)
-                {
-                    // OIDC end-session redirect failed — proceed with cookie clear.
-                }
+                await ctx.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            }
+            catch (InvalidOperationException)
+            {
+                // OIDC end-session redirect failed — proceed with cookie clear.
             }
 
-            // Cookie scheme clears the local session cookie.
-            // Always sign out from cookie regardless of mode.
+            // Cookie scheme clears the local session cookie. Always executed.
             await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             ctx.Response.Redirect("/");
         }).AllowAnonymous();
 
-        // Dev login endpoint: performs the sign-in in a fresh HTTP request so cookie
-        // auth works. Blazor Server interactive mode cannot call SignInAsync because
-        // the HTTP response has already started (SignalR circuit).
-        if (!useEntraId)
+        // ── Dev login endpoint — always available ──
+        app.MapGet("/login/dev", async (HttpContext ctx, IConfiguration config) =>
         {
-            app.MapGet("/login/dev", async (HttpContext ctx, IConfiguration config) =>
+            var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+
+            using var httpClient = new HttpClient();
+            var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            using var json = System.Text.Json.JsonDocument.Parse(content);
+            var token = json.RootElement.GetProperty("token").GetString()
+                ?? throw new InvalidOperationException("Token not found in response");
+
+            var claims = new[]
             {
-                var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+                new Claim(ClaimTypes.Name, "dev-user"),
+                new Claim(ClaimTypes.NameIdentifier, "mock-user-001"),
+                new Claim("oid", "mock-user-001"),
+                new Claim("token", token)
+            };
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
 
-                using var httpClient = new HttpClient();
-                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
-                response.EnsureSuccessStatusCode();
+            await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            ctx.Response.Redirect("/dashboard");
+        }).AllowAnonymous();
 
-                var content = await response.Content.ReadAsStringAsync();
-                using var json = System.Text.Json.JsonDocument.Parse(content);
-                var token = json.RootElement.GetProperty("token").GetString()
-                    ?? throw new InvalidOperationException("Token not found in response");
-
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Name, "dev-user"),
-                    new Claim(ClaimTypes.NameIdentifier, "mock-user-001"),
-                    new Claim("oid", "mock-user-001"),
-                    new Claim("token", token)
-                };
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-                ctx.Response.Redirect("/dashboard");
-            }).AllowAnonymous();
-        }
-
-        // Demo login endpoint: creates a fake authentication cookie with demo claims
-        // and redirects to /dashboard. Available regardless of UseEntraId setting.
+        // ── Demo login endpoint — always available ──
         app.MapGet("/login/demo", async (HttpContext ctx, IConfiguration config) =>
         {
             var claims = new List<Claim>
@@ -355,7 +299,6 @@ public static class Program
                 new("oid", "demo-user-001")
             };
 
-            // Acquire mock JWT for API authentication (available when API runs in Development mode)
             var demoLogger = ctx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.UI.DemoLogin");
             try
             {

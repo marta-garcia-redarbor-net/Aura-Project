@@ -15,10 +15,12 @@ public static class DemoEndpoints
 {
     public static IEndpointRouteBuilder MapDemoEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/demo");
+        var group = endpoints.MapGroup("/api/demo")
+            .RequireAuthorization("DemoOnly");
 
+        // Status is public (just checks config flag)
         group.MapGet("/status", (IOptions<DemoModeOptions> opts) =>
-            Results.Ok(new { enabled = opts.Value.Enabled }));
+            Results.Ok(new { enabled = opts.Value.Enabled })).AllowAnonymous();
 
         group.MapPost("/morning-summary", async (
             DemoService demoService,
@@ -119,6 +121,16 @@ public static class DemoEndpoints
                 ?? http.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
             sim.Start(effectiveUserId);
             return Results.Ok(new { message = $"Simulation started — data arriving gradually" });
+        });
+
+        group.MapPost("/reset", async (
+            DemoService demoService,
+            IOptions<DemoModeOptions> opts,
+            CancellationToken ct) =>
+        {
+            if (!opts.Value.Enabled) return Results.Problem("Demo mode is disabled", statusCode: 503);
+            var result = await demoService.DeleteDemoDataAsync(ct);
+            return Results.Ok(new { message = result });
         });
 
         return endpoints;

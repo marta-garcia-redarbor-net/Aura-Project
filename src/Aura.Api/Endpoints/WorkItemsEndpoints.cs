@@ -16,7 +16,7 @@ public static partial class WorkItemsEndpoints
     public static IEndpointRouteBuilder MapWorkItemsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/workitems")
-            .RequireAuthorization();
+            .RequireAuthorization("RequireEntraId");
 
         group.MapGet("/", GetWorkItemsAsync);
 

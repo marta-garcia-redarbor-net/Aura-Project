@@ -1,10 +1,8 @@
 @using Aura.UI.Services
 @using Microsoft.JSInterop
-@using Microsoft.Extensions.Configuration
 @inject IAuthPopupService AuthPopupService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
-@inject IConfiguration Configuration
 
 <button class="@CssClass"
         data-testid="@DataTestId"
@@ -35,16 +33,10 @@
     private bool _loading;
     private bool _popupBlocked;
     private bool _initialized;
-    private bool _useEntraId;
-
-    protected override void OnInitialized()
-    {
-        _useEntraId = Configuration.GetValue<bool>("UseEntraId");
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_initialized && _useEntraId)
+        if (firstRender && !_initialized)
         {
             _initialized = true;
             await AuthPopupService.InitializeAsync(JSRuntime);
@@ -53,14 +45,7 @@
 
     private async Task HandleClick()
     {
-        // Dev mode: no Microsoft Entra ID — use direct /login/dev redirect
-        if (!_useEntraId)
-        {
-            Navigation.NavigateTo("/login/dev", forceLoad: true);
-            return;
-        }
-
-        // Production mode: OIDC popup flow
+        // OIDC popup flow — always used for Microsoft login
         try
         {
             _loading = true;

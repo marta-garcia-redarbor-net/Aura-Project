@@ -64,9 +64,9 @@ public class AuthorizationFlowTests : IClassFixture<WebApplicationFactory<ApiMar
     }
 
     [Fact]
-    public async Task MockLogin_InProduction_ReturnsNotFound()
+    public async Task MockLogin_InProduction_ReturnsValidToken()
     {
-        // Arrange — production environment: mock-login must not be reachable
+        // Arrange — production environment: mock-login is now available in all environments
         var prodFactory = _factory.WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Production");
@@ -76,8 +76,14 @@ public class AuthorizationFlowTests : IClassFixture<WebApplicationFactory<ApiMar
         // Act
         var response = await client.PostAsync("/api/auth/mock-login", null);
 
-        // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        // Assert — mock-login works in all environments (no longer gated by IsDevelopment)
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+        var token = json.RootElement.GetProperty("token").GetString();
+        Assert.False(string.IsNullOrEmpty(token));
+        Assert.Equal(3, token!.Split('.').Length);
     }
 
     [Fact]

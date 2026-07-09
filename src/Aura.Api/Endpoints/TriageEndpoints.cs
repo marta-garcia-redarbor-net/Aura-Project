@@ -21,7 +21,7 @@ public static partial class TriageEndpoints
     public static IEndpointRouteBuilder MapTriageEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/triage")
-            .RequireAuthorization();
+            .RequireAuthorization("RequireEntraId");
 
         group.MapGet("/decisions", GetDecisionsAsync);
 

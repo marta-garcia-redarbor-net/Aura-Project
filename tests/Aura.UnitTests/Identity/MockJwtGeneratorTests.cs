@@ -86,4 +86,44 @@ public class MockJwtGeneratorTests
         Assert.NotNull(nameIdClaim);
         Assert.Equal("uid-789", nameIdClaim.Value);
     }
+
+    [Fact]
+    public void GenerateToken_DefaultParameters_ContainsDemoRoleClaim()
+    {
+        // Arrange
+        var generator = CreateGenerator();
+
+        // Act
+        var tokenString = generator.GenerateToken();
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadJwtToken(tokenString);
+
+        // Assert — mock JWT MUST carry role=Demo for authorization policies
+        var roleClaim = token.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.Role);
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Demo", roleClaim.Value);
+    }
+
+    [Fact]
+    public void GenerateToken_CustomUser_StillContainsDemoRoleClaim()
+    {
+        // Arrange
+        var generator = CreateGenerator();
+
+        // Act — even with custom parameters, role=Demo must be present
+        var tokenString = generator.GenerateToken(
+            userId: "custom-user",
+            displayName: "Custom",
+            email: "custom@test.com",
+            oid: "custom-oid");
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadJwtToken(tokenString);
+
+        // Assert
+        var roleClaim = token.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.Role);
+        Assert.NotNull(roleClaim);
+        Assert.Equal("Demo", roleClaim.Value);
+    }
 }

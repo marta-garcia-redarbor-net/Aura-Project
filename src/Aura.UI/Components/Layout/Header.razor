@@ -32,17 +32,14 @@
     public string UserDisplayName { get; set; } = string.Empty;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
-    [Inject] private IConfiguration Configuration { get; set; } = default!;
 
     private void NavigateToTopPriority()
         => Navigation.NavigateTo("/top-priority");
 
     private void HandleSignOut()
     {
-        // Redirect to the /logout endpoint which handles server-side sign-out.
-        // Cannot call SignOutAsync from Blazor Server because the HTTP response
-        // has already started (SignalR circuit).
-        var useEntraId = Configuration.GetValue<bool>("UseEntraId");
-        Navigation.NavigateTo($"/logout?useEntraId={useEntraId.ToString().ToLowerInvariant()}", forceLoad: true);
+        // Redirect to the /logout endpoint which handles server-side sign-out
+        // for both OIDC and Cookie schemes unconditionally.
+        Navigation.NavigateTo("/logout", forceLoad: true);
     }
 }

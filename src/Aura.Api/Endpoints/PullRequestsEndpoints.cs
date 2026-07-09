@@ -16,7 +16,7 @@ public static partial class PullRequestsEndpoints
     public static IEndpointRouteBuilder MapPullRequestsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/pull-requests")
-            .RequireAuthorization();
+            .RequireAuthorization("RequireEntraId");
 
         group.MapGet("/", GetPullRequestsAsync);
 
@@ -25,11 +25,15 @@ public static partial class PullRequestsEndpoints
 
     private static async Task<IResult> GetPullRequestsAsync(
         IWorkItemReader workItemReader,
+        ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
         string? ownerUserId,
         CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger("Aura.Api.PullRequests");
+        var currentUser = currentUserService.GetCurrentUser();
+        var currentUserOid = currentUser?.Oid;
+        var currentUserDisplayName = currentUser?.DisplayName;
 
         using var activity = ActivitySource.StartActivity("pullrequests.read", ActivityKind.Server);
         activity?.SetTag("pullrequests.endpoint", "/api/pull-requests");
@@ -37,7 +41,7 @@ public static partial class PullRequestsEndpoints
         try
         {
             var items = await workItemReader.ReadBySourceAsync(
-                WorkItemSourceType.PrReview, null, cancellationToken);
+                WorkItemSourceType.PrReview, WorkItemStatus.Pending, cancellationToken);
 
             var filtered = ownerUserId is not null
                 ? items.Where(i => i.OwnerUserId is null || i.OwnerUserId == ownerUserId).ToList()
@@ -48,7 +52,9 @@ public static partial class PullRequestsEndpoints
                 .ThenByDescending(i => i.CapturedAtUtc)
                 .ToList();
 
-            var dtos = ordered.Select(PullRequestMapper.ToDto).ToArray();
+            var dtos = ordered
+                .Select(item => PullRequestMapper.ToDto(item, currentUserOid, currentUserDisplayName))
+                .ToArray();
 
             activity?.SetTag("pullrequests.count", dtos.Length);
             activity?.SetTag("pullrequests.owner_filter", ownerUserId ?? "(none)");

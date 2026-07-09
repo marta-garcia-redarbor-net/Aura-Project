@@ -38,7 +38,8 @@ public sealed class MockJwtGenerator
             new(ClaimTypes.NameIdentifier, userId),
             new(ClaimTypes.Name, displayName),
             new(ClaimTypes.Email, email),
-            new(EntraIdClaims.ObjectId, oid ?? userId)
+            new(EntraIdClaims.ObjectId, oid ?? userId),
+            new(ClaimTypes.Role, "Demo")
         };
 
         var token = new JwtSecurityToken(
