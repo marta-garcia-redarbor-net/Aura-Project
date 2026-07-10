@@ -31,7 +31,7 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
     }
 
     [Fact]
-    public async Task AuthenticatedClient_UsingWebApplicationFactory_CanCallFocusStateAndTriageEndpoints()
+    public async Task AuthenticatedClient_UsingWebApplicationFactory_FocusStateIsEntraOnlyAndTriageAllowsDemo()
     {
         var focusStateResolver = new StubFocusStateResolver(FocusStateType.DeepWork);
         var overrideStore = new StubOverrideStore(FocusStateType.DeepWork);
@@ -45,7 +45,10 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
                 88,
                 "Urgency exceeded threshold",
                 DateTimeOffset.UtcNow,
-                "WindowOfOpportunity")
+                "WindowOfOpportunity",
+                [new DecisionContextItem("ctx-1", "Related production incident", "ActivityMemory", 0.88)],
+                "LLM confirmed urgency",
+                "confirmed")
         ]);
 
         var factory = _factory.WithWebHostBuilder(builder =>
@@ -63,17 +66,16 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var focusResponse = await client.GetAsync("/api/focus-state");
-        Assert.Equal(HttpStatusCode.OK, focusResponse.StatusCode);
-        var focusJson = JsonDocument.Parse(await focusResponse.Content.ReadAsStringAsync()).RootElement;
-        Assert.Equal("DeepWork", focusJson.GetProperty("state").GetString());
-        Assert.True(focusJson.GetProperty("isOverridden").GetBoolean());
-        Assert.Equal("mock-user-001", focusJson.GetProperty("userId").GetString());
+        Assert.Equal(HttpStatusCode.Unauthorized, focusResponse.StatusCode);
 
         var triageResponse = await client.GetAsync("/api/triage/decisions?page=1&pageSize=20");
         Assert.Equal(HttpStatusCode.OK, triageResponse.StatusCode);
         var triageJson = JsonDocument.Parse(await triageResponse.Content.ReadAsStringAsync()).RootElement;
         Assert.Equal(1, triageJson.GetProperty("totalCount").GetInt32());
         Assert.Equal(1, triageJson.GetProperty("items").GetArrayLength());
+        var first = triageJson.GetProperty("items")[0];
+        Assert.Equal("confirmed", first.GetProperty("guardrailOutcome").GetString());
+        Assert.True(first.TryGetProperty("retrievedSemanticContext", out _));
     }
 
     private static async Task<string> GetMockTokenAsync(HttpClient client)
@@ -115,5 +117,8 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
                 Page = page,
                 PageSize = pageSize
             });
+
+        public Task ClearAsync(CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

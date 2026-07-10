@@ -68,4 +68,62 @@ public class PriorityPresentationTests
 
         Assert.Equal(2, count);
     }
+
+    [Theory]
+    [InlineData(null, null, 0)]
+    [InlineData(null, "Low", 25)]
+    [InlineData(null, "Medium", 50)]
+    [InlineData(null, "High", 75)]
+    [InlineData(null, "Critical", 100)]
+    [InlineData(80, null, 80)]
+    [InlineData(80, "Low", 80)]   // PriorityScore wins over PriorityHint
+    public void ResolveEffectivePriorityScore_UsesPriorityScoreFirst_ThenPriorityHint(
+        int? priorityScore, string? priorityHint, int expected)
+    {
+        var item = new InboxItemPreviewResponse("X", "messages", "1m", 1, "Review")
+        {
+            PriorityScore = priorityScore,
+            PriorityHint = priorityHint
+        };
+
+        var result = PriorityPresentation.ResolveEffectivePriorityScore(item);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetHighPriorityCount_FallsBackToPriorityHint_WhenPriorityScoreIsNull()
+    {
+        var items = new[]
+        {
+            new InboxItemPreviewResponse("A", "messages", "1m", 1, "Review") { PriorityScore = null, PriorityHint = "High" },
+            new InboxItemPreviewResponse("B", "messages", "2m", 1, "Review") { PriorityScore = null, PriorityHint = "Critical" },
+            new InboxItemPreviewResponse("C", "messages", "3m", 1, "Review") { PriorityScore = null, PriorityHint = "Low" },
+            new InboxItemPreviewResponse("D", "messages", "4m", 1, "Review") { PriorityScore = 80 },
+        };
+
+        var count = PriorityPresentation.GetHighPriorityCount(items);
+
+        Assert.Equal(3, count); // A(High=75) + B(Critical=100) + D(80)
+    }
+
+    [Theory]
+    [InlineData("high", true)]
+    [InlineData("High", true)]    // Capitalized — como viene del enum .ToString()
+    [InlineData("HIGH", true)]
+    [InlineData("Critical", true)]
+    [InlineData("critical", true)]
+    [InlineData("Medium", false)]
+    [InlineData("Low", false)]
+    public void GetHighPriorityPrCount_MatchesPriorityCaseInsensitive(string? priority, bool expected)
+    {
+        var items = new[]
+        {
+            new PrPreviewItemResponse("PR Title", "PR #1 Title", "main", "passing", 1, 1, 0, "alice", DateTimeOffset.UtcNow, "1m ago", "https://dev.azure.com", false, priority)
+        };
+
+        var count = PriorityPresentation.GetHighPriorityPrCount(items);
+
+        Assert.Equal(expected ? 1 : 0, count);
+    }
 }

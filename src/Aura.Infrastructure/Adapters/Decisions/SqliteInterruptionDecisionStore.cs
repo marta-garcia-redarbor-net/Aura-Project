@@ -1,6 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Microsoft.Data.Sqlite;
+using System.Text.Json;
 
 namespace Aura.Infrastructure.Adapters.Decisions;
 
@@ -10,6 +11,8 @@ namespace Aura.Infrastructure.Adapters.Decisions;
 /// </summary>
 internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionStore
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     private readonly SqliteConnection _connection;
 
     public SqliteInterruptionDecisionStore(SqliteConnection connection)
@@ -30,13 +33,20 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
                 PriorityScore INTEGER NULL,
                 Explanation TEXT NULL,
                 Timestamp TEXT NOT NULL,
-                FocusState TEXT NOT NULL
+                FocusState TEXT NOT NULL,
+                RetrievedSemanticContext TEXT NULL,
+                LlmRationale TEXT NULL,
+                GuardrailOutcome TEXT NULL
             );
 
             CREATE INDEX IF NOT EXISTS IX_InterruptionDecisions_Timestamp
                 ON InterruptionDecisions (Timestamp DESC);
             """;
         cmd.ExecuteNonQuery();
+
+        EnsureColumn(connection, "InterruptionDecisions", "RetrievedSemanticContext", "TEXT");
+        EnsureColumn(connection, "InterruptionDecisions", "LlmRationale", "TEXT");
+        EnsureColumn(connection, "InterruptionDecisions", "GuardrailOutcome", "TEXT");
     }
 
     public Task RecordAsync(InterruptionDecisionRecord record, CancellationToken cancellationToken = default)
@@ -46,8 +56,8 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState)
-            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState)
+            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome)
+            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState, @RetrievedSemanticContext, @LlmRationale, @GuardrailOutcome)
             """;
         cmd.Parameters.AddWithValue("@Id", Guid.NewGuid().ToString());
         cmd.Parameters.AddWithValue("@WorkItemId", record.WorkItemId.ToString());
@@ -58,6 +68,9 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         cmd.Parameters.AddWithValue("@Explanation", record.Explanation);
         cmd.Parameters.AddWithValue("@Timestamp", record.Timestamp.ToString("O"));
         cmd.Parameters.AddWithValue("@FocusState", record.FocusState);
+        cmd.Parameters.AddWithValue("@RetrievedSemanticContext", SerializeContext(record.RetrievedSemanticContext) ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@LlmRationale", (object?)record.LlmRationale ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@GuardrailOutcome", (object?)record.GuardrailOutcome ?? DBNull.Value);
         cmd.ExecuteNonQuery();
 
         return Task.CompletedTask;
@@ -78,7 +91,7 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState
+            SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome
             FROM InterruptionDecisions
             ORDER BY Timestamp DESC
             LIMIT @Limit OFFSET @Offset
@@ -114,6 +127,60 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
             PriorityScore: reader.IsDBNull(4) ? null : reader.GetInt32(4),
             Explanation: reader.GetString(5),
             Timestamp: DateTimeOffset.Parse(reader.GetString(6)),
-            FocusState: reader.GetString(7));
+            FocusState: reader.GetString(7),
+            RetrievedSemanticContext: DeserializeContext(reader.IsDBNull(8) ? null : reader.GetString(8)),
+            LlmRationale: reader.IsDBNull(9) ? null : reader.GetString(9),
+            GuardrailOutcome: reader.IsDBNull(10) ? "confirmed" : reader.GetString(10));
+    }
+
+    private static string? SerializeContext(IReadOnlyList<DecisionContextItem>? context)
+    {
+        if (context is null || context.Count == 0)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Serialize(context, JsonOptions);
+    }
+
+    private static IReadOnlyList<DecisionContextItem> DeserializeContext(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<List<DecisionContextItem>>(value, JsonOptions) ?? [];
+    }
+
+    public Task ClearAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "DELETE FROM InterruptionDecisions";
+        cmd.ExecuteNonQuery();
+
+        return Task.CompletedTask;
+    }
+
+    private static void EnsureColumn(SqliteConnection connection, string table, string column, string typeDefinition)
+    {
+        using var checkCmd = connection.CreateCommand();
+        checkCmd.CommandText = $"PRAGMA table_info({table});";
+
+        using var reader = checkCmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var existingName = reader.GetString(1);
+            if (string.Equals(existingName, column, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        using var alterCmd = connection.CreateCommand();
+        alterCmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {column} {typeDefinition};";
+        alterCmd.ExecuteNonQuery();
     }
 }

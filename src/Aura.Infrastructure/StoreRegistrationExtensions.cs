@@ -128,19 +128,6 @@ public static class StoreRegistrationExtensions
         return services;
     }
 
-    internal sealed class EfSchemaInitializer : IHostedService
-    {
-        private readonly IServiceScopeFactory _scopeFactory;
-        public EfSchemaInitializer(IServiceScopeFactory scopeFactory) => _scopeFactory = scopeFactory;
-        public async Task StartAsync(CancellationToken ct)
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AuraDbContext>();
-            await db.Database.EnsureCreatedAsync(ct);
-        }
-        public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
-    }
-
     private static bool IsEntityFramework(IConfiguration config, string storeName)
     {
         // Per-store override takes precedence (e.g., Persistence:Providers:WorkItem)
@@ -156,13 +143,145 @@ public static class StoreRegistrationExtensions
 
 internal sealed class EfSchemaInitializer : IHostedService
 {
+    private const string BaselineMigrationId = "20260710110000_InitialCreateBaseline";
+    private const string TraceColumnsMigrationId = "20260710120000_AddInterruptionDecisionTraceColumns";
+    private const string EfProductVersion = "9.0.6";
+
     private readonly IServiceScopeFactory _scopeFactory;
     public EfSchemaInitializer(IServiceScopeFactory scopeFactory) => _scopeFactory = scopeFactory;
+
     public async Task StartAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AuraDbContext>();
-        await db.Database.EnsureCreatedAsync(ct);
+
+        await BackfillLegacySqliteMigrationHistoryAsync(db, ct);
+        await db.Database.MigrateAsync(ct);
     }
+
     public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
+
+    private static async Task BackfillLegacySqliteMigrationHistoryAsync(AuraDbContext db, CancellationToken ct)
+    {
+        if (!db.Database.IsSqlite())
+        {
+            return;
+        }
+
+        var connection = db.Database.GetDbConnection();
+        var shouldClose = connection.State != System.Data.ConnectionState.Open;
+        if (shouldClose)
+        {
+            await connection.OpenAsync(ct);
+        }
+
+        try
+        {
+            if (await TableExistsAsync(connection, "__EFMigrationsHistory", ct))
+            {
+                return;
+            }
+
+            // If no app tables exist, this is a clean DB. Let normal migrations run.
+            if (!await TableExistsAsync(connection, "WorkItems", ct)
+                && !await TableExistsAsync(connection, "InterruptionDecisions", ct))
+            {
+                return;
+            }
+
+            // Backfill migration history for legacy databases created before MigrateAsync startup.
+            await ExecuteNonQueryAsync(connection, @"
+CREATE TABLE IF NOT EXISTS ""__EFMigrationsHistory"" (
+    ""MigrationId"" TEXT NOT NULL CONSTRAINT ""PK___EFMigrationsHistory"" PRIMARY KEY,
+    ""ProductVersion"" TEXT NOT NULL
+);", ct);
+
+            if (await HasAllBaselineTablesAsync(connection, ct))
+            {
+                await ExecuteNonQueryAsync(connection,
+                    $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ('{BaselineMigrationId}', '{EfProductVersion}');",
+                    ct);
+            }
+
+            var hasTraceColumns = await ColumnExistsAsync(connection, "InterruptionDecisions", "RetrievedSemanticContext", ct)
+                                  && await ColumnExistsAsync(connection, "InterruptionDecisions", "LlmRationale", ct)
+                                  && await ColumnExistsAsync(connection, "InterruptionDecisions", "GuardrailOutcome", ct);
+
+            if (hasTraceColumns)
+            {
+                await ExecuteNonQueryAsync(connection,
+                    $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ('{TraceColumnsMigrationId}', '{EfProductVersion}');",
+                    ct);
+            }
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync();
+            }
+        }
+    }
+
+    private static async Task<bool> HasAllBaselineTablesAsync(System.Data.Common.DbConnection connection, CancellationToken ct)
+    {
+        var requiredTables = new[]
+        {
+            "AlertRules",
+            "FocusStateOverrides",
+            "InterruptionDecisions",
+            "MeetingAlerts",
+            "MorningSummaryEmission",
+            "MsalTokenCache",
+            "NotificationOutbox",
+            "SemanticOutbox",
+            "WorkItems"
+        };
+
+        foreach (var table in requiredTables)
+        {
+            if (!await TableExistsAsync(connection, table, ct))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async Task<bool> TableExistsAsync(System.Data.Common.DbConnection connection, string tableName, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT 1 FROM sqlite_master WHERE type='table' AND name=$name LIMIT 1;";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        parameter.Value = tableName;
+        command.Parameters.Add(parameter);
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is not null;
+    }
+
+    private static async Task<bool> ColumnExistsAsync(System.Data.Common.DbConnection connection, string tableName, string columnName, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info(\"{tableName}\");";
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            var currentColumnName = reader.GetString(1);
+            if (string.Equals(currentColumnName, columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static async Task ExecuteNonQueryAsync(System.Data.Common.DbConnection connection, string sql, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync(ct);
+    }
 }

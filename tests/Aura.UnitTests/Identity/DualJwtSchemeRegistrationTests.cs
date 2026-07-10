@@ -130,6 +130,24 @@ public class DualJwtSchemeRegistrationTests
     }
 
     [Fact]
+    public async Task AddIdentityAdapter_RequireEntraOrDemoPolicyAcceptsBothSchemes()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddAuraInfrastructure(CreateConfig(), CreateDevEnvironment());
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policy = await policyProvider.GetPolicyAsync("RequireEntraOrDemo");
+
+        // Assert
+        Assert.NotNull(policy);
+        Assert.Contains("EntraId", policy.AuthenticationSchemes);
+        Assert.Contains("MockJwt", policy.AuthenticationSchemes);
+    }
+
+    [Fact]
     public void AddIdentityAdapter_MockJwtGeneratorRegisteredRegardlessOfEnvironment()
     {
         // Arrange — production environment

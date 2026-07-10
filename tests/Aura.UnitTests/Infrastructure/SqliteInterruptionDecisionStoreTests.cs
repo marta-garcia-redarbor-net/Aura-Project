@@ -176,4 +176,36 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
 
         Assert.Equal(3, result.TotalCount);
     }
+
+    [Fact]
+    public async Task RecordAsync_ThenQueryAsync_RoundTripsTraceFields()
+    {
+        var context = new List<DecisionContextItem>
+        {
+            new("ctx-1", "Production outage context", "ActivityMemory", 0.93)
+        };
+
+        var record = new InterruptionDecisionRecord(
+            WorkItemId: Guid.NewGuid(),
+            Title: "Trace test item",
+            SourceType: "teams",
+            Decision: "INTERRUPT",
+            PriorityScore: 95,
+            Explanation: "Trace round-trip",
+            Timestamp: DateTimeOffset.UtcNow,
+            FocusState: "WindowOfOpportunity",
+            RetrievedSemanticContext: context,
+            LlmRationale: "LLM rationale text",
+            GuardrailOutcome: "adjusted");
+
+        await _store.RecordAsync(record, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+
+        Assert.Single(result.Items);
+        var persisted = result.Items[0];
+        Assert.Equal("adjusted", persisted.GuardrailOutcome);
+        Assert.Equal("LLM rationale text", persisted.LlmRationale);
+        Assert.Single(persisted.RetrievedSemanticContext!);
+        Assert.Equal("ctx-1", persisted.RetrievedSemanticContext![0].CanonicalSourceId);
+    }
 }

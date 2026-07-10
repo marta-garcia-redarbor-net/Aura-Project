@@ -107,7 +107,7 @@ public class DualJwtValidationTests : IClassFixture<WebApplicationFactory<ApiMar
     }
 
     [Fact]
-    public async Task ProtectedEndpoint_WithMockTokenWithoutDemoRole_StillAcceptedByDefaultPolicy()
+    public async Task ProtectedEndpoint_WithMockTokenWithoutDemoRole_Returns401()
     {
         // Arrange — create a mock JWT WITHOUT role=Demo (manually, to test default policy)
         var token = GenerateMockJwtWithoutDemoRole();
@@ -118,8 +118,8 @@ public class DualJwtValidationTests : IClassFixture<WebApplicationFactory<ApiMar
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var response = await client.SendAsync(request);
 
-        // Assert — default policy accepts MockJwt scheme regardless of role
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Assert — RequireEntraOrDemo policy rejects MockJwt without Demo role
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private static string GenerateMockJwtWithoutDemoRole()

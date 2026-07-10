@@ -377,6 +377,144 @@ public class PullRequestMapperTests
     }
 
     // ============================================================
+    // AttentionScope derivation
+    // ============================================================
+
+    [Fact]
+    public void ToDto_AttentionScope_UsesPrecomputedMetadataValue()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.attentionScope"] = "group"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "user-abc");
+
+        Assert.Equal("group", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WithDirectOidMatch_ReturnsDirect()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.oid"] = "user-abc",
+            ["pr.reviewer.0.displayName"] = "Jane Doe",
+            ["pr.reviewer.0.isContainer"] = "False"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "user-abc");
+
+        Assert.Equal("direct", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WithGroupOidMatch_ReturnsGroup()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.oid"] = "group-xyz",
+            ["pr.reviewer.0.displayName"] = "Backend Team",
+            ["pr.reviewer.0.isContainer"] = "True"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "group-xyz");
+
+        Assert.Equal("group", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WithDirectAndGroupMatches_ReturnsBoth()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "2",
+            ["pr.reviewer.0.oid"] = "user-abc",
+            ["pr.reviewer.0.displayName"] = "Jane Doe",
+            ["pr.reviewer.0.isContainer"] = "False",
+            ["pr.reviewer.1.oid"] = "user-abc",
+            ["pr.reviewer.1.displayName"] = "Platform Team",
+            ["pr.reviewer.1.isContainer"] = "True"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "user-abc");
+
+        Assert.Equal("both", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WithoutMatches_ReturnsNone()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.oid"] = "someone-else",
+            ["pr.reviewer.0.displayName"] = "Someone Else",
+            ["pr.reviewer.0.isContainer"] = "False"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "user-abc");
+
+        Assert.Equal("none", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WhenCurrentUserOidUnavailable_ReturnsUnknown()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.oid"] = "user-abc",
+            ["pr.reviewer.0.displayName"] = "Jane Doe",
+            ["pr.reviewer.0.isContainer"] = "False"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: null);
+
+        Assert.Equal("unknown", dto.AttentionScope);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WhenOidMissingAndDisplayNameMatches_ReturnsDirectFallback()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.displayName"] = "Jane Doe",
+            ["pr.reviewer.0.isContainer"] = "False"
+        });
+
+        var dto = PullRequestMapper.ToDto(
+            workItem,
+            currentUserOid: null,
+            currentUserDisplayName: "Jane Doe");
+
+        Assert.Equal("direct", dto.AttentionScope);
+        Assert.Equal("direct", workItem.Metadata["pr.attentionScope"]);
+        Assert.Equal("displayName", workItem.Metadata["pr.attentionScope.fallback"]);
+    }
+
+    [Fact]
+    public void ToDto_AttentionScope_WithDerivedOidMatch_PersistsDerivedScopeMetadata()
+    {
+        var workItem = CreateWorkItem("pr-1", metadata: new Dictionary<string, string>
+        {
+            ["pr.reviewerCount"] = "1",
+            ["pr.reviewer.0.oid"] = "user-abc",
+            ["pr.reviewer.0.displayName"] = "Jane Doe",
+            ["pr.reviewer.0.isContainer"] = "False"
+        });
+
+        var dto = PullRequestMapper.ToDto(workItem, currentUserOid: "user-abc");
+
+        Assert.Equal("direct", dto.AttentionScope);
+        Assert.Equal("direct", workItem.Metadata["pr.attentionScope"]);
+        Assert.False(workItem.Metadata.ContainsKey("pr.attentionScope.fallback"));
+    }
+
+    // ============================================================
     // Helpers
     // ============================================================
 

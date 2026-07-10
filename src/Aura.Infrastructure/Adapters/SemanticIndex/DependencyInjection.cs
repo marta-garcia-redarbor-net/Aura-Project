@@ -35,6 +35,7 @@ internal static class DependencyInjection
 
         services.AddScoped<ISemanticIndexWriter, QdrantSemanticIndexAdapter>();
         services.AddScoped<ISemanticContextRetriever, QdrantSemanticContextAdapter>();
+        services.AddScoped<IDecisionContextRetriever, QdrantDecisionContextAdapter>();
 
         return services;
     }

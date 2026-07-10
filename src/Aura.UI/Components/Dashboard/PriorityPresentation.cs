@@ -44,21 +44,36 @@ public static class PriorityPresentation
         var projected = items
             .Select(item => new InboxItemPreviewResponse(item.Title, "pull-requests", item.RelativeTimestamp, 0, "Review")
             {
-                PriorityScore = item.Priority switch
-                {
-                    "critical" => 100,
-                    "high" => 75,
-                    "medium" => 50,
-                    _ => 25
-                }
+                PriorityScore = MapPrPriorityToScore(item.Priority)
             })
             .ToList();
 
         return SelectTopPriority(projected, minimumTop).Count > 0;
     }
 
+    /// <summary>
+    /// Resolves the effective priority score for an inbox item, falling back from
+    /// <see cref="InboxItemPreviewResponse.PriorityScore"/> to
+    /// <see cref="InboxItemPreviewResponse.PriorityHint"/> when the numeric score is not set.
+    /// Mirrors <c>DashboardEndpoints.ResolveEffectivePriorityScore</c> on the API side.
+    /// </summary>
+    public static int ResolveEffectivePriorityScore(InboxItemPreviewResponse item)
+    {
+        if (item.PriorityScore.HasValue)
+            return item.PriorityScore.Value;
+
+        return item.PriorityHint switch
+        {
+            "Critical" => 100,
+            "High" => 75,
+            "Medium" => 50,
+            "Low" => 25,
+            _ => 0
+        };
+    }
+
     public static int GetHighPriorityCount(IEnumerable<InboxItemPreviewResponse>? items)
-        => items?.Count(item => IsHighPriority(item.PriorityScore)) ?? 0;
+        => items?.Count(item => ResolveEffectivePriorityScore(item) >= 75) ?? 0;
 
     public static int GetHighPriorityPrCount(IEnumerable<PrPreviewItemResponse>? items)
         => items?.Count(item => IsHighPriority(MapPrPriorityToScore(item.Priority))) ?? 0;
@@ -71,7 +86,7 @@ public static class PriorityPresentation
             .ToList();
 
     private static int MapPrPriorityToScore(string? priority)
-        => priority switch
+        => (priority?.ToLowerInvariant()) switch
         {
             "critical" => 100,
             "high" => 75,

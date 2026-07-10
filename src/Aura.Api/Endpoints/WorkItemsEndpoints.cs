@@ -25,12 +25,14 @@ public static partial class WorkItemsEndpoints
 
     private static async Task<IResult> GetWorkItemsAsync(
         IWorkItemReader workItemReader,
+        ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
         string sourceType,
         string? status,
         CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger("Aura.Api.WorkItems");
+        var currentUser = currentUserService.GetCurrentUser();
 
         using var activity = ActivitySource.StartActivity("workitems.read", ActivityKind.Server);
         activity?.SetTag("workitems.endpoint", "/api/workitems");
@@ -59,7 +61,7 @@ public static partial class WorkItemsEndpoints
                 statusFilter = parsedStatus;
             }
 
-            var items = await workItemReader.ReadBySourceAsync(parsedSourceType, statusFilter, cancellationToken);
+            var items = await workItemReader.ReadBySourceAsync(parsedSourceType, statusFilter, currentUser?.Oid, cancellationToken);
 
             activity?.SetTag("workitems.count", items.Count);
 

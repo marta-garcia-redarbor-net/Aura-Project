@@ -2,7 +2,6 @@
 @using Aura.UI.Components.Auth
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDecisionLogApiClient DecisionLogApiClient
-@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
@@ -54,21 +53,76 @@
                             <th>Decision</th>
                             <th>Focus State</th>
                             <th>Explanation</th>
+                            <th>Guardrail Outcome</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in _data.Items)
                         {
-                            <tr class="decision-log-table__row"
-                                data-testid="decision-log-row"
-                                @onclick="() => NavigateToWorkItem(item.WorkItemId)">
-                                <td>@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@item.Title</td>
-                                <td>@item.SourceType</td>
-                                <td>@(item.PriorityScore?.ToString() ?? "-")</td>
-                                <td>@item.Decision</td>
-                                <td>@item.FocusState</td>
-                                <td>@item.Explanation</td>
+                            <tr class="decision-log-table__row" data-testid="decision-log-row">
+                                <td colspan="8" class="decision-log-table__details-cell">
+                                    <details class="decision-trace" data-testid="decision-trace-details">
+                                        <summary class="decision-trace__summary" data-testid="decision-trace-summary">
+                                            <span class="decision-trace__summary-grid">
+                                                <span>@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                                                <span>@item.Title</span>
+                                                <span>@item.SourceType</span>
+                                                <span>@(item.PriorityScore?.ToString() ?? "-")</span>
+                                                <span>@item.Decision</span>
+                                                <span>@item.FocusState</span>
+                                                <span>@item.Explanation</span>
+                                                <span>
+                                                    <span class="decision-trace__guardrail-badge decision-trace__guardrail-badge--@NormalizeGuardrail(item.GuardrailOutcome)">
+                                                        @NormalizeGuardrail(item.GuardrailOutcome)
+                                                    </span>
+                                                </span>
+                                            </span>
+                                        </summary>
+
+                                        <div class="decision-trace__panel" data-testid="decision-trace-panel">
+                                            <section class="decision-trace__section" data-testid="decision-trace-section-summary">
+                                                <h4>Summary</h4>
+                                                <p><strong>Final verdict:</strong> @item.Decision</p>
+                                                <p><strong>Guardrail outcome:</strong> @NormalizeGuardrail(item.GuardrailOutcome)</p>
+                                            </section>
+
+                                            <section class="decision-trace__section" data-testid="decision-trace-section-rules">
+                                                <h4>Rules Fired</h4>
+                                                <p>@item.Explanation</p>
+                                            </section>
+
+                                            <section class="decision-trace__section" data-testid="decision-trace-section-rationale">
+                                                <h4>LLM Rationale</h4>
+                                                <p>@(string.IsNullOrWhiteSpace(item.LlmRationale) ? "No LLM rationale recorded." : item.LlmRationale)</p>
+                                            </section>
+
+                                            <section class="decision-trace__section" data-testid="decision-trace-section-context">
+                                                <h4>Semantic Context</h4>
+                                                <details class="decision-trace__context-details" data-testid="decision-trace-context-details">
+                                                    <summary>
+                                                        @((item.RetrievedSemanticContext?.Count ?? 0) == 0
+                                                            ? "No retrieved context items"
+                                                            : $"{item.RetrievedSemanticContext!.Count} retrieved context items")
+                                                    </summary>
+
+                                                    @if (item.RetrievedSemanticContext is { Count: > 0 })
+                                                    {
+                                                        <ol class="decision-trace__context-list">
+                                                            @foreach (var contextItem in item.RetrievedSemanticContext.OrderByDescending(x => x.RelevanceScore))
+                                                            {
+                                                                <li>
+                                                                    <div><strong>@contextItem.SourceType</strong> · @contextItem.CanonicalSourceId</div>
+                                                                    <div>@contextItem.ContentSnippet</div>
+                                                                    <div>Score: @contextItem.RelevanceScore.ToString("0.00")</div>
+                                                                </li>
+                                                            }
+                                                        </ol>
+                                                    }
+                                                </details>
+                                            </section>
+                                        </div>
+                                    </details>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -132,8 +186,19 @@
         }
     }
 
-    private void NavigateToWorkItem(Guid workItemId)
+    private static string NormalizeGuardrail(string? guardrailOutcome)
     {
-        Navigation.NavigateTo($"/workitems/{workItemId}");
+        if (string.IsNullOrWhiteSpace(guardrailOutcome))
+        {
+            return "confirmed";
+        }
+
+        return guardrailOutcome.Trim().ToLowerInvariant() switch
+        {
+            "adjusted" => "adjusted",
+            "blocked" => "blocked",
+            "llm-unavailable" => "llm-unavailable",
+            _ => "confirmed"
+        };
     }
 }

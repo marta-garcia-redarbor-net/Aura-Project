@@ -154,6 +154,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
     public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
         WorkItemSourceType sourceType,
         WorkItemStatus? statusFilter,
+        string? ownerUserId,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -165,6 +166,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
             FROM WorkItems
             WHERE SourceType = @SourceType
               AND (@Status IS NULL OR Status = @Status)
+              AND (@OwnerUserId IS NULL OR OwnerUserId IS NULL OR OwnerUserId = @OwnerUserId)
             ORDER BY
               COALESCE(PriorityScore,
                 CASE Priority
@@ -179,6 +181,7 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
             """;
         cmd.Parameters.AddWithValue("@SourceType", sourceType.ToString());
         cmd.Parameters.AddWithValue("@Status", (object?)statusFilter?.ToString() ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@OwnerUserId", (object?)ownerUserId ?? DBNull.Value);
 
         var items = new List<WorkItem>();
         using var reader = cmd.ExecuteReader();
@@ -196,8 +199,9 @@ internal sealed class SqliteWorkItemStore : IWorkItemStore, IWorkItemReader
             var correlationId = reader.GetString(7);
             var capturedAtUtc = DateTimeOffset.Parse(reader.GetString(8));
             int? priorityScore = reader.IsDBNull(13) ? null : reader.GetInt32(13);
+            var ownerUser = reader.IsDBNull(14) ? null : reader.GetString(14);
 
-            items.Add(new WorkItem(externalId, title, source, sourceTypeValue, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore));
+            items.Add(new WorkItem(externalId, title, source, sourceTypeValue, priority, metadata, correlationId, capturedAtUtc, priorityScore: priorityScore, ownerUserId: ownerUser));
         }
 
         return Task.FromResult<IReadOnlyList<WorkItem>>(items);

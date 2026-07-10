@@ -67,6 +67,11 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
         {
             if (_mapper.TryMap(payload, out var workItem) && workItem is not null)
             {
+                if (_sourceProvider is null)
+                {
+                    ((IDictionary<string, string>)workItem.Metadata)[PrMetadataKeys.AttentionScope] = "direct";
+                }
+
                 _buffer.Enqueue(workItem);
                 mappedCount++;
                 continue;
@@ -101,6 +106,11 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 09, 15, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = ["Ana López", "Pedro Gómez"],
+            ReviewerIdentities =
+            [
+                new PrReviewerIdentity("ana-lopez-oid", "Ana López", false),
+                new PrReviewerIdentity("pedro-gomez-oid", "Pedro Gómez", false)
+            ],
             CommentCount = 12,
             FileCount = 3,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura/pullrequest/142",
@@ -117,6 +127,10 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 10, 30, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = ["María García"],
+            ReviewerIdentities =
+            [
+                new PrReviewerIdentity("maria-garcia-oid", "María García", false)
+            ],
             CommentCount = 8,
             FileCount = 5,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura.Auth/pullrequest/139",
@@ -133,6 +147,12 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 14, 00, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = ["Ana López", "Carlos Ruiz", "Pedro Gómez"],
+            ReviewerIdentities =
+            [
+                new PrReviewerIdentity("ana-lopez-oid", "Ana López", false),
+                new PrReviewerIdentity("platform-reviewers-oid", "Platform Reviewers", true),
+                new PrReviewerIdentity("pedro-gomez-oid", "Pedro Gómez", false)
+            ],
             CommentCount = 5,
             FileCount = 12,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura/pullrequest/145",
@@ -149,6 +169,10 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 12, 00, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = ["Laura Sánchez"],
+            ReviewerIdentities =
+            [
+                new PrReviewerIdentity("laura-sanchez-oid", "Laura Sánchez", false)
+            ],
             CommentCount = 3,
             FileCount = 8,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura.Payments/pullrequest/141",
@@ -165,6 +189,7 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 06, 30, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = [],
+            ReviewerIdentities = [],
             CommentCount = 0,
             FileCount = 15,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura/pullrequest/148",
@@ -181,6 +206,10 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
             UpdatedAt = new DateTimeOffset(2026, 07, 1, 09, 45, 00, TimeSpan.Zero),
             Status = "active",
             Reviewers = ["Carlos Ruiz"],
+            ReviewerIdentities =
+            [
+                new PrReviewerIdentity(null, "Carlos Ruiz", false)
+            ],
             CommentCount = 1,
             FileCount = 4,
             SourceLink = "https://dev.azure.com/auraorg/Aura/_git/Aura.Docs/pullrequest/150",

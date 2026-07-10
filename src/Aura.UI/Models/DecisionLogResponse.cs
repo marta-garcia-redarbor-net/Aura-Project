@@ -17,4 +17,13 @@ public sealed record DecisionLogItemResponse(
     int? PriorityScore,
     string Explanation,
     DateTimeOffset Timestamp,
-    string FocusState);
+    string FocusState,
+    IReadOnlyList<DecisionContextItemResponse>? RetrievedSemanticContext = null,
+    string? LlmRationale = null,
+    string? GuardrailOutcome = null);
+
+public sealed record DecisionContextItemResponse(
+    string CanonicalSourceId,
+    string ContentSnippet,
+    string SourceType,
+    double RelevanceScore);

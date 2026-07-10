@@ -10,22 +10,33 @@ namespace Aura.Application.Mapping;
 public static class PullRequestMapper
 {
     private const string PrExternalIdPrefix = "pr-";
+    private const string AttentionScopeDirect = "direct";
+    private const string AttentionScopeGroup = "group";
+    private const string AttentionScopeBoth = "both";
+    private const string AttentionScopeNone = "none";
+    private const string AttentionScopeUnknown = "unknown";
 
-    public static PullRequestDto ToDto(WorkItem item)
+    public static PullRequestDto ToDto(
+        WorkItem item,
+        string? currentUserOid = null,
+        string? currentUserDisplayName = null)
     {
+        var attentionScope = DeriveAttentionScope(item, currentUserOid, currentUserDisplayName, out var fallback);
+        TryPersistDerivedAttentionMetadata(item, attentionScope, fallback);
+
         return new PullRequestDto(
             Id: ParseIdFromExternalId(item.ExternalId),
             Title: item.Title,
-            RepoName: GetMetadataString(item, "pr.repo", ""),
-            Author: GetMetadataString(item, "pr.author", ""),
+            RepoName: GetMetadataString(item, PrMetadataKeys.Repo, ""),
+            Author: GetMetadataString(item, PrMetadataKeys.Author, ""),
             CreatedAt: item.CapturedAtUtc,
-            UpdatedAt: GetMetadataDateTimeOffset(item, "pr.updatedAt", item.CapturedAtUtc),
-            Status: GetMetadataString(item, "pr.status", "pending"),
-            ReviewerCount: GetMetadataInt(item, "pr.reviewerCount"),
-            CommentCount: GetMetadataInt(item, "pr.commentCount"),
-            FileCount: GetMetadataInt(item, "pr.fileCount"),
-            SourceLink: GetMetadataString(item, "pr.sourceLink", ""),
-            IsDraft: GetMetadataBool(item, "pr.isDraft"),
+            UpdatedAt: GetMetadataDateTimeOffset(item, PrMetadataKeys.UpdatedAt, item.CapturedAtUtc),
+            Status: GetMetadataString(item, PrMetadataKeys.Status, "pending"),
+            ReviewerCount: GetMetadataInt(item, PrMetadataKeys.ReviewerCount),
+            CommentCount: GetMetadataInt(item, PrMetadataKeys.CommentCount),
+            FileCount: GetMetadataInt(item, PrMetadataKeys.FileCount),
+            SourceLink: GetMetadataString(item, PrMetadataKeys.SourceLink, ""),
+            IsDraft: GetMetadataBool(item, PrMetadataKeys.IsDraft),
             Priority: item.Priority.ToString(),
             BranchName: "",
             SourceBranchName: "",
@@ -33,7 +44,110 @@ public static class PullRequestMapper
             ReviewApprovals: 0,
             ReviewRequired: 0,
             ReviewChangesRequested: 0,
-            PriorityScore: item.PriorityScore);
+            PriorityScore: item.PriorityScore,
+            AttentionScope: attentionScope);
+    }
+
+    private static string DeriveAttentionScope(
+        WorkItem item,
+        string? currentUserOid,
+        string? currentUserDisplayName,
+        out string? fallback)
+    {
+        fallback = null;
+
+        var precomputedScope = GetMetadataString(item, PrMetadataKeys.AttentionScope, "");
+        if (!string.IsNullOrWhiteSpace(precomputedScope))
+        {
+            return precomputedScope;
+        }
+
+        var reviewerCount = GetMetadataInt(item, PrMetadataKeys.ReviewerCount);
+
+        if (!string.IsNullOrWhiteSpace(currentUserOid))
+        {
+            var hasDirectOidMatch = false;
+            var hasGroupOidMatch = false;
+
+            for (var i = 0; i < reviewerCount; i++)
+            {
+                var oid = GetMetadataString(item, PrMetadataKeys.ReviewerOid(i), "");
+                if (!string.Equals(oid, currentUserOid, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var isContainer = GetMetadataBool(item, PrMetadataKeys.ReviewerIsContainer(i));
+                if (isContainer)
+                {
+                    hasGroupOidMatch = true;
+                }
+                else
+                {
+                    hasDirectOidMatch = true;
+                }
+            }
+
+            if (hasDirectOidMatch && hasGroupOidMatch)
+            {
+                return AttentionScopeBoth;
+            }
+
+            if (hasDirectOidMatch)
+            {
+                return AttentionScopeDirect;
+            }
+
+            if (hasGroupOidMatch)
+            {
+                return AttentionScopeGroup;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentUserDisplayName))
+        {
+            for (var i = 0; i < reviewerCount; i++)
+            {
+                var oid = GetMetadataString(item, PrMetadataKeys.ReviewerOid(i), "");
+                if (!string.IsNullOrWhiteSpace(oid))
+                {
+                    continue;
+                }
+
+                var displayName = GetMetadataString(item, PrMetadataKeys.ReviewerDisplayName(i), "");
+                if (string.Equals(displayName, currentUserDisplayName, StringComparison.OrdinalIgnoreCase))
+                {
+                    fallback = "displayName";
+                    return AttentionScopeDirect;
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(currentUserOid)
+                ? AttentionScopeUnknown
+                : AttentionScopeNone;
+        }
+
+        return string.IsNullOrWhiteSpace(currentUserOid)
+            ? AttentionScopeUnknown
+            : AttentionScopeNone;
+    }
+
+    private static void TryPersistDerivedAttentionMetadata(WorkItem item, string attentionScope, string? fallback)
+    {
+        if (item.Metadata is not IDictionary<string, string> mutableMetadata)
+        {
+            return;
+        }
+
+        mutableMetadata[PrMetadataKeys.AttentionScope] = attentionScope;
+
+        if (string.Equals(fallback, "displayName", StringComparison.Ordinal))
+        {
+            mutableMetadata[PrMetadataKeys.AttentionScopeFallback] = "displayName";
+            return;
+        }
+
+        mutableMetadata.Remove(PrMetadataKeys.AttentionScopeFallback);
     }
 
     private static int ParseIdFromExternalId(string externalId)

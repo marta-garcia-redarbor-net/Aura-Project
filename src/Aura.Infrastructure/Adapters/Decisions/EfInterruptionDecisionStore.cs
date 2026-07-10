@@ -2,6 +2,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Aura.Infrastructure.Adapters.Decisions;
 
@@ -11,6 +12,8 @@ namespace Aura.Infrastructure.Adapters.Decisions;
 /// </summary>
 internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     private readonly AuraDbContext _db;
 
     public EfInterruptionDecisionStore(AuraDbContext db)
@@ -33,7 +36,10 @@ internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
             PriorityScore = record.PriorityScore,
             Explanation = record.Explanation,
             Timestamp = record.Timestamp.ToString("O"),
-            FocusState = record.FocusState
+            FocusState = record.FocusState,
+            RetrievedSemanticContext = SerializeContext(record.RetrievedSemanticContext),
+            LlmRationale = record.LlmRationale,
+            GuardrailOutcome = record.GuardrailOutcome
         });
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -63,7 +69,10 @@ internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
                 e.PriorityScore,
                 e.Explanation ?? string.Empty,
                 DateTimeOffset.Parse(e.Timestamp),
-                e.FocusState))
+                e.FocusState,
+                DeserializeContext(e.RetrievedSemanticContext),
+                e.LlmRationale,
+                string.IsNullOrWhiteSpace(e.GuardrailOutcome) ? "confirmed" : e.GuardrailOutcome))
             .ToList();
 
         return new PagedResult<InterruptionDecisionRecord>
@@ -73,5 +82,33 @@ internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
             Page = page,
             PageSize = pageSize
         };
+    }
+
+    public async Task ClearAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _db.InterruptionDecisions.RemoveRange(_db.InterruptionDecisions);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string? SerializeContext(IReadOnlyList<DecisionContextItem>? context)
+    {
+        if (context is null || context.Count == 0)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Serialize(context, JsonOptions);
+    }
+
+    private static IReadOnlyList<DecisionContextItem> DeserializeContext(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<List<DecisionContextItem>>(value, JsonOptions) ?? [];
     }
 }

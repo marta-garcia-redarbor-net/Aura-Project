@@ -19,4 +19,5 @@ public sealed record PullRequestResponse(
     string BuildStatus,
     int ReviewApprovals,
     int ReviewRequired,
-    int ReviewChangesRequested);
+    int ReviewChangesRequested,
+    string AttentionScope = "unknown");

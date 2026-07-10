@@ -23,6 +23,12 @@ public class InterruptionPolicyEngineTests
 
         public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
             => Task.FromResult(new PagedResult<InterruptionDecisionRecord>());
+
+        public Task ClearAsync(CancellationToken cancellationToken = default)
+        {
+            Records.Clear();
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class StubFocusStateResolver : IFocusStateResolver

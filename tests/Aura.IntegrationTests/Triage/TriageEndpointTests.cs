@@ -75,8 +75,11 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
         var now = DateTimeOffset.UtcNow;
         var records = new List<InterruptionDecisionRecord>
         {
-            new(Guid.NewGuid(), "PR Review", "github", "INTERRUPT", 85, "Urgent fix", now, "WindowOfOpportunity"),
-            new(Guid.NewGuid(), "Email thread", "outlook", "QUEUE", 50, "Can wait", now.AddMinutes(-5), "DeepWork"),
+            new(Guid.NewGuid(), "PR Review", "github", "INTERRUPT", 85, "Urgent fix", now, "WindowOfOpportunity",
+                [new DecisionContextItem("ctx-1", "Outage context", "ActivityMemory", 0.95)],
+                "LLM confirmed urgency", "confirmed"),
+            new(Guid.NewGuid(), "Email thread", "outlook", "QUEUE", 50, "Can wait", now.AddMinutes(-5), "DeepWork",
+                [], null, "llm-unavailable"),
         };
 
         var store = new StubDecisionStore(records);
@@ -91,6 +94,11 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
         Assert.Equal(2, body.TotalCount);
         Assert.Equal(1, body.Page);
         Assert.Equal(20, body.PageSize);
+
+        var first = body.Items[0];
+        Assert.True(first.TryGetProperty("retrievedSemanticContext", out _));
+        Assert.True(first.TryGetProperty("llmRationale", out _));
+        Assert.True(first.TryGetProperty("guardrailOutcome", out _));
     }
 
     [Fact]
@@ -140,6 +148,7 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
     {
         var factory = _factory.WithWebHostBuilder(builder =>
         {
+            builder.UseSetting("DisableRateLimiting", "true");
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(store);
@@ -205,6 +214,9 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
                 PageSize = pageSize
             });
         }
+
+        public Task ClearAsync(CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 
     private sealed class ThrowingDecisionStore : IInterruptionDecisionStore
@@ -219,5 +231,8 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
         public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(
             int page, int pageSize, CancellationToken cancellationToken = default)
             => Task.FromException<PagedResult<InterruptionDecisionRecord>>(_exception);
+
+        public Task ClearAsync(CancellationToken cancellationToken = default)
+            => throw _exception;
     }
 }

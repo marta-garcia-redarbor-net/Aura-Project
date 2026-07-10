@@ -12,12 +12,14 @@
         <div class="dashboard-page-header">
             <div>
                 <h1 class="dashboard-page-header__title">Pull Requests</h1>
-                <p class="dashboard-page-header__subtitle">Pending PRs requiring your review across Azure DevOps repositories.</p>
+                <p class="dashboard-page-header__subtitle">PRs requiring your review across Azure DevOps repositories.</p>
             </div>
-            <span class="dashboard-page-header__badge dashboard-page-header__badge--live" data-testid="pr-pending-count">
-                <span class="dashboard-page-header__badge-dot"></span>
-                @Prs.Count pending
-            </span>
+            <div class="dashboard-page-header__badges">
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live" data-testid="pr-pending-count">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    @Prs.Count requiring your attention
+                </span>
+            </div>
         </div>
 
         @switch (_state)
@@ -69,6 +71,19 @@
                                 <tr data-testid="pr-row" data-pr-id="@pr.Id">
                                     <td>
                                         <div>
+                                            <div class="pr-table__badges">
+                                                @if (pr.AttentionScope is "direct" or "group" or "both")
+                                                {
+                                                    var badgeLabel = pr.AttentionScope switch
+                                                    {
+                                                        "direct" => "You",
+                                                        "group" => "Group",
+                                                        "both" => "Both",
+                                                        _ => ""
+                                                    };
+                                                    <span class="attention-badge attention-badge--@pr.AttentionScope">@badgeLabel</span>
+                                                }
+                                            </div>
                                             <a href="@pr.SourceLink" target="_blank" rel="noopener noreferrer"
                                                class="pr-table__name">
                                                 #@pr.Id @pr.Title
@@ -119,7 +134,7 @@
                 </div>
 
                 <div class="pr-pagination" data-testid="pr-pagination">
-                    <span>Showing @Prs.Count of @Prs.Count pull requests</span>
+                    <span>@Prs.Count pull request@(Prs.Count == 1 ? "" : "s") requiring your attention</span>
                     <div class="pr-pagination__pages">
                         <a href="#" class="pr-pagination__page pr-pagination__page--active">1</a>
                     </div>
@@ -154,7 +169,10 @@
 
         try
         {
-            var prs = await PrClient.GetPendingPullRequestsAsync();
+            var allPrs = await PrClient.GetPendingPullRequestsAsync();
+            var prs = allPrs
+                .Where(p => p.AttentionScope is "direct" or "group" or "both")
+                .ToList();
 
             if (prs.Count == 0)
             {

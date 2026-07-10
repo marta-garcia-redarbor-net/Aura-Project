@@ -50,7 +50,7 @@ public sealed class DashboardPreviewReader : IDashboardPreviewReader
         var currentUser = _currentUserService.GetCurrentUser();
         var userId = string.IsNullOrWhiteSpace(currentUser?.UserId) ? "system" : currentUser.UserId;
 
-        var query = new MorningSummaryQuery(userId, now.AddHours(-24), now);
+        var query = new MorningSummaryQuery(userId, DateTimeOffset.MinValue, now);
         var items = _workItemReader is null
             ? []
             : await _workItemReader.ReadForWindowAsync(query, Domain.WorkItems.WorkItemStatus.Pending, cancellationToken);

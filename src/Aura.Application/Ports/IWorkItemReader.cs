@@ -31,8 +31,10 @@ public interface IWorkItemReader
         MorningSummaryQuery query, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Reads work items filtered by source type, optionally filtered by status.
+    /// Reads work items filtered by source type, optionally filtered by status and owner.
+    /// When ownerUserId is null, returns all items regardless of owner.
+    /// When ownerUserId is provided, returns items where OwnerUserId is null (shared/seed) or matches.
     /// </summary>
     Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
-        WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken);
+        WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken);
 }

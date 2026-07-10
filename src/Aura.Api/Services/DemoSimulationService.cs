@@ -1,4 +1,5 @@
 using Aura.Application.Demo;
+using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
 using Aura.Infrastructure.Adapters.Options;
 using Microsoft.AspNetCore.SignalR;
@@ -48,18 +49,23 @@ public sealed class DemoSimulationService
     {
         _logger.LogInformation("🌟 Demo simulation started for user {UserId}", userId ?? "(all users)");
         var now = DateTimeOffset.UtcNow;
+        // Unique suffix per run so items accumulate instead of overwriting via ExternalId upsert
+        var run = now.ToString("yyyyMMddHHmmss");
 
         try
         {
             // t=0s — Outlook email medium priority.
-            // Dashboard refresh is now emitted by the same backend dispatcher used by real work item writes.
             _logger.LogInformation("[0s] 📧 Outlook: Budget Review...");
-            await UsingDemoAsync(d => d.AddOutlookItemAsync("demo-outlook-001", "Q3 Budget Review — Action Required", WorkItemPriority.Medium, false, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-outlook-001-{run}",
+                d => d.AddOutlookItemAsync($"demo-outlook-001-{run}", "Q3 Budget Review — Action Required", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
+                ct);
             await Task.Delay(3000, ct);
 
             // t=3s — Teams CRÍTICO.
             _logger.LogInformation("[3s] 🔴🔴🔴 Teams CRITICAL: Production incident!");
-            await UsingDemoAsync(d => d.AddTeamsItemAsync("demo-teams-001", "URGENTE: Production pipeline caído — responder YA", WorkItemPriority.Critical, true, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-teams-001-{run}",
+                d => d.AddTeamsItemAsync($"demo-teams-001-{run}", "URGENTE: Production pipeline caído — responder YA", WorkItemPriority.Critical, true, ct, ownerUserId: userId),
+                ct);
             await Task.Delay(3000, ct);
 
             // t=6s — Nueva reunión → card de calendario se actualiza
@@ -70,21 +76,29 @@ public sealed class DemoSimulationService
 
             // t=9s — 2 Pull Requests.
             _logger.LogInformation("[9s] 🔄 PRs arriving...");
-            await UsingDemoAsync(d => d.AddPullRequestAsync("demo-pr-001", "PR #428: feat: add caching layer", WorkItemPriority.High, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-pr-001-{run}",
+                d => d.AddPullRequestAsync($"demo-pr-001-{run}", "PR #428: feat: add caching layer", WorkItemPriority.High, ct, ownerUserId: userId),
+                ct);
             await Task.Delay(500, ct);
-            await UsingDemoAsync(d => d.AddPullRequestAsync("demo-pr-002", "PR #430: fix: resolve race condition", WorkItemPriority.High, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-pr-002-{run}",
+                d => d.AddPullRequestAsync($"demo-pr-002-{run}", "PR #430: fix: resolve race condition", WorkItemPriority.High, ct, ownerUserId: userId),
+                ct);
             await Task.Delay(3000, ct);
 
             // t=12s — Otro Outlook medio.
             _logger.LogInformation("[12s] 📧 Outlook: Weekly Status...");
-            await UsingDemoAsync(d => d.AddOutlookItemAsync("demo-outlook-002", "Weekly Status Update — EOW Report", WorkItemPriority.Medium, false, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-outlook-002-{run}",
+                d => d.AddOutlookItemAsync($"demo-outlook-002-{run}", "Weekly Status Update — EOW Report", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
+                ct);
             await Task.Delay(3000, ct);
 
             // t=15s — Teams mensaje normal.
             _logger.LogInformation("[15s] 💬 Teams: Standup reminder...");
-            await UsingDemoAsync(d => d.AddTeamsItemAsync("demo-teams-002", "Daily standup en 5 minutos — Sala virtual", WorkItemPriority.Medium, false, ct, ownerUserId: userId), ct);
+            await AddAndEvaluateAsync($"demo-teams-002-{run}",
+                d => d.AddTeamsItemAsync($"demo-teams-002-{run}", "Daily standup en 5 minutos — Sala virtual", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
+                ct);
 
-            _logger.LogInformation("✅ Demo simulation completed — 8 items injected");
+            _logger.LogInformation("✅ Demo simulation completed — 8 items injected and evaluated");
         }
         catch (OperationCanceledException)
         {
@@ -93,6 +107,11 @@ public sealed class DemoSimulationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Demo simulation failed");
+        }
+        finally
+        {
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 
@@ -117,5 +136,45 @@ public sealed class DemoSimulationService
         using var scope = _scopeFactory.CreateScope();
         var demo = scope.ServiceProvider.GetRequiredService<DemoService>();
         await action(demo);
+    }
+
+    /// <summary>
+    /// Adds a work item via DemoService, then evaluates it through the policy engine
+    /// so a real decision is recorded with full trace (rules + LLM advisor + Qdrant context).
+    /// </summary>
+    private async Task AddAndEvaluateAsync(string externalId, Func<DemoService, Task> addAction, CancellationToken ct)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var sp = scope.ServiceProvider;
+        var demo = sp.GetRequiredService<DemoService>();
+        var workItemStore = sp.GetRequiredService<IWorkItemStore>();
+        var engine = sp.GetRequiredService<IInterruptionPolicyEngine>();
+
+        // 1. Inject the work item
+        await addAction(demo);
+
+        // 2. Find the persisted work item by externalId
+        var workItem = await workItemStore.FindByExternalIdAsync(externalId, ct);
+        if (workItem is null)
+        {
+            _logger.LogWarning("Work item with ExternalId {ExternalId} not found after injection — skipping evaluation", externalId);
+            return;
+        }
+
+        // 3. Evaluate through the policy engine (records decision internally)
+        try
+        {
+            var verdict = await engine.EvaluateAsync(workItem, ct);
+            _logger.LogInformation(
+                "Decision recorded for {ExternalId}: {Decision} (trigger={TriggerRule}, guardrail from engine)",
+                externalId, verdict.Decision, verdict.TriggerRule ?? "none");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Policy engine evaluation failed for {ExternalId} — item was injected but no decision recorded", externalId);
+        }
+
+        // 4. Notify dashboard to refresh
+        await NotifyDashboardAsync("decisions", ct);
     }
 }

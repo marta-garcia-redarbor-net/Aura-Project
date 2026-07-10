@@ -13,4 +13,5 @@ public sealed record PrPreviewItemResponse(
     string RelativeTimestamp,
     string SourceLink,
     bool IsDraft,
-    string Priority);
+    string Priority,
+    string AttentionScope = "unknown");

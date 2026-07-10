@@ -1,4 +1,5 @@
 using Aura.Infrastructure.Adapters.Ingestion.Embedding;
+using Aura.Infrastructure.Adapters.LlmAdvisor;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticOutbox;
 using Aura.Application.Ports;
@@ -22,6 +23,7 @@ internal static class DependencyInjection
 
         services.AddEmbeddingAdapter(configuration);
         services.AddSemanticIndexAdapter(configuration);
+        services.AddLlmDecisionAdvisor(configuration);
         services.AddSemanticOutboxAdapter(configuration);
         services.AddSingleton<IIngestionCheckpointStore, InMemoryIngestionCheckpointStore>();
 

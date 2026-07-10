@@ -29,14 +29,26 @@ public sealed partial class DevAccessTokenHandler : DelegatingHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        _logger.LogInformation("DevAccessTokenHandler.SendAsync called for {Uri}", request.RequestUri);
+        
         // Don't overwrite if a real token was already set (e.g. by ForwardedAccessTokenHandler)
         if (request.Headers.Authorization is null)
         {
+            _logger.LogInformation("DevAccessTokenHandler: No Authorization header, acquiring mock token for {Uri}", request.RequestUri);
             var token = await GetOrAcquireTokenAsync(cancellationToken);
             if (token is not null)
             {
+                _logger.LogInformation("DevAccessTokenHandler: Setting mock token for {Uri}", request.RequestUri);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
+            else
+            {
+                _logger.LogWarning("DevAccessTokenHandler: Failed to acquire mock token for {Uri}", request.RequestUri);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("DevAccessTokenHandler: Authorization header already present for {Uri}", request.RequestUri);
         }
 
         return await base.SendAsync(request, cancellationToken);

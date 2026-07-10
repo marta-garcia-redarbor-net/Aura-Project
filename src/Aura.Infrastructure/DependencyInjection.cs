@@ -20,6 +20,7 @@ using Aura.Infrastructure.Adapters.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
@@ -70,6 +71,8 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IFocusStateResolver, SignalBasedFocusStateResolver>();
         services.AddScoped<IInterruptionPolicyEngine, InterruptionPolicyEngine>();
+        services.TryAddScoped<IDecisionContextRetriever, Aura.Infrastructure.Adapters.Ingestion.SemanticIndex.NullDecisionContextRetriever>();
+        services.TryAddScoped<ILlmDecisionAdvisor, Aura.Infrastructure.Adapters.LlmAdvisor.NullLlmDecisionAdvisor>();
         services.AddScoped<IInterruptionRule, ScoreThresholdRule>();
         services.AddScoped<IInterruptionRule, VipSenderRule>();
         services.AddScoped<IInterruptionRule, KeywordMatchRule>();

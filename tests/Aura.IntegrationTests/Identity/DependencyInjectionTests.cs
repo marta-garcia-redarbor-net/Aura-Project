@@ -54,7 +54,7 @@ public class DependencyInjectionTests
         // Act
         var options = host.Services
             .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
-            .Get(JwtBearerDefaults.AuthenticationScheme);
+            .Get("MockJwt");
 
         // Assert
         Assert.NotNull(options);
@@ -104,7 +104,7 @@ public class DependencyInjectionTests
         // Act
         var options = host.Services
             .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
-            .Get(JwtBearerDefaults.AuthenticationScheme);
+            .Get("EntraId");
 
         // Assert
         Assert.NotNull(options);
@@ -193,7 +193,7 @@ public class DependencyInjectionTests
         // Act
         var options = host.Services
             .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
-            .Get(JwtBearerDefaults.AuthenticationScheme);
+            .Get("EntraId");
 
         // Assert — MetadataAddress should be null/empty when UseEntraId=false
         Assert.NotNull(options);
@@ -240,7 +240,7 @@ public class DependencyInjectionTests
         // Act
         var options = host.Services
             .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
-            .Get(JwtBearerDefaults.AuthenticationScheme);
+            .Get("EntraId");
 
         // Assert — IssuerSigningKey should be null when using OIDC metadata
         Assert.NotNull(options);

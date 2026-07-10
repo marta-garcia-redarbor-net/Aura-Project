@@ -64,6 +64,7 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
 
         var content = await response.Content.ReadAsStringAsync();
         using var json = JsonDocument.Parse(content);
+        // No current user OID → ownerUserId is null → stub returns all items
         Assert.Equal(6, json.RootElement.GetArrayLength());
     }
 
@@ -72,9 +73,16 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
     {
         var items = CreateMixedOwnerItems();
         var reader = new StubWorkItemReader(items);
-        var client = CreateAuthenticatedClient(reader);
+        var currentUser = new AuraUser
+        {
+            UserId = "user-1",
+            DisplayName = "User A",
+            Email = "a@example.com",
+            Oid = "user-A"
+        };
+        var client = CreateAuthenticatedClient(reader, currentUser);
 
-        var response = await client.GetAsync("/api/pull-requests?ownerUserId=user-A");
+        var response = await client.GetAsync("/api/pull-requests");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -170,6 +178,104 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
         Assert.Equal(75, first.GetProperty("priorityScore").GetInt32());
     }
 
+    [Fact]
+    public async Task GetPullRequests_WhenReviewerIdentityMatchesCurrentUser_MapsAttentionScope()
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            [PrMetadataKeys.ReviewerCount] = "1",
+            [PrMetadataKeys.ReviewerOid(0)] = "user-oid-123",
+            [PrMetadataKeys.ReviewerDisplayName(0)] = "Alice",
+            [PrMetadataKeys.ReviewerIsContainer(0)] = "False"
+        };
+        var item = new WorkItem(
+            externalId: "pr-143",
+            title: "Feature: identity-aware attention",
+            source: "pr",
+            sourceType: WorkItemSourceType.PrReview,
+            priority: WorkItemPriority.High,
+            metadata: metadata,
+            priorityScore: 80);
+        var reader = new StubWorkItemReader(new List<WorkItem> { item });
+        var currentUser = new AuraUser
+        {
+            UserId = "user-1",
+            DisplayName = "Alice",
+            Email = "alice@example.com",
+            Oid = "user-oid-123"
+        };
+        var client = CreateAuthenticatedClient(reader, currentUser);
+
+        var response = await client.GetAsync("/api/pull-requests");
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+
+        Assert.Equal("direct", json.RootElement[0].GetProperty("attentionScope").GetString());
+    }
+
+    [Fact]
+    public async Task GetPullRequests_WhenCurrentUserOidUnavailable_DefaultsAttentionScopeToUnknown()
+    {
+        var item = new WorkItem(
+            externalId: "pr-144",
+            title: "No metadata scope",
+            source: "pr",
+            sourceType: WorkItemSourceType.PrReview,
+            priority: WorkItemPriority.Medium,
+            metadata: new Dictionary<string, string>());
+        var reader = new StubWorkItemReader(new List<WorkItem> { item });
+        var currentUserWithoutOid = new AuraUser
+        {
+            UserId = "user-2",
+            DisplayName = "Bob",
+            Email = "bob@example.com",
+            Oid = null
+        };
+        var client = CreateAuthenticatedClient(reader, currentUserWithoutOid);
+
+        var response = await client.GetAsync("/api/pull-requests");
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+
+        Assert.Equal("unknown", json.RootElement[0].GetProperty("attentionScope").GetString());
+    }
+
+    [Fact]
+    public async Task GetPullRequests_WhenCurrentUserOidUnavailable_UsesDisplayNameFallback()
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            [PrMetadataKeys.ReviewerCount] = "1",
+            [PrMetadataKeys.ReviewerDisplayName(0)] = "Jane Doe",
+            [PrMetadataKeys.ReviewerIsContainer(0)] = "False"
+        };
+
+        var item = new WorkItem(
+            externalId: "pr-145",
+            title: "Fallback by display name",
+            source: "pr",
+            sourceType: WorkItemSourceType.PrReview,
+            priority: WorkItemPriority.Medium,
+            metadata: metadata);
+
+        var reader = new StubWorkItemReader(new List<WorkItem> { item });
+        var currentUserWithoutOid = new AuraUser
+        {
+            UserId = "user-3",
+            DisplayName = "Jane Doe",
+            Email = "jane@example.com",
+            Oid = null
+        };
+
+        var client = CreateAuthenticatedClient(reader, currentUserWithoutOid);
+
+        var response = await client.GetAsync("/api/pull-requests");
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+
+        Assert.Equal("direct", json.RootElement[0].GetProperty("attentionScope").GetString());
+    }
+
     // ============================================================
     // Helpers
     // ============================================================
@@ -203,13 +309,14 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
             ownerUserId: ownerUserId);
     }
 
-    private HttpClient CreateAuthenticatedClient(IWorkItemReader reader)
+    private HttpClient CreateAuthenticatedClient(IWorkItemReader reader, AuraUser? currentUser = null)
     {
         var factory = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(reader);
+                services.AddSingleton<ICurrentUserService>(new StubCurrentUserService(currentUser));
             });
         });
 
@@ -254,8 +361,15 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
             => Task.FromResult(_items);
 
         public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
-            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken = default)
-            => Task.FromResult(_items);
+            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken = default)
+        {
+            // Simulate store-level owner filtering: when ownerUserId is provided,
+            // return items where OwnerUserId is null (shared/seed) or matches.
+            var filtered = ownerUserId is not null
+                ? _items.Where(i => i.OwnerUserId is null || i.OwnerUserId == ownerUserId).ToList()
+                : _items;
+            return Task.FromResult((IReadOnlyList<WorkItem>)filtered);
+        }
     }
 
     private sealed class ThrowingWorkItemReader : IWorkItemReader
@@ -281,7 +395,19 @@ public class PullRequestsEndpointTests : IClassFixture<WebApplicationFactory<Api
             => throw _exception;
 
         public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
-            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken = default)
+            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken = default)
             => throw _exception;
+    }
+
+    private sealed class StubCurrentUserService : ICurrentUserService
+    {
+        private readonly AuraUser? _currentUser;
+
+        public StubCurrentUserService(AuraUser? currentUser)
+        {
+            _currentUser = currentUser;
+        }
+
+        public AuraUser? GetCurrentUser() => _currentUser;
     }
 }

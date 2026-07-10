@@ -2,6 +2,7 @@ using Aura.Application.Demo;
 using Aura.Application.Ports;
 using Aura.Infrastructure;
 using Aura.Infrastructure.Adapters.Demo;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,7 @@ public class DemoModeRegistrationTests
         services.AddSingleton<Aura.Application.Ports.INotificationOutboxStore>(NSubstitute.Substitute.For<Aura.Application.Ports.INotificationOutboxStore>());
         services.AddSingleton<Aura.Application.Ports.ICalendarEventStore>(NSubstitute.Substitute.For<Aura.Application.Ports.ICalendarEventStore>());
         services.AddSingleton<Aura.Application.Ports.IDashboardRefreshDispatcher>(NSubstitute.Substitute.For<Aura.Application.Ports.IDashboardRefreshDispatcher>());
+        services.AddSingleton<Aura.Application.Ports.IInterruptionDecisionStore>(NSubstitute.Substitute.For<Aura.Application.Ports.IInterruptionDecisionStore>());
         services.AddDemoMode(config);
 
         using var provider = services.BuildServiceProvider();
@@ -100,5 +102,30 @@ public class DemoModeRegistrationTests
 
         Assert.Null(retriever);
         Assert.Null(writer);
+    }
+
+    [Fact]
+    public void AddDemoMode_WhenEnabled_DoesNotOverrideExistingDecisionContextRetriever()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DemoMode:Enabled"] = "true"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(config);
+        services.AddScoped<IDecisionContextRetriever, QdrantDecisionContextAdapter>();
+        services.AddSingleton(NSubstitute.Substitute.For<ISemanticContextRetriever>());
+        services.AddLogging();
+
+        services.AddDemoMode(config);
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var retriever = scope.ServiceProvider.GetRequiredService<IDecisionContextRetriever>();
+
+        Assert.IsType<QdrantDecisionContextAdapter>(retriever);
     }
 }

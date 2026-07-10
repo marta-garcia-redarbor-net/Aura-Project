@@ -334,6 +334,187 @@ public class PrioritySummaryCardsRenderingTests : TestContext
     }
 
     [Fact]
+    public void RendersEmptyState_WhenTeamsCardHasZeroItems()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null)
+            {
+                EmptyIcon = "check_circle",
+                EmptyTitle = "Inbox Zero",
+                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptyLinkLabel = "View All Mentions"
+            },
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, [])
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var teamsCard = cut.Find("[data-source='teams']");
+        var emptyState = teamsCard.QuerySelector("[data-testid='priority-card-empty-state']");
+        Assert.NotNull(emptyState);
+        Assert.Contains("check_circle", emptyState!.TextContent);
+        Assert.Contains("Inbox Zero", emptyState.TextContent);
+        Assert.Contains("Everything is optimal. Your cognitive load is clear.", emptyState.TextContent);
+    }
+
+    [Fact]
+    public void RendersEmptyState_WhenOutlookCardHasZeroItems()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null)
+            {
+                EmptyIcon = "mark_email_read",
+                EmptyTitle = "All Caught Up",
+                EmptySubtitle = "Take a deep breath.",
+                EmptyLinkLabel = "See All Emails"
+            },
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, [])
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var outlookCard = cut.Find("[data-source='outlook']");
+        var emptyState = outlookCard.QuerySelector("[data-testid='priority-card-empty-state']");
+        Assert.NotNull(emptyState);
+        Assert.Contains("mark_email_read", emptyState!.TextContent);
+        Assert.Contains("All Caught Up", emptyState.TextContent);
+        Assert.Contains("Take a deep breath.", emptyState.TextContent);
+    }
+
+    [Fact]
+    public void RendersEmptyState_WhenScheduleCardHasZeroItems()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, [])
+            {
+                EmptyIcon = "event_available",
+                EmptyTitle = "Schedule Clear",
+                EmptySubtitle = "No meetings for today. Enjoy your focused time.",
+                EmptyLinkLabel = "View Full Schedule"
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var scheduleCard = cut.Find("[data-source='schedule']");
+        var emptyState = scheduleCard.QuerySelector("[data-testid='priority-card-empty-state']");
+        Assert.NotNull(emptyState);
+        Assert.Contains("event_available", emptyState!.TextContent);
+        Assert.Contains("Schedule Clear", emptyState.TextContent);
+        Assert.Contains("No meetings for today. Enjoy your focused time.", emptyState.TextContent);
+    }
+
+    [Fact]
+    public void RendersEmptyState_WhenPrCardHasZeroItems()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null),
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, []),
+            new PrioritySummaryCard("Pull Requests", "account_tree", "pr-review", "PENDING",
+                "PRs", "View All Repositories", "https://redarbor.visualstudio.com/",
+                "/pull-requests", null, null)
+            {
+                IsPrCard = true,
+                PrItems = [],
+                EmptyIcon = "verified",
+                EmptyTitle = "Queue Empty",
+                EmptySubtitle = "No pending reviews. Your workspace is clear.",
+                EmptyLinkLabel = "View All Repositories"
+            }
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var prCard = cut.Find("[data-source='pr-review']");
+        var emptyState = prCard.QuerySelector("[data-testid='priority-card-empty-state']");
+        Assert.NotNull(emptyState);
+        Assert.Contains("verified", emptyState!.TextContent);
+        Assert.Contains("Queue Empty", emptyState.TextContent);
+        Assert.Contains("No pending reviews. Your workspace is clear.", emptyState.TextContent);
+    }
+
+    [Fact]
+    public void RendersFooterWithEmptyLinkLabel_WhenCardIsEmpty()
+    {
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", [], null)
+            {
+                EmptyIcon = "check_circle",
+                EmptyTitle = "Inbox Zero",
+                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptyLinkLabel = "View All Mentions"
+            },
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, [])
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var teamsCard = cut.Find("[data-source='teams']");
+        var footer = teamsCard.QuerySelector(".priority-card__footer");
+        Assert.NotNull(footer);
+        Assert.Contains("View All Mentions", footer!.TextContent);
+        var link = footer.QuerySelector("a[href='https://teams.microsoft.com']");
+        Assert.NotNull(link);
+    }
+
+    [Fact]
+    public void DoesNotRenderEmptyState_WhenCardHasItems()
+    {
+        var items = new List<InboxItemPreviewResponse>
+        {
+            new("Item A", "messages", "1m ago", 1, "Review") { Sender = "user1" }
+        };
+
+        RegisterService([
+            new PrioritySummaryCard("Teams Mentions", "groups", "teams", "NEW", "items",
+                "Open Teams", "https://teams.microsoft.com", "/teams", items, null)
+            {
+                EmptyIcon = "check_circle",
+                EmptyTitle = "Inbox Zero",
+                EmptySubtitle = "Everything is optimal.",
+                EmptyLinkLabel = "View All Mentions"
+            },
+            new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
+                "Open Outlook", "https://outlook.office.com", "/outlook", [], null),
+            new PrioritySummaryCard("Schedule Today", "calendar_today", "schedule", "EVENTS",
+                "meetings", "Open Calendar", "https://outlook.office.com/calendar/view/day",
+                "/calendar/day", null, [])
+        ]);
+
+        var cut = RenderComponent<PrioritySummaryCards>();
+
+        var teamsCard = cut.Find("[data-source='teams']");
+        var emptyState = teamsCard.QuerySelector("[data-testid='priority-card-empty-state']");
+        Assert.Null(emptyState);
+    }
+
+    [Fact]
     public void RendersHighPriorityCounterNextToCardCount_WithAriaLabel()
     {
         var teamsItems = new List<InboxItemPreviewResponse>

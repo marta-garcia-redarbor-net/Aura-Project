@@ -41,22 +41,44 @@ internal sealed partial class SeedDataHostedService : IHostedService
         using var scope = _scopeFactory.CreateScope();
         var workItemStore = scope.ServiceProvider.GetRequiredService<IWorkItemStore>();
         var calendarEventStore = scope.ServiceProvider.GetRequiredService<ICalendarEventStore>();
+        var interruptionPolicyEngine = scope.ServiceProvider.GetRequiredService<IInterruptionPolicyEngine>();
         var now = DateTimeOffset.UtcNow;
 
-        await SeedTeamsMessagesAsync(now, workItemStore, cancellationToken);
-        await SeedOutlookEmailsAsync(now, workItemStore, cancellationToken);
+        var seededItems = new List<WorkItem>();
+
+        seededItems.AddRange(await SeedTeamsMessagesAsync(now, workItemStore, cancellationToken));
+        seededItems.AddRange(await SeedOutlookEmailsAsync(now, workItemStore, cancellationToken));
         await SeedCalendarEventsAsync(now, calendarEventStore, cancellationToken);
-        await SeedPullRequestsAsync(now, workItemStore, cancellationToken);
+        seededItems.AddRange(await SeedPullRequestsAsync(now, workItemStore, cancellationToken));
+
+        await EvaluateSeededItemsAsync(seededItems, interruptionPolicyEngine, cancellationToken);
 
         Log.SeedDataCompleted(_logger);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task SeedTeamsMessagesAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
+    private async Task<IReadOnlyList<WorkItem>> SeedTeamsMessagesAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var teamsMessages = new[]
         {
+            // Curated triage scenarios (INTERRUPT / QUEUE / DEFER)
+            CreateTeamsWorkItem(
+                "teams-curated-interrupt", "[Curated] Payments outage requires immediate triage", WorkItemPriority.Critical,
+                "Incident Bot", "SEV-1 in payments. Action required now.",
+                "team-payments", "channel-incidents", now.AddMinutes(-2),
+                assignedToUserId: "demo-interrupt-user", actionNeeded: true, timeCriticality: SignalLevel.Critical),
+            CreateTeamsWorkItem(
+                "teams-curated-queue", "[Curated] Team update for later review", WorkItemPriority.Medium,
+                "Engineering Updates", "Weekly update with no urgent action.",
+                "team-core", "channel-updates", now.AddMinutes(-8),
+                assignedToUserId: "demo-queue-user"),
+            CreateTeamsWorkItem(
+                "teams-curated-defer", "[Curated] Architecture note during active meeting", WorkItemPriority.Medium,
+                "Architecture Guild", "Proposal can wait until meeting ends.",
+                "team-core", "channel-architecture", now.AddMinutes(-4),
+                assignedToUserId: "demo-defer-user"),
+
             CreateTeamsWorkItem(
                 "teams-seed-001", "Incidente de producción en API Payments", WorkItemPriority.Critical,
                 "Carlos Ruiz", "El endpoint POST /payments está devolviendo 502 desde las 14:30. Todos los cobros están fallando. Necesito que alguien revise ya.",
@@ -93,12 +115,30 @@ internal sealed partial class SeedDataHostedService : IHostedService
         }
 
         Log.SeedDataInserted(_logger, "Teams", teamsMessages.Length);
+        return teamsMessages;
     }
 
-    private async Task SeedOutlookEmailsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
+    private async Task<IReadOnlyList<WorkItem>> SeedOutlookEmailsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var outlookEmails = new[]
         {
+            // Curated triage scenarios (INTERRUPT / QUEUE / DEFER)
+            CreateOutlookWorkItem(
+                "outlook-curated-interrupt", "[Curated] Immediate customer escalation", WorkItemPriority.Critical,
+                "incident-manager@aura.dev", "Critical customer outage. Action needed now.",
+                "conv-curated-001", now.AddMinutes(-3), "high", true,
+                assignedToUserId: "demo-interrupt-user", actionNeeded: true, timeCriticality: SignalLevel.Critical),
+            CreateOutlookWorkItem(
+                "outlook-curated-queue", "[Curated] FYI architecture digest", WorkItemPriority.Low,
+                "newsletter@aura.dev", "Weekly digest for asynchronous review.",
+                "conv-curated-002", now.AddMinutes(-12), "normal", false,
+                assignedToUserId: "demo-queue-user"),
+            CreateOutlookWorkItem(
+                "outlook-curated-defer", "[Curated] Discussion thread while in meeting", WorkItemPriority.Medium,
+                "team@aura.dev", "Can be reviewed after current meeting.",
+                "conv-curated-003", now.AddMinutes(-6), "normal", false,
+                assignedToUserId: "demo-defer-user"),
+
             CreateOutlookWorkItem(
                 "outlook-seed-001", "URGENTE: Producción caída — responder inmediatamente", WorkItemPriority.Critical,
                 "ceo@aura.dev", "La página principal está caída según nuestros clientes. Necesito una actualización cada 15 minutos hasta que se resuelva. Por favor responder con ETA.",
@@ -135,6 +175,7 @@ internal sealed partial class SeedDataHostedService : IHostedService
         }
 
         Log.SeedDataInserted(_logger, "Outlook", outlookEmails.Length);
+        return outlookEmails;
     }
 
     private async Task SeedCalendarEventsAsync(DateTimeOffset now, ICalendarEventStore calendarEventStore, CancellationToken ct)
@@ -194,16 +235,42 @@ internal sealed partial class SeedDataHostedService : IHostedService
                 EndUtc: now.AddHours(5),
                 IsOnlineMeeting: false,
                 Location: "Comedor — Piso 2"),
+            // Curated meeting to force DEFER for demo-defer-user.
+            new CalendarEvent(
+                Id: "cal-curated-defer-001",
+                Title: "[Curated] Active meeting window",
+                StartUtc: now.AddMinutes(-2),
+                EndUtc: now.AddMinutes(30),
+                IsOnlineMeeting: true,
+                JoinUrl: "https://teams.microsoft.com/l/meetup-join/curated-defer",
+                Organizer: "Demo Coordinator",
+                Location: "Teams — Curated",
+                OriginalTimeZone: "UTC",
+                UserId: "demo-defer-user"),
         };
 
         await calendarEventStore.SaveBatchAsync(events, ct);
         Log.SeedDataInserted(_logger, "Calendar", events.Length);
     }
 
-    private async Task SeedPullRequestsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
+    private async Task<IReadOnlyList<WorkItem>> SeedPullRequestsAsync(DateTimeOffset now, IWorkItemStore workItemStore, CancellationToken ct)
     {
         var prItems = new[]
         {
+            // Curated triage scenarios (INTERRUPT / QUEUE / DEFER)
+            CreatePrWorkItem(
+                "pr-curated-interrupt", "[Curated] Hotfix required before next deploy", WorkItemPriority.Critical,
+                "Demo Maintainer", "Aura", 6, 2, "active", false, now.AddMinutes(-5),
+                assignedToUserId: "demo-interrupt-user", actionNeeded: true, timeCriticality: SignalLevel.Critical),
+            CreatePrWorkItem(
+                "pr-curated-queue", "[Curated] Refactor proposal for backlog", WorkItemPriority.Low,
+                "Demo Maintainer", "Aura", 0, 4, "active", false, now.AddMinutes(-16),
+                assignedToUserId: "demo-queue-user"),
+            CreatePrWorkItem(
+                "pr-curated-defer", "[Curated] Review after current meeting", WorkItemPriority.Medium,
+                "Demo Maintainer", "Aura", 1, 6, "active", false, now.AddMinutes(-7),
+                assignedToUserId: "demo-defer-user"),
+
             CreatePrWorkItem(
                 "pr-seed-001", "Hotfix: production crash on payment validation", WorkItemPriority.Critical,
                 "Carlos Ruiz", "Aura", 12, 3, "active", false, now.AddMinutes(-30)),
@@ -230,6 +297,25 @@ internal sealed partial class SeedDataHostedService : IHostedService
         }
 
         Log.SeedDataInserted(_logger, "PrReview", prItems.Length);
+        return prItems;
+    }
+
+    private async Task EvaluateSeededItemsAsync(
+        IReadOnlyList<WorkItem> seededItems,
+        IInterruptionPolicyEngine interruptionPolicyEngine,
+        CancellationToken ct)
+    {
+        foreach (var item in seededItems)
+        {
+            try
+            {
+                await interruptionPolicyEngine.EvaluateAsync(item, ct);
+            }
+            catch (Exception ex)
+            {
+                Log.SeedDecisionEvaluationFailed(_logger, item.ExternalId, ex);
+            }
+        }
     }
 
     private static WorkItem CreatePrWorkItem(
@@ -242,7 +328,10 @@ internal sealed partial class SeedDataHostedService : IHostedService
         int fileCount,
         string prStatus,
         bool isDraft,
-        DateTimeOffset capturedAt)
+        DateTimeOffset capturedAt,
+        string? assignedToUserId = null,
+        bool actionNeeded = false,
+        SignalLevel? timeCriticality = null)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -273,6 +362,22 @@ internal sealed partial class SeedDataHostedService : IHostedService
             ["pr.priority.resolution"] = "explicit"
         };
 
+        if (!string.IsNullOrWhiteSpace(assignedToUserId))
+        {
+            metadata["assignedTo"] = assignedToUserId;
+            metadata[WorkItemSignalKeys.TargetResponsibleUserId] = assignedToUserId;
+        }
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
+        }
+
         return new WorkItem(
             externalId: externalId,
             title: title,
@@ -292,7 +397,10 @@ internal sealed partial class SeedDataHostedService : IHostedService
         string body,
         string? teamId,
         string? channelId,
-        DateTimeOffset capturedAt)
+        DateTimeOffset capturedAt,
+        string? assignedToUserId = null,
+        bool actionNeeded = false,
+        SignalLevel? timeCriticality = null)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -305,6 +413,22 @@ internal sealed partial class SeedDataHostedService : IHostedService
             [WorkItemSignalKeys.TeamsPriorityRaw] = priority.ToString(),
             [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
         };
+
+        if (!string.IsNullOrWhiteSpace(assignedToUserId))
+        {
+            metadata["assignedTo"] = assignedToUserId;
+            metadata[WorkItemSignalKeys.TargetResponsibleUserId] = assignedToUserId;
+        }
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
+        }
 
         return new WorkItem(
             externalId: externalId,
@@ -326,7 +450,10 @@ internal sealed partial class SeedDataHostedService : IHostedService
         string conversationId,
         DateTimeOffset receivedAt,
         string? importance = null,
-        bool hasDeadline = false)
+        bool hasDeadline = false,
+        string? assignedToUserId = null,
+        bool actionNeeded = false,
+        SignalLevel? timeCriticality = null)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -348,6 +475,22 @@ internal sealed partial class SeedDataHostedService : IHostedService
         {
             metadata[WorkItemSignalKeys.OutlookDeadlineCue] = "by eod";
             metadata[WorkItemSignalKeys.OutlookDeadlineSource] = "body";
+        }
+
+        if (!string.IsNullOrWhiteSpace(assignedToUserId))
+        {
+            metadata["assignedTo"] = assignedToUserId;
+            metadata[WorkItemSignalKeys.TargetResponsibleUserId] = assignedToUserId;
+        }
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
         }
 
         return new WorkItem(
@@ -374,5 +517,9 @@ internal sealed partial class SeedDataHostedService : IHostedService
         [LoggerMessage(EventId = 9003, Level = LogLevel.Information,
             Message = "SeedData: Disabled via configuration — skipping seed")]
         public static partial void SeedDataDisabled(ILogger logger);
+
+        [LoggerMessage(EventId = 9004, Level = LogLevel.Warning,
+            Message = "SeedData: Failed to pre-evaluate interruption trace for item {ExternalId}")]
+        public static partial void SeedDecisionEvaluationFailed(ILogger logger, string externalId, Exception exception);
     }
 }

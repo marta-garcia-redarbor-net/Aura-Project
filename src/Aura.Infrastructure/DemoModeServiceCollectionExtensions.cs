@@ -1,9 +1,11 @@
 using Aura.Application.Demo;
 using Aura.Application.Ports;
 using Aura.Infrastructure.Adapters.Demo;
+using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 using Aura.Infrastructure.Adapters.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Aura.Infrastructure;
 
@@ -32,6 +34,7 @@ public static class DemoModeServiceCollectionExtensions
             return services;
 
         services.AddScoped<ISemanticContextRetriever, QdrantFallbackSemanticContextRetriever>();
+        services.TryAddScoped<IDecisionContextRetriever, NullDecisionContextRetriever>();
         services.AddScoped<ISemanticIndexWriter, QdrantFallbackSemanticIndexWriter>();
         services.AddScoped<DemoService>();
 

@@ -7,6 +7,10 @@ namespace Aura.UI.Services;
 public sealed class PrioritySummaryService : IPrioritySummaryService
 {
     private static readonly ActivitySource ActivitySource = new("Aura.UI.PrioritySummary");
+    private static readonly HashSet<string> AttentionScopeAllowList = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "direct", "group", "both"
+    };
     private readonly IDashboardPreviewApiClient _previewApiClient;
     private readonly ICalendarApiClient _calendarApiClient;
     private readonly IPullRequestsApiClient _prClient;
@@ -31,14 +35,14 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
         try
         {
             var previewTask = _previewApiClient.GetPreviewAsync(cancellationToken);
-            var calendarTask = _calendarApiClient.GetUpcomingMeetingsAsync(cancellationToken);
-            var prTask = _prClient.GetPendingPullRequestsAsync(cancellationToken);
+            var prTask = SafeGetPendingPullRequestsAsync(cancellationToken);
+            var calendarTask = SafeGetUpcomingMeetingsAsync(cancellationToken);
 
             await Task.WhenAll(previewTask, calendarTask, prTask);
 
             var preview = previewTask.Result;
-            var calendar = calendarTask.Result;
-            var prs = prTask.Result;
+            var calendar = calendarTask.Result ?? [];
+            var prs = prTask.Result ?? [];
 
             var cards = BuildCards(preview, calendar, prs);
             activity?.SetTag("priority-summary.teams_count", cards[0].PreviewItems?.Count ?? 0);
@@ -60,7 +64,35 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
         }
     }
 
-    private static List<PrioritySummaryCard> BuildCards(
+    private async Task<IReadOnlyList<PullRequestResponse>> SafeGetPendingPullRequestsAsync(CancellationToken ct)
+    {
+        try
+        {
+            return await _prClient.GetPendingPullRequestsAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Pull requests fetch failed — returning empty list");
+            return [];
+        }
+    }
+
+    private async Task<IReadOnlyList<UpcomingMeetingResponse>> SafeGetUpcomingMeetingsAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(10));
+            return await _calendarApiClient.GetUpcomingMeetingsAsync(timeoutCts.Token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Calendar fetch failed — returning empty list");
+            return [];
+        }
+    }
+
+    internal static List<PrioritySummaryCard> BuildCards(
         DashboardPreviewResponse preview,
         IReadOnlyList<UpcomingMeetingResponse> calendar,
         IReadOnlyList<PullRequestResponse> prs)
@@ -84,6 +116,7 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
             .ToList();
 
         var prPreviewItems = prs
+            .Where(p => AttentionScopeAllowList.Contains(p.AttentionScope))
             .OrderByDescending(p => p.Priority switch
             {
                 "critical" => 4,
@@ -105,7 +138,8 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 RelativeTimestamp: GetRelativeTime(p.UpdatedAt),
                 SourceLink: p.SourceLink,
                 IsDraft: p.IsDraft,
-                Priority: p.Priority))
+                Priority: p.Priority,
+                AttentionScope: p.AttentionScope))
             .ToList();
 
         return
@@ -120,7 +154,13 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 ViewAllUrl: "https://teams.microsoft.com",
                 DetailPageUrl: "/teams",
                 PreviewItems: teamsItems,
-                CalendarItems: null),
+                CalendarItems: null)
+            {
+                EmptyIcon = "check_circle",
+                EmptyTitle = "Inbox Zero",
+                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptyLinkLabel = "View All Mentions"
+            },
             new PrioritySummaryCard(
                 DisplayName: "Outlook",
                 Icon: "mail",
@@ -131,7 +171,13 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 ViewAllUrl: "https://outlook.office.com",
                 DetailPageUrl: "/outlook",
                 PreviewItems: outlookItems,
-                CalendarItems: null),
+                CalendarItems: null)
+            {
+                EmptyIcon = "mark_email_read",
+                EmptyTitle = "All Caught Up",
+                EmptySubtitle = "Take a deep breath.",
+                EmptyLinkLabel = "See All Emails"
+            },
             new PrioritySummaryCard(
                 DisplayName: "Schedule Today",
                 Icon: "calendar_today",
@@ -142,7 +188,13 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 ViewAllUrl: "https://outlook.office.com/calendar/view/day",
                 DetailPageUrl: "/calendar/day",
                 PreviewItems: null,
-                CalendarItems: orderedCalendar),
+                CalendarItems: orderedCalendar)
+            {
+                EmptyIcon = "event_available",
+                EmptyTitle = "Schedule Clear",
+                EmptySubtitle = "No meetings for today. Enjoy your focused time.",
+                EmptyLinkLabel = "View Full Schedule"
+            },
             new PrioritySummaryCard(
                 DisplayName: "Pull Requests",
                 Icon: "account_tree",
@@ -156,7 +208,11 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
                 CalendarItems: null)
             {
                 IsPrCard = true,
-                PrItems = prPreviewItems
+                PrItems = prPreviewItems,
+                EmptyIcon = "verified",
+                EmptyTitle = "Queue Empty",
+                EmptySubtitle = "No pending reviews. Your workspace is clear.",
+                EmptyLinkLabel = "View All Repositories"
             }
         ];
     }

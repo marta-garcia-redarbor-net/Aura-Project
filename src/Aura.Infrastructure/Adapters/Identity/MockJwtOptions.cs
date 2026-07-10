@@ -18,5 +18,5 @@ public sealed class MockJwtOptions
     public string Audience { get; set; } = "aura-api";
 
     /// <summary>Token lifetime in minutes.</summary>
-    public int ExpirationMinutes { get; set; } = 60;
+    public int ExpirationMinutes { get; set; } = 15;
 }

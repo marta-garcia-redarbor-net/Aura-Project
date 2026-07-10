@@ -16,7 +16,7 @@ public static partial class PullRequestsEndpoints
     public static IEndpointRouteBuilder MapPullRequestsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/pull-requests")
-            .RequireAuthorization("RequireEntraId");
+            .RequireAuthorization();
 
         group.MapGet("/", GetPullRequestsAsync);
 
@@ -27,7 +27,6 @@ public static partial class PullRequestsEndpoints
         IWorkItemReader workItemReader,
         ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
-        string? ownerUserId,
         CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger("Aura.Api.PullRequests");
@@ -41,13 +40,9 @@ public static partial class PullRequestsEndpoints
         try
         {
             var items = await workItemReader.ReadBySourceAsync(
-                WorkItemSourceType.PrReview, WorkItemStatus.Pending, cancellationToken);
+                WorkItemSourceType.PrReview, WorkItemStatus.Pending, currentUserOid, cancellationToken);
 
-            var filtered = ownerUserId is not null
-                ? items.Where(i => i.OwnerUserId is null || i.OwnerUserId == ownerUserId).ToList()
-                : items;
-
-            var ordered = filtered
+            var ordered = items
                 .OrderByDescending(i => i.PriorityScore ?? int.MinValue)
                 .ThenByDescending(i => i.CapturedAtUtc)
                 .ToList();
@@ -57,7 +52,7 @@ public static partial class PullRequestsEndpoints
                 .ToArray();
 
             activity?.SetTag("pullrequests.count", dtos.Length);
-            activity?.SetTag("pullrequests.owner_filter", ownerUserId ?? "(none)");
+            activity?.SetTag("pullrequests.owner_filter", currentUserOid ?? "(none)");
 
             Log.PullRequestsSucceeded(logger, dtos.Length);
 

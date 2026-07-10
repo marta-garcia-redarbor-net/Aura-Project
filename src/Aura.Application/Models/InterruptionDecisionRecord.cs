@@ -12,4 +12,7 @@ public sealed record InterruptionDecisionRecord(
     int? PriorityScore,
     string Explanation,
     DateTimeOffset Timestamp,
-    string FocusState);
+    string FocusState,
+    IReadOnlyList<DecisionContextItem>? RetrievedSemanticContext = null,
+    string? LlmRationale = null,
+    string GuardrailOutcome = "confirmed");

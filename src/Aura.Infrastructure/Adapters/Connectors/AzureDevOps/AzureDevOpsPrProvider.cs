@@ -90,6 +90,8 @@ internal sealed partial class AzureDevOpsPrProvider : IMessageSourceProvider<PrR
                 UpdatedAt = pr.CreationDate, // ADO doesn't return updatedAt in this endpoint
                 Status = pr.Status ?? "active",
                 Reviewers = pr.Reviewers?.Select(r => r.DisplayName ?? "Unknown").ToList() ?? [],
+                ReviewerIdentities = pr.Reviewers?.Select(r =>
+                    new PrReviewerIdentity(r.Id, r.DisplayName ?? "Unknown", r.IsContainer)).ToList() ?? [],
                 CommentCount = 0,
                 FileCount = 0,
                 SourceLink = $"https://dev.azure.com/{_options.Organization}/{_options.Project}/_git/{_options.Project}/pullrequest/{pr.PullRequestId}",
@@ -145,7 +147,9 @@ internal sealed partial class AzureDevOpsPrProvider : IMessageSourceProvider<PrR
 
     private sealed record AdoReviewer
     {
+        public string? Id { get; init; }
         public string? DisplayName { get; init; }
+        public bool IsContainer { get; init; }
         public int Vote { get; init; }
     }
 

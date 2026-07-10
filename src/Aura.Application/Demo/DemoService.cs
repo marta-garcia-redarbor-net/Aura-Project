@@ -18,6 +18,7 @@ public sealed class DemoService
     private readonly INotificationOutboxStore _notificationOutboxStore;
     private readonly ICalendarEventStore _calendarEventStore;
     private readonly IDashboardRefreshDispatcher _dashboardRefreshDispatcher;
+    private readonly IInterruptionDecisionStore _decisionStore;
 
     public DemoService(
         IWorkItemStore workItemStore,
@@ -25,7 +26,8 @@ public sealed class DemoService
         IMorningSummaryEmissionStore morningSummaryEmissionStore,
         INotificationOutboxStore notificationOutboxStore,
         ICalendarEventStore calendarEventStore,
-        IDashboardRefreshDispatcher dashboardRefreshDispatcher)
+        IDashboardRefreshDispatcher dashboardRefreshDispatcher,
+        IInterruptionDecisionStore decisionStore)
     {
         _workItemStore = workItemStore ?? throw new ArgumentNullException(nameof(workItemStore));
         _meetingAlertStore = meetingAlertStore ?? throw new ArgumentNullException(nameof(meetingAlertStore));
@@ -33,6 +35,7 @@ public sealed class DemoService
         _notificationOutboxStore = notificationOutboxStore ?? throw new ArgumentNullException(nameof(notificationOutboxStore));
         _calendarEventStore = calendarEventStore ?? throw new ArgumentNullException(nameof(calendarEventStore));
         _dashboardRefreshDispatcher = dashboardRefreshDispatcher ?? throw new ArgumentNullException(nameof(dashboardRefreshDispatcher));
+        _decisionStore = decisionStore ?? throw new ArgumentNullException(nameof(decisionStore));
     }
 
     /// <summary>
@@ -181,10 +184,10 @@ public sealed class DemoService
         await _workItemStore.SaveAsync(highItem, ct);
 
         await _notificationOutboxStore.EnqueueAsync(
-            new NotificationOutboxEntry(criticalItem.Id, "demo-user", "OutlookEmail", criticalItem.Title, 10.0, "PriorityAlert"),
+            new NotificationOutboxEntry(criticalItem.Id, ownerUserId ?? "demo-user", "OutlookEmail", criticalItem.Title, 10.0, "PriorityAlert"),
             ct);
         await _notificationOutboxStore.EnqueueAsync(
-            new NotificationOutboxEntry(highItem.Id, "demo-user", "OutlookEmail", highItem.Title, 8.0, "PriorityAlert"),
+            new NotificationOutboxEntry(highItem.Id, ownerUserId ?? "demo-user", "OutlookEmail", highItem.Title, 8.0, "PriorityAlert"),
             ct);
 
         await _dashboardRefreshDispatcher.DispatchAsync(ownerUserId, ct);
@@ -208,7 +211,8 @@ public sealed class DemoService
                 ["pr.commentCount"] = "3",
                 ["pr.fileCount"] = "8",
                 ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/428"
+                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/428",
+                [PrMetadataKeys.AttentionScope] = "direct"
             }, ownerUserId: ownerUserId);
         var pr2 = CreateWorkItem("demo-pr-002", "PR #430: fix: resolve race condition in worker", WorkItemSourceType.PrReview, WorkItemPriority.High,
             new Dictionary<string, string>
@@ -221,7 +225,8 @@ public sealed class DemoService
                 ["pr.commentCount"] = "5",
                 ["pr.fileCount"] = "3",
                 ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-workers/pullrequest/430"
+                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-workers/pullrequest/430",
+                [PrMetadataKeys.AttentionScope] = "direct"
             }, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(pr1, ct);
@@ -245,6 +250,32 @@ public sealed class DemoService
         await LoadPullRequestsAsync(ct, ownerUserId: userId);
 
         return "Demo data load complete — all seed data persisted";
+    }
+
+    /// <summary>
+    /// Deletes ALL work items (not just demo-prefixed) and clears all decision records.
+    /// Used by the Reset button to leave the database completely empty for a fresh start.
+    /// </summary>
+    public async Task<string> DeleteDemoDataAsync(CancellationToken ct)
+    {
+        var demoSourceTypes = new[] { WorkItemSourceType.OutlookEmail, WorkItemSourceType.TeamsMessage, WorkItemSourceType.PrReview };
+        var totalRemoved = 0;
+
+        foreach (var sourceType in demoSourceTypes)
+        {
+            var pendingIds = await _workItemStore.GetPendingExternalIdsAsync(sourceType, ct);
+
+            if (pendingIds.Count > 0)
+            {
+                await _workItemStore.MarkCompletedAsync(pendingIds, sourceType, ct);
+                totalRemoved += pendingIds.Count;
+            }
+        }
+
+        await _decisionStore.ClearAsync(ct);
+
+        await _dashboardRefreshDispatcher.DispatchAsync(null, ct);
+        return $"Deleted {totalRemoved} work items and all decision records";
     }
 
     private static WorkItem CreateWorkItem(
@@ -294,7 +325,7 @@ public sealed class DemoService
         if (withNotification)
         {
             await _notificationOutboxStore.EnqueueAsync(
-                new NotificationOutboxEntry(item.Id, "demo-user", "OutlookEmail", title, PriorityToScore(priority), "DemoSimulation"),
+                new NotificationOutboxEntry(item.Id, ownerUserId ?? "demo-user", "OutlookEmail", title, PriorityToScore(priority), "DemoSimulation"),
                 ct);
         }
 
@@ -325,7 +356,7 @@ public sealed class DemoService
         if (withNotification)
         {
             await _notificationOutboxStore.EnqueueAsync(
-                new NotificationOutboxEntry(item.Id, "demo-user", "TeamsMessage", title, PriorityToScore(priority), "DemoSimulation"),
+                new NotificationOutboxEntry(item.Id, ownerUserId ?? "demo-user", "TeamsMessage", title, PriorityToScore(priority), "DemoSimulation"),
                 ct);
         }
 
@@ -371,7 +402,8 @@ public sealed class DemoService
                 ["pr.commentCount"] = "2",
                 ["pr.fileCount"] = "5",
                 ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/{id.Replace("demo-pr-", "")}"
+                ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/{id.Replace("demo-pr-", "")}",
+                [PrMetadataKeys.AttentionScope] = "direct"
             }, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(item, ct);

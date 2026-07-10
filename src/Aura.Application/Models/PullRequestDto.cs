@@ -24,4 +24,5 @@ public sealed record PullRequestDto(
     int ReviewApprovals,
     int ReviewRequired,
     int ReviewChangesRequested,
-    int? PriorityScore);
+    int? PriorityScore,
+    string AttentionScope = "unknown");

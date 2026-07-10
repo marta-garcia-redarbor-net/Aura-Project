@@ -67,6 +67,22 @@ internal sealed class PrReviewWorkItemMapper
             metadata[WorkItemSignalKeys.TargetResponsibleUserId] = pr.Reviewers[0];
         }
 
+        if (pr.ReviewerIdentities?.Count > 0)
+        {
+            for (var i = 0; i < pr.ReviewerIdentities.Count; i++)
+            {
+                var reviewer = pr.ReviewerIdentities[i];
+
+                if (!string.IsNullOrWhiteSpace(reviewer.Oid))
+                {
+                    metadata[PrMetadataKeys.ReviewerOid(i)] = reviewer.Oid;
+                }
+
+                metadata[PrMetadataKeys.ReviewerDisplayName(i)] = reviewer.DisplayName;
+                metadata[PrMetadataKeys.ReviewerIsContainer(i)] = reviewer.IsContainer.ToString();
+            }
+        }
+
         metadata["pr.reviewerCount"] = (pr.Reviewers?.Count ?? 0).ToString();
         metadata["pr.commentCount"] = pr.CommentCount.ToString();
         metadata["pr.fileCount"] = pr.FileCount.ToString();

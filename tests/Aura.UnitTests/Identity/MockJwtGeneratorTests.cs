@@ -12,7 +12,16 @@ namespace Aura.UnitTests.Identity;
 public class MockJwtGeneratorTests
 {
     private static MockJwtGenerator CreateGenerator() =>
-        new(Options.Create(new MockJwtOptions()));
+        new(Options.Create(new MockJwtOptions()), new NoOpDemoSessionStore());
+
+    private sealed class NoOpDemoSessionStore : IDemoSessionStore
+    {
+        public void Activate(string sessionId, string userId, DateTimeOffset expiresAtUtc)
+        {
+        }
+
+        public bool IsActive(string sessionId, string userId, DateTimeOffset nowUtc) => true;
+    }
 
     [Fact]
     public void GenerateToken_DefaultParameters_ContainsOidClaim()
@@ -125,5 +134,22 @@ public class MockJwtGeneratorTests
             c.Type == ClaimTypes.Role);
         Assert.NotNull(roleClaim);
         Assert.Equal("Demo", roleClaim.Value);
+    }
+
+    [Fact]
+    public void GenerateToken_DefaultParameters_ContainsSessionIdClaim()
+    {
+        // Arrange
+        var generator = CreateGenerator();
+
+        // Act
+        var tokenString = generator.GenerateToken();
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadJwtToken(tokenString);
+
+        // Assert
+        var sidClaim = token.Claims.FirstOrDefault(c => c.Type == "sid");
+        Assert.NotNull(sidClaim);
+        Assert.False(string.IsNullOrWhiteSpace(sidClaim.Value));
     }
 }

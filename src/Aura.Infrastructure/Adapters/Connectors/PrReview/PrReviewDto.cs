@@ -26,6 +26,9 @@ internal sealed record PrReviewDto
     /// <summary>List of reviewer display names.</summary>
     public IReadOnlyList<string>? Reviewers { get; init; }
 
+    /// <summary>Identity-rich reviewer model used for oid/container-aware attention derivation.</summary>
+    public IReadOnlyList<PrReviewerIdentity>? ReviewerIdentities { get; init; }
+
     /// <summary>Number of comments on the PR.</summary>
     public int CommentCount { get; init; }
 

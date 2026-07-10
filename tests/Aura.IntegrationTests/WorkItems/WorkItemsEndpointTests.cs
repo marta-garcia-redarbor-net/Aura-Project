@@ -288,7 +288,7 @@ public class WorkItemsEndpointTests : IClassFixture<WebApplicationFactory<ApiMar
             => Task.FromResult(_items);
 
         public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
-            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken = default)
+            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken = default)
             => Task.FromResult(_items);
     }
 
@@ -315,7 +315,7 @@ public class WorkItemsEndpointTests : IClassFixture<WebApplicationFactory<ApiMar
             => throw _exception;
 
         public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
-            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken = default)
+            WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken = default)
             => throw _exception;
     }
 }

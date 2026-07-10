@@ -138,7 +138,57 @@ public class DecisionLogPageTests : TestContext
         Assert.Contains("Decision", cut.Markup);
         Assert.Contains("Focus State", cut.Markup);
         Assert.Contains("Explanation", cut.Markup);
+        Assert.Contains("Guardrail Outcome", cut.Markup);
         Assert.Contains("Urgent PR review", cut.Markup);
+    }
+
+    [Fact]
+    public void PopulatedTable_RendersExpandableTracePanelInProgressiveOrder()
+    {
+        SetupAuthorization();
+        var client = Substitute.For<IDecisionLogApiClient>();
+        client.GetDecisionsAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new DecisionLogResponse(
+                [
+                    new DecisionLogItemResponse(
+                        Guid.Parse("99999999-1111-2222-3333-444444444444"),
+                        "Payments incident",
+                        "TeamsMessage",
+                        "INTERRUPT",
+                        96,
+                        "Rule path from deterministic score.",
+                        DateTimeOffset.Parse("2026-07-05T12:00:00Z"),
+                        "WindowOfOpportunity",
+                        [
+                            new DecisionContextItemResponse("teams-seed-001", "Incident details", "ActivityMemory", 0.91)
+                        ],
+                        "LLM confirms urgency.",
+                        "adjusted")
+                ],
+                1,
+                1,
+                20)));
+        Services.AddSingleton(client);
+
+        Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
+        var cut = RenderComponent<DecisionLog>(p => p.AddCascadingValue(authStateTask));
+
+        cut.WaitForElement("[data-testid='decision-trace-details']");
+        var details = cut.Find("[data-testid='decision-trace-details']");
+        details.SetAttribute("open", string.Empty);
+
+        cut.WaitForElement("[data-testid='decision-trace-section-summary']");
+        cut.WaitForElement("[data-testid='decision-trace-section-rules']");
+        cut.WaitForElement("[data-testid='decision-trace-section-rationale']");
+        cut.WaitForElement("[data-testid='decision-trace-section-context']");
+
+        var markup = cut.Markup;
+        var summaryIndex = markup.IndexOf("decision-trace-section-summary", StringComparison.Ordinal);
+        var rulesIndex = markup.IndexOf("decision-trace-section-rules", StringComparison.Ordinal);
+        var rationaleIndex = markup.IndexOf("decision-trace-section-rationale", StringComparison.Ordinal);
+        var contextIndex = markup.IndexOf("decision-trace-section-context", StringComparison.Ordinal);
+
+        Assert.True(summaryIndex >= 0 && rulesIndex > summaryIndex && rationaleIndex > rulesIndex && contextIndex > rationaleIndex);
     }
 
     [Fact]

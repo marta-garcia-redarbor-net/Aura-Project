@@ -18,6 +18,10 @@ public sealed record PrioritySummaryCard(
     public bool IsPrCard { get; init; }
     public List<PrPreviewItemResponse>? PrItems { get; init; }
     public int TotalCount => PrItems?.Count ?? PreviewItems?.Count ?? CalendarItems?.Count ?? 0;
+    public string? EmptyIcon { get; init; }
+    public string? EmptyTitle { get; init; }
+    public string? EmptySubtitle { get; init; }
+    public string? EmptyLinkLabel { get; init; }
 }
 
 public interface IPrioritySummaryService

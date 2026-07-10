@@ -21,7 +21,7 @@ public static partial class TriageEndpoints
     public static IEndpointRouteBuilder MapTriageEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/triage")
-            .RequireAuthorization("RequireEntraId");
+            .RequireAuthorization("RequireEntraOrDemo");
 
         group.MapGet("/decisions", GetDecisionsAsync);
 
@@ -45,13 +45,20 @@ public static partial class TriageEndpoints
         try
         {
             var result = await decisionStore.QueryAsync(page, pageSize, cancellationToken);
+            var mapped = new PagedResult<DecisionLogItemResponse>
+            {
+                Items = result.Items.Select(MapToResponse).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
 
-            activity?.SetTag("triage.total_count", result.TotalCount);
-            activity?.SetTag("triage.item_count", result.Items.Count);
+            activity?.SetTag("triage.total_count", mapped.TotalCount);
+            activity?.SetTag("triage.item_count", mapped.Items.Count);
 
-            Log.DecisionsSucceeded(logger, result.TotalCount, result.Items.Count);
+            Log.DecisionsSucceeded(logger, mapped.TotalCount, mapped.Items.Count);
 
-            return Results.Ok(result);
+            return Results.Ok(mapped);
         }
         catch (OperationCanceledException)
         {
@@ -69,6 +76,25 @@ public static partial class TriageEndpoints
         }
     }
 
+    private static DecisionLogItemResponse MapToResponse(InterruptionDecisionRecord record)
+        => new(
+            WorkItemId: record.WorkItemId,
+            Title: record.Title,
+            SourceType: record.SourceType,
+            Decision: record.Decision,
+            PriorityScore: record.PriorityScore,
+            Explanation: record.Explanation,
+            Timestamp: record.Timestamp,
+            FocusState: record.FocusState,
+            RetrievedSemanticContext: record.RetrievedSemanticContext?.Select(c =>
+                new DecisionContextItemResponse(
+                    c.CanonicalSourceId,
+                    c.ContentSnippet,
+                    c.SourceType,
+                    c.RelevanceScore)).ToList(),
+            LlmRationale: record.LlmRationale,
+            GuardrailOutcome: record.GuardrailOutcome);
+
     private static partial class Log
     {
         [LoggerMessage(EventId = 4001, Level = LogLevel.Information,
@@ -83,4 +109,23 @@ public static partial class TriageEndpoints
             Message = "Triage decisions request failed")]
         public static partial void DecisionsFailed(ILogger logger, Exception exception);
     }
+
+    private sealed record DecisionLogItemResponse(
+        Guid WorkItemId,
+        string Title,
+        string SourceType,
+        string Decision,
+        int? PriorityScore,
+        string Explanation,
+        DateTimeOffset Timestamp,
+        string FocusState,
+        IReadOnlyList<DecisionContextItemResponse>? RetrievedSemanticContext,
+        string? LlmRationale,
+        string? GuardrailOutcome);
+
+    private sealed record DecisionContextItemResponse(
+        string CanonicalSourceId,
+        string ContentSnippet,
+        string SourceType,
+        double RelevanceScore);
 }

@@ -35,7 +35,7 @@ public static class AuthEndpoints
             var user = currentUserService.GetCurrentUser();
             return user is not null ? Results.Ok(user) : Results.Unauthorized();
         })
-        .RequireAuthorization("RequireEntraId");
+        .RequireAuthorization("RequireEntraOrDemo");
 
         return endpoints;
     }

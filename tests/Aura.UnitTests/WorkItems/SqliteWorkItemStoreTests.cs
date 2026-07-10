@@ -468,7 +468,7 @@ public class SqliteWorkItemStoreTests : IDisposable
         await _store.SaveAsync(high, CancellationToken.None);
 
         var results = await _store.ReadBySourceAsync(
-            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+            WorkItemSourceType.TeamsMessage, null, null, CancellationToken.None);
 
         // Critical (100) > High (75) > Medium (50)
         Assert.Equal("Critical", results[0].Priority.ToString());
@@ -497,7 +497,7 @@ public class SqliteWorkItemStoreTests : IDisposable
         await _store.SaveAsync(critical, CancellationToken.None);
 
         var results = await _store.ReadBySourceAsync(
-            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+            WorkItemSourceType.TeamsMessage, null, null, CancellationToken.None);
 
         // COALESCE: Critical (100) > Medium(90) > High(75)
         Assert.Equal("Critical", results[0].Priority.ToString());
@@ -519,7 +519,7 @@ public class SqliteWorkItemStoreTests : IDisposable
         await _store.SaveAsync(criticalNull, CancellationToken.None);
 
         var results = await _store.ReadBySourceAsync(
-            WorkItemSourceType.TeamsMessage, null, CancellationToken.None);
+            WorkItemSourceType.TeamsMessage, null, null, CancellationToken.None);
 
         Assert.Equal("ext-derive-crit", results[0].ExternalId);
         Assert.Equal("ext-derive-low", results[1].ExternalId);

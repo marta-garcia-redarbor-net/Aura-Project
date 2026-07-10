@@ -9,6 +9,8 @@ public interface IDashboardEventBus
     event Func<Task>? OnDashboardRefresh;
     Task RaiseDashboardRefreshAsync();
     bool IsNewItem(string itemId);
+    void MarkAsSeen(string itemId);
+    void SeedItems(IEnumerable<string> itemIds);
     void ClearTracking();
 }
 
@@ -31,11 +33,28 @@ public class DashboardEventBus : IDashboardEventBus
     {
         lock (_lock)
         {
-            if (string.IsNullOrEmpty(itemId) || _seenItemIds.Contains(itemId))
-                return false;
+            return !string.IsNullOrEmpty(itemId) && !_seenItemIds.Contains(itemId);
+        }
+    }
 
-            _seenItemIds.Add(itemId);
-            return true;
+    public void MarkAsSeen(string itemId)
+    {
+        lock (_lock)
+        {
+            if (!string.IsNullOrEmpty(itemId))
+                _seenItemIds.Add(itemId);
+        }
+    }
+
+    public void SeedItems(IEnumerable<string> itemIds)
+    {
+        lock (_lock)
+        {
+            foreach (var id in itemIds)
+            {
+                if (!string.IsNullOrEmpty(id))
+                    _seenItemIds.Add(id);
+            }
         }
     }
 

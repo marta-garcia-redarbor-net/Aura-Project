@@ -76,6 +76,9 @@ public class InterruptionDecision
     public string? Explanation { get; set; }
     public string Timestamp { get; set; } = string.Empty;
     public string FocusState { get; set; } = string.Empty;
+    public string? RetrievedSemanticContext { get; set; }
+    public string? LlmRationale { get; set; }
+    public string? GuardrailOutcome { get; set; }
 }
 
 /// <summary>EF Core entity for the AlertRules (VipSenders + AlertKeywords) tables.

@@ -23,7 +23,10 @@ public class DecisionLogApiClientTests
                     88,
                     "High urgency",
                     DateTimeOffset.Parse("2026-07-05T12:00:00Z"),
-                    "WindowOfOpportunity")
+                    "WindowOfOpportunity",
+                    [new DecisionContextItemResponse("src-1", "Related outage context", "ActivityMemory", 0.89)],
+                    "LLM confirms high urgency",
+                    "confirmed")
             ],
             50,
             2,

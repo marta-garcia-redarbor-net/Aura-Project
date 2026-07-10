@@ -127,6 +127,7 @@ internal sealed class EfWorkItemStore : IWorkItemStore, IWorkItemReader
     public async Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(
         WorkItemSourceType sourceType,
         WorkItemStatus? statusFilter,
+        string? ownerUserId,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -139,6 +140,11 @@ internal sealed class EfWorkItemStore : IWorkItemStore, IWorkItemReader
         {
             var statusStr = statusFilter.Value.ToString();
             query = query.Where(e => e.Status == statusStr);
+        }
+
+        if (ownerUserId is not null)
+        {
+            query = query.Where(e => e.OwnerUserId == null || e.OwnerUserId == ownerUserId);
         }
 
         var entities = await query

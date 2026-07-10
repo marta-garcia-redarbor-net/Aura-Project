@@ -13,10 +13,14 @@ namespace Aura.Infrastructure.Adapters.Identity;
 public sealed class MockJwtGenerator
 {
     private readonly MockJwtOptions _options;
+    private readonly IDemoSessionStore _sessionStore;
 
-    public MockJwtGenerator(IOptions<MockJwtOptions> options)
+    public MockJwtGenerator(
+        IOptions<MockJwtOptions> options,
+        IDemoSessionStore sessionStore)
     {
         _options = options.Value;
+        _sessionStore = sessionStore;
     }
 
     /// <summary>
@@ -28,10 +32,13 @@ public sealed class MockJwtGenerator
         string userId = "mock-user-001",
         string displayName = "Mock User",
         string email = "mock@aura.dev",
-        string? oid = null)
+        string? oid = null,
+        string? sessionId = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var sid = sessionId ?? Guid.NewGuid().ToString("N");
 
         var claims = new List<Claim>
         {
@@ -39,14 +46,18 @@ public sealed class MockJwtGenerator
             new(ClaimTypes.Name, displayName),
             new(ClaimTypes.Email, email),
             new(EntraIdClaims.ObjectId, oid ?? userId),
-            new(ClaimTypes.Role, "Demo")
+            new(ClaimTypes.Role, "Demo"),
+            new("sid", sid)
         };
+
+        var expiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(_options.ExpirationMinutes);
+        _sessionStore.Activate(sid, userId, expiresAtUtc);
 
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,
             audience: _options.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_options.ExpirationMinutes),
+            expires: expiresAtUtc.UtcDateTime,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

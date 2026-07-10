@@ -116,7 +116,7 @@ public sealed class MorningSummaryComposerTests
                     ? _items.Where(i => i.Status == statusFilter.Value).ToArray()
                     : _items);
 
-        public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(WorkItemSourceType sourceType, WorkItemStatus? statusFilter, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<WorkItem>> ReadBySourceAsync(WorkItemSourceType sourceType, WorkItemStatus? statusFilter, string? ownerUserId, CancellationToken cancellationToken)
             => Task.FromResult<IReadOnlyList<WorkItem>>(
                 statusFilter.HasValue
                     ? _items.Where(i => i.Status == statusFilter.Value).ToArray()

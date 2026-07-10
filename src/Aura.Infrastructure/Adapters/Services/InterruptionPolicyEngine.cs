@@ -2,6 +2,7 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
 using Microsoft.Extensions.Logging;
+using Aura.Infrastructure.Adapters.LlmAdvisor;
 
 namespace Aura.Infrastructure.Adapters.Services;
 
@@ -17,6 +18,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
     private readonly IUserTriagePolicyProvider _policyProvider;
     private readonly IPriorityScoringService _priorityScoringService;
     private readonly IInterruptionDecisionStore _decisionStore;
+    private readonly IDecisionContextRetriever _decisionContextRetriever;
+    private readonly ILlmDecisionAdvisor _llmDecisionAdvisor;
     private readonly ILogger<InterruptionPolicyEngine> _logger;
 
     public InterruptionPolicyEngine(
@@ -25,7 +28,9 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
         IUserTriagePolicyProvider policyProvider,
         IPriorityScoringService priorityScoringService,
         IInterruptionDecisionStore decisionStore,
-        ILogger<InterruptionPolicyEngine>? logger = null)
+        ILogger<InterruptionPolicyEngine>? logger = null,
+        IDecisionContextRetriever? decisionContextRetriever = null,
+        ILlmDecisionAdvisor? llmDecisionAdvisor = null)
     {
         ArgumentNullException.ThrowIfNull(rules);
         ArgumentNullException.ThrowIfNull(focusStateResolver);
@@ -38,6 +43,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
         _policyProvider = policyProvider;
         _priorityScoringService = priorityScoringService;
         _decisionStore = decisionStore;
+        _decisionContextRetriever = decisionContextRetriever ?? new Aura.Infrastructure.Adapters.Ingestion.SemanticIndex.NullDecisionContextRetriever();
+        _llmDecisionAdvisor = llmDecisionAdvisor ?? new NullLlmDecisionAdvisor();
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<InterruptionPolicyEngine>.Instance;
     }
 
@@ -69,7 +76,10 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 null,
                 overrideMatch.Reason,
                 DateTimeOffset.UtcNow,
-                focusState?.CurrentState.ToString() ?? "None");
+                focusState?.CurrentState.ToString() ?? "None",
+                RetrievedSemanticContext: [],
+                LlmRationale: "Explicit override applied before advisory.",
+                GuardrailOutcome: "confirmed");
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -91,7 +101,10 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 null,
                 "No target user was resolved from canonical metadata, so interruption was not allowed.",
                 DateTimeOffset.UtcNow,
-                "None");
+                "None",
+                RetrievedSemanticContext: [],
+                LlmRationale: "No target user resolved; deterministic queue retained.",
+                GuardrailOutcome: "confirmed");
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -108,30 +121,15 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
         var context = new EvaluationContext(item, targetUserId, focusState, baseContext.NormalizedSignals, priorityScore, policy);
         var results = new List<RuleResult>();
 
-        if (focusState?.CurrentState == Aura.Domain.FocusState.FocusStateType.Away && !priorityScore.IsCriticalInterrupt)
-        {
-            var record = new InterruptionDecisionRecord(
-                item.Id,
-                item.Title,
-                item.SourceType.ToString(),
-                ToContractDecision(InterruptionDecision.Defer),
-                priorityScore.InterruptionRank,
-                $"Focus state {focusState.CurrentState} defers non-critical interruption after evaluating '{priorityScore.RuleKey}'.",
-                DateTimeOffset.UtcNow,
-                focusState.CurrentState.ToString());
-
-            await _decisionStore.RecordAsync(record, ct);
-
-            return new InterruptionVerdict(
-                InterruptionDecision.Defer,
-                new EvaluationReport([]),
-                triggerRule: "FocusStateGate",
-                explanation: $"Focus state {focusState.CurrentState} defers non-critical interruption after evaluating '{priorityScore.RuleKey}'.",
-                targetUserId: targetUserId);
-        }
-
-        InterruptionDecision decision = InterruptionDecision.Queue;
+        InterruptionDecision decision = focusState?.CurrentState == Aura.Domain.FocusState.FocusStateType.Away && !priorityScore.IsCriticalInterrupt
+            ? InterruptionDecision.Defer
+            : InterruptionDecision.Queue;
         string? triggerRule = null;
+
+        if (decision == InterruptionDecision.Defer)
+        {
+            triggerRule = "FocusStateGate";
+        }
 
         foreach (var rule in _rules)
         {
@@ -164,22 +162,77 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             triggerRule = priorityScore.RuleKey;
         }
 
-        var explanation = BuildExplanation(priorityScore, focusState, results, decision);
+        var deterministicDecision = decision;
+        var explanation = BuildExplanation(priorityScore, focusState, results, deterministicDecision);
+
+        var retrievalStart = DateTimeOffset.UtcNow;
+        var retrievedContext = await _decisionContextRetriever.RetrieveAsync(item, ct);
+        var retrievalMs = (DateTimeOffset.UtcNow - retrievalStart).TotalMilliseconds;
+
+        var advisorStart = DateTimeOffset.UtcNow;
+        var advisory = await _llmDecisionAdvisor.EvaluateAsync(
+            new AdvisoryRequest(
+                item,
+                ToContractDecision(deterministicDecision),
+                context.NormalizedSignals,
+                retrievedContext),
+            ct);
+        var advisorMs = (DateTimeOffset.UtcNow - advisorStart).TotalMilliseconds;
+
+        var guardrailOutcome = "confirmed";
+        var finalDecision = deterministicDecision;
+
+        var suggestedDecision = ParseContractDecision(advisory.SuggestedVerdict);
+        var deterministicContract = ToContractDecision(deterministicDecision);
+        var suggestionContract = suggestedDecision is null ? null : ToContractDecision(suggestedDecision.Value);
+
+        if (string.Equals(advisory.GuardrailOutcome, "llm-unavailable", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(advisory.FailureReason, "timeout", StringComparison.OrdinalIgnoreCase)
+            || suggestionContract is null)
+        {
+            guardrailOutcome = "llm-unavailable";
+            finalDecision = deterministicDecision;
+        }
+        else if (string.Equals(suggestionContract, deterministicContract, StringComparison.OrdinalIgnoreCase))
+        {
+            guardrailOutcome = "confirmed";
+            finalDecision = deterministicDecision;
+        }
+        else if (priorityScore.IsCriticalInterrupt)
+        {
+            guardrailOutcome = "blocked";
+            finalDecision = deterministicDecision;
+        }
+        else
+        {
+            guardrailOutcome = "adjusted";
+            finalDecision = suggestedDecision.Value;
+        }
+
+        Log.AdvisoryTrace(
+            _logger,
+            guardrailOutcome,
+            retrievalMs,
+            advisorMs,
+            advisory.FailureReason);
 
         var finalRecord = new InterruptionDecisionRecord(
             item.Id,
             item.Title,
             item.SourceType.ToString(),
-            ToContractDecision(decision),
+            ToContractDecision(finalDecision),
             priorityScore.InterruptionRank,
             explanation,
             DateTimeOffset.UtcNow,
-            focusState?.CurrentState.ToString() ?? "None");
+            focusState?.CurrentState.ToString() ?? "None",
+            RetrievedSemanticContext: retrievedContext,
+            LlmRationale: advisory.Rationale,
+            GuardrailOutcome: guardrailOutcome);
 
         await _decisionStore.RecordAsync(finalRecord, ct);
 
         return new InterruptionVerdict(
-            decision,
+            finalDecision,
             new EvaluationReport(results.AsReadOnly()),
             triggerRule,
             explanation: explanation,
@@ -255,10 +308,28 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             _ => decision.ToString().ToUpperInvariant()
         };
 
+    private static InterruptionDecision? ParseContractDecision(string? decision)
+        => decision?.Trim().ToUpperInvariant() switch
+        {
+            "INTERRUPT" => InterruptionDecision.InterruptNow,
+            "QUEUE" => InterruptionDecision.Queue,
+            "DEFER" => InterruptionDecision.Defer,
+            _ => null
+        };
+
     private static partial class Log
     {
         [LoggerMessage(EventId = 4701, Level = LogLevel.Error,
             Message = "Interruption rule {RuleName} threw an exception during evaluation")]
         public static partial void RuleFailed(ILogger logger, string ruleName, Exception exception);
+
+        [LoggerMessage(EventId = 4702, Level = LogLevel.Information,
+            Message = "Decision advisory completed. guardrail={GuardrailOutcome} retrieval_ms={RetrievalLatencyMs} advisor_ms={AdvisorLatencyMs} fallback={FallbackReason}")]
+        public static partial void AdvisoryTrace(
+            ILogger logger,
+            string guardrailOutcome,
+            double retrievalLatencyMs,
+            double advisorLatencyMs,
+            string? fallbackReason);
     }
 }

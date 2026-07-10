@@ -80,6 +80,16 @@ public static class Program
 
                     options.Events.OnTokenValidated = async context =>
                     {
+                        // Persist the OIDC access_token as a claim on the cookie identity.
+                        // ForwardedAccessTokenHandler step 3 reads this claim, which
+                        // works reliably in both server-rendered pages and Blazor circuits.
+                        var oidcToken = context.TokenEndpointResponse?.AccessToken;
+                        if (!string.IsNullOrEmpty(oidcToken))
+                        {
+                            var identity = context.Principal?.Identity as ClaimsIdentity;
+                            identity?.AddClaim(new Claim("token", oidcToken));
+                        }
+
                         var refreshToken = context.TokenEndpointResponse?.RefreshToken;
                         if (string.IsNullOrEmpty(refreshToken))
                             return;
@@ -300,28 +310,37 @@ public static class Program
             };
 
             var demoLogger = ctx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Aura.UI.DemoLogin");
-            try
+            var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
+            string? token = null;
+            for (var attempt = 1; attempt <= 10; attempt++)
             {
-                var apiBaseUrl = config["AuraApi:BaseUrl"] ?? "http://localhost:5180";
-                using var httpClient = new HttpClient();
-                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
-                response.EnsureSuccessStatusCode();
-                var content = await response.Content.ReadAsStringAsync();
-                using var json = System.Text.Json.JsonDocument.Parse(content);
-                var token = json.RootElement.GetProperty("token").GetString();
-                if (token is not null)
+                try
                 {
-                    claims.Add(new("token", token));
-                    demoLogger.LogInformation("Demo login: mock JWT acquired ({Length} chars)", token.Length);
+                    using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+                    var response = await httpClient.PostAsync($"{apiBaseUrl}/api/auth/mock-login", null);
+                    response.EnsureSuccessStatusCode();
+                    var content = await response.Content.ReadAsStringAsync();
+                    using var json = System.Text.Json.JsonDocument.Parse(content);
+                    token = json.RootElement.GetProperty("token").GetString();
+                    if (token is not null)
+                    {
+                        demoLogger.LogInformation("Demo login: mock JWT acquired on attempt {Attempt}", attempt);
+                        break;
+                    }
                 }
-                else
+                catch
                 {
-                    demoLogger.LogWarning("Demo login: mock-login returned empty token");
+                    if (attempt < 10)
+                        await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
-            catch (Exception ex)
+            if (token is null)
             {
-                demoLogger.LogWarning(ex, "Demo login: failed to acquire mock JWT");
+                demoLogger.LogWarning("Demo login: failed to acquire mock JWT after 10 attempts");
+            }
+            else
+            {
+                claims.Add(new("token", token));
             }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
