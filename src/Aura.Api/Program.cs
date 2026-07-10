@@ -56,21 +56,42 @@ builder.Services.AddCors(options =>
 // Rate limiting — sliding window per client IP
 builder.Services.AddRateLimiter(options =>
 {
-    var defaultLimit = builder.Configuration.GetValue<int>("RateLimiting:Default:PermitLimit", 100);
+    // Disable rate limiting in Development to avoid blocking during testing
+    if (builder.Environment.IsDevelopment())
+    {
+        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            RateLimitPartition.GetNoLimiter("development"));
+        
+        // Register named policies as no-limiter in Development
+        options.AddPolicy("auth", context =>
+            RateLimitPartition.GetNoLimiter("development"));
+        
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        return;
+    }
+
+    var defaultLimit = builder.Configuration.GetValue<int>("RateLimiting:Default:PermitLimit", 1000);
     var defaultWindow = builder.Configuration.GetValue<int>("RateLimiting:Default:WindowSeconds", 60);
-    var authLimit = builder.Configuration.GetValue<int>("RateLimiting:Auth:PermitLimit", 10);
+    var authLimit = builder.Configuration.GetValue<int>("RateLimiting:Auth:PermitLimit", 50);
     var authWindow = builder.Configuration.GetValue<int>("RateLimiting:Auth:WindowSeconds", 60);
 
     // Global limiter — applies to all endpoints unless overridden
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
     {
+        // Exclude SignalR endpoints from rate limiting
+        var path = httpContext.Request.Path.Value;
+        if (path is not null && path.StartsWith("/hubs", StringComparison.OrdinalIgnoreCase))
+        {
+            return RateLimitPartition.GetNoLimiter("signalr");
+        }
+
         var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
         return RateLimitPartition.GetSlidingWindowLimiter(clientIp,
             _ => new SlidingWindowRateLimiterOptions
             {
                 PermitLimit = defaultLimit,
                 Window = TimeSpan.FromSeconds(defaultWindow),
-                SegmentsPerWindow = 4,
+                SegmentsPerWindow = 1,
                 QueueLimit = 0
             });
     });
@@ -93,6 +114,14 @@ builder.Services.AddRateLimiter(options =>
 
     options.OnRejected = (context, cancellationToken) =>
     {
+        var path = context.HttpContext.Request.Path;
+        var method = context.HttpContext.Request.Method;
+        var logger = context.HttpContext.RequestServices.GetService<ILogger<Program>>();
+        if (logger is not null)
+        {
+            logger.LogWarning("[RATE-LIMIT] 429 {Method} {Path} — rate limit exceeded", method, path);
+        }
+
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
             context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString("0");
@@ -183,7 +212,7 @@ app.MapHealthChecks("/health");
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapAuthEndpoints(app.Environment);
+app.MapAuthEndpoints();
 app.MapDashboardEndpoints();
 app.MapFocusStateEndpoints();
 app.MapGraphConnectorEndpoints();

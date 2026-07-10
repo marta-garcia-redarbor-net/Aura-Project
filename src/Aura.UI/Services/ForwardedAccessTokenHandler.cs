@@ -9,9 +9,10 @@ namespace Aura.UI.Services;
 /// Attaches a Bearer token to outbound API requests.
 ///
 /// Token resolution order:
-///   1. Existing Authorization header (dev mode / mock JWT forwarding)
+///   1. Existing Authorization header (from the browser request)
 ///   2. OIDC session access_token (SaveTokens=true in the OpenIdConnect options)
-///   3. Client-credentials fallback via IConfidentialClientApplication
+///   3. Cookie identity "token" claim (demo login or OIDC token persistence)
+///   4. Client-credentials fallback via IConfidentialClientApplication
 /// </summary>
 public sealed class ForwardedAccessTokenHandler : DelegatingHandler
 {
@@ -32,10 +33,12 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        HttpContext? httpContext = _httpContextAccessor.HttpContext;
-
-        if (httpContext is not null)
+        try
         {
+            HttpContext? httpContext = _httpContextAccessor.HttpContext;
+
+            if (httpContext is not null)
+            {
             // 1. Existing Authorization header (dev mode / mock JWT)
             string? authorization = httpContext.Request.Headers.Authorization.ToString();
             if (!string.IsNullOrWhiteSpace(authorization) &&
@@ -50,67 +53,69 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
             string? accessToken = await httpContext.GetTokenAsync("access_token");
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                _logger.LogDebug("Forwarded OIDC session token for {Uri}", request.RequestUri);
+                _logger.LogDebug("ForwardedAccessTokenHandler: Using OIDC session token for {Uri}", request.RequestUri);
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue("Bearer", accessToken);
                 return await base.SendAsync(request, cancellationToken);
             }
 
-            // 3. Cookie identity "token" claim (dev/demo login pre-fetches a mock JWT)
-            var cookieIdentity = httpContext.User.Identity?.Name ?? "(null)";
+            // 3. Cookie identity "token" claim (dev/demo login or OIDC token storage)
             var tokenClaim = httpContext.User.FindFirstValue("token");
-            _logger.LogInformation(
-                "Token resolution: user={User}, hasTokenClaim={HasToken}, uri={Uri}",
-                cookieIdentity, tokenClaim is not null, request.RequestUri);
             if (!string.IsNullOrWhiteSpace(tokenClaim))
             {
-                _logger.LogInformation("Forwarded cookie token claim for {Uri}", request.RequestUri);
+                _logger.LogDebug("ForwardedAccessTokenHandler: Using cookie token claim for {Uri}", request.RequestUri);
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue("Bearer", tokenClaim);
                 return await base.SendAsync(request, cancellationToken);
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "No access_token in OIDC session for {Uri}. Attempting client-credentials fallback.",
                 request.RequestUri);
 
-            // 4. Client-credentials fallback
-            try
-            {
-                var msalClient = httpContext.RequestServices.GetService<IConfidentialClientApplication>();
-                if (msalClient is not null)
+                // 4. Client-credentials fallback (production)
+                try
                 {
-                    var clientId = _configuration["AzureAd:ClientId"];
-                    var scopes = new[] { $"api://{clientId}/.default" };
-                    var result = await msalClient
-                        .AcquireTokenForClient(scopes)
-                        .ExecuteAsync(cancellationToken);
+                    var msalClient = httpContext.RequestServices.GetService<IConfidentialClientApplication>();
+                    if (msalClient is not null)
+                    {
+                        var clientId = _configuration["AzureAd:ClientId"];
+                        var scopes = new[] { $"api://{clientId}/.default" };
+                        var result = await msalClient
+                            .AcquireTokenForClient(scopes)
+                            .ExecuteAsync(cancellationToken);
 
-                    _logger.LogInformation(
-                        "Client-credentials token acquired for {Uri} (audience: api://{ClientId})",
-                        request.RequestUri, clientId);
-                    request.Headers.Authorization =
-                        new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                        _logger.LogDebug(
+                            "Client-credentials token acquired for {Uri} (audience: api://{ClientId})",
+                            request.RequestUri, clientId);
+                        request.Headers.Authorization =
+                            new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "IConfidentialClientApplication not available for {Uri}. No token will be sent.",
+                            request.RequestUri);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogWarning(
-                        "IConfidentialClientApplication not available for {Uri}. No token will be sent.",
+                    _logger.LogWarning(ex,
+                        "Client-credentials token acquisition FAILED for {Uri}",
                         request.RequestUri);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogWarning(ex,
-                    "Client-credentials token acquisition FAILED for {Uri}",
-                    request.RequestUri);
+                _logger.LogWarning("HttpContext is NULL — no token attached for {Uri}", request.RequestUri);
             }
-        }
-        else
-        {
-            _logger.LogWarning("HttpContext is NULL — no token attached for {Uri}", request.RequestUri);
-        }
 
-        return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ForwardedAccessTokenHandler.SendAsync EXCEPTION for {Uri}", request.RequestUri);
+            throw;
+        }
     }
 }

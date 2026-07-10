@@ -39,19 +39,78 @@ internal static class DependencyInjection
         services.Configure<EntraIdOptions>(
             configuration.GetSection(EntraIdOptions.SectionName));
 
+        // ── PolicyScheme for intelligent token routing ──
+        // Selects the correct scheme based on token structure:
+        // - Tokens with "kid" (Key ID) → EntraId (real Microsoft tokens)
+        // - Tokens without "kid" → MockJwt (demo/dev tokens)
+        services.AddAuthentication("SmartBearer")
+            .AddPolicyScheme("SmartBearer", "Smart Bearer Token Router", options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    var logger = context.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("SmartBearer");
+                    var authorization = context.Request.Headers.Authorization.FirstOrDefault();
+                    
+                    if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        logger?.LogDebug("SmartBearer: No Bearer token found, forwarding to EntraId");
+                        return "EntraId";
+                    }
+
+                    var token = authorization.Substring("Bearer ".Length).Trim();
+                    
+                    // Try to decode the JWT header to check for "kid"
+                    try
+                    {
+                        var parts = token.Split('.');
+                        if (parts.Length >= 2)
+                        {
+                            var headerJson = System.Text.Encoding.UTF8.GetString(
+                                Convert.FromBase64String(PadBase64(parts[0])));
+                            
+                            if (headerJson.Contains("\"kid\""))
+                            {
+                                logger?.LogDebug("SmartBearer: Token has kid, forwarding to EntraId");
+                                return "EntraId";
+                            }
+                            else
+                            {
+                                logger?.LogDebug("SmartBearer: Token has NO kid, forwarding to MockJwt");
+                                return "MockJwt";
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger?.LogDebug(ex, "SmartBearer: Failed to decode JWT header, forwarding to MockJwt");
+                        return "MockJwt";
+                    }
+
+                    logger?.LogDebug("SmartBearer: Fallback to EntraId");
+                    return "EntraId";
+                };
+            });
+
         // ── Dual JWT Bearer scheme registration ──
-        // Both schemes are registered simultaneously. The default policy accepts either.
-        var authBuilder = services.AddAuthentication(options =>
+        // Both schemes are registered simultaneously. The policy scheme routes to the correct one.
+        var authBuilder = services.AddAuthentication();
+
+        // Helper function to pad base64 strings
+        static string PadBase64(string base64)
         {
-            options.DefaultScheme = "EntraId";
-            options.DefaultAuthenticateScheme = "EntraId";
-        });
+            switch (base64.Length % 4)
+            {
+                case 2: return base64 + "==";
+                case 3: return base64 + "=";
+                default: return base64;
+            }
+        }
 
         // ── EntraId scheme — registered when AzureAd config is present ──
         var azureAdSection = configuration.GetSection(EntraIdOptions.SectionName);
         var entraIdOptions = azureAdSection.Get<EntraIdOptions>();
-        var hasAzureAdConfig = !string.IsNullOrEmpty(entraIdOptions?.ClientId)
-                               && !string.IsNullOrEmpty(entraIdOptions?.TenantId);
+        var useEntraId = configuration.GetValue<bool>("UseEntraId");
+        var hasAzureAdConfig = useEntraId && !string.IsNullOrWhiteSpace(entraIdOptions?.TenantId);
 
         if (hasAzureAdConfig)
         {
@@ -60,7 +119,9 @@ internal static class DependencyInjection
             var validAudiences = configuration
                 .GetSection("EntraId:ValidAudiences")
                 .Get<string[]>()
-                ?? [$"api://{entraIdOptions.ClientId}", entraIdOptions.ClientId];
+                ?? (string.IsNullOrWhiteSpace(entraIdOptions?.ClientId)
+                    ? []
+                    : [$"api://{entraIdOptions.ClientId}", entraIdOptions.ClientId]);
 
             authBuilder.AddJwtBearer("EntraId", options =>
             {
@@ -68,7 +129,7 @@ internal static class DependencyInjection
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true,
+                    ValidateAudience = validAudiences.Length > 0,
                     ValidateLifetime = true,
                     ValidIssuers =
                     [
@@ -152,24 +213,89 @@ internal static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtOptions.Key))
             };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("MockJwt");
+                    logger.LogWarning(context.Exception,
+                        "MockJwt AUTHENTICATION FAILED: {ExceptionMessage}",
+                        context.Exception.Message);
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("MockJwt");
+                    logger.LogDebug("MockJwt token validated successfully");
+
+                    var sid = context.Principal?.FindFirst("sid")?.Value;
+                    if (string.IsNullOrWhiteSpace(sid))
+                    {
+                        // Backward compatibility for legacy test tokens without sid.
+                        logger.LogDebug("MockJwt: No sid claim, skipping session check");
+                        return Task.CompletedTask;
+                    }
+
+                    var userId = context.Principal?.FindFirst(EntraIdClaims.ObjectId)?.Value
+                                 ?? context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                    if (string.IsNullOrWhiteSpace(userId))
+                    {
+                        logger.LogWarning("MockJwt: Missing sid/user claims");
+                        context.Fail("MockJwt missing required sid/user claims.");
+                        return Task.CompletedTask;
+                    }
+
+                    var sessionStore = context.HttpContext.RequestServices.GetRequiredService<IDemoSessionStore>();
+                    var nowUtc = DateTimeOffset.UtcNow;
+                    if (!sessionStore.IsActive(sid, userId, nowUtc))
+                    {
+                        logger.LogWarning("MockJwt: Session not active for sid={SessionId}, userId={UserId}", sid, userId);
+                        context.Fail("MockJwt session is not active.");
+                    }
+                    else
+                    {
+                        logger.LogDebug("MockJwt: Session active for sid={SessionId}, userId={UserId}", sid, userId);
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         // ── Authorization policies ──
         services.AddAuthorization(options =>
         {
-            // Default policy — accepts either scheme (dashboard preview, public data)
-            options.DefaultPolicy = new AuthorizationPolicyBuilder("EntraId", "MockJwt")
+            // Default policy — uses SmartBearer to route to the correct scheme
+            options.DefaultPolicy = new AuthorizationPolicyBuilder("SmartBearer")
                 .RequireAuthenticatedUser()
                 .Build();
 
             // RequireEntraId — only real Microsoft auth (production data)
+            // Bypasses SmartBearer, uses EntraId directly
             options.AddPolicy("RequireEntraId", policy =>
             {
                 policy.AddAuthenticationSchemes("EntraId");
                 policy.RequireAuthenticatedUser();
             });
 
+            // RequireEntraOrDemo — uses SmartBearer to route, then checks claims
+            options.AddPolicy("RequireEntraOrDemo", policy =>
+            {
+                policy.AddAuthenticationSchemes("SmartBearer");
+                policy.RequireAuthenticatedUser();
+                policy.RequireAssertion(context =>
+                    context.User.HasClaim(c => c.Type == EntraIdClaims.TenantId)
+                    || context.User.IsInRole("Demo"));
+            });
+
             // DemoOnly — requires MockJwt scheme with role=Demo
+            // Bypasses SmartBearer, uses MockJwt directly
             options.AddPolicy("DemoOnly", policy =>
             {
                 policy.AddAuthenticationSchemes("MockJwt");
@@ -181,6 +307,7 @@ internal static class DependencyInjection
         services.AddHttpContextAccessor();
 
         // Mock JWT generator — available in ALL environments (design decision: no env guard)
+        services.AddSingleton<IDemoSessionStore, InMemoryDemoSessionStore>();
         services.AddSingleton<MockJwtGenerator>();
 
         // Port implementation
