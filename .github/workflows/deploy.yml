@@ -3,7 +3,7 @@ name: Deploy to ACA
 on:
   push:
     branches:
-      - 'release/aura/*'
+      - 'release/*'
 
 env:
   REGISTRY: ghcr.io
@@ -32,8 +32,10 @@ jobs:
       - name: Build
         run: dotnet build Aura.sln -c Release --no-restore
 
-      - name: Test
-        run: dotnet test Aura.sln -c Release --no-build --verbosity normal
+      - name: Test (unit + architecture)
+        run: |
+          dotnet test tests/Aura.UnitTests/Aura.UnitTests.csproj -c Release --no-build --verbosity normal
+          dotnet test tests/Aura.ArchitectureTests/Aura.ArchitectureTests.csproj -c Release --no-build --verbosity normal
 
   push-images:
     needs: build-and-test
