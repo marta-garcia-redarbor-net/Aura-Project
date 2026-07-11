@@ -256,6 +256,12 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             return ownerUserId;
         }
 
+        // Fallback to domain-level OwnerUserId property
+        if (!string.IsNullOrWhiteSpace(item.OwnerUserId))
+        {
+            return item.OwnerUserId;
+        }
+
         return null;
     }
 

@@ -74,6 +74,7 @@ public class DemoModeRegistrationTests
         services.AddSingleton<Aura.Application.Ports.ICalendarEventStore>(NSubstitute.Substitute.For<Aura.Application.Ports.ICalendarEventStore>());
         services.AddSingleton<Aura.Application.Ports.IDashboardRefreshDispatcher>(NSubstitute.Substitute.For<Aura.Application.Ports.IDashboardRefreshDispatcher>());
         services.AddSingleton<Aura.Application.Ports.IInterruptionDecisionStore>(NSubstitute.Substitute.For<Aura.Application.Ports.IInterruptionDecisionStore>());
+        services.AddSingleton<Aura.Application.Ports.IInterruptionPolicyEngine>(NSubstitute.Substitute.For<Aura.Application.Ports.IInterruptionPolicyEngine>());
         services.AddDemoMode(config);
 
         using var provider = services.BuildServiceProvider();

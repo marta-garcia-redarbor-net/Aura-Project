@@ -17,6 +17,9 @@ param sqlConnectionString string
 @description('Allowed CORS origins for API ingress.')
 param corsAllowedOrigins array = []
 
+@description('Internal Ollama endpoint URL (e.g., http://aura-ollama:11434).')
+param ollamaEndpoint string = ''
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: appName
   location: location
@@ -57,8 +60,40 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'Production'
             }
             {
-              name: 'ConnectionStrings__Aura'
+              name: 'ConnectionStrings__AuraDb'
               secureValue: sqlConnectionString
+            }
+            {
+              name: 'LlmAdvisor__Enabled'
+              value: 'true'
+            }
+            {
+              name: 'LlmAdvisor__Endpoint'
+              value: ollamaEndpoint
+            }
+            {
+              name: 'LlmAdvisor__ModelId'
+              value: 'llama3.2:1b'
+            }
+            {
+              name: 'LlmAdvisor__Provider'
+              value: 'Ollama'
+            }
+            {
+              name: 'LlmAdvisor__TimeoutSeconds'
+              value: '30'
+            }
+            {
+              name: 'LlmAdvisor__ConfidenceThreshold'
+              value: '0.7'
+            }
+            {
+              name: 'EmbeddingProvider__Endpoint'
+              value: ollamaEndpoint
+            }
+            {
+              name: 'EmbeddingProvider__DeploymentName'
+              value: 'nomic-embed-text'
             }
           ]
           probes: [

@@ -32,6 +32,7 @@ var acaEnvironmentName = '${environmentName}-aca-env'
 var apiAppName = '${environmentName}-api'
 var uiAppName = '${environmentName}-ui'
 var workersAppName = '${environmentName}-workers'
+var ollamaAppName = '${environmentName}-ollama'
 var sqlServerName = '${take(replace(toLower(environmentName), '-', ''), 18)}-sql'
 var sqlDatabaseName = 'AuraDb'
 
@@ -61,6 +62,16 @@ module sqlDatabase './sql-database.bicep' = {
   }
 }
 
+module ollama './ollama.bicep' = {
+  name: 'ollama'
+  scope: rg
+  params: {
+    location: location
+    appName: ollamaAppName
+    containerAppEnvironmentId: managedEnvironment.id
+  }
+}
+
 module api './api.bicep' = {
   name: 'aca-api'
   scope: rg
@@ -71,6 +82,7 @@ module api './api.bicep' = {
     image: apiImage
     sqlConnectionString: sqlDatabase.outputs.connectionString
     corsAllowedOrigins: corsAllowedOrigins
+    ollamaEndpoint: ollama.outputs.internalUrl
   }
 }
 
@@ -95,6 +107,7 @@ module workers './workers.bicep' = {
     containerAppEnvironmentId: managedEnvironment.id
     image: workersImage
     sqlConnectionString: sqlDatabase.outputs.connectionString
+    ollamaEndpoint: ollama.outputs.internalUrl
   }
 }
 
@@ -102,3 +115,4 @@ output resourceGroupId string = rg.id
 output containerAppEnvironmentId string = managedEnvironment.id
 output apiUrl string = 'https://${api.outputs.fqdn}'
 output uiUrl string = 'https://${ui.outputs.fqdn}'
+output ollamaUrl string = ollama.outputs.internalUrl

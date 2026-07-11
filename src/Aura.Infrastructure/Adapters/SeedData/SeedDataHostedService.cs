@@ -82,31 +82,38 @@ internal sealed partial class SeedDataHostedService : IHostedService
             CreateTeamsWorkItem(
                 "teams-seed-001", "Incidente de producción en API Payments", WorkItemPriority.Critical,
                 "Carlos Ruiz", "El endpoint POST /payments está devolviendo 502 desde las 14:30. Todos los cobros están fallando. Necesito que alguien revise ya.",
-                "team-payments", "channel-incidents", now.AddMinutes(-15)),
+                "team-payments", "channel-incidents", now.AddMinutes(-15),
+                assignedToUserId: "demo-interrupt-user"),
             CreateTeamsWorkItem(
                 "teams-seed-002", "Release v3.2.1 desplegada mañana a las 10", WorkItemPriority.High,
                 "Ana López", "Mañana desplegamos la release v3.2.1 con las nuevas features de reporting. Por favor confirmad que vuestros PRs están merged.",
-                "team-core", "channel-releases", now.AddMinutes(-45)),
+                "team-core", "channel-releases", now.AddMinutes(-45),
+                assignedToUserId: "demo-queue-user"),
             CreateTeamsWorkItem(
                 "teams-seed-003", "Duda sobre el endpoint /users/:id/roles", WorkItemPriority.Medium,
                 "Pedro Gómez", "Alguien sabe si /users/:id/roles acepta PATCH o solo PUT? No lo veo en la doc de Swagger.",
-                "team-core", "channel-dev", now.AddHours(-2)),
+                "team-core", "channel-dev", now.AddHours(-2),
+                assignedToUserId: "demo-queue-user"),
             CreateTeamsWorkItem(
                 "teams-seed-004", "URGENTE: Rollback necesario en producción", WorkItemPriority.Critical,
                 "María García", "La última deploy rompió la validación de emails. Hay que hacer rollback AHORA. @on-call",
-                "team-platform", "channel-ops", now.AddMinutes(-5)),
+                "team-platform", "channel-ops", now.AddMinutes(-5),
+                assignedToUserId: "demo-interrupt-user"),
             CreateTeamsWorkItem(
                 "teams-seed-005", "Propuesta de arquitectura para el módulo de reports", WorkItemPriority.Low,
                 "Laura Sánchez", "Os comparto el documento con la propuesta de arquitectura para el nuevo módulo de reports. Comentarios bienvenidos.",
-                "team-core", "channel-architecture", now.AddHours(-5)),
+                "team-core", "channel-architecture", now.AddHours(-5),
+                assignedToUserId: "demo-defer-user"),
             CreateTeamsWorkItem(
                 "teams-seed-006", "Daily standup en 5 minutos", WorkItemPriority.Medium,
                 "Sistema", "Recordatorio automático: Daily standup en 5 minutos. Sala virtual: https://teams.aura.dev/daily",
-                null, null, now.AddMinutes(-10)),
+                null, null, now.AddMinutes(-10),
+                assignedToUserId: "demo-defer-user"),
             CreateTeamsWorkItem(
                 "teams-seed-007", "Bug crítico en el flujo de login con SSO", WorkItemPriority.High,
                 "David Martínez", "Los usuarios de Okta no pueden iniciar sesión desde esta mañana. El redirect_uri no coincide con lo configurado.",
-                "team-auth", "channel-security", now.AddMinutes(-30))
+                "team-auth", "channel-security", now.AddMinutes(-30),
+                assignedToUserId: "demo-interrupt-user")
         };
 
         foreach (var item in teamsMessages)
@@ -142,31 +149,38 @@ internal sealed partial class SeedDataHostedService : IHostedService
             CreateOutlookWorkItem(
                 "outlook-seed-001", "URGENTE: Producción caída — responder inmediatamente", WorkItemPriority.Critical,
                 "ceo@aura.dev", "La página principal está caída según nuestros clientes. Necesito una actualización cada 15 minutos hasta que se resuelva. Por favor responder con ETA.",
-                "conv-prod-001", now.AddMinutes(-20), "high", true),
+                "conv-prod-001", now.AddMinutes(-20), "high", true,
+                assignedToUserId: "demo-interrupt-user"),
             CreateOutlookWorkItem(
                 "outlook-seed-002", "Review del diseño de base de datos para el nuevo módulo", WorkItemPriority.High,
                 "director@aura.dev", "Adjunto el diseño preliminar de la BD para el módulo de auditoría. Necesito vuestra review antes del viernes. Prestad atención a los índices propuestos.",
-                "conv-db-review", now.AddMinutes(-90), "normal", false),
+                "conv-db-review", now.AddMinutes(-90), "normal", false,
+                assignedToUserId: "demo-queue-user"),
             CreateOutlookWorkItem(
                 "outlook-seed-003", "Weekly status - Semana 25", WorkItemPriority.Medium,
                 "manager@aura.dev", "Por favor enviad vuestro weekly status antes de las 15:00. Incluid logros, bloqueos y planes para la próxima semana.",
-                "conv-weekly", now.AddHours(-3), "normal", true),
+                "conv-weekly", now.AddHours(-3), "normal", true,
+                assignedToUserId: "demo-queue-user"),
             CreateOutlookWorkItem(
                 "outlook-seed-004", "Re: Presupuesto Q3 aprobado — fondos disponibles", WorkItemPriority.Medium,
                 "finanzas@aura.dev", "El presupuesto para Q3 ha sido aprobado. Tenemos $50k para infraestructura y $30k para herramientas. Enviad vuestras solicitudes antes del 15 de julio.",
-                "conv-budget", now.AddHours(-1)), 
+                "conv-budget", now.AddHours(-1),
+                assignedToUserId: "demo-defer-user"), 
             CreateOutlookWorkItem(
                 "outlook-seed-005", "Incidente de seguridad reportado por cliente SOC-2", WorkItemPriority.Critical,
                 "vp-seguridad@aura.dev", "Un cliente ha reportado una posible brecha de seguridad en su instancia. El equipo de seguridad ya está investigando. No compartáis información externa hasta nuevo aviso.",
-                "conv-sec-incident", now.AddMinutes(-40), "high", true),
+                "conv-sec-incident", now.AddMinutes(-40), "high", true,
+                assignedToUserId: "demo-interrupt-user"),
             CreateOutlookWorkItem(
                 "outlook-seed-006", "Invitación: Hackathon interno de innovación", WorkItemPriority.Low,
                 "cultura@aura.dev", "Os invitamos al hackathon interno del 20-21 de julio. 24h para construir algo genial. Habrá premios y comida gratis! Inscribíos en el portal.",
-                "conv-hackathon", now.AddHours(-6)),
+                "conv-hackathon", now.AddHours(-6),
+                assignedToUserId: "demo-defer-user"),
             CreateOutlookWorkItem(
                 "outlook-seed-007", "ASAP: Hotfix para producción esta tarde", WorkItemPriority.High,
                 "cto@aura.dev", "Necesito un hotfix para el bug de pagos antes de las 18:00. El CEO ha puesto este tema como prioritario. Avísame cuando tengáis el PR listo para revisarlo yo mismo.",
-                "conv-hotfix", now.AddMinutes(-60), "high", true)
+                "conv-hotfix", now.AddMinutes(-60), "high", true,
+                assignedToUserId: "demo-queue-user")
         };
 
         foreach (var item in outlookEmails)
@@ -273,22 +287,28 @@ internal sealed partial class SeedDataHostedService : IHostedService
 
             CreatePrWorkItem(
                 "pr-seed-001", "Hotfix: production crash on payment validation", WorkItemPriority.Critical,
-                "Carlos Ruiz", "Aura", 12, 3, "active", false, now.AddMinutes(-30)),
+                "Carlos Ruiz", "Aura", 12, 3, "active", false, now.AddMinutes(-30),
+                assignedToUserId: "demo-interrupt-user"),
             CreatePrWorkItem(
                 "pr-seed-002", "Fix: SSO redirect loop on token expiry", WorkItemPriority.Critical,
-                "David Martínez", "Aura.Auth", 8, 5, "active", false, now.AddMinutes(-90)),
+                "David Martínez", "Aura.Auth", 8, 5, "active", false, now.AddMinutes(-90),
+                assignedToUserId: "demo-interrupt-user"),
             CreatePrWorkItem(
                 "pr-seed-003", "Feature: Add reporting dashboard v2", WorkItemPriority.High,
-                "Laura Sánchez", "Aura", 5, 12, "active", false, now.AddHours(-2)),
+                "Laura Sánchez", "Aura", 5, 12, "active", false, now.AddHours(-2),
+                assignedToUserId: "demo-queue-user"),
             CreatePrWorkItem(
                 "pr-seed-004", "Refactor: Extract payment gateway adapter", WorkItemPriority.High,
-                "Pedro Gómez", "Aura.Payments", 3, 8, "active", false, now.AddHours(-4)),
+                "Pedro Gómez", "Aura.Payments", 3, 8, "active", false, now.AddHours(-4),
+                assignedToUserId: "demo-queue-user"),
             CreatePrWorkItem(
                 "pr-seed-005", "Chore: Update dependency versions", WorkItemPriority.Low,
-                "Sistema", "Aura", 0, 15, "active", true, now.AddHours(-1)),
+                "Sistema", "Aura", 0, 15, "active", true, now.AddHours(-1),
+                assignedToUserId: "demo-defer-user"),
             CreatePrWorkItem(
                 "pr-seed-006", "Docs: Update API reference for v3 endpoints", WorkItemPriority.Low,
-                "María García", "Aura.Docs", 1, 4, "active", false, now.AddHours(-3))
+                "María García", "Aura.Docs", 1, 4, "active", false, now.AddHours(-3),
+                assignedToUserId: "demo-defer-user")
         };
 
         foreach (var item in prItems)

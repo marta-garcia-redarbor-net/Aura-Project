@@ -19,6 +19,7 @@ public sealed class DemoService
     private readonly ICalendarEventStore _calendarEventStore;
     private readonly IDashboardRefreshDispatcher _dashboardRefreshDispatcher;
     private readonly IInterruptionDecisionStore _decisionStore;
+    private readonly IInterruptionPolicyEngine _interruptionEngine;
 
     public DemoService(
         IWorkItemStore workItemStore,
@@ -27,7 +28,8 @@ public sealed class DemoService
         INotificationOutboxStore notificationOutboxStore,
         ICalendarEventStore calendarEventStore,
         IDashboardRefreshDispatcher dashboardRefreshDispatcher,
-        IInterruptionDecisionStore decisionStore)
+        IInterruptionDecisionStore decisionStore,
+        IInterruptionPolicyEngine interruptionEngine)
     {
         _workItemStore = workItemStore ?? throw new ArgumentNullException(nameof(workItemStore));
         _meetingAlertStore = meetingAlertStore ?? throw new ArgumentNullException(nameof(meetingAlertStore));
@@ -36,6 +38,7 @@ public sealed class DemoService
         _calendarEventStore = calendarEventStore ?? throw new ArgumentNullException(nameof(calendarEventStore));
         _dashboardRefreshDispatcher = dashboardRefreshDispatcher ?? throw new ArgumentNullException(nameof(dashboardRefreshDispatcher));
         _decisionStore = decisionStore ?? throw new ArgumentNullException(nameof(decisionStore));
+        _interruptionEngine = interruptionEngine ?? throw new ArgumentNullException(nameof(interruptionEngine));
     }
 
     /// <summary>
@@ -85,7 +88,10 @@ public sealed class DemoService
         };
 
         foreach (var email in emails)
+        {
             await _workItemStore.SaveAsync(email, ct);
+            await EvaluateWorkItemAsync(email, ct);
+        }
 
         await _dashboardRefreshDispatcher.DispatchAsync(ownerUserId, ct);
 
@@ -135,7 +141,10 @@ public sealed class DemoService
         };
 
         foreach (var msg in messages)
+        {
             await _workItemStore.SaveAsync(msg, ct);
+            await EvaluateWorkItemAsync(msg, ct);
+        }
 
         await _dashboardRefreshDispatcher.DispatchAsync(ownerUserId, ct);
 
@@ -181,7 +190,9 @@ public sealed class DemoService
             }, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(criticalItem, ct);
+        await EvaluateWorkItemAsync(criticalItem, ct);
         await _workItemStore.SaveAsync(highItem, ct);
+        await EvaluateWorkItemAsync(highItem, ct);
 
         await _notificationOutboxStore.EnqueueAsync(
             new NotificationOutboxEntry(criticalItem.Id, ownerUserId ?? "demo-user", "OutlookEmail", criticalItem.Title, 10.0, "PriorityAlert"),
@@ -230,7 +241,9 @@ public sealed class DemoService
             }, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(pr1, ct);
+        await EvaluateWorkItemAsync(pr1, ct);
         await _workItemStore.SaveAsync(pr2, ct);
+        await EvaluateWorkItemAsync(pr2, ct);
 
         await _dashboardRefreshDispatcher.DispatchAsync(ownerUserId, ct);
 
@@ -278,6 +291,22 @@ public sealed class DemoService
         return $"Deleted {totalRemoved} work items and all decision records";
     }
 
+    /// <summary>
+    /// Evaluates a work item through the interruption policy engine to record a decision.
+    /// </summary>
+    private async Task EvaluateWorkItemAsync(WorkItem workItem, CancellationToken ct)
+    {
+        try
+        {
+            await _interruptionEngine.EvaluateAsync(workItem, ct);
+        }
+        catch (Exception ex)
+        {
+            // Log but don't fail the demo load if evaluation fails
+            System.Diagnostics.Debug.WriteLine($"Failed to evaluate work item {workItem.ExternalId}: {ex.Message}");
+        }
+    }
+
     private static WorkItem CreateWorkItem(
         string externalId,
         string title,
@@ -308,17 +337,28 @@ public sealed class DemoService
     /// <summary>
     /// Simulates arrival of a single Outlook email with optional notification.
     /// </summary>
-    public async Task<string> AddOutlookItemAsync(string id, string title, WorkItemPriority priority, bool withNotification, CancellationToken ct, string? ownerUserId = null)
+    public async Task<string> AddOutlookItemAsync(string id, string title, WorkItemPriority priority, bool withNotification, CancellationToken ct, string? ownerUserId = null, bool actionNeeded = false, SignalLevel? timeCriticality = null)
     {
-        var item = CreateWorkItem(id, title, WorkItemSourceType.OutlookEmail, priority,
-            new Dictionary<string, string>
-            {
-                [WorkItemSignalKeys.OutlookSender] = GetSender(priority),
-                [WorkItemSignalKeys.OutlookSnippet] = title,
-                [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/{id}",
-                [WorkItemSignalKeys.OutlookConversationId] = $"conv-{id}",
-                [WorkItemSignalKeys.OutlookImportanceRaw] = priority is WorkItemPriority.Critical or WorkItemPriority.High ? "high" : "normal"
-            }, ownerUserId: ownerUserId);
+        var metadata = new Dictionary<string, string>
+        {
+            [WorkItemSignalKeys.OutlookSender] = GetSender(priority),
+            [WorkItemSignalKeys.OutlookSnippet] = title,
+            [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/{id}",
+            [WorkItemSignalKeys.OutlookConversationId] = $"conv-{id}",
+            [WorkItemSignalKeys.OutlookImportanceRaw] = priority is WorkItemPriority.Critical or WorkItemPriority.High ? "high" : "normal"
+        };
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
+        }
+
+        var item = CreateWorkItem(id, title, WorkItemSourceType.OutlookEmail, priority, metadata, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(item, ct);
 
@@ -337,19 +377,30 @@ public sealed class DemoService
     /// <summary>
     /// Simulates arrival of a single Teams message with optional notification.
     /// </summary>
-    public async Task<string> AddTeamsItemAsync(string id, string title, WorkItemPriority priority, bool withNotification, CancellationToken ct, string? ownerUserId = null)
+    public async Task<string> AddTeamsItemAsync(string id, string title, WorkItemPriority priority, bool withNotification, CancellationToken ct, string? ownerUserId = null, bool actionNeeded = false, SignalLevel? timeCriticality = null)
     {
-        var item = CreateWorkItem(id, title, WorkItemSourceType.TeamsMessage, priority,
-            new Dictionary<string, string>
-            {
-                [WorkItemSignalKeys.TeamsSender] = GetSender(priority),
-                [WorkItemSignalKeys.TeamsSnippet] = title,
-                [WorkItemSignalKeys.TeamsTeamId] = "general",
-                [WorkItemSignalKeys.TeamsChannelId] = "general",
-                [WorkItemSignalKeys.TeamsDeepLink] = $"https://teams.microsoft.com/l/message/{id}",
-                [WorkItemSignalKeys.TeamsPriorityRaw] = priority.ToString(),
-                [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
-            }, ownerUserId: ownerUserId);
+        var metadata = new Dictionary<string, string>
+        {
+            [WorkItemSignalKeys.TeamsSender] = GetSender(priority),
+            [WorkItemSignalKeys.TeamsSnippet] = title,
+            [WorkItemSignalKeys.TeamsTeamId] = "general",
+            [WorkItemSignalKeys.TeamsChannelId] = "general",
+            [WorkItemSignalKeys.TeamsDeepLink] = $"https://teams.microsoft.com/l/message/{id}",
+            [WorkItemSignalKeys.TeamsPriorityRaw] = priority.ToString(),
+            [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
+        };
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
+        }
+
+        var item = CreateWorkItem(id, title, WorkItemSourceType.TeamsMessage, priority, metadata, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(item, ct);
 
@@ -389,22 +440,33 @@ public sealed class DemoService
     /// <summary>
     /// Simulates arrival of a single pull request.
     /// </summary>
-    public async Task<string> AddPullRequestAsync(string id, string title, WorkItemPriority priority, CancellationToken ct, string? ownerUserId = null)
+    public async Task<string> AddPullRequestAsync(string id, string title, WorkItemPriority priority, CancellationToken ct, string? ownerUserId = null, bool actionNeeded = false, SignalLevel? timeCriticality = null)
     {
-        var item = CreateWorkItem(id, title, WorkItemSourceType.PrReview, priority,
-            new Dictionary<string, string>
-            {
-                ["pr.pullRequestId"] = id.Replace("demo-pr-", ""),
-                ["pr.status"] = "active",
-                ["pr.repo"] = "aura-api",
-                ["pr.author"] = GetSender(priority),
-                ["pr.reviewerCount"] = "2",
-                ["pr.commentCount"] = "2",
-                ["pr.fileCount"] = "5",
-                ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/{id.Replace("demo-pr-", "")}",
-                [PrMetadataKeys.AttentionScope] = "direct"
-            }, ownerUserId: ownerUserId);
+        var metadata = new Dictionary<string, string>
+        {
+            ["pr.pullRequestId"] = id.Replace("demo-pr-", ""),
+            ["pr.status"] = "active",
+            ["pr.repo"] = "aura-api",
+            ["pr.author"] = GetSender(priority),
+            ["pr.reviewerCount"] = "2",
+            ["pr.commentCount"] = "2",
+            ["pr.fileCount"] = "5",
+            ["pr.isDraft"] = "false",
+            ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/{id.Replace("demo-pr-", "")}",
+            [PrMetadataKeys.AttentionScope] = "direct"
+        };
+
+        if (actionNeeded)
+        {
+            metadata[WorkItemSignalKeys.ActionNeededSignal] = bool.TrueString;
+        }
+
+        if (timeCriticality is not null)
+        {
+            metadata[WorkItemSignalKeys.TimeCriticalitySignal] = timeCriticality.Value.ToString();
+        }
+
+        var item = CreateWorkItem(id, title, WorkItemSourceType.PrReview, priority, metadata, ownerUserId: ownerUserId);
 
         await _workItemStore.SaveAsync(item, ct);
         await _dashboardRefreshDispatcher.DispatchAsync(ownerUserId, ct);

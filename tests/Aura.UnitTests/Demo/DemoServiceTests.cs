@@ -17,6 +17,7 @@ public class DemoServiceTests
     private readonly ICalendarEventStore _calendarEventStore = Substitute.For<ICalendarEventStore>();
     private readonly IDashboardRefreshDispatcher _dashboardRefreshDispatcher = Substitute.For<IDashboardRefreshDispatcher>();
     private readonly IInterruptionDecisionStore _decisionStore = Substitute.For<IInterruptionDecisionStore>();
+    private readonly IInterruptionPolicyEngine _interruptionEngine = Substitute.For<IInterruptionPolicyEngine>();
 
     private DemoService CreateSut() => new(
         _workItemStore,
@@ -25,7 +26,8 @@ public class DemoServiceTests
         _notificationOutboxStore,
         _calendarEventStore,
         _dashboardRefreshDispatcher,
-        _decisionStore);
+        _decisionStore,
+        _interruptionEngine);
 
     [Fact]
     public async Task LoadMorningSummaryAsync_MarksEmittedForToday()

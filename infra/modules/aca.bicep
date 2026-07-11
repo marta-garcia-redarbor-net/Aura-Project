@@ -100,12 +100,14 @@ resource keyVaultSecretsRole 'Microsoft.Authorization/roleAssignments@2022-04-01
 // ============================================================================
 
 var qdrantName = '${namePrefix}-qdrant-${environment}'
+var ollamaName = '${namePrefix}-ollama-${environment}'
 var apiName = '${namePrefix}-api-${environment}'
 var uiName = '${namePrefix}-ui-${environment}'
 var workersName = '${namePrefix}-workers-${environment}'
 
-// Internal FQDN within ACA environment
+// Internal FQDNs within ACA environment
 var qdrantInternalUrl = 'http://${qdrantName}:6333'
+var ollamaInternalUrl = 'http://${ollamaName}:11434'
 
 // ============================================================================
 // Container App — Qdrant (internal, sidecar)
@@ -157,6 +159,78 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
               periodSeconds: 10
               timeoutSeconds: 5
               failureThreshold: 3
+            }
+          ]
+          volumeMounts: []
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+        rules: []
+      }
+      volumes: []
+    }
+  }
+}
+
+// ============================================================================
+// Container App — Ollama (internal, LLM server)
+// ============================================================================
+
+resource ollamaApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: ollamaName
+  location: location
+  tags: tags
+  properties: {
+    managedEnvironmentId: cae.id
+    workloadProfileName: ''
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: false
+        targetPort: 11434
+        transport: 'http'
+        allowInsecure: true
+      }
+      registries: []
+      secrets: []
+    }
+    template: {
+      revisionSuffix: '01'
+      containers: [
+        {
+          image: 'ollama/ollama:latest'
+          name: 'ollama'
+          command: [
+            '/bin/sh'
+            '-c'
+          ]
+          args: [
+            'ollama serve & sleep 3 && ollama pull llama3.2:1b && ollama pull nomic-embed-text && wait'
+          ]
+          env: [
+            {
+              name: 'OLLAMA_KEEP_ALIVE'
+              value: '5m'
+            }
+          ]
+          resources: {
+            cpu: json('1.0')
+            memory: '4Gi'
+          }
+          probes: [
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/api/tags'
+                port: 11434
+                scheme: 'HTTP'
+              }
+              initialDelaySeconds: 30
+              periodSeconds: 15
+              timeoutSeconds: 120
+              failureThreshold: 6
             }
           ]
           volumeMounts: []
@@ -267,6 +341,38 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               secretRef: 'app-insights-connection-string'
+            }
+            {
+              name: 'LlmAdvisor__Enabled'
+              value: 'true'
+            }
+            {
+              name: 'LlmAdvisor__Endpoint'
+              value: ollamaInternalUrl
+            }
+            {
+              name: 'LlmAdvisor__ModelId'
+              value: 'llama3.2:1b'
+            }
+            {
+              name: 'LlmAdvisor__Provider'
+              value: 'Ollama'
+            }
+            {
+              name: 'LlmAdvisor__TimeoutSeconds'
+              value: '30'
+            }
+            {
+              name: 'LlmAdvisor__ConfidenceThreshold'
+              value: '0.7'
+            }
+            {
+              name: 'EmbeddingProvider__Endpoint'
+              value: ollamaInternalUrl
+            }
+            {
+              name: 'EmbeddingProvider__DeploymentName'
+              value: 'nomic-embed-text'
             }
           ]
           probes: [
@@ -533,6 +639,14 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               secretRef: 'app-insights-connection-string'
             }
+            {
+              name: 'EmbeddingProvider__Endpoint'
+              value: ollamaInternalUrl
+            }
+            {
+              name: 'EmbeddingProvider__DeploymentName'
+              value: 'nomic-embed-text'
+            }
           ]
           volumeMounts: []
         }
@@ -554,6 +668,7 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
 output apiUrl string = 'https://${apiApp.properties.configuration.ingress.fqdn}'
 output uiUrl string = 'https://${uiApp.properties.configuration.ingress.fqdn}'
 output qdrantInternalUrl string = qdrantInternalUrl
+output ollamaInternalUrl string = ollamaInternalUrl
 output apiName string = apiName
 output uiName string = uiName
 output workersName string = workersName

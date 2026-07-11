@@ -1,4 +1,5 @@
 using Aura.Application.Demo;
+using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Domain.WorkItems;
 using Aura.Infrastructure.Adapters.Options;
@@ -54,17 +55,17 @@ public sealed class DemoSimulationService
 
         try
         {
-            // t=0s — Outlook email medium priority.
+            // t=0s — Outlook email medium priority, no action needed → QUEUE.
             _logger.LogInformation("[0s] 📧 Outlook: Budget Review...");
             await AddAndEvaluateAsync($"demo-outlook-001-{run}",
                 d => d.AddOutlookItemAsync($"demo-outlook-001-{run}", "Q3 Budget Review — Action Required", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
                 ct);
             await Task.Delay(3000, ct);
 
-            // t=3s — Teams CRÍTICO.
+            // t=3s — Teams CRÍTICO with action needed + critical urgency → INTERRUPT.
             _logger.LogInformation("[3s] 🔴🔴🔴 Teams CRITICAL: Production incident!");
             await AddAndEvaluateAsync($"demo-teams-001-{run}",
-                d => d.AddTeamsItemAsync($"demo-teams-001-{run}", "URGENTE: Production pipeline caído — responder YA", WorkItemPriority.Critical, true, ct, ownerUserId: userId),
+                d => d.AddTeamsItemAsync($"demo-teams-001-{run}", "URGENTE: Production pipeline caído — responder YA", WorkItemPriority.Critical, true, ct, ownerUserId: userId, actionNeeded: true, timeCriticality: SignalLevel.Critical),
                 ct);
             await Task.Delay(3000, ct);
 
@@ -74,10 +75,10 @@ public sealed class DemoSimulationService
             await NotifyDashboardAsync("calendar", ct);
             await Task.Delay(3000, ct);
 
-            // t=9s — 2 Pull Requests.
+            // t=9s — 2 Pull Requests. First is high with action needed → INTERRUPT candidate, second is high without.
             _logger.LogInformation("[9s] 🔄 PRs arriving...");
             await AddAndEvaluateAsync($"demo-pr-001-{run}",
-                d => d.AddPullRequestAsync($"demo-pr-001-{run}", "PR #428: feat: add caching layer", WorkItemPriority.High, ct, ownerUserId: userId),
+                d => d.AddPullRequestAsync($"demo-pr-001-{run}", "PR #428: feat: add caching layer", WorkItemPriority.High, ct, ownerUserId: userId, actionNeeded: true, timeCriticality: SignalLevel.High),
                 ct);
             await Task.Delay(500, ct);
             await AddAndEvaluateAsync($"demo-pr-002-{run}",
@@ -85,14 +86,14 @@ public sealed class DemoSimulationService
                 ct);
             await Task.Delay(3000, ct);
 
-            // t=12s — Otro Outlook medio.
+            // t=12s — Outlook medium, no signals → QUEUE.
             _logger.LogInformation("[12s] 📧 Outlook: Weekly Status...");
             await AddAndEvaluateAsync($"demo-outlook-002-{run}",
                 d => d.AddOutlookItemAsync($"demo-outlook-002-{run}", "Weekly Status Update — EOW Report", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
                 ct);
             await Task.Delay(3000, ct);
 
-            // t=15s — Teams mensaje normal.
+            // t=15s — Teams mensaje normal → QUEUE.
             _logger.LogInformation("[15s] 💬 Teams: Standup reminder...");
             await AddAndEvaluateAsync($"demo-teams-002-{run}",
                 d => d.AddTeamsItemAsync($"demo-teams-002-{run}", "Daily standup en 5 minutos — Sala virtual", WorkItemPriority.Medium, false, ct, ownerUserId: userId),
