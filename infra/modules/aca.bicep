@@ -135,7 +135,7 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
       ingress: {
         external: true
         targetPort: 6334
-        transport: 'grpc'
+        transport: 'http2'
       }
       registries: []
       secrets: []
