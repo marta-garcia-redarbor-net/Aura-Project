@@ -30,7 +30,8 @@ internal static class DependencyInjection
             return new QdrantClient(
                 host: options.Host,
                 port: options.GrpcPort,
-                apiKey: options.ApiKey);
+                apiKey: options.ApiKey,
+                https: false);
         });
 
         services.AddScoped<ISemanticIndexWriter, QdrantSemanticIndexAdapter>();
