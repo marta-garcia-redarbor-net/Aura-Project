@@ -111,7 +111,7 @@ var workersName = '${namePrefix}-workers-${environment}'
 
 // Internal FQDNs within ACA environment
 var qdrantInternalUrl = 'http://${qdrantName}:6333'
-var ollamaInternalUrl = 'http://${ollamaName}:11434'
+var ollamaInternalUrl = 'http://${ollamaName}'
 
 // External FQDNs using CAE default domain (avoids circular refs between container apps)
 var defaultDomain = cae.properties.defaultDomain
