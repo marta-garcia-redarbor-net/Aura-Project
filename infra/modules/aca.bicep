@@ -134,9 +134,17 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
       activeRevisionsMode: 'Single'
       ingress: {
         external: false
-        targetPort: 6334
-        transport: 'http2'
+        targetPort: 6333
+        transport: 'http'
         allowInsecure: true
+        additionalPortMappings: [
+          {
+            // Internal gRPC port for QdrantClient SDK operations
+            targetPort: 6334
+            exposedPort: 6334
+            external: false
+          }
+        ]
       }
       registries: []
       secrets: []
