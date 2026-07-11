@@ -37,6 +37,10 @@ param entraTenantId string
 @description('Entra ID client ID')
 param entraClientId string
 
+@description('Entra ID client secret (for OIDC auth code flow on the UI)')
+@secure()
+param entraClientSecret string
+
 @description('Microsoft Graph scopes')
 param graphScopes string
 
@@ -373,6 +377,16 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'EmbeddingProvider__DeploymentName'
               value: 'nomic-embed-text'
             }
+            {
+              // CORS: allow browser calls from the deployed UI origin
+              name: 'Cors__UiOrigin'
+              value: 'https://${uiApp.properties.configuration.ingress.fqdn}'
+            }
+            {
+              // Enable EntraId token validation on the API
+              name: 'UseEntraId'
+              value: 'true'
+            }
           ]
           probes: [
             {
@@ -486,8 +500,9 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'http://+:8080'
             }
             {
-              name: 'AURA_API_BASE_URL'
-              value: apiApp.properties.configuration.ingress.fqdn
+              // Double underscore maps to AuraApi:BaseUrl in .NET config (not single underscore)
+              name: 'AuraApi__BaseUrl'
+              value: 'https://${apiApp.properties.configuration.ingress.fqdn}'
             }
             {
               name: 'AzureAd__TenantId'
@@ -496,6 +511,10 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'AzureAd__ClientId'
               value: entraClientId
+            }
+            {
+              name: 'AzureAd__ClientSecret'
+              value: entraClientSecret
             }
             {
               name: 'UseEntraId'
