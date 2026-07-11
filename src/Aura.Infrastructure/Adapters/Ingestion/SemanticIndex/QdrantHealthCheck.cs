@@ -27,7 +27,9 @@ internal sealed class QdrantHealthCheck : IHealthCheck
         _healthProbe = async ct =>
         {
             var client = httpClientFactory.CreateClient("qdrant-health");
-            var url = $"http://{options.Value.Host}:{options.Value.HttpPort}/healthz";
+            // ACA internal ingress is always exposed on port 80, regardless of targetPort.
+            // The targetPort (6333) is the container port; the ingress DNS name routes to port 80.
+            var url = $"http://{options.Value.Host}/healthz";
             var response = await client.GetAsync(url, ct);
             return response.IsSuccessStatusCode;
         };
