@@ -3,7 +3,7 @@ name: Deploy to ACA
 on:
   push:
     branches:
-      - 'release/*'
+      - 'release/aura/*'
 
 env:
   REGISTRY: ghcr.io
