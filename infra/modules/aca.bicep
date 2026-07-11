@@ -343,9 +343,9 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: qdrantName
             }
             {
-              // Double underscore maps to Qdrant:GrpcPort in .NET config
+              // ACA internal routing uses port 80 → targetPort. gRPC goes via ACA proxy.
               name: 'Qdrant__GrpcPort'
-              value: '6334'
+              value: '80'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -657,9 +657,9 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: qdrantName
             }
             {
-              // Double underscore maps to Qdrant:GrpcPort in .NET config
+              // ACA internal routing uses port 80 → targetPort. gRPC goes via ACA proxy.
               name: 'Qdrant__GrpcPort'
-              value: '6334'
+              value: '80'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
