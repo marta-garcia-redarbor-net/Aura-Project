@@ -40,7 +40,7 @@ internal sealed class QdrantHealthCheck : IHealthCheck
         }
         catch (Exception ex)
         {
-            return HealthCheckResult.Degraded("Qdrant is unreachable (gRPC through ACA proxy not supported)", ex);
+            return HealthCheckResult.Unhealthy("Qdrant is unreachable", ex);
         }
     }
 }

@@ -117,6 +117,7 @@ var ollamaInternalUrl = 'http://${ollamaName}:11434'
 var defaultDomain = cae.properties.defaultDomain
 var apiFqdn = '${apiName}.${defaultDomain}'
 var uiFqdn = '${uiName}.${defaultDomain}'
+var qdrantFqdn = '${qdrantName}.${defaultDomain}'
 
 // ============================================================================
 // Container App — Qdrant (internal, sidecar)
@@ -132,10 +133,9 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: false
+        external: true
         targetPort: 6334
-        transport: 'http'
-        allowInsecure: true
+        transport: 'grpc'
       }
       registries: []
       secrets: []
@@ -151,7 +151,6 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
           }
           env: [
             {
-              // Expose gRPC on 6334 (default) — the .NET client uses gRPC, not HTTP
               name: 'QDRANT__SERVICE__GRPC_PORT'
               value: '6334'
             }
@@ -338,14 +337,13 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              // Double underscore maps to Qdrant:Host in .NET config
+              // External FQDN for gRPC over HTTPS (ACA ingress terminates TLS)
               name: 'Qdrant__Host'
-              value: qdrantName
+              value: qdrantFqdn
             }
             {
-              // ACA internal routing uses port 80 → targetPort. gRPC goes via ACA proxy.
               name: 'Qdrant__GrpcPort'
-              value: '80'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -652,14 +650,13 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              // Double underscore maps to Qdrant:Host in .NET config
+              // External FQDN for gRPC over HTTPS (ACA ingress terminates TLS)
               name: 'Qdrant__Host'
-              value: qdrantName
+              value: qdrantFqdn
             }
             {
-              // ACA internal routing uses port 80 → targetPort. gRPC goes via ACA proxy.
               name: 'Qdrant__GrpcPort'
-              value: '80'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
