@@ -2,7 +2,7 @@ name: Deploy Azure Infrastructure
 
 on:
   push:
-    branches: [release/*]
+    branches: [release/aura/*]
     paths:
       - 'infra/**'
       - '.github/workflows/deploy-infra.yml'
