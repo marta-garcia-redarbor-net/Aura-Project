@@ -113,6 +113,11 @@ var workersName = '${namePrefix}-workers-${environment}'
 var qdrantInternalUrl = 'http://${qdrantName}:6333'
 var ollamaInternalUrl = 'http://${ollamaName}:11434'
 
+// External FQDNs using CAE default domain (avoids circular refs between container apps)
+var defaultDomain = cae.properties.defaultDomain
+var apiFqdn = '${apiName}.${defaultDomain}'
+var uiFqdn = '${uiName}.${defaultDomain}'
+
 // ============================================================================
 // Container App — Qdrant (internal, sidecar)
 // ============================================================================
@@ -379,8 +384,9 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               // CORS: allow browser calls from the deployed UI origin
+              // Uses computed FQDN (cae.properties.defaultDomain) to avoid circular ref
               name: 'Cors__UiOrigin'
-              value: 'https://${uiApp.properties.configuration.ingress.fqdn}'
+              value: 'https://${uiFqdn}'
             }
             {
               // Enable EntraId token validation on the API
@@ -501,8 +507,9 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               // Double underscore maps to AuraApi:BaseUrl in .NET config (not single underscore)
+              // Uses computed FQDN (cae.properties.defaultDomain) to avoid circular ref
               name: 'AuraApi__BaseUrl'
-              value: 'https://${apiApp.properties.configuration.ingress.fqdn}'
+              value: 'https://${apiFqdn}'
             }
             {
               name: 'AzureAd__TenantId'
@@ -681,8 +688,8 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
 // Outputs
 // ============================================================================
 
-output apiUrl string = 'https://${apiApp.properties.configuration.ingress.fqdn}'
-output uiUrl string = 'https://${uiApp.properties.configuration.ingress.fqdn}'
+output apiUrl string = 'https://${apiFqdn}'
+output uiUrl string = 'https://${uiFqdn}'
 output qdrantInternalUrl string = qdrantInternalUrl
 output ollamaInternalUrl string = ollamaInternalUrl
 output apiName string = apiName
