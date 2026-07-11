@@ -1,30 +1,42 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Qdrant.Client;
+using Microsoft.Extensions.Options;
 
 namespace Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
 
 /// <summary>
-/// ASP.NET Core health check that verifies connectivity to the Qdrant vector store.
-/// Uses the existing <see cref="QdrantClient"/> singleton registered by
-/// <see cref="Adapters.Ingestion.SemanticIndex.DependencyInjection.AddSemanticIndexAdapter"/>.
+/// ASP.NET Core health check that verifies connectivity to the Qdrant vector store
+/// via HTTP REST GET /healthz on port 6333.
+///
+/// The Qdrant .NET SDK's QdrantClient.HealthAsync() calls the gRPC endpoint
+/// /qdrant.Qdrant/HealthCheck, which returns 404 on recent Qdrant versions.
+/// Using the REST endpoint avoids this incompatibility and works correctly
+/// regardless of whether gRPC is proxied (e.g. Azure Container Apps).
 /// </summary>
 internal sealed class QdrantHealthCheck : IHealthCheck
 {
-    private readonly Func<CancellationToken, Task> _healthProbe;
+    private readonly Func<CancellationToken, Task<bool>> _healthProbe;
 
     /// <summary>
-    /// Production constructor — resolved by DI with the registered QdrantClient singleton.
+    /// Production constructor — performs HTTP GET to Qdrant REST /healthz.
     /// </summary>
-    public QdrantHealthCheck(QdrantClient client)
+    public QdrantHealthCheck(IHttpClientFactory httpClientFactory, IOptions<QdrantOptions> options)
     {
-        ArgumentNullException.ThrowIfNull(client);
-        _healthProbe = ct => client.HealthAsync(ct);
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        ArgumentNullException.ThrowIfNull(options);
+
+        _healthProbe = async ct =>
+        {
+            var client = httpClientFactory.CreateClient("qdrant-health");
+            var url = $"http://{options.Value.Host}:{options.Value.HttpPort}/healthz";
+            var response = await client.GetAsync(url, ct);
+            return response.IsSuccessStatusCode;
+        };
     }
 
     /// <summary>
     /// Testing constructor — allows injecting a fake health probe delegate.
     /// </summary>
-    internal QdrantHealthCheck(Func<CancellationToken, Task> healthProbe)
+    internal QdrantHealthCheck(Func<CancellationToken, Task<bool>> healthProbe)
     {
         ArgumentNullException.ThrowIfNull(healthProbe);
         _healthProbe = healthProbe;
@@ -35,8 +47,10 @@ internal sealed class QdrantHealthCheck : IHealthCheck
     {
         try
         {
-            await _healthProbe(cancellationToken);
-            return HealthCheckResult.Healthy("Qdrant is reachable");
+            var healthy = await _healthProbe(cancellationToken);
+            return healthy
+                ? HealthCheckResult.Healthy("Qdrant is reachable")
+                : HealthCheckResult.Unhealthy("Qdrant /healthz returned non-success status");
         }
         catch (Exception ex)
         {

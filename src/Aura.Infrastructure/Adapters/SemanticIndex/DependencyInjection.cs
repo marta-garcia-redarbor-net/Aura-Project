@@ -24,6 +24,11 @@ internal static class DependencyInjection
 
         services.Configure<QdrantOptions>(configuration.GetSection(QdrantOptions.SectionName));
 
+        // Named HttpClient used by QdrantHealthCheck for REST /healthz calls.
+        // The gRPC SDK calls /qdrant.Qdrant/HealthCheck which returns 404 on recent Qdrant versions.
+        services.AddHttpClient("qdrant-health")
+            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(5));
+
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;

@@ -12,8 +12,8 @@ public class QdrantHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenQdrantIsReachable_ReturnsHealthy()
     {
-        // Arrange: probe succeeds
-        var healthCheck = new QdrantHealthCheck(_ => Task.CompletedTask);
+        // Arrange: probe succeeds and returns true
+        var healthCheck = new QdrantHealthCheck(_ => Task.FromResult(true));
 
         // Act
         var result = await healthCheck.CheckHealthAsync(
@@ -25,12 +25,27 @@ public class QdrantHealthCheckTests
     }
 
     [Fact]
+    public async Task CheckHealthAsync_WhenQdrantReturnsNonSuccess_ReturnsUnhealthy()
+    {
+        // Arrange: probe returns false (e.g. /healthz returned 503)
+        var healthCheck = new QdrantHealthCheck(_ => Task.FromResult(false));
+
+        // Act
+        var result = await healthCheck.CheckHealthAsync(
+            new HealthCheckContext(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+        Assert.Contains("non-success", result.Description!);
+    }
+
+    [Fact]
     public async Task CheckHealthAsync_WhenQdrantThrows_ReturnsUnhealthy()
     {
         // Arrange: probe throws (simulates connection failure)
         var expectedException = new InvalidOperationException("Connection refused");
         var healthCheck = new QdrantHealthCheck(
-            _ => Task.FromException(expectedException));
+            _ => Task.FromException<bool>(expectedException));
 
         // Act
         var result = await healthCheck.CheckHealthAsync(
