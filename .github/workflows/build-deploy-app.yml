@@ -2,7 +2,7 @@ name: Build and Deploy Aura Containers
 
 on:
   push:
-    branches: [release/*]
+    branches: [release/aura/*]
     paths-ignore:
       - 'infra/**'
       - 'docs/**'
