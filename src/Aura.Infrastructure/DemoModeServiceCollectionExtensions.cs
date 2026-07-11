@@ -33,7 +33,7 @@ public static class DemoModeServiceCollectionExtensions
         if (!enabled)
             return services;
 
-        services.AddScoped<ISemanticContextRetriever, QdrantFallbackSemanticContextRetriever>();
+        services.TryAddScoped<ISemanticContextRetriever, QdrantFallbackSemanticContextRetriever>();
         services.TryAddScoped<IDecisionContextRetriever, NullDecisionContextRetriever>();
         services.AddScoped<ISemanticIndexWriter, QdrantFallbackSemanticIndexWriter>();
         services.AddScoped<DemoService>();
