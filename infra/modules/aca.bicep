@@ -133,7 +133,7 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
       activeRevisionsMode: 'Single'
       ingress: {
         external: false
-        targetPort: 6333
+        targetPort: 6334
         transport: 'http'
         allowInsecure: true
       }
@@ -151,17 +151,16 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
           }
           env: [
             {
-              name: 'QDRANT__SERVICE__HTTP_PORT'
-              value: '6333'
+              // Expose gRPC on 6334 (default) — the .NET client uses gRPC, not HTTP
+              name: 'QDRANT__SERVICE__GRPC_PORT'
+              value: '6334'
             }
           ]
           probes: [
             {
               type: 'Liveness'
-              httpGet: {
-                path: '/healthz'
-                port: 6333
-                scheme: 'HTTP'
+              tcpSocket: {
+                port: 6334
               }
               initialDelaySeconds: 10
               periodSeconds: 10
@@ -339,12 +338,14 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              name: 'QDRANT_HOST'
+              // Double underscore maps to Qdrant:Host in .NET config
+              name: 'Qdrant__Host'
               value: qdrantName
             }
             {
-              name: 'QDRANT_HTTP_PORT'
-              value: '6333'
+              // Double underscore maps to Qdrant:GrpcPort in .NET config
+              name: 'Qdrant__GrpcPort'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -651,12 +652,14 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              name: 'QDRANT_HOST'
+              // Double underscore maps to Qdrant:Host in .NET config
+              name: 'Qdrant__Host'
               value: qdrantName
             }
             {
-              name: 'QDRANT_HTTP_PORT'
-              value: '6333'
+              // Double underscore maps to Qdrant:GrpcPort in .NET config
+              name: 'Qdrant__GrpcPort'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
