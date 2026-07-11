@@ -216,8 +216,10 @@ resource ollamaApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
           ]
           resources: {
+            // llmama3.2:1b (~700 MB) fits comfortably in 1.0 CPU / 2.0 Gi on Consumption plan
+            // Max memory for 1.0 CPU on ACA Consumption is 2.0 Gi
             cpu: json('1.0')
-            memory: '4Gi'
+            memory: '2.0Gi'
           }
           probes: [
             {
