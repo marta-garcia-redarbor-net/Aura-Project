@@ -133,9 +133,10 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: true
-        targetPort: 6334
-        transport: 'http2'
+        external: false
+        targetPort: 6333
+        transport: 'http'
+        allowInsecure: true
       }
       registries: []
       secrets: []
@@ -158,8 +159,10 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
           probes: [
             {
               type: 'Liveness'
-              tcpSocket: {
-                port: 6334
+              httpGet: {
+                path: '/healthz'
+                port: 6333
+                scheme: 'HTTP'
               }
               initialDelaySeconds: 10
               periodSeconds: 10
@@ -337,9 +340,14 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              // External FQDN for gRPC over HTTPS (ACA ingress terminates TLS)
+              // Internal container name — ACA resolves it within the environment via HTTP REST
+              // (gRPC through ACA external ingress proxy is not supported on Consumption plan)
               name: 'Qdrant__Host'
-              value: qdrantFqdn
+              value: qdrantName
+            }
+            {
+              name: 'Qdrant__HttpPort'
+              value: '6333'
             }
             {
               name: 'Qdrant__GrpcPort'
@@ -650,9 +658,14 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              // External FQDN for gRPC over HTTPS (ACA ingress terminates TLS)
+              // Internal container name — ACA resolves it within the environment via HTTP REST
+              // (gRPC through ACA external ingress proxy is not supported on Consumption plan)
               name: 'Qdrant__Host'
-              value: qdrantFqdn
+              value: qdrantName
+            }
+            {
+              name: 'Qdrant__HttpPort'
+              value: '6333'
             }
             {
               name: 'Qdrant__GrpcPort'

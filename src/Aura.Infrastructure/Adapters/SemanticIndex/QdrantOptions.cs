@@ -13,8 +13,11 @@ public sealed class QdrantOptions
     /// <summary>Qdrant server hostname.</summary>
     public string Host { get; set; } = "localhost";
 
-    /// <summary>Qdrant gRPC port.</summary>
+    /// <summary>Qdrant gRPC port (used for direct gRPC connections, e.g. local Docker).</summary>
     public int GrpcPort { get; set; } = 6334;
+
+    /// <summary>Qdrant HTTP REST port. Used in ACA where the gRPC proxy is not supported.</summary>
+    public int HttpPort { get; set; } = 6333;
 
     /// <summary>Optional API key for authenticated clusters.</summary>
     public string? ApiKey { get; set; }

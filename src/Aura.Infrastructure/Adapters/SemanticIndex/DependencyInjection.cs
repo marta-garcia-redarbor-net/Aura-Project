@@ -27,10 +27,11 @@ internal static class DependencyInjection
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<QdrantOptions>>().Value;
-            return new QdrantClient(
-                host: options.Host,
-                port: options.GrpcPort,
-                apiKey: options.ApiKey);
+            // Use HTTP REST endpoint to support environments where gRPC proxying is unavailable
+            // (e.g. Azure Container Apps Consumption plan). The Uri constructor connects via
+            // REST on HttpPort (default 6333) instead of gRPC on GrpcPort (6334).
+            var uri = new Uri($"http://{options.Host}:{options.HttpPort}");
+            return new QdrantClient(uri, apiKey: options.ApiKey);
         });
 
         services.AddScoped<ISemanticIndexWriter, QdrantSemanticIndexAdapter>();
