@@ -385,18 +385,18 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/Ingestion/SemanticIndex/QdrantHealthCheck.cs": {
-    "mtime": 1781643120.243594,
+    "mtime": 1783778719.0487216,
     "ast_hash": "9d7cd846fcb8cf4066203e05960274ee",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SemanticIndex/DependencyInjection.cs": {
-    "mtime": 1783718029.4043229,
-    "ast_hash": "4ae39e93ad0cb4c4ce949cbecb0d8500",
+    "mtime": 1783780164.7760968,
+    "ast_hash": "a88f372488fa074c8a6aedf480fd2539",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SemanticIndex/QdrantOptions.cs": {
-    "mtime": 1783366510.4347107,
-    "ast_hash": "9623f70c1000956f110958b4ecf9a856",
+    "mtime": 1783780155.7700334,
+    "ast_hash": "60c77ecd6d84b62b279eca6611ed23bb",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/Adapters/SemanticIndex/QdrantPointMapper.cs": {
@@ -4920,7 +4920,7 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-infra.yml": {
-    "mtime": 1783767113.669014,
+    "mtime": 1783774592.6130023,
     "ast_hash": "bb5844a39451a5a75b45f0965b5a9d0b",
     "semantic_hash": ""
   },

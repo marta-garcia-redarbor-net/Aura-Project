@@ -209,7 +209,7 @@ app.Use(async (context, next) =>
 });
 
 app.MapHealthChecks("/health");
-
+ 
 app.MapGet("/", () => "Hello World!");
 
 app.MapAuthEndpoints();
