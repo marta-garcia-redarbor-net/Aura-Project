@@ -132,7 +132,6 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: []
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: 'qdrant/qdrant:latest'
@@ -197,7 +196,6 @@ resource ollamaApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: []
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: 'ollama/ollama:latest'
@@ -298,7 +296,6 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-api:${imageTag}'
@@ -471,7 +468,6 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-ui:${imageTag}'
@@ -595,7 +591,6 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-workers:${imageTag}'
