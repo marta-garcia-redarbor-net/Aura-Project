@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Aura.Infrastructure.Adapters.Identity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Aura.UnitTests.Identity;
@@ -28,7 +29,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -51,7 +52,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -67,7 +68,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns((HttpContext?)null);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -92,7 +93,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -116,7 +117,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -147,7 +148,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -176,7 +177,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
@@ -185,6 +186,33 @@ public class HttpContextCurrentUserServiceTests
         Assert.NotNull(user);
         Assert.Equal("oid-xyz", user.Oid);
         Assert.Equal("tenant-abc", user.TenantId);
+    }
+
+    [Fact]
+    public void GetCurrentUser_FallsBackToPreferredUsername()
+    {
+        // Arrange — only NameIdentifier and preferred_username (real access_token scenario)
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "user-access"),
+            new Claim("preferred_username", "marta@contoso.com")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        var httpContext = new DefaultHttpContext { User = principal };
+        var accessor = Substitute.For<IHttpContextAccessor>();
+        accessor.HttpContext.Returns(httpContext);
+
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
+
+        // Act
+        var user = service.GetCurrentUser();
+
+        // Assert
+        Assert.NotNull(user);
+        Assert.Equal("marta@contoso.com", user.DisplayName);
+        Assert.Equal("marta@contoso.com", user.Email);
     }
 
     [Fact]
@@ -203,7 +231,7 @@ public class HttpContextCurrentUserServiceTests
         var accessor = Substitute.For<IHttpContextAccessor>();
         accessor.HttpContext.Returns(httpContext);
 
-        var service = new HttpContextCurrentUserService(accessor);
+        var service = new HttpContextCurrentUserService(accessor, Substitute.For<ILogger<HttpContextCurrentUserService>>());
 
         // Act
         var user = service.GetCurrentUser();
