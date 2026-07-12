@@ -37,6 +37,10 @@ param entraTenantId string
 @description('Entra ID client ID')
 param entraClientId string
 
+@description('Entra ID client secret (for OIDC auth code flow on the UI)')
+@secure()
+param entraClientSecret string
+
 @description('Microsoft Graph scopes')
 param graphScopes string
 
@@ -107,7 +111,13 @@ var workersName = '${namePrefix}-workers-${environment}'
 
 // Internal FQDNs within ACA environment
 var qdrantInternalUrl = 'http://${qdrantName}:6333'
-var ollamaInternalUrl = 'http://${ollamaName}:11434'
+var ollamaInternalUrl = 'http://${ollamaName}'
+
+// External FQDNs using CAE default domain (avoids circular refs between container apps)
+var defaultDomain = cae.properties.defaultDomain
+var apiFqdn = '${apiName}.${defaultDomain}'
+var uiFqdn = '${uiName}.${defaultDomain}'
+var qdrantFqdn = '${qdrantName}.${defaultDomain}'
 
 // ============================================================================
 // Container App — Qdrant (internal, sidecar)
@@ -132,7 +142,6 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: []
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: 'qdrant/qdrant:latest'
@@ -143,8 +152,8 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
           }
           env: [
             {
-              name: 'QDRANT__SERVICE__HTTP_PORT'
-              value: '6333'
+              name: 'QDRANT__SERVICE__GRPC_PORT'
+              value: '6334'
             }
           ]
           probes: [
@@ -197,7 +206,6 @@ resource ollamaApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: []
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: 'ollama/ollama:latest'
@@ -216,8 +224,10 @@ resource ollamaApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
           ]
           resources: {
+            // llmama3.2:1b (~700 MB) fits comfortably in 1.0 CPU / 2.0 Gi on Consumption plan
+            // Max memory for 1.0 CPU on ACA Consumption is 2.0 Gi
             cpu: json('1.0')
-            memory: '4Gi'
+            memory: '2.0Gi'
           }
           probes: [
             {
@@ -296,7 +306,6 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-api:${imageTag}'
@@ -331,12 +340,18 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              name: 'QDRANT_HOST'
+              // Internal container name — ACA resolves it within the environment via HTTP REST
+              // (gRPC through ACA external ingress proxy is not supported on Consumption plan)
+              name: 'Qdrant__Host'
               value: qdrantName
             }
             {
-              name: 'QDRANT_HTTP_PORT'
+              name: 'Qdrant__HttpPort'
               value: '6333'
+            }
+            {
+              name: 'Qdrant__GrpcPort'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -373,6 +388,17 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'EmbeddingProvider__DeploymentName'
               value: 'nomic-embed-text'
+            }
+            {
+              // CORS: allow browser calls from the deployed UI origin
+              // Uses computed FQDN (cae.properties.defaultDomain) to avoid circular ref
+              name: 'Cors__UiOrigin'
+              value: 'https://${uiFqdn}'
+            }
+            {
+              // Enable EntraId token validation on the API
+              name: 'UseEntraId'
+              value: 'true'
             }
           ]
           probes: [
@@ -469,7 +495,6 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-ui:${imageTag}'
@@ -488,8 +513,10 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'http://+:8080'
             }
             {
-              name: 'AURA_API_BASE_URL'
-              value: apiApp.properties.configuration.ingress.fqdn
+              // Double underscore maps to AuraApi:BaseUrl in .NET config (not single underscore)
+              // Uses computed FQDN (cae.properties.defaultDomain) to avoid circular ref
+              name: 'AuraApi__BaseUrl'
+              value: 'https://${apiFqdn}'
             }
             {
               name: 'AzureAd__TenantId'
@@ -498,6 +525,10 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'AzureAd__ClientId'
               value: entraClientId
+            }
+            {
+              name: 'AzureAd__ClientSecret'
+              value: entraClientSecret
             }
             {
               name: 'UseEntraId'
@@ -593,7 +624,6 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
       ]
     }
     template: {
-      revisionSuffix: '01'
       containers: [
         {
           image: '${acrLoginServer}/aura-workers:${imageTag}'
@@ -628,12 +658,18 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: graphScopes
             }
             {
-              name: 'QDRANT_HOST'
+              // Internal container name — ACA resolves it within the environment via HTTP REST
+              // (gRPC through ACA external ingress proxy is not supported on Consumption plan)
+              name: 'Qdrant__Host'
               value: qdrantName
             }
             {
-              name: 'QDRANT_HTTP_PORT'
+              name: 'Qdrant__HttpPort'
               value: '6333'
+            }
+            {
+              name: 'Qdrant__GrpcPort'
+              value: '6334'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -665,8 +701,8 @@ resource workersApp 'Microsoft.App/containerApps@2024-03-01' = {
 // Outputs
 // ============================================================================
 
-output apiUrl string = 'https://${apiApp.properties.configuration.ingress.fqdn}'
-output uiUrl string = 'https://${uiApp.properties.configuration.ingress.fqdn}'
+output apiUrl string = 'https://${apiFqdn}'
+output uiUrl string = 'https://${uiFqdn}'
 output qdrantInternalUrl string = qdrantInternalUrl
 output ollamaInternalUrl string = ollamaInternalUrl
 output apiName string = apiName
