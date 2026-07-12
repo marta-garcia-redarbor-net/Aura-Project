@@ -72,6 +72,8 @@ public class SystemStatusPanelErrorTests : TestContext
             return Task.FromResult(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok")));
         }
 

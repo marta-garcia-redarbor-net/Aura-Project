@@ -1,0 +1,148 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ISystemStatusApiClient SystemStatusApiClient
+@inject IDashboardEventBus EventBus
+@implements IDisposable
+
+<div class="status-greeting-card" data-testid="status-greeting-card" aria-live="polite">
+    <div class="status-greeting-card__greeting" data-testid="status-greeting-text">
+        @if (_loadError is not null)
+        {
+            <span>System status unavailable</span>
+        }
+        else
+        {
+            <span>@GetGreeting(), @_userDisplayName</span>
+        }
+    </div>
+
+    <div class="status-greeting-card__badges" data-testid="status-greeting-badges">
+        @{
+            var pending = _status is null;
+            @RenderBadge(pending ? "Pending" : _status!.Api.State.ToString(), "API")
+            @RenderBadge(pending ? "Pending" : _status!.Database.State.ToString(), "DB")
+            @RenderBadge(pending ? "Pending" : _status!.MockAuth.State.ToString(), "Auth")
+            @RenderBadge(pending ? "Pending" : _status!.Qdrant.State.ToString(), "Qdrant")
+            @RenderBadge(pending ? "Pending" : _status!.Llm.State.ToString(), "LLM")
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private SystemStatusResponse? _status;
+    private string? _loadError;
+    private string _userDisplayName = "User";
+    private Timer? _pollingTimer;
+    private bool _disposed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        EventBus.OnDashboardRefresh += HandleDashboardRefresh;
+
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                var nameClaim = authState.User.FindFirst("name")?.Value
+                                ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                if (nameClaim is not null)
+                {
+                    _userDisplayName = nameClaim;
+                }
+            }
+        }
+
+        await FetchStatusAsync();
+        StartPolling();
+    }
+
+    private async Task FetchStatusAsync()
+    {
+        try
+        {
+            _status = await SystemStatusApiClient.GetStatusAsync(CancellationToken.None);
+            _loadError = null;
+        }
+        catch
+        {
+            _status = null;
+            _loadError = "System status is currently unavailable.";
+        }
+    }
+
+    private async Task HandleDashboardRefresh()
+    {
+        await FetchStatusAsync();
+        StateHasChanged();
+    }
+
+    private void StartPolling()
+    {
+        _pollingTimer = new Timer(async _ =>
+        {
+            await FetchStatusAsync();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+    }
+
+    private string GetGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        if (hour < 12) return "Good morning";
+        if (hour < 18) return "Good afternoon";
+        return "Good evening";
+    }
+
+    private static string GetBadgeColor(string state) => state switch
+    {
+        "Ok" => "healthy",
+        "Warning" => "warning",
+        "Pending" => "offline",
+        _ => "error"
+    };
+
+    private static string GetStatusLabel(string state) => state switch
+    {
+        "Ok" => "Healthy",
+        "Warning" => "Warning",
+        "Pending" => "Pending",
+        _ => "Error"
+    };
+
+    private RenderFragment RenderBadge(string state, string label) => builder =>
+    {
+        var color = GetBadgeColor(state);
+        var statusLabel = GetStatusLabel(state);
+        var testId = $"status-badge-{label.ToLowerInvariant()}";
+        var ariaLabel = $"{label}: {statusLabel}";
+
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", $"status-badge status-badge--{color}");
+        builder.AddAttribute(2, "data-testid", testId);
+        builder.AddAttribute(3, "aria-label", ariaLabel);
+        builder.AddAttribute(4, "title", ariaLabel);
+
+        // Glow dot
+        builder.OpenElement(5, "span");
+        builder.AddAttribute(6, "class", $"status-badge__dot status-badge__dot--{color}");
+        builder.CloseElement();
+
+        // Label text
+        builder.AddContent(7, label);
+
+        builder.CloseElement();
+    };
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
+            _pollingTimer?.Dispose();
+        }
+    }
+}

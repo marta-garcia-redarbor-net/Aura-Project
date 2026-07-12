@@ -1,7 +1,11 @@
+using System.Security.Claims;
 using Aura.UI.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
 namespace Aura.UnitTests.UI;
@@ -15,7 +19,10 @@ public class MsalTokenAcquisitionServiceTests
         IHttpContextAccessor httpContextAccessor = Substitute.For<IHttpContextAccessor>();
 
         // Act
-        MsalTokenAcquisitionService service = new(httpContextAccessor);
+        MsalTokenAcquisitionService service = new(
+            new StubAuthStateProvider(),
+            httpContextAccessor,
+            NullLogger<MsalTokenAcquisitionService>.Instance);
 
         // Assert
         Assert.IsAssignableFrom<ITokenAcquisitionService>(service);
@@ -31,7 +38,10 @@ public class MsalTokenAcquisitionServiceTests
         IHttpContextAccessor httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         httpContextAccessor.HttpContext.Returns(httpContext);
 
-        MsalTokenAcquisitionService service = new(httpContextAccessor);
+        MsalTokenAcquisitionService service = new(
+            new StubAuthStateProvider(),
+            httpContextAccessor,
+            NullLogger<MsalTokenAcquisitionService>.Instance);
 
         // Act
         string token = await service.AcquireTokenAsync();
@@ -48,7 +58,10 @@ public class MsalTokenAcquisitionServiceTests
         IHttpContextAccessor httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         httpContextAccessor.HttpContext.Returns(httpContext);
 
-        MsalTokenAcquisitionService service = new(httpContextAccessor);
+        MsalTokenAcquisitionService service = new(
+            new StubAuthStateProvider(),
+            httpContextAccessor,
+            NullLogger<MsalTokenAcquisitionService>.Instance);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -65,7 +78,10 @@ public class MsalTokenAcquisitionServiceTests
         IHttpContextAccessor httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         httpContextAccessor.HttpContext.Returns(httpContext);
 
-        MsalTokenAcquisitionService service = new(httpContextAccessor);
+        MsalTokenAcquisitionService service = new(
+            new StubAuthStateProvider(),
+            httpContextAccessor,
+            NullLogger<MsalTokenAcquisitionService>.Instance);
 
         // Act
         string token = await service.AcquireTokenAsync();
@@ -79,7 +95,19 @@ public class MsalTokenAcquisitionServiceTests
     // ──────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Builds an HttpContext where GetTokenAsync("access_token") returns <paramref name="tokenValue"/>.
+    /// <summary>
+/// Simple stub that returns an unauthenticated AuthenticationState.
+/// <see cref="AuthenticationStateProvider"/> is abstract — NSubstitute can't proxy it,
+/// so we provide a minimal concrete subclass.
+/// </summary>
+private sealed class StubAuthStateProvider : AuthenticationStateProvider
+{
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        => Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+}
+
+/// <summary>
+/// Builds an HttpContext where GetTokenAsync("access_token") returns <paramref name="tokenValue"/>.
     /// <see cref="TokenExtensions.GetTokenAsync"/> calls IAuthenticationService.GetTokenAsync under the hood.
     /// </summary>
     private static HttpContext BuildHttpContextWithToken(string tokenName, string? tokenValue)

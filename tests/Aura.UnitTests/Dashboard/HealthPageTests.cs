@@ -49,7 +49,9 @@ public class HealthPageTests : TestContext
             .Returns(Task.FromResult(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API running"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant healthy"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "Mock auth"))));
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "Mock auth"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "DB healthy"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM healthy"))));
         systemStatusApi.GetRecentErrorsAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new List<ErrorEntryDto>()));
         Services.AddSingleton<ISystemStatusApiClient>(systemStatusApi);

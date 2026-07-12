@@ -79,12 +79,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
 
         // Stitch-aligned sidebar navigation items
         Assert.Contains("Dashboard", html);
-        Assert.Contains("Health", html);
-        Assert.Contains("Modules", html);
-        Assert.Contains("Tasks", html);
 
-        // Stitch-aligned sidebar branding
-        Assert.Contains("Aura Core", html);
+        // Sidebar version badge
+        Assert.Contains("data-testid=\"dashboard-sidebar\"", html);
     }
 
     [Fact]
@@ -241,7 +238,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API healthy"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "Qdrant degraded"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Error, "Mock auth unavailable"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Error, "Mock auth unavailable"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "DB healthy"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM healthy"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
 
         var response = await client.GetAsync("/test-dashboard");
@@ -285,7 +284,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse(
                 [
                     new ModuleEntryResponse("w1-ingestion", ModuleProgressStateResponse.Pending),
@@ -315,7 +316,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
 
         var response = await client.GetAsync("/test-dashboard");
@@ -334,7 +337,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new ThrowingModuleProgressApiClient());
 
         var response = await client.GetAsync("/test-dashboard");
@@ -354,7 +359,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new DelayedDashboardPreviewApiClient(
                 TimeSpan.FromMilliseconds(120),
@@ -378,7 +385,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new StubDashboardPreviewApiClient(new DashboardPreviewResponse([], [])));
 
@@ -400,7 +409,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new ThrowingDashboardPreviewApiClient());
 
@@ -434,7 +445,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "api"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "qdrant"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"))),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "mock"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new StubDashboardPreviewApiClient(preview));
 

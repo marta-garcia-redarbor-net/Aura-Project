@@ -37,7 +37,11 @@
         else if (_data is null || _data.Items.Count == 0)
         {
             <section class="dashboard-panel" data-testid="decision-log-empty">
-                <p>No decisions recorded yet.</p>
+                <div class="dashboard-card__empty-state" style="text-align:center;padding:2rem;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--aura-status-healthy);opacity:0.8;">history_toggle_off</span>
+                    <h3 style="margin:0.5rem 0 0.25rem;">No interruptions logged yet</h3>
+                    <p style="color:var(--aura-on-surface-variant);">Everything is quiet for now. New interruption decisions will appear here automatically.</p>
+                </div>
             </section>
         }
         else

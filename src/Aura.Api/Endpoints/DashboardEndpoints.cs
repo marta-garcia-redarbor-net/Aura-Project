@@ -28,6 +28,7 @@ public static partial class DashboardEndpoints
         group.MapGet("/system-status", GetSystemStatusAsync);
         group.MapGet("/module-progress", GetModuleProgressAsync);
         group.MapGet("/upcoming-meetings", GetUpcomingMeetingsAsync);
+        group.MapGet("/today-calendar", GetTodayCalendarAsync);
         group.MapGet("/recent-errors", GetRecentErrorsAsync);
 
         return endpoints;
@@ -49,8 +50,10 @@ public static partial class DashboardEndpoints
             activity?.SetTag("dashboard.system_status.api", status.Api.State.ToString());
             activity?.SetTag("dashboard.system_status.qdrant", status.Qdrant.State.ToString());
             activity?.SetTag("dashboard.system_status.mock_auth", status.MockAuth.State.ToString());
+            activity?.SetTag("dashboard.system_status.database", status.Database.State.ToString());
+            activity?.SetTag("dashboard.system_status.llm", status.Llm.State.ToString());
 
-            Log.SystemStatusSucceeded(logger, status.Api.State, status.Qdrant.State, status.MockAuth.State);
+            Log.SystemStatusSucceeded(logger, status.Api.State, status.Qdrant.State, status.MockAuth.State, status.Database.State, status.Llm.State);
 
             return Results.Ok(status);
         }
@@ -328,12 +331,14 @@ public static partial class DashboardEndpoints
         public static partial void InitialDashboardFailed(ILogger logger, Exception exception);
 
         [LoggerMessage(EventId = 1004, Level = LogLevel.Information,
-            Message = "System status returned Api={ApiState}, Qdrant={QdrantState}, MockAuth={MockAuthState}")]
+            Message = "System status returned Api={ApiState}, Qdrant={QdrantState}, MockAuth={MockAuthState}, Database={DatabaseState}, Llm={LlmState}")]
         public static partial void SystemStatusSucceeded(
             ILogger logger,
             Aura.Application.Models.SystemIndicatorState apiState,
             Aura.Application.Models.SystemIndicatorState qdrantState,
-            Aura.Application.Models.SystemIndicatorState mockAuthState);
+            Aura.Application.Models.SystemIndicatorState mockAuthState,
+            Aura.Application.Models.SystemIndicatorState databaseState,
+            Aura.Application.Models.SystemIndicatorState llmState);
 
         [LoggerMessage(EventId = 1005, Level = LogLevel.Warning,
             Message = "System status request was cancelled")]

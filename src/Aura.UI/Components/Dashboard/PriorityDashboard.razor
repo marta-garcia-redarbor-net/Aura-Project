@@ -3,19 +3,23 @@
 @using Aura.UI.Components.Auth
 @using Aura.UI.Services
 @using System.Net.Http.Json
+@using Microsoft.JSInterop
 @inject IDashboardPreviewApiClient DashboardPreviewApiClient
-@inject NavigationManager Navigation
 @inject IDashboardEventBus EventBus
 @inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 <AuthorizeView>
     <Authorized>
         <PageTitle>Aura - Priority Dashboard</PageTitle>
 
-        @if (_showLoginOverlay)
+        @if (_redirecting)
         {
-            <RestrictedAccessView />
+            <p style="padding:2rem;text-align:center;color:var(--aura-on-surface-variant);">
+                Session expired. Redirecting...
+            </p>
         }
         else
         {
@@ -41,23 +45,18 @@
                             Reset
                         </button>
                     }
-                    <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
-                            data-testid="priority-dashboard-top-priority-counter"
-                            @onclick="NavigateToTopPriority"
-                            aria-label="Open top priority queue"
-                            title="Open top priority queue">
-                        <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
-                              data-testid="priority-dashboard-pending-badge">
-                            @_previewSummary?.TotalPendingCount pending
-                        </span>
+                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
+                          data-testid="priority-dashboard-top-priority-counter">
+                        @_previewSummary?.TotalPendingCount pending
                         <span class="dashboard-page-header__badge dashboard-page-header__badge--high"
                               data-testid="priority-dashboard-high-badge">
                             @_previewSummary?.HighPriorityCount high priority
                         </span>
-                    </button>
+                    </span>
                 </div>
             </div>
 
+            <StatusGreetingCard />
             <PrioritySummaryCards />
         }
     </Authorized>
@@ -72,7 +71,7 @@
     private Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private DashboardPreviewResponse? _previewSummary;
-    private bool _showLoginOverlay;
+    private bool _redirecting;
     private bool _demoAvailable;
     private bool _simulationRunning;
     private string? _simulationMessage;
@@ -118,12 +117,12 @@
                 }
             }
             await InvokeAsync(StateHasChanged);
-            _simulationMessage = $"✅ Simulación iniciada ({_previewSummary?.TotalPendingCount ?? 0} pending)";
+            _simulationMessage = $"✅ Simulation started ({_previewSummary?.TotalPendingCount ?? 0} pending)";
             _demoDataExists = true;
         }
         catch
         {
-            _simulationMessage = "❌ Error al iniciar";
+            _simulationMessage = "❌ Error starting simulation";
         }
         finally
         {
@@ -147,7 +146,7 @@
         }
         catch
         {
-            _simulationMessage = "❌ Error al resetear demo";
+            _simulationMessage = "❌ Error resetting demo";
         }
         finally
         {
@@ -166,11 +165,14 @@
         try
         {
             _previewSummary = await DashboardPreviewApiClient.GetPreviewAsync(CancellationToken.None);
-            _showLoginOverlay = false;
         }
         catch (UnauthorizedAccessException)
         {
-            _showLoginOverlay = true;
+            _redirecting = true;
+            StateHasChanged();
+            try { await JSRuntime.InvokeVoidAsync("showToast", "Session expired. Redirecting to login..."); } catch { }
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/logout", forceLoad: true);
         }
         catch
         {
@@ -183,6 +185,4 @@
         EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
 
-    private void NavigateToTopPriority()
-        => Navigation.NavigateTo("/top-priority");
 }

@@ -3,7 +3,6 @@ using Aura.UI.Components.Dashboard;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +52,16 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         var previewClient = Substitute.For<IDashboardPreviewApiClient>();
         previewClient.GetPreviewAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(preview));
         Services.AddSingleton(previewClient);
+
+        var statusClient = Substitute.For<ISystemStatusApiClient>();
+        statusClient.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "DB ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "MockAuth ok"))));
+        Services.AddSingleton(statusClient);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
@@ -85,7 +94,7 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
     }
 
     [Fact]
-    public void Dashboard_HeaderReplacesLiveSyncWithTopPriorityCounter_AndNavigatesOnClick()
+    public void Dashboard_ShowsPendingAndHighPriorityBadge()
     {
         SetupServices(new DashboardPreviewResponse([], [])
         {
@@ -101,10 +110,5 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         Assert.Contains("9 pending", counter.TextContent);
         Assert.Contains("4 high priority", counter.TextContent);
         Assert.DoesNotContain("Live Sync", cut.Markup);
-
-        counter.Click();
-
-        var navManager = Services.GetRequiredService<NavigationManager>();
-        Assert.EndsWith("/top-priority", navManager.Uri, StringComparison.Ordinal);
     }
 }

@@ -12,4 +12,6 @@ public sealed record SystemIndicatorDto(SystemIndicatorState State, string Micro
 public sealed record SystemStatusDto(
     SystemIndicatorDto Api,
     SystemIndicatorDto Qdrant,
-    SystemIndicatorDto MockAuth);
+    SystemIndicatorDto MockAuth,
+    SystemIndicatorDto Database,
+    SystemIndicatorDto Llm);
