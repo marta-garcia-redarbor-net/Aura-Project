@@ -22,6 +22,8 @@ public sealed class InitialDashboardReader : IInitialDashboardReader
 
         var currentUser = _currentUserService.GetCurrentUser();
         var userDisplayName = Normalize(currentUser?.DisplayName);
+        if (string.IsNullOrEmpty(userDisplayName))
+            userDisplayName = Normalize(currentUser?.Email);
         var cards = BuildCards(currentUser).ToArray();
 
         return Task.FromResult(new InitialDashboardDto(userDisplayName, cards));
@@ -45,9 +47,12 @@ public sealed class InitialDashboardReader : IInitialDashboardReader
 
     private static DashboardCardDto?[] CreateCards(AuraUser currentUser) =>
     [
-        CreateCard("Signed in as", currentUser.DisplayName, "info"),
+        CreateCard("Signed in as", FallbackDisplayName(currentUser), "info"),
         CreateCard("Email", currentUser.Email, "ready")
     ];
+
+    private static string FallbackDisplayName(AuraUser user) =>
+        !string.IsNullOrWhiteSpace(user.DisplayName) ? user.DisplayName.Trim() : (user.Email?.Trim() ?? "");
 
     private static DashboardCardDto? CreateCard(string title, string? value, string status)
     {
