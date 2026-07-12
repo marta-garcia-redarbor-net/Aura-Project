@@ -90,5 +90,5 @@ output sqlServerName string = sqlServer.name
 output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
 output sqlDatabaseName string = sqlDatabase.name
 output sqlAdminLogin string = sqlAdminLogin
-output sqlAdminPassword string = sqlAdminPassword
+// Intentionally NOT exposing sqlAdminPassword as output — stored in Key Vault via keyvault module
 output sqlServerId string = sqlServer.id

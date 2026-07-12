@@ -39,6 +39,10 @@ param entraTenantId string = ''
 @description('Entra ID client ID for Aura App Registration')
 param entraClientId string = ''
 
+@description('Entra ID client secret for OIDC auth code flow')
+@secure()
+param entraClientSecret string = ''
+
 @description('Microsoft Graph scopes for delegated auth')
 param graphScopes string = 'User.Read,Calendars.Read,Mail.Read,Chat.Read,Presence.Read'
 
@@ -126,6 +130,7 @@ module aca 'modules/aca.bicep' = {
     imageTag: imageTag
     entraTenantId: entraTenantId
     entraClientId: entraClientId
+    entraClientSecret: entraClientSecret
     graphScopes: graphScopes
     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
   }

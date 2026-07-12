@@ -2,7 +2,7 @@ name: Deploy Azure Infrastructure
 
 on:
   push:
-    branches: [release/*]
+    branches: [release/aura/*]
     paths:
       - 'infra/**'
       - '.github/workflows/deploy-infra.yml'
@@ -25,6 +25,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
     steps:
       - uses: actions/checkout@v4
 
