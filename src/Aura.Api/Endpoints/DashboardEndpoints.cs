@@ -28,6 +28,7 @@ public static partial class DashboardEndpoints
         group.MapGet("/system-status", GetSystemStatusAsync);
         group.MapGet("/module-progress", GetModuleProgressAsync);
         group.MapGet("/upcoming-meetings", GetUpcomingMeetingsAsync);
+        group.MapGet("/today-calendar", GetTodayCalendarAsync);
         group.MapGet("/recent-errors", GetRecentErrorsAsync);
 
         return endpoints;

@@ -1,50 +1,26 @@
-@using Microsoft.AspNetCore.Authorization
-@inject Aura.UI.Services.AppVersionService AppVersion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<div class="restricted-access" data-testid="restricted-access-view">
-    <!-- Dashboard shell skeleton (no blur) -->
-    <div>
-        <aside class="dashboard-sidebar" data-testid="blurred-sidebar">
-            <div class="dashboard-sidebar__brand">
-                <h2 class="dashboard-sidebar__title">Aura Core</h2>
-                <p class="dashboard-sidebar__version">@AppVersion.DisplayVersion</p>
-            </div>
-            <nav>
-                <ul class="dashboard-sidebar__nav">
-                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">dashboard</span>Dashboard</span></li>
-                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">monitor_heart</span>Health</span></li>
-                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">account_tree</span>Modules</span></li>
-                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">checklist</span>Tasks</span></li>
-                    <li><span class="dashboard-sidebar__nav-item"><span class="material-symbols-outlined dashboard-sidebar__nav-icon">terminal</span>Logs</span></li>
-                </ul>
-            </nav>
-        </aside>
-        <header class="dashboard-header" data-testid="blurred-header">
-            <div class="dashboard-header__left">
-                <h1 class="dashboard-header__title">Dashboard</h1>
-            </div>
-        </header>
-    </div>
+@* This component redirects to the landing page with a toast when auth fails.
+    No longer shows the full-screen overlay — the user just sees a brief notification
+    and is sent to the landing page where the auth challenge takes over. *@
 
-    <!-- Fullscreen blur backdrop -->
-    <div class="login-overlay-backdrop" data-testid="login-overlay-backdrop" style="position:fixed;inset:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(255,255,255,0.06);z-index:1000;pointer-events:auto;"></div>
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("showToast", "Session expired. Redirecting to login...");
+        }
+        catch
+        {
+            // JS interop might not be available during prerendering — ignore
+        }
 
-    <!-- Login card overlay (on top of blur) -->
-    <div class="login-card" data-testid="login-card" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;">
-        <h1 class="login-card__title">Aura</h1>
-        <p class="login-card__subtitle">Unable to load dashboard. Check that the API server is running.</p>
-
-        <div class="login-card__actions">
-            <a href="/" class="login-card__button login-card__button--landing"
-               data-testid="restricted-go-login-btn">
-                <span class="material-symbols-outlined">login</span>
-                Go to Login Page
-            </a>
-            <a href="/logout" class="login-card__button login-card__button--logout"
-               data-testid="restricted-logout-btn" style="margin-top:0.5rem;">
-                <span class="material-symbols-outlined">logout</span>
-                Logout
-            </a>
-        </div>
-    </div>
-</div>
+        // Small delay so the toast is visible before redirecting
+        await Task.Delay(1500);
+        Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+}

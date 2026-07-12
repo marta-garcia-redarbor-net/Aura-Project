@@ -31,13 +31,13 @@
                 break;
 
             case PrListState.Empty:
-                <div class="pr-list__empty" data-testid="pr-empty">
-                    <div class="pr-list__empty-content">
-                        <span class="material-symbols-outlined pr-list__empty-icon">account_tree</span>
-                        <h3>No pending PRs</h3>
-                        <p>All pull requests have been reviewed or merged. Great job!</p>
+                <section class="dashboard-panel" data-testid="pr-empty">
+                    <div class="dashboard-card__empty-state" style="text-align:center;padding:2rem;">
+                        <span class="material-symbols-outlined" style="font-size:48px;color:var(--aura-status-healthy);opacity:0.8;">account_tree</span>
+                        <h3 style="margin:0.5rem 0 0.25rem;">No pending PRs</h3>
+                        <p style="color:var(--aura-on-surface-variant);">All pull requests have been reviewed or merged. Great job!</p>
                     </div>
-                </div>
+                </section>
                 break;
 
             case PrListState.Error:
