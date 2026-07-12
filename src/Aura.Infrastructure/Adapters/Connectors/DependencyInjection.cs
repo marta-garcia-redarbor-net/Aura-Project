@@ -29,7 +29,7 @@ internal static class DependencyInjection
         var graphOptions = new GraphConnectorOptions();
         configuration.GetSection(GraphConnectorOptions.SectionName).Bind(graphOptions);
 
-        if (graphOptions.Enabled)
+        if (graphOptions.IsProductionReady)
         {
             services.AddScoped<IMessageSourceProvider<TeamsMessageDto>, GraphTeamsSourceProvider>();
             services.AddScoped<IMessageSourceProvider<OutlookEmailDto>, GraphOutlookSourceProvider>();

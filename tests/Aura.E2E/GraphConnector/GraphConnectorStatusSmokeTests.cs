@@ -26,8 +26,6 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
 
     [Theory]
     [InlineData("Disabled", "graph-connector-state-disabled")]
-    [InlineData("MissingConfig", "graph-connector-state-missing")]
-    [InlineData("PartialConfig", "graph-connector-state-partial")]
     [InlineData("ValidConfig", "graph-connector-state-valid")]
     public async Task GetRoot_RendersExpectedGraphConnectorState_WithoutEditControls(string state, string expectedTestId)
     {

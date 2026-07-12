@@ -45,8 +45,8 @@ public class DependencyInjectionTests
         services.AddSingleton<IGraphConnectorSettingsProvider>(
             new StubGraphConnectorSettingsProvider(new GraphConnectorSettings(
                 Enabled: true,
-                TenantId: "tenant",
-                ClientId: "client",
+                TenantId: "11111111-1111-1111-1111-111111111111",
+                ClientId: "22222222-2222-2222-2222-222222222222",
                 HasValidCredentialsBlock: true)));
         services.AddSingleton(typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
 

@@ -86,4 +86,27 @@ public class PrReviewWorkItemMapperIdentityTests
         Assert.NotNull(workItem);
         Assert.Equal("2", workItem!.Metadata[PrMetadataKeys.ReviewerCount]);
     }
+
+    [Fact]
+    public void TryMap_WithUserOid_SetsOwnerUserScopeOnWorkItemAndMetadata()
+    {
+        var mapper = new PrReviewWorkItemMapper();
+        var dto = new PrReviewDto
+        {
+            PullRequestId = 45,
+            Title = "Scoped PR",
+            RepoName = "Aura",
+            Author = "Jane",
+            UserOid = "oid-real-45",
+            Reviewers = ["Jane"]
+        };
+
+        var result = mapper.TryMap(dto, out var workItem);
+
+        Assert.True(result);
+        Assert.NotNull(workItem);
+        Assert.Equal("oid-real-45", workItem!.OwnerUserId);
+        Assert.Equal("oid-real-45", workItem.Metadata[WorkItemSignalKeys.TargetOwnerUserId]);
+        Assert.Equal("Jane", workItem.Metadata[WorkItemSignalKeys.CanonicalSender]);
+    }
 }

@@ -55,9 +55,14 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
                     $"Azure DevOps HTTP error: {ex.Message}");
             }
         }
-        else
+        else if (ShouldUseFixtureFallback(request))
         {
             payloads = _fixtureProvider();
+        }
+        else
+        {
+            Log.PrFixtureFallbackSuppressedForAuthenticatedUser(_logger, request.Identity.UserOid!);
+            payloads = [];
         }
 
         var mappedCount = 0;
@@ -65,7 +70,11 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
 
         foreach (var payload in payloads)
         {
-            if (_mapper.TryMap(payload, out var workItem) && workItem is not null)
+            var scopedPayload = string.IsNullOrWhiteSpace(payload.UserOid)
+                ? payload with { UserOid = request.Identity.UserOid }
+                : payload;
+
+            if (_mapper.TryMap(scopedPayload, out var workItem) && workItem is not null)
             {
                 if (_sourceProvider is null)
                 {
@@ -218,6 +227,9 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
         }
     ];
 
+    private static bool ShouldUseFixtureFallback(ConnectorExecutionRequest request)
+        => string.IsNullOrWhiteSpace(request.Identity.UserOid);
+
     private static partial class Log
     {
         [LoggerMessage(
@@ -248,5 +260,13 @@ internal sealed partial class PrReviewConnectorAdapter : IConnectorAdapter
         public static partial void PrProviderHttpError(
             ILogger logger,
             HttpRequestException exception);
+
+        [LoggerMessage(
+            EventId = 3604,
+            Level = LogLevel.Information,
+            Message = "PR fixture fallback suppressed because request has authenticated user oid={UserOid} and no real provider is configured")]
+        public static partial void PrFixtureFallbackSuppressedForAuthenticatedUser(
+            ILogger logger,
+            string userOid);
     }
 }

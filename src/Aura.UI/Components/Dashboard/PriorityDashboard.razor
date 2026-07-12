@@ -4,6 +4,7 @@
 @using Aura.UI.Services
 @using System.Net.Http.Json
 @inject IDashboardPreviewApiClient DashboardPreviewApiClient
+@inject ISyncApiClient SyncApiClient
 @inject NavigationManager Navigation
 @inject IDashboardEventBus EventBus
 @inject IHttpClientFactory HttpClientFactory
@@ -82,7 +83,21 @@
     {
         EventBus.OnDashboardRefresh += HandleDashboardRefresh;
         await CheckDemoStatusAsync();
+        await TriggerInitialSyncAsync();
         await RefreshDataAsync();
+    }
+
+    private async Task TriggerInitialSyncAsync()
+    {
+        try
+        {
+            await SyncApiClient.TriggerSyncAsync(CancellationToken.None);
+        }
+        catch
+        {
+            // Keep dashboard entry resilient. Preview load still runs and will show
+            // whatever data is already available locally.
+        }
     }
 
     private async Task CheckDemoStatusAsync()

@@ -62,6 +62,21 @@ MeetingAlert         — EventId, Title, Trigger, StartsAtUtc, JoinUrl?
 - Token lifecycle behavior follows the shared auth model: persistent SQLite token cache, silent renewal through MSAL, and re-authentication when silent renewal fails.
 - Worker-side calendar processing reuses the delegated token cache; it does not switch to app-only Graph credentials.
 
+## Current runtime limitation
+
+Aura's current Calendar validation path assumes the signed-in user is a **work or school account in the same tenant** and has a real **Exchange Online mailbox/calendar**.
+
+Observed behavior during validation:
+
+- A **personal Microsoft account invited as a guest** can authenticate to Aura and reach the delegated/OBO token path.
+- However, `GET /me/calendarView` can still fail because the guest object in the resource tenant does **not** own a tenant mailbox/calendar.
+- Therefore, a guest/personal invited account is **not a valid test identity** for the current `/me/calendarView` flow.
+
+Validation rule for real-user calendar sync:
+
+- Use a **tenant-local work/school user**.
+- Ensure the user has an **Exchange Online mailbox**.
+
 ## SignalR hub
 
 ```text

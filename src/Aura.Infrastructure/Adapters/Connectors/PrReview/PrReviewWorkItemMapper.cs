@@ -31,7 +31,8 @@ internal sealed class PrReviewWorkItemMapper
             sourceType: WorkItemSourceType.PrReview,
             priority: priority,
             metadata: metadata,
-            capturedAtUtc: pr.CreatedAt);
+            capturedAtUtc: pr.CreatedAt,
+            ownerUserId: pr.UserOid);
 
         return true;
     }
@@ -52,7 +53,11 @@ internal sealed class PrReviewWorkItemMapper
         {
             metadata["pr.author"] = pr.Author;
             metadata[WorkItemSignalKeys.CanonicalSender] = pr.Author;
-            metadata[WorkItemSignalKeys.TargetOwnerUserId] = pr.Author;
+        }
+
+        if (!string.IsNullOrWhiteSpace(pr.UserOid))
+        {
+            metadata[WorkItemSignalKeys.TargetOwnerUserId] = pr.UserOid;
         }
 
         if (!string.IsNullOrWhiteSpace(pr.SourceLink))

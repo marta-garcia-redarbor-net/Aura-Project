@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.IngestionSync;
+using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -28,7 +29,9 @@ public static partial class SyncEndpoints
 
     private static async Task<IResult> PostSyncNowAsync(
         TriggerSyncUseCase useCase,
-        Microsoft.Identity.Client.IPublicClientApplication? msalApp,
+        ICurrentUserService currentUserService,
+        OboTokenService oboTokenService,
+        HttpContext httpContext,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -39,28 +42,36 @@ public static partial class SyncEndpoints
 
         try
         {
-            // Resolve user oid from MSAL token cache for delegated Graph operations
-            string? userOid = null;
-            if (msalApp is not null)
+            var userOid = currentUserService.GetCurrentUser()?.Oid;
+            if (string.IsNullOrWhiteSpace(userOid))
             {
-                try
+                activity?.SetStatus(ActivityStatusCode.Error, "Missing authenticated oid");
+                Log.ClaimsOidMissing(logger);
+                return Results.Unauthorized();
+            }
+
+            Log.ClaimsOidResolved(logger, userOid);
+
+            // Acquire and cache a Graph token via OBO for the worker.
+            // Requires the app registration to have delegated Graph permissions
+            // (Mail.Read, Chat.Read, Calendars.Read) and a valid client secret.
+            var bearerToken = ExtractBearerToken(httpContext);
+            if (!string.IsNullOrWhiteSpace(bearerToken))
+            {
+                Log.OboTokenCacheAttempt(logger, userOid);
+                var cached = await oboTokenService.CacheTokenForUserAsync(userOid, bearerToken);
+                if (cached)
                 {
-                    var accounts = await msalApp.GetAccountsAsync();
-                    var account = accounts.FirstOrDefault();
-                    if (account is not null)
-                    {
-                        userOid = account.HomeAccountId.ObjectId;
-                        Log.UserOidResolved(logger, userOid);
-                    }
-                    else
-                    {
-                        Log.NoCachedAccount(logger);
-                    }
+                    Log.OboTokenCached(logger, userOid);
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log.MsalCacheReadFailed(logger, ex);
+                    Log.OboTokenFailed(logger, userOid);
                 }
+            }
+            else
+            {
+                Log.OboTokenMissingBearer(logger, userOid);
             }
 
             var result = await useCase.ExecuteAsync(userOid, cancellationToken);
@@ -81,6 +92,16 @@ public static partial class SyncEndpoints
             Log.SyncNowFailed(logger, ex);
             return Results.Problem(title: "Sync request failed", statusCode: StatusCodes.Status500InternalServerError);
         }
+    }
+
+    private static string? ExtractBearerToken(HttpContext httpContext)
+    {
+        var auth = httpContext.Request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(auth) || !auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+        return auth["Bearer ".Length..].Trim();
     }
 
     private static async Task<IResult> GetSyncStatusAsync(
@@ -142,15 +163,31 @@ public static partial class SyncEndpoints
         public static partial void SyncStatusFailed(ILogger logger, Exception exception);
 
         [LoggerMessage(EventId = 6007, Level = LogLevel.Information,
-            Message = "Resolved user oid from MSAL cache: {UserOid}")]
-        public static partial void UserOidResolved(ILogger logger, string userOid);
+            Message = "Resolved user oid from authenticated claims: {UserOid}")]
+        public static partial void ClaimsOidResolved(ILogger logger, string userOid);
 
         [LoggerMessage(EventId = 6008, Level = LogLevel.Warning,
-            Message = "No cached account found in MSAL — sync will run without user identity")]
-        public static partial void NoCachedAccount(ILogger logger);
+            Message = "Sync now blocked — authenticated oid claim missing")]
+        public static partial void ClaimsOidMissing(ILogger logger);
 
         [LoggerMessage(EventId = 6009, Level = LogLevel.Warning,
-            Message = "Failed to read MSAL token cache for sync")]
-        public static partial void MsalCacheReadFailed(ILogger logger, Exception exception);
+            Message = "Sync now claims validation warning: {Reason}")]
+        public static partial void ClaimsValidationWarning(ILogger logger, string reason);
+
+        [LoggerMessage(EventId = 6010, Level = LogLevel.Information,
+            Message = "OBO token cached for oid={UserOid}")]
+        public static partial void OboTokenCached(ILogger logger, string userOid);
+
+        [LoggerMessage(EventId = 6011, Level = LogLevel.Warning,
+            Message = "OBO token acquisition failed for oid={UserOid}")]
+        public static partial void OboTokenFailed(ILogger logger, string userOid);
+
+        [LoggerMessage(EventId = 6012, Level = LogLevel.Information,
+            Message = "Attempting OBO token acquisition for oid={UserOid}")]
+        public static partial void OboTokenCacheAttempt(ILogger logger, string userOid);
+
+        [LoggerMessage(EventId = 6013, Level = LogLevel.Warning,
+            Message = "Skipping OBO token acquisition for oid={UserOid}: missing bearer token in request")]
+        public static partial void OboTokenMissingBearer(ILogger logger, string userOid);
     }
 }

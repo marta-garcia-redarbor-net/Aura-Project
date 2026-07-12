@@ -51,12 +51,14 @@ internal static class DependencyInjection
                 .Build();
 
             // Hook SQLite cache into MSAL user token cache (delegated flow).
-            // Delegated AcquireTokenSilent uses UserTokenCache, not AppTokenCache.
+            // Oid-partitioned: MSAL provides SuggestedCacheKey per-user (includes account identity),
+            // so each real user's tokens are stored under a unique key.
+            // When SuggestedCacheKey is null (edge case), fall back to a client-scoped key.
             var tokenCache = sp.GetRequiredService<MsalSqliteTokenCache>();
-            var cacheKey = $"msal-user-{opts.ClientId}";
 
             app.UserTokenCache.SetBeforeAccessAsync(args =>
             {
+                var cacheKey = args.SuggestedCacheKey ?? $"msal-user-{opts.ClientId}-unknown";
                 var cached = tokenCache.Retrieve(cacheKey);
                 if (cached is not null)
                 {
@@ -69,6 +71,7 @@ internal static class DependencyInjection
             {
                 if (args.HasStateChanged)
                 {
+                    var cacheKey = args.SuggestedCacheKey ?? $"msal-user-{opts.ClientId}-unknown";
                     tokenCache.Persist(cacheKey, args.TokenCache.SerializeMsalV3());
                 }
                 return Task.CompletedTask;
@@ -76,6 +79,42 @@ internal static class DependencyInjection
 
             return app;
         });
+
+        // User token store — OBO-acquired Graph tokens shared with the worker
+        services.AddSingleton(sp =>
+        {
+            var connectionString = configuration.GetConnectionString("TokenCache")
+                                   ?? "Data Source=token_cache.db";
+            var connection = new SqliteConnection(connectionString);
+            connection.Open();
+            UserTokenStore.InitializeSchema(connection);
+            return new UserTokenStore(connection);
+        });
+
+        // Confidential client for On-Behalf-Of token acquisition (API only).
+        // Uses the same client ID & secret as the app registration so OBO can
+        // exchange the user's JWT for a Graph token with Mail.Read scope.
+        // Only registered when a ClientSecret is configured.
+        services.AddSingleton<IConfidentialClientApplication>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<GraphConnectorOptions>>().Value;
+            if (string.IsNullOrWhiteSpace(opts.ClientSecret))
+            {
+                // Not configured — return a throw-away placeholder that fails fast.
+                return ConfidentialClientApplicationBuilder
+                    .Create("placeholder")
+                    .WithClientSecret("placeholder")
+                    .Build();
+            }
+
+            return ConfidentialClientApplicationBuilder
+                .Create(opts.ClientId)
+                .WithTenantId(opts.TenantId)
+                .WithClientSecret(opts.ClientSecret)
+                .Build();
+        });
+
+        services.AddSingleton<OboTokenService>();
 
         // Graph client factory
         services.AddSingleton<GraphClientFactory>();

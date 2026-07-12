@@ -1,12 +1,20 @@
 using Aura.Application;
 using Aura.Infrastructure;
 using Aura.Workers;
-using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
+using Microsoft.Extensions.Configuration;
 
 var kernelOnly = args.Contains("--kernel-only");
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Load user secrets (GraphConnector:ClientId, GraphConnector:TenantId, etc.)
+// HostApplicationBuilder does NOT load secrets automatically — only WebApplicationBuilder does.
+builder.Configuration.AddUserSecrets<Program>();
+
+// Required for AuthorizationPolicyCache (registered transitively by AddAuthentication
+// in AddIdentityAdapter) which depends on EndpointDataSource from ASP.NET Core routing.
+// The worker does not serve HTTP, but the service registration is needed for DI validation.
+builder.Services.AddRouting();
 
 // Application services are always registered (kernel + domain abstractions)
 builder.Services.AddAuraApplication();
@@ -28,20 +36,6 @@ else
     builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
     builder.Services.AddHostedService<HelloKernelWorker>();
-
-    // MSAL for delegated token cache access (Workers need to resolve user oid)
-    var azureAd = builder.Configuration.GetSection("AzureAd");
-    var clientId = azureAd["ClientId"];
-    var tenantId = azureAd["TenantId"];
-    if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(tenantId))
-    {
-        builder.Services.AddSingleton<IPublicClientApplication>(sp =>
-            PublicClientApplicationBuilder
-                .Create(clientId)
-                .WithAuthority(AzureCloudInstance.AzurePublic, tenantId)
-                .WithRedirectUri("http://localhost:5000/authentication/login-callback")
-                .Build());
-    }
 }
 
 var host = builder.Build();

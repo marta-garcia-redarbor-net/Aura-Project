@@ -1,5 +1,6 @@
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.GraphConnector;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using NSubstitute;
@@ -10,12 +11,18 @@ namespace Aura.UnitTests.GraphConnector;
 public class GraphClientFactoryTests
 {
     private readonly IPublicClientApplication _msalApp;
+    private readonly SqliteConnection _connection;
+    private readonly UserTokenStore _userTokenStore;
     private readonly IOptions<GraphConnectorOptions> _options;
     private readonly GraphClientFactory _factory;
 
     public GraphClientFactoryTests()
     {
         _msalApp = Substitute.For<IPublicClientApplication>();
+        _connection = new SqliteConnection("Data Source=:memory:");
+        _connection.Open();
+        UserTokenStore.InitializeSchema(_connection);
+        _userTokenStore = new UserTokenStore(_connection);
         _options = Options.Create(new GraphConnectorOptions
         {
             Enabled = true,
@@ -23,7 +30,7 @@ public class GraphClientFactoryTests
             ClientId = "test-client",
             Scopes = ["Mail.Read", "Chat.Read"]
         });
-        _factory = new GraphClientFactory(_msalApp, _options);
+        _factory = new GraphClientFactory(_msalApp, _userTokenStore, _options);
     }
 
     [Fact]
@@ -71,14 +78,14 @@ public class GraphClientFactoryTests
     public void Constructor_NullMsalApp_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new GraphClientFactory(null!, _options));
+            new GraphClientFactory(null!, _userTokenStore, _options));
     }
 
     [Fact]
     public void Constructor_NullOptions_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new GraphClientFactory(_msalApp, null!));
+            new GraphClientFactory(_msalApp, _userTokenStore, null!));
     }
 
     [Fact]
@@ -94,7 +101,7 @@ public class GraphClientFactoryTests
         });
 
         // Act — should not throw
-        var factory = new GraphClientFactory(_msalApp, optionsNoScopes);
+        var factory = new GraphClientFactory(_msalApp, _userTokenStore, optionsNoScopes);
 
         // Assert: factory was created successfully (scopes resolved to defaults internally)
         Assert.NotNull(factory);
@@ -146,7 +153,7 @@ public class GraphClientFactoryTests
             ClientId = "test-client",
             Scopes = null
         });
-        var factory = new GraphClientFactory(_msalApp, optionsNoScopes);
+        var factory = new GraphClientFactory(_msalApp, _userTokenStore, optionsNoScopes);
 
         var fakeAccount = Substitute.For<IAccount>();
         fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
@@ -237,6 +244,10 @@ public class GraphClientFactoryTests
             () => _factory.CreateClientAsync("oid-C", CancellationToken.None));
 
         Assert.Equal("no_account", ex.ErrorCode);
+
+#pragma warning disable CS0618
+        _msalApp.DidNotReceive().AcquireTokenSilent(Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>());
+#pragma warning restore CS0618
     }
 
     [Fact]
@@ -266,7 +277,7 @@ public class GraphClientFactoryTests
             ClientId = "test-client",
             Scopes = null
         });
-        var factory = new GraphClientFactory(_msalApp, optionsNoScopes);
+        var factory = new GraphClientFactory(_msalApp, _userTokenStore, optionsNoScopes);
 
         var fakeAccount = Substitute.For<IAccount>();
         fakeAccount.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));

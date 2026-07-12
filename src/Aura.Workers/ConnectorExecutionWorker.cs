@@ -36,6 +36,8 @@ public sealed partial class ConnectorExecutionWorker : CorrelatedWorkerBase
         _logger = logger;
     }
 
+    private bool _deviceCodeStarted;
+
     protected override async Task ExecuteCorrelatedAsync(string correlationId, CancellationToken stoppingToken)
     {
         var pollingInterval = TimeSpan.FromSeconds(_options.Value.PollingIntervalSeconds);
@@ -48,47 +50,66 @@ public sealed partial class ConnectorExecutionWorker : CorrelatedWorkerBase
 
             // Resolve user oid from MSAL token cache (delegated flow).
             // Workers cannot use ICurrentUserService (no HTTP context).
-            string? oid = null;
+            IReadOnlyList<IAccount> accounts = [];
+            IPublicClientApplication? msalApp = null;
             try
             {
-                var msalApp = scope.ServiceProvider.GetRequiredService<IPublicClientApplication>();
-                var accounts = await msalApp.GetAccountsAsync();
-                var account = accounts.FirstOrDefault();
-                if (account is not null)
-                {
-                    oid = account.HomeAccountId.ObjectId;
-                }
+                msalApp = scope.ServiceProvider.GetRequiredService<IPublicClientApplication>();
+                accounts = (await msalApp.GetAccountsAsync()).ToArray();
             }
             catch (Exception ex)
             {
                 Log.TokenCacheReadFailed(_logger, ex);
             }
 
-            foreach (var adapter in adapters)
+            if (accounts.Count == 0)
             {
-                if (oid is null)
+                foreach (var adapter in adapters)
                 {
                     Log.NoCachedUser(_logger, adapter.ConnectorName);
+                }
+
+                // One-time device code flow to seed the shared MSAL token cache.
+                // The user visits the URL in their browser, authenticates with their
+                // Entra ID account, and the tokens are cached in the SQLite cache
+                // shared with the API. Subsequent cycles find the account and sync.
+                if (!_deviceCodeStarted && msalApp is not null)
+                {
+                    _deviceCodeStarted = true;
+                    _ = Task.Run(() => AcquireTokenViaDeviceCodeAsync(msalApp, stoppingToken), stoppingToken);
+                }
+
+                return;
+            }
+
+            foreach (var account in accounts)
+            {
+                var oid = account.HomeAccountId.ObjectId;
+                if (string.IsNullOrWhiteSpace(oid))
+                {
                     continue;
                 }
 
-                var identity = new CheckpointIdentity(
-                    adapter.ConnectorName,
-                    GetSource(adapter.ConnectorName),
-                    "default",
-                    userOid: oid);
-
-                Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
-
-                var result = await useCase.ExecuteAsync(identity, stoppingToken);
-
-                if (result.Status == ConnectorExecutionStatus.Success)
+                foreach (var adapter in adapters)
                 {
-                    Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
-                }
-                else
-                {
-                    Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
+                    var identity = new CheckpointIdentity(
+                        adapter.ConnectorName,
+                        GetSource(adapter.ConnectorName),
+                        "default",
+                        userOid: oid);
+
+                    Log.WorkerStarted(_logger, identity.Connector, identity.Source, identity.Tenant);
+
+                    var result = await useCase.ExecuteAsync(identity, stoppingToken);
+
+                    if (result.Status == ConnectorExecutionStatus.Success)
+                    {
+                        Log.WorkerSucceeded(_logger, result.Identity.Connector, result.ItemCount);
+                    }
+                    else
+                    {
+                        Log.WorkerFailed(_logger, result.Identity.Connector, result.FailureReason ?? "Unknown failure");
+                    }
                 }
             }
         }
@@ -108,6 +129,38 @@ public sealed partial class ConnectorExecutionWorker : CorrelatedWorkerBase
         catch (OperationCanceledException)
         {
             // Exit cleanly
+        }
+    }
+
+    /// <summary>
+    /// Initiates a device code flow to seed the shared MSAL token cache.
+    /// Runs once on first cycle when no cached accounts are found.
+    /// After successful authentication, tokens are persisted in the SQLite
+    /// cache and subsequent worker cycles find the account automatically.
+    /// </summary>
+    private async Task AcquireTokenViaDeviceCodeAsync(
+        IPublicClientApplication msalApp, CancellationToken ct)
+    {
+        var scopes = new[] { "Mail.Read", "Mail.ReadBasic", "User.Read", "Calendars.Read", "Chat.Read", "openid", "profile", "email" };
+
+        try
+        {
+            var result = await msalApp.AcquireTokenWithDeviceCode(scopes, deviceCode =>
+            {
+                Log.DeviceCodeRequired(_logger, deviceCode.VerificationUrl, deviceCode.UserCode, deviceCode.Message);
+                return Task.CompletedTask;
+            }).ExecuteAsync(ct);
+
+            Log.DeviceCodeSucceeded(_logger, result.Account.HomeAccountId.ObjectId);
+        }
+        catch (OperationCanceledException)
+        {
+            Log.DeviceCodeCancelled(_logger);
+        }
+        catch (Exception ex)
+        {
+            Log.DeviceCodeFailed(_logger, ex);
+            _deviceCodeStarted = false; // Allow retry on next cycle
         }
     }
 
@@ -163,5 +216,29 @@ public sealed partial class ConnectorExecutionWorker : CorrelatedWorkerBase
             Level = LogLevel.Warning,
             Message = "ConnectorExecutionWorker failed to read token cache")]
         public static partial void TokenCacheReadFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(
+            EventId = 4208,
+            Level = LogLevel.Information,
+            Message = "Device code auth required. Visit {Url} and enter code {Code}")]
+        public static partial void DeviceCodeRequired(ILogger logger, string url, string code, string message);
+
+        [LoggerMessage(
+            EventId = 4209,
+            Level = LogLevel.Information,
+            Message = "Device code auth succeeded for oid={Oid}")]
+        public static partial void DeviceCodeSucceeded(ILogger logger, string oid);
+
+        [LoggerMessage(
+            EventId = 4210,
+            Level = LogLevel.Warning,
+            Message = "Device code auth cancelled")]
+        public static partial void DeviceCodeCancelled(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 4211,
+            Level = LogLevel.Error,
+            Message = "Device code auth failed")]
+        public static partial void DeviceCodeFailed(ILogger logger, Exception exception);
     }
 }

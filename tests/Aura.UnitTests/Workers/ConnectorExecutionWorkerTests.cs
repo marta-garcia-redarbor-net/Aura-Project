@@ -3,8 +3,10 @@ using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Application.UseCases.ConnectorExecution;
 using Aura.Workers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -170,6 +172,56 @@ public class ConnectorExecutionWorkerTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_TwoCachedAccounts_ExecutesForEachAccountOid()
+    {
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        checkpointStore.GetAsync(Arg.Any<CheckpointIdentity>(), Arg.Any<CancellationToken>())
+            .Returns((IngestionCheckpoint?)null);
+
+        var adapter = new OidCollectingAdapter();
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            NullLogger<ExecuteConnectorUseCase>.Instance,
+            () => DateTimeOffset.Parse("2026-06-19T15:45:00Z"));
+
+        var accountA = Substitute.For<IAccount>();
+        accountA.HomeAccountId.Returns(new AccountId("oid-A", "oid-A", null));
+
+        var accountB = Substitute.For<IAccount>();
+        accountB.HomeAccountId.Returns(new AccountId("oid-B", "oid-B", null));
+
+        var msalApp = Substitute.For<IPublicClientApplication>();
+#pragma warning disable CS0618
+        msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult((IEnumerable<IAccount>)[accountA, accountB]));
+#pragma warning restore CS0618
+
+        var services = new ServiceCollection();
+        services.AddSingleton(useCase);
+        services.AddSingleton<IConnectorAdapter>(adapter);
+        services.AddSingleton(msalApp);
+        await using var provider = services.BuildServiceProvider();
+
+        var scope = Substitute.For<IServiceScope>();
+        scope.ServiceProvider.Returns(provider);
+
+        var scopeFactory = Substitute.For<IServiceScopeFactory>();
+        scopeFactory.CreateScope().Returns(scope);
+
+        var worker = new ConnectorExecutionWorker(scopeFactory, CreateOptions(), NullLogger<ConnectorExecutionWorker>.Instance);
+
+        var cts = new CancellationTokenSource();
+        await worker.StartAsync(cts.Token);
+        await Task.Delay(220);
+        cts.Cancel();
+        await worker.StopAsync(CancellationToken.None);
+
+        Assert.Contains("oid-A", adapter.ObservedOids);
+        Assert.Contains("oid-B", adapter.ObservedOids);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_TokenCacheReadFailed_SkipsAllAdapters()
     {
         var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
@@ -209,6 +261,57 @@ public class ConnectorExecutionWorkerTests
 
         // Adapter should NOT have been called — token cache failed, oid is null, connector skipped
         Assert.Equal(0, adapter.ExecuteCount);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoCachedAccounts_ProvesStructuralDemoIsolation()
+    {
+        var checkpointStore = Substitute.For<IIngestionCheckpointStore>();
+        var adapter = new SuccessAdapter();
+        var useCase = new ExecuteConnectorUseCase(
+            checkpointStore,
+            new[] { adapter },
+            NullLogger<ExecuteConnectorUseCase>.Instance,
+            () => DateTimeOffset.Parse("2026-06-19T15:45:00Z"));
+
+        // Structural demo isolation: MockJwt never writes to MSAL cache,
+        // so GetAccountsAsync() returns empty for demo sessions.
+        // No explicit DemoMode gate is needed — the empty-cache path naturally
+        // prevents real Graph execution.
+        var msalApp = Substitute.For<IPublicClientApplication>();
+#pragma warning disable CS0618
+        msalApp.GetAccountsAsync()
+            .Returns(Task.FromResult(Enumerable.Empty<IAccount>()));
+#pragma warning restore CS0618
+
+        var logger = new CapturingLogger<ConnectorExecutionWorker>();
+
+        var services = new ServiceCollection();
+        services.AddSingleton(useCase);
+        services.AddSingleton<IConnectorAdapter>(adapter);
+        services.AddSingleton(msalApp);
+        await using var provider = services.BuildServiceProvider();
+
+        var scope = Substitute.For<IServiceScope>();
+        scope.ServiceProvider.Returns(provider);
+
+        var scopeFactory = Substitute.For<IServiceScopeFactory>();
+        scopeFactory.CreateScope().Returns(scope);
+
+        var worker = new ConnectorExecutionWorker(scopeFactory, CreateOptions(), logger);
+
+        var cts = new CancellationTokenSource();
+        await worker.StartAsync(cts.Token);
+        await Task.Delay(200);
+        cts.Cancel();
+        await worker.StopAsync(CancellationToken.None);
+
+        // No adapters should run — no cached accounts to iterate
+        Assert.Equal(0, adapter.ExecuteCount);
+        // Warning-level entries expected (no cached user per adapter)
+        Assert.Contains(logger.Entries, entry => entry.Level is Microsoft.Extensions.Logging.LogLevel.Warning);
+        // No error-level entries should appear
+        Assert.DoesNotContain(logger.Entries, entry => entry.Level is Microsoft.Extensions.Logging.LogLevel.Error);
     }
 
     [Fact]
@@ -385,6 +488,47 @@ public class ConnectorExecutionWorkerTests
         {
             _onExecute(request.Identity);
             return Task.FromResult(new ConnectorExecutionResult(request.Identity, 1, ConnectorExecutionStatus.Success));
+        }
+    }
+
+    private sealed class OidCollectingAdapter : IConnectorAdapter
+    {
+        public string ConnectorName => "teams";
+
+        public List<string?> ObservedOids { get; } = [];
+
+        public Task<ConnectorExecutionResult> ExecuteAsync(ConnectorExecutionRequest request, CancellationToken ct)
+        {
+            ObservedOids.Add(request.Identity.UserOid);
+            return Task.FromResult(new ConnectorExecutionResult(request.Identity, 1, ConnectorExecutionStatus.Success));
+        }
+    }
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            Microsoft.Extensions.Logging.LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            Entries.Add((logLevel, formatter(state, exception)));
+        }
+    }
+
+    private sealed class NullScope : IDisposable
+    {
+        public static readonly NullScope Instance = new();
+
+        public void Dispose()
+        {
         }
     }
 }

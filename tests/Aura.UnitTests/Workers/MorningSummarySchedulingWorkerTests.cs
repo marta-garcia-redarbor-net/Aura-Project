@@ -1,6 +1,7 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
 using Aura.Workers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -24,7 +25,9 @@ public class MorningSummarySchedulingWorkerTests
         scheduler.ResolveAsync("system", Arg.Any<CancellationToken>())
             .Returns(dueState);
 
-        var worker = new MorningSummarySchedulingWorker(scheduler, store, composer, NullLogger<MorningSummarySchedulingWorker>.Instance);
+        var worker = new MorningSummarySchedulingWorker(
+            CreateScopeFactory(scheduler, store, composer),
+            NullLogger<MorningSummarySchedulingWorker>.Instance);
 
         await worker.ProcessIterationAsync(CancellationToken.None);
 
@@ -46,7 +49,9 @@ public class MorningSummarySchedulingWorkerTests
                 LocalDate: new DateOnly(2026, 6, 23),
                 TargetLocalTime: new TimeOnly(9, 0)));
 
-        var worker = new MorningSummarySchedulingWorker(scheduler, store, composer, NullLogger<MorningSummarySchedulingWorker>.Instance);
+        var worker = new MorningSummarySchedulingWorker(
+            CreateScopeFactory(scheduler, store, composer),
+            NullLogger<MorningSummarySchedulingWorker>.Instance);
 
         await worker.ProcessIterationAsync(CancellationToken.None);
 
@@ -69,7 +74,9 @@ public class MorningSummarySchedulingWorkerTests
         scheduler.ResolveAsync("system", Arg.Any<CancellationToken>())
             .Returns(dueState);
 
-        var worker = new MorningSummarySchedulingWorker(scheduler, store, composer, NullLogger<MorningSummarySchedulingWorker>.Instance);
+        var worker = new MorningSummarySchedulingWorker(
+            CreateScopeFactory(scheduler, store, composer),
+            NullLogger<MorningSummarySchedulingWorker>.Instance);
 
         await worker.ProcessIterationAsync(CancellationToken.None);
 
@@ -93,7 +100,9 @@ public class MorningSummarySchedulingWorkerTests
                 LocalDate: new DateOnly(2026, 6, 23),
                 TargetLocalTime: new TimeOnly(9, 0)));
 
-        var worker = new MorningSummarySchedulingWorker(scheduler, store, composer, NullLogger<MorningSummarySchedulingWorker>.Instance);
+        var worker = new MorningSummarySchedulingWorker(
+            CreateScopeFactory(scheduler, store, composer),
+            NullLogger<MorningSummarySchedulingWorker>.Instance);
 
         await worker.ProcessIterationAsync(CancellationToken.None);
 
@@ -121,7 +130,9 @@ public class MorningSummarySchedulingWorkerTests
         composer.ComposeAsync(Arg.Any<MorningSummaryRequest>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<Aura.Application.Models.MorningSummary>(new InvalidOperationException("Composition failed")));
 
-        var worker = new MorningSummarySchedulingWorker(scheduler, store, composer, NullLogger<MorningSummarySchedulingWorker>.Instance);
+        var worker = new MorningSummarySchedulingWorker(
+            CreateScopeFactory(scheduler, store, composer),
+            NullLogger<MorningSummarySchedulingWorker>.Instance);
 
         // Should not throw — composition failure is caught
         var exception = await Record.ExceptionAsync(() => worker.ProcessIterationAsync(CancellationToken.None));
@@ -129,5 +140,24 @@ public class MorningSummarySchedulingWorkerTests
 
         // Emission should still be marked despite composition failure
         await store.Received(1).MarkEmittedAsync("system", dueState.LocalDate, Arg.Any<CancellationToken>());
+}
+
+    private static IServiceScopeFactory CreateScopeFactory(
+        IMorningSummaryScheduler scheduler,
+        IMorningSummaryEmissionStore store,
+        IMorningSummaryComposer composer)
+    {
+        var serviceProvider = Substitute.For<IServiceProvider>();
+        serviceProvider.GetService(typeof(IMorningSummaryScheduler)).Returns(scheduler);
+        serviceProvider.GetService(typeof(IMorningSummaryEmissionStore)).Returns(store);
+        serviceProvider.GetService(typeof(IMorningSummaryComposer)).Returns(composer);
+
+        var scope = Substitute.For<IServiceScope>();
+        scope.ServiceProvider.Returns(serviceProvider);
+
+        var scopeFactory = Substitute.For<IServiceScopeFactory>();
+        scopeFactory.CreateScope().Returns(scope);
+
+        return scopeFactory;
     }
 }

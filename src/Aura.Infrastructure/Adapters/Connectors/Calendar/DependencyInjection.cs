@@ -34,7 +34,7 @@ internal static class DependencyInjection
         services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         services.AddScoped<CheckAndDispatchMeetingAlertsUseCase>();
 
-        if (!graphOptions.Enabled)
+        if (!graphOptions.IsProductionReady)
         {
             return services;
         }

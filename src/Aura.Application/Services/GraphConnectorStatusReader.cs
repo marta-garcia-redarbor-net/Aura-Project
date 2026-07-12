@@ -41,23 +41,19 @@ public sealed partial class GraphConnectorStatusReader : IGraphConnectorStatusRe
             return GraphConnectorState.Disabled;
         }
 
-        var hasTenant = IsPresent(settings.TenantId);
-        var hasClient = IsPresent(settings.ClientId);
+        var hasTenant = IsValidGuid(settings.TenantId);
+        var hasClient = IsValidGuid(settings.ClientId);
 
-        if (!hasTenant && !hasClient)
-        {
-            return GraphConnectorState.MissingConfig;
-        }
-
-        if (!hasTenant || !hasClient)
-        {
-            return GraphConnectorState.PartialConfig;
-        }
-
-        return GraphConnectorState.ValidConfig;
+        return hasTenant && hasClient
+            ? GraphConnectorState.ValidConfig
+            : GraphConnectorState.Disabled;
     }
 
     private static bool IsPresent(string? value) => !string.IsNullOrWhiteSpace(value);
+
+    private static bool IsValidGuid(string? value) =>
+        !string.IsNullOrWhiteSpace(value)
+        && Guid.TryParse(value, out _);
 
     private static partial class Log
     {

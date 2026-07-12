@@ -71,6 +71,22 @@ public class PrReviewConnectorAdapterTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WithoutProvider_DoesNotUseFixtures_ForAuthenticatedUser()
+    {
+        var buffer = Substitute.For<IWorkItemBuffer>();
+        var adapter = new PrReviewConnectorAdapter(
+            NullLogger<PrReviewConnectorAdapter>.Instance, buffer, new PrReviewWorkItemMapper());
+        var request = CreateRequest(userOid: "oid-auth-user");
+
+        var result = await adapter.ExecuteAsync(request, CancellationToken.None);
+
+        buffer.DidNotReceive().Enqueue(Arg.Any<Aura.Domain.WorkItems.WorkItem>());
+        Assert.Equal(0, result.ItemCount);
+        Assert.Equal(ConnectorExecutionStatus.Success, result.Status);
+        Assert.Equal(request.WindowEnd, result.MaxProcessedAt);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WithSourceProvider_UsesProviderInsteadOfFixtures()
     {
         var buffer = Substitute.For<IWorkItemBuffer>();
@@ -247,20 +263,21 @@ public class PrReviewConnectorAdapterTests
             new PrReviewWorkItemMapper(),
             () => fixtures);
 
-        await adapter.ExecuteAsync(CreateRequest(), CancellationToken.None);
+        await adapter.ExecuteAsync(CreateRequest(userOid: "oid-real-reviewer"), CancellationToken.None);
 
         Assert.Single(capturedItems);
         var item = capturedItems[0];
         Assert.Equal("Carlos Ruiz", item.Metadata[WorkItemSignalKeys.CanonicalSender]);
-        Assert.Equal("Carlos Ruiz", item.Metadata[WorkItemSignalKeys.TargetOwnerUserId]);
+        Assert.Equal("oid-real-reviewer", item.Metadata[WorkItemSignalKeys.TargetOwnerUserId]);
+        Assert.Equal("oid-real-reviewer", item.OwnerUserId);
         Assert.Equal("Ana López", item.Metadata[WorkItemSignalKeys.TargetResponsibleUserId]);
         Assert.Equal("True", item.Metadata[WorkItemSignalKeys.ActionNeededSignal]);
         Assert.Equal("Review me", item.Metadata[WorkItemSignalKeys.CanonicalSnippet]);
     }
 
-    private static ConnectorExecutionRequest CreateRequest() =>
+    private static ConnectorExecutionRequest CreateRequest(string? userOid = null) =>
         new(
-            new CheckpointIdentity("pr", "azdo", "acme"),
+            new CheckpointIdentity("pr", "azdo", "acme", userOid: userOid),
             new DateTimeOffset(2026, 07, 1, 00, 00, 00, TimeSpan.Zero),
             new DateTimeOffset(2026, 07, 1, 23, 59, 59, TimeSpan.Zero));
 }

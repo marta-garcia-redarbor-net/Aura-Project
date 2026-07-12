@@ -2,6 +2,9 @@ namespace Aura.Infrastructure.Adapters.Connectors.PrReview;
 
 internal sealed record PrReviewDto
 {
+    /// <summary>Owner oid for user-scoped persistence when available.</summary>
+    public string? UserOid { get; init; }
+
     /// <summary>Azure DevOps pull request ID.</summary>
     public int PullRequestId { get; init; }
 

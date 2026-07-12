@@ -15,17 +15,11 @@
             case "Disabled":
                 <p data-testid="graph-connector-state-disabled">Disabled — connector is explicitly turned off.</p>
                 break;
-            case "MissingConfig":
-                <p data-testid="graph-connector-state-missing">MissingConfig — tenant and client identifiers are missing.</p>
-                break;
-            case "PartialConfig":
-                <p data-testid="graph-connector-state-partial">PartialConfig — some required settings are still missing.</p>
-                break;
             case "ValidConfig":
                 <p data-testid="graph-connector-state-valid">ValidConfig — connector bootstrap configuration is complete.</p>
                 break;
             default:
-                <p data-testid="graph-connector-state-partial">PartialConfig — unrecognized state received.</p>
+                <p data-testid="graph-connector-state-disabled">Disabled — configuration incomplete or unrecognized state received.</p>
                 break;
         }
     }
@@ -42,7 +36,7 @@
         }
         catch
         {
-            _status = new GraphConnectorStatusResponse("PartialConfig");
+            _status = new GraphConnectorStatusResponse("Disabled");
         }
     }
 }

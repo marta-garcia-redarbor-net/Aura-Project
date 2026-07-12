@@ -121,6 +121,32 @@ public class TriggerSyncUseCaseTests
         await store.Received(2).SaveAsync(Arg.Any<Aura.Domain.WorkItems.WorkItem>(), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WithUserOid_PropagatesOidToConnectorExecutionRequest()
+    {
+        var adapter = Substitute.For<IConnectorAdapter>();
+        adapter.ConnectorName.Returns("outlook");
+
+        CheckpointIdentity? capturedIdentity = null;
+        adapter.ExecuteAsync(Arg.Any<ConnectorExecutionRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                capturedIdentity = callInfo.Arg<ConnectorExecutionRequest>().Identity;
+                return Task.FromResult(new ConnectorExecutionResult(
+                    capturedIdentity,
+                    1,
+                    ConnectorExecutionStatus.Success));
+            });
+
+        var syncStateStore = Substitute.For<ISyncStateStore>();
+        var useCase = CreateUseCase([adapter], syncStateStore);
+
+        await useCase.ExecuteAsync("oid-test-1", CancellationToken.None);
+
+        Assert.NotNull(capturedIdentity);
+        Assert.Equal("oid-test-1", capturedIdentity!.UserOid);
+    }
+
     private static IConnectorAdapter CreateAdapter(string name, ConnectorExecutionStatus status, int itemCount, string? failureReason = null)
     {
         var adapter = Substitute.For<IConnectorAdapter>();

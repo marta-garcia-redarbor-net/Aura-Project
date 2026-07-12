@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Concurrent;
@@ -7,6 +9,7 @@ using System.Text;
 using Aura.Api;
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,11 +17,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Aura.IntegrationTests.GraphConnector;
 
 public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker>>
 {
+    private const string TestEntraIssuer = "https://login.microsoftonline.com/test-tenant/v2.0";
+    private const string TestEntraAudience = "api://aura-api";
+    private const string TestEntraSigningKey = "aura-integration-entra-signing-key-32+";
+    private const string TestEntraObjectId = "entra-user-001";
+    private const string TestEntraTenantId = "entra-tenant-001";
+
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() }
@@ -54,10 +64,20 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Fact]
+    public async Task GetGraphConnectorStatus_WithMockToken_Returns401()
+    {
+        var client = _factory.CreateClient();
+        var token = await GetMockTokenAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync("/api/connectors/graph/status");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     [Theory]
     [InlineData(GraphConnectorState.Disabled)]
-    [InlineData(GraphConnectorState.MissingConfig)]
-    [InlineData(GraphConnectorState.PartialConfig)]
     [InlineData(GraphConnectorState.ValidConfig)]
     public async Task GetGraphConnectorStatus_WithToken_Returns200WithState(GraphConnectorState expectedState)
     {
@@ -91,8 +111,8 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         var client = CreateAuthenticatedClientWithConfiguration((builder, _) =>
         {
             builder.UseSetting("GraphConnector:Enabled", "false");
-            builder.UseSetting("GraphConnector:TenantId", "tenant");
-            builder.UseSetting("GraphConnector:ClientId", "client");
+            builder.UseSetting("GraphConnector:TenantId", "11111111-1111-1111-1111-111111111111");
+            builder.UseSetting("GraphConnector:ClientId", "22222222-2222-2222-2222-222222222222");
             builder.UseSetting("GraphConnector:ClientSecret", "secret");
         });
 
@@ -118,8 +138,8 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
 {
   "GraphConnector": {
     "Enabled": true,
-    "TenantId": "tenant-from-appsettings",
-    "ClientId": "client-from-appsettings",
+    "TenantId": "11111111-1111-1111-1111-111111111111",
+    "ClientId": "22222222-2222-2222-2222-222222222222",
     "ClientSecret": "secret-from-appsettings"
   }
 }
@@ -131,13 +151,14 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
             {
                 builder.UseContentRoot(tempDirectory);
                 builder.UseSetting("ConnectionStrings:Aura", "Data Source=aura.db;Pooling=False");
+                builder.ConfigureTestServices(ConfigureTestEntraIdAuthentication);
                 builder.ConfigureAppConfiguration((_, configBuilder) =>
                 {
                     configBuilder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
                 });
             });
             var client = factory.CreateClient();
-            var token = await GetMockTokenAsync(client);
+            var token = GenerateEntraToken();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var response = await client.GetAsync("/api/connectors/graph/status");
@@ -178,8 +199,8 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         var secretKey = $"{envPrefix}GraphConnector__ClientSecret";
 
         Environment.SetEnvironmentVariable(enabledKey, "true");
-        Environment.SetEnvironmentVariable(tenantKey, "tenant-from-environment");
-        Environment.SetEnvironmentVariable(clientKey, "client-from-environment");
+        Environment.SetEnvironmentVariable(tenantKey, "11111111-1111-1111-1111-111111111111");
+        Environment.SetEnvironmentVariable(clientKey, "22222222-2222-2222-2222-222222222222");
         Environment.SetEnvironmentVariable(secretKey, "secret-from-environment");
 
         try
@@ -222,8 +243,8 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         var client = CreateAuthenticatedClientWithConfiguration((builder, _) =>
         {
             builder.UseSetting("GraphConnector:Enabled", "true");
-            builder.UseSetting("GraphConnector:TenantId", "tenant-a");
-            builder.UseSetting("GraphConnector:ClientId", "client-a");
+            builder.UseSetting("GraphConnector:TenantId", "11111111-1111-1111-1111-111111111111");
+            builder.UseSetting("GraphConnector:ClientId", "22222222-2222-2222-2222-222222222222");
             builder.UseSetting("GraphConnector:ClientSecret", "secret-a");
         });
 
@@ -240,12 +261,13 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         {
             builder.ConfigureTestServices(services =>
             {
+                ConfigureTestEntraIdAuthentication(services);
                 services.AddSingleton<IGraphConnectorStatusReader>(new StubGraphConnectorStatusReader(status));
             });
         });
 
         var client = factory.CreateClient();
-        var token = GetMockTokenAsync(client).GetAwaiter().GetResult();
+        var token = GenerateEntraToken();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
@@ -255,13 +277,62 @@ public class GraphConnectorStatusEndpointTests : IClassFixture<WebApplicationFac
         var options = new WebApplicationFactoryClientOptions();
         var factory = _factory.WithWebHostBuilder(builder =>
         {
+            builder.ConfigureTestServices(ConfigureTestEntraIdAuthentication);
             configure(builder, options);
         });
 
         var client = factory.CreateClient(options);
-        var token = GetMockTokenAsync(client).GetAwaiter().GetResult();
+        var token = GenerateEntraToken();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
+    }
+
+    private static void ConfigureTestEntraIdAuthentication(IServiceCollection services)
+    {
+        services.PostConfigure<JwtBearerOptions>("EntraId", options =>
+        {
+            options.MetadataAddress = null;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = TestEntraIssuer,
+                ValidateAudience = true,
+                ValidAudience = TestEntraAudience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestEntraSigningKey)),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+        });
+    }
+
+    private static string GenerateEntraToken()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestEntraSigningKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var header = new JwtHeader(credentials)
+        {
+            { "kid", "integration-test-kid" }
+        };
+
+        var now = DateTime.UtcNow;
+        var claims = new[]
+        {
+            new Claim("oid", TestEntraObjectId),
+            new Claim("tid", TestEntraTenantId),
+            new Claim(ClaimTypes.NameIdentifier, TestEntraObjectId)
+        };
+
+        var payload = new JwtPayload(
+            issuer: TestEntraIssuer,
+            audience: TestEntraAudience,
+            claims: claims,
+            notBefore: now.AddMinutes(-1),
+            expires: now.AddMinutes(30),
+            issuedAt: now);
+
+        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(header, payload));
     }
 
     private static async Task<string> GetMockTokenAsync(HttpClient client)

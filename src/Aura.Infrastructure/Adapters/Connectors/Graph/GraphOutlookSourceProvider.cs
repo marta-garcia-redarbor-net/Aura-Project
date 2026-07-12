@@ -36,10 +36,13 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        var userOid = request.Identity.UserOid ?? "default";
+        Log.OutlookFetchStarted(_logger, userOid, "outlook", "me/mailFolders/inbox/messages");
+
         GraphServiceClient client;
         try
         {
-            client = await _clientFactory.CreateClientAsync(request.Identity.UserOid ?? "default", ct);
+            client = await _clientFactory.CreateClientAsync(userOid, ct);
             s_tokenAcquired.Add(1, new KeyValuePair<string, object?>("connector", "outlook"));
         }
         catch (Microsoft.Identity.Client.MsalUiRequiredException)
@@ -99,7 +102,7 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
 
         if (messages?.Value is null || messages.Value.Count == 0)
         {
-            Log.NoOutlookMessages(_logger);
+            Log.NoOutlookMessages(_logger, userOid, "outlook");
             return [];
         }
 
@@ -125,19 +128,23 @@ internal sealed partial class GraphOutlookSourceProvider : IMessageSourceProvide
             results.Add(dto);
         }
 
-        Log.OutlookFetched(_logger, results.Count);
+        Log.OutlookFetched(_logger, results.Count, userOid, "outlook");
         return results;
     }
 
     private static partial class Log
     {
         [LoggerMessage(EventId = 3303, Level = LogLevel.Information,
-            Message = "GraphOutlookSourceProvider fetched {Count} emails")]
-        public static partial void OutlookFetched(ILogger logger, int count);
+            Message = "GraphOutlookSourceProvider fetched {Count} emails for oid={Oid} connector={Connector}")]
+        public static partial void OutlookFetched(ILogger logger, int count, string oid, string connector);
 
         [LoggerMessage(EventId = 3304, Level = LogLevel.Information,
-            Message = "GraphOutlookSourceProvider returned zero emails from Graph API")]
-        public static partial void NoOutlookMessages(ILogger logger);
+            Message = "GraphOutlookSourceProvider returned zero emails from Graph API for oid={Oid} connector={Connector}")]
+        public static partial void NoOutlookMessages(ILogger logger, string oid, string connector);
+
+        [LoggerMessage(EventId = 3305, Level = LogLevel.Information,
+            Message = "GraphOutlookSourceProvider fetch started for oid={Oid} connector={Connector} endpoint={Endpoint}")]
+        public static partial void OutlookFetchStarted(ILogger logger, string oid, string connector, string endpoint);
 
         [LoggerMessage(EventId = 3307, Level = LogLevel.Warning,
             Message = "GraphOutlookSourceProvider token expired for oid={Oid} connector={Connector}. Re-authentication required.")]

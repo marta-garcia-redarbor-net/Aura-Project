@@ -25,6 +25,12 @@ internal sealed class MsalSqliteTokenCache
                 Data BLOB NOT NULL,
                 UpdatedAt TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS MsalUserIndex (
+                Oid TEXT PRIMARY KEY,
+                AccountId TEXT NOT NULL,
+                UpdatedAt TEXT NOT NULL
+            );
             """;
         cmd.ExecuteNonQuery();
     }
@@ -72,5 +78,61 @@ internal sealed class MsalSqliteTokenCache
         cmd.Parameters.AddWithValue("@CacheKey", cacheKey);
 
         return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+    }
+
+    /// <summary>Persists oid -> MSAL account identifier mapping for partitioned account resolution.</summary>
+    public void PersistUserAccount(string oid, string accountId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(oid);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO MsalUserIndex (Oid, AccountId, UpdatedAt)
+            VALUES (@Oid, @AccountId, @UpdatedAt)
+            ON CONFLICT(Oid) DO UPDATE SET
+                AccountId = excluded.AccountId,
+                UpdatedAt = excluded.UpdatedAt;
+            """;
+        cmd.Parameters.AddWithValue("@Oid", oid);
+        cmd.Parameters.AddWithValue("@AccountId", accountId);
+        cmd.Parameters.AddWithValue("@UpdatedAt", DateTimeOffset.UtcNow.ToString("O"));
+        cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>Resolves the cached MSAL account identifier for an oid, if present.</summary>
+    public string? GetAccountIdByOid(string oid)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(oid);
+
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT AccountId FROM MsalUserIndex WHERE Oid = @Oid";
+        cmd.Parameters.AddWithValue("@Oid", oid);
+
+        var result = cmd.ExecuteScalar();
+        return result as string;
+    }
+
+    /// <summary>Lists all cached user oids in the token-cache user index.</summary>
+    public IReadOnlyList<string> ListUserOids()
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT Oid FROM MsalUserIndex ORDER BY Oid";
+
+        using var reader = cmd.ExecuteReader();
+        var result = new List<string>();
+        while (reader.Read())
+        {
+            if (!reader.IsDBNull(0))
+            {
+                var oid = reader.GetString(0);
+                if (!string.IsNullOrWhiteSpace(oid))
+                {
+                    result.Add(oid);
+                }
+            }
+        }
+
+        return result;
     }
 }

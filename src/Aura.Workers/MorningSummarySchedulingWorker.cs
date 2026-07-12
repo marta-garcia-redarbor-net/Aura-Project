@@ -1,5 +1,6 @@
 using Aura.Application.Models;
 using Aura.Application.Ports;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Aura.Workers;
@@ -9,25 +10,17 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
     private const string SystemUserId = "system";
     private static readonly TimeSpan PollingInterval = TimeSpan.FromMinutes(1);
 
-    private readonly IMorningSummaryScheduler _scheduler;
-    private readonly IMorningSummaryEmissionStore _emissionStore;
-    private readonly IMorningSummaryComposer _composer;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<MorningSummarySchedulingWorker> _logger;
 
     public MorningSummarySchedulingWorker(
-        IMorningSummaryScheduler scheduler,
-        IMorningSummaryEmissionStore emissionStore,
-        IMorningSummaryComposer composer,
+        IServiceScopeFactory scopeFactory,
         ILogger<MorningSummarySchedulingWorker> logger)
     {
-        ArgumentNullException.ThrowIfNull(scheduler);
-        ArgumentNullException.ThrowIfNull(emissionStore);
-        ArgumentNullException.ThrowIfNull(composer);
+        ArgumentNullException.ThrowIfNull(scopeFactory);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _scheduler = scheduler;
-        _emissionStore = emissionStore;
-        _composer = composer;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -58,7 +51,13 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
 
     internal async Task ProcessIterationAsync(CancellationToken ct)
     {
-        var due = await _scheduler.ResolveAsync(SystemUserId, ct);
+        using var scope = _scopeFactory.CreateScope();
+
+        var scheduler = scope.ServiceProvider.GetRequiredService<IMorningSummaryScheduler>();
+        var emissionStore = scope.ServiceProvider.GetRequiredService<IMorningSummaryEmissionStore>();
+        var composer = scope.ServiceProvider.GetRequiredService<IMorningSummaryComposer>();
+
+        var due = await scheduler.ResolveAsync(SystemUserId, ct);
 
         if (!due.IsDue)
         {
@@ -66,7 +65,7 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
             return;
         }
 
-        await _emissionStore.MarkEmittedAsync(SystemUserId, due.LocalDate, ct);
+        await emissionStore.MarkEmittedAsync(SystemUserId, due.LocalDate, ct);
         Log.MarkedEmitted(_logger, SystemUserId, due.LocalDate, due.ResolvedTimezoneId);
 
         try
@@ -78,7 +77,7 @@ public sealed partial class MorningSummarySchedulingWorker : BackgroundService
                 DateTimeOffset.UtcNow);
 
             var request = new MorningSummaryRequest(SystemUserId, window);
-            await _composer.ComposeAsync(request, ct);
+            await composer.ComposeAsync(request, ct);
             Log.CompositionSucceeded(_logger, SystemUserId, due.LocalDate);
         }
         catch (Exception ex)
