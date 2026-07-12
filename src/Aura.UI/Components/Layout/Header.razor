@@ -3,19 +3,12 @@
 <header class="dashboard-header" data-testid="dashboard-header">
     <div class="dashboard-header__identity">
         <span class="dashboard-header__brand">Aura</span>
-        <nav class="dashboard-header__nav">
-            <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
-                    data-testid="header-top-priority-counter"
-                    @onclick="NavigateToTopPriority"
-                    title="Open top priority queue">
-                Top priority queue
-            </button>
-        </nav>
+        <!-- Top priority queue nav entry removed for demo simplification.
+             Keep implementation for future re-enable. -->
     </div>
 
     <div class="dashboard-header__actions">
         <FocusStateBadge />
-        <span class="material-symbols-outlined dashboard-header__icon-btn">terminal</span>
         <span class="material-symbols-outlined dashboard-header__icon-btn">settings</span>
         @if (!string.IsNullOrEmpty(UserDisplayName))
         {
@@ -40,10 +33,8 @@
     [Parameter]
     public string Email { get; set; } = string.Empty;
 
+    // NavigationManager kept for future re-enable of Top Priority Queue link.
     [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-    private void NavigateToTopPriority()
-        => Navigation.NavigateTo("/top-priority");
 
     private void HandleSignOut()
     {

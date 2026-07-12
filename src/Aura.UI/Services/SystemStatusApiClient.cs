@@ -1,12 +1,16 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aura.UI.Models;
 
 namespace Aura.UI.Services;
 
 public sealed class SystemStatusApiClient : ISystemStatusApiClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
     private readonly HttpClient _httpClient;
 
     public SystemStatusApiClient(HttpClient httpClient)

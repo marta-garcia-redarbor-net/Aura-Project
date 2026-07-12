@@ -42,6 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract version from branch
+        shell: bash
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          VERSION="${BRANCH#release/aura/}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -59,6 +66,7 @@ jobs:
           TAG="${{ github.event.inputs.imageTag || github.sha }}"
           docker build \
             -f ${{ matrix.dockerfile }} \
+            --build-arg VERSION=$VERSION \
             -t $ACR/${{ matrix.service }}:$TAG \
             -t $ACR/${{ matrix.service }}:latest \
             .

@@ -12,4 +12,6 @@ public sealed record SystemIndicatorResponse(SystemIndicatorStateResponse State,
 public sealed record SystemStatusResponse(
     SystemIndicatorResponse Api,
     SystemIndicatorResponse Qdrant,
-    SystemIndicatorResponse MockAuth);
+    SystemIndicatorResponse MockAuth,
+    SystemIndicatorResponse Database,
+    SystemIndicatorResponse Llm);

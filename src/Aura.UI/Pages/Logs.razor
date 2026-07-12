@@ -1,0 +1,108 @@
+@page "/logs"
+@using Aura.UI.Components.Auth
+@using Aura.UI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ISystemStatusApiClient SystemStatusApiClient
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Error Logs</PageTitle>
+
+        <div class="dashboard-page-header">
+            <div>
+                <h1 class="dashboard-page-header__title">Error Logs</h1>
+                <p class="dashboard-page-header__subtitle">Recent application errors recorded by the middleware.</p>
+            </div>
+            @if (_errors is { Count: > 0 })
+            {
+                <span class="dashboard-page-header__badge dashboard-page-header__badge--live">
+                    <span class="dashboard-page-header__badge-dot"></span>
+                    @_errors.Count ERROR@(_errors.Count == 1 ? "" : "S")
+                </span>
+            }
+        </div>
+
+        @if (_loadError is not null)
+        {
+            <section class="dashboard-panel dashboard-panel--error" data-testid="logs-error">
+                <p role="alert">@_loadError</p>
+                <button class="decision-log__retry" @onclick="LoadAsync">Retry</button>
+            </section>
+        }
+        else if (_errors is null)
+        {
+            <section class="dashboard-panel dashboard-panel--loading" data-testid="logs-loading">
+                <p>Loading error logs...</p>
+            </section>
+        }
+        else if (_errors.Count == 0)
+        {
+            <section class="dashboard-panel" data-testid="logs-empty">
+                <div class="dashboard-card__empty-state" style="text-align:center;padding:2rem;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--aura-status-healthy);opacity:0.8;">check_circle</span>
+                    <h3 style="margin:0.5rem 0 0.25rem;">No recent errors</h3>
+                    <p style="color:var(--aura-on-surface-variant);">The application has been running without errors.</p>
+                </div>
+            </section>
+        }
+        else
+        {
+            <section class="dashboard-panel" data-testid="logs-populated">
+                <table class="decision-log-table" data-testid="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Correlation ID</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var error in _errors)
+                        {
+                            <tr class="decision-log-table__row" data-testid="logs-row">
+                                <td style="white-space:nowrap;font-family:var(--aura-font-code);font-size:12px;">
+                                    @error.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                </td>
+                                <td style="font-family:var(--aura-font-code);font-size:11px;color:var(--aura-on-surface-variant);">
+                                    @error.CorrelationId
+                                </td>
+                                <td style="color:var(--aura-error);">
+                                    @error.Message
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RedirectToLanding />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<ErrorEntryDto>? _errors;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadError = null;
+        _errors = null;
+
+        try
+        {
+            _errors = await SystemStatusApiClient.GetRecentErrorsAsync(CancellationToken.None);
+        }
+        catch
+        {
+            _loadError = "Error logs are currently unavailable.";
+        }
+    }
+}

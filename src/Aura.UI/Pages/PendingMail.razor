@@ -34,7 +34,13 @@
         }
         else if (_items.Count == 0)
         {
-            <p class="source-feed-panel__empty">No pending mail.</p>
+            <section class="dashboard-panel" data-testid="pending-mail-empty">
+                <div class="dashboard-card__empty-state" style="text-align:center;padding:2rem;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--aura-status-healthy);opacity:0.8;">mail</span>
+                    <h3 style="margin:0.5rem 0 0.25rem;">Inbox zero</h3>
+                    <p style="color:var(--aura-on-surface-variant);">No pending emails require attention right now.</p>
+                </div>
+            </section>
         }
         else
         {

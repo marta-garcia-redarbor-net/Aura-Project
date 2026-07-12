@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG TARGETARCH=amd64
+ARG VERSION=0.0.0-local
 WORKDIR /src
 
 # Copy solution and project files for restore caching
@@ -13,7 +14,7 @@ RUN dotnet restore -a $TARGETARCH src/Aura.UI/Aura.UI.csproj
 
 # Copy source and build
 COPY src/ src/
-RUN dotnet publish src/Aura.UI/Aura.UI.csproj -c Release -a $TARGETARCH -o /app/publish --no-restore
+RUN dotnet publish src/Aura.UI/Aura.UI.csproj -c Release -a $TARGETARCH -o /app/publish --no-restore -p:Version=$VERSION
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 ENV ASPNETCORE_URLS=http://+:8080

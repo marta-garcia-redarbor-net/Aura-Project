@@ -34,7 +34,13 @@
         }
         else if (_events.Count == 0)
         {
-            <p class="source-feed-panel__empty">No events scheduled for today.</p>
+            <section class="dashboard-panel" data-testid="calendar-day-empty">
+                <div class="dashboard-card__empty-state" style="text-align:center;padding:2rem;">
+                    <span class="material-symbols-outlined" style="font-size:48px;color:var(--aura-status-healthy);opacity:0.8;">event_available</span>
+                    <h3 style="margin:0.5rem 0 0.25rem;">No events scheduled for today</h3>
+                    <p style="color:var(--aura-on-surface-variant);">Your calendar is clear. New meetings will appear here automatically.</p>
+                </div>
+            </section>
         }
         else
         {

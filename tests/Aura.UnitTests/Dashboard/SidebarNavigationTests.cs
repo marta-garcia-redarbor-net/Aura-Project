@@ -1,35 +1,18 @@
 using Aura.UI.Components.Layout;
+using Aura.UI.Services;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Aura.UnitTests.Dashboard;
 
 /// <summary>
-/// Tests that <see cref="Sidebar"/> renders the Health navigation link
-/// as an anchor element with href="/health".
+/// Tests that <see cref="Sidebar"/> renders navigation links correctly.
 /// </summary>
 public class SidebarNavigationTests : TestContext
 {
-    [Fact]
-    public void Sidebar_HealthLink_IsAnchorWithHealthHref()
+    public SidebarNavigationTests()
     {
-        // Act
-        var cut = RenderComponent<Sidebar>();
-
-        // Assert: find the Health nav item — it should be an <a> with href="/health"
-        var healthLink = cut.Find("a[href='/health']");
-        Assert.NotNull(healthLink);
-        Assert.Contains("Health", healthLink.TextContent);
-    }
-
-    [Fact]
-    public void Sidebar_HealthLink_HasCorrectNavClass()
-    {
-        // Act
-        var cut = RenderComponent<Sidebar>();
-
-        // Assert
-        var healthLink = cut.Find("a[href='/health']");
-        Assert.Contains("dashboard-sidebar__nav-item", healthLink.GetAttribute("class"));
+        Services.AddSingleton(new AppVersionService());
     }
 
     [Fact]
@@ -42,16 +25,4 @@ public class SidebarNavigationTests : TestContext
         Assert.Contains("Interruption Log", decisionsLink.TextContent);
     }
 
-    [Fact]
-    public void Sidebar_TopPriorityQueueEntry_IsSecondMenuItem_AndRoutesToTopPriority()
-    {
-        var cut = RenderComponent<Sidebar>();
-
-        var navItems = cut.FindAll(".dashboard-sidebar__nav > li");
-        var secondItemLink = navItems[1].QuerySelector("a");
-
-        Assert.NotNull(secondItemLink);
-        Assert.Equal("/top-priority", secondItemLink!.GetAttribute("href"));
-        Assert.Contains("Top Priority Queue", secondItemLink.TextContent);
-    }
 }

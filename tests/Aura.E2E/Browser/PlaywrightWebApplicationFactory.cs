@@ -78,7 +78,9 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
             new StubSystemStatusApiClient(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API healthy"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant operational"),
-                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Auth active"))));
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Auth active"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "DB healthy"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM healthy"))));
 
         builder.Services.AddScoped<IModuleProgressApiClient>(_ =>
             new StubModuleProgressApiClient(new ModuleProgressResponse(
