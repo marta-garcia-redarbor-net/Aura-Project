@@ -342,7 +342,7 @@ public class PrioritySummaryCardsRenderingTests : TestContext
             {
                 EmptyIcon = "check_circle",
                 EmptyTitle = "Inbox Zero",
-                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptySubtitle = "Everything is optimal.",
                 EmptyLinkLabel = "View All Mentions"
             },
             new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",
@@ -359,7 +359,7 @@ public class PrioritySummaryCardsRenderingTests : TestContext
         Assert.NotNull(emptyState);
         Assert.Contains("check_circle", emptyState!.TextContent);
         Assert.Contains("Inbox Zero", emptyState.TextContent);
-        Assert.Contains("Everything is optimal. Your cognitive load is clear.", emptyState.TextContent);
+        Assert.Contains("Everything is optimal.", emptyState.TextContent);
     }
 
     [Fact]
@@ -463,7 +463,7 @@ public class PrioritySummaryCardsRenderingTests : TestContext
             {
                 EmptyIcon = "check_circle",
                 EmptyTitle = "Inbox Zero",
-                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptySubtitle = "Everything is optimal.",
                 EmptyLinkLabel = "View All Mentions"
             },
             new PrioritySummaryCard("Outlook", "mail", "outlook", "UNREAD", "items",

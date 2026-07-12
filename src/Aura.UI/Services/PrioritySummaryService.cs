@@ -158,7 +158,7 @@ public sealed class PrioritySummaryService : IPrioritySummaryService
             {
                 EmptyIcon = "check_circle",
                 EmptyTitle = "Inbox Zero",
-                EmptySubtitle = "Everything is optimal. Your cognitive load is clear.",
+                EmptySubtitle = "Everything is optimal.",
                 EmptyLinkLabel = "View All Mentions"
             },
             new PrioritySummaryCard(
