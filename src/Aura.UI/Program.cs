@@ -22,6 +22,7 @@ public static class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
+        builder.Services.AddSingleton<AppVersionService>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
         builder.Services.AddScoped<ForwardedAccessTokenHandler>();

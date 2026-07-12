@@ -1,7 +1,9 @@
+@inject Aura.UI.Services.AppVersionService AppVersion
+
 <aside class="dashboard-sidebar" data-testid="dashboard-sidebar" aria-label="Dashboard navigation">
     <div class="dashboard-sidebar__brand">
         <h2 class="dashboard-sidebar__title">Aura Core</h2>
-        <p class="dashboard-sidebar__version">v2.4.0-stable</p>
+        <p class="dashboard-sidebar__version">@AppVersion.DisplayVersion</p>
     </div>
 
     <nav>

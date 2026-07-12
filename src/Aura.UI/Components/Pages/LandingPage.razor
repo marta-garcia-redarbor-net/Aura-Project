@@ -6,6 +6,7 @@
 @attribute [AllowAnonymous]
 @layout AnonymousLayout
 @inject NavigationManager Navigation
+@inject Aura.UI.Services.AppVersionService AppVersion
 
 <PageTitle>Aura | Reclaim Your Deep Work</PageTitle>
 
@@ -13,7 +14,7 @@
 <header class="landing-header" data-testid="landing-header">
     <div class="landing-header__brand">
         <span class="landing-header__title">Aura</span>
-        <span class="landing-header__version">v2.4</span>
+        <span class="landing-header__version">@AppVersion.DisplayVersion</span>
     </div>
     <LoginButton ButtonText="Login / Access Aura" CssClass="landing-header__cta" DataTestId="landing-login-btn" />
 </header>
