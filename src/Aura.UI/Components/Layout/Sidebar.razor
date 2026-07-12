@@ -2,8 +2,6 @@
 
 <aside class="dashboard-sidebar" data-testid="dashboard-sidebar" aria-label="Dashboard navigation">
     <div class="dashboard-sidebar__brand">
-        <h2 class="dashboard-sidebar__title">Aura Core</h2>
-        <p class="dashboard-sidebar__version">@AppVersion.DisplayVersion</p>
     </div>
 
     <nav>
@@ -14,12 +12,8 @@
                     Dashboard
                 </NavLink>
             </li>
-            <li>
-                <NavLink class="dashboard-sidebar__nav-item" href="/top-priority" ActiveClass="dashboard-sidebar__nav-item--active">
-                    <span class="material-symbols-outlined dashboard-sidebar__nav-icon">priority_high</span>
-                    Top Priority Queue
-                </NavLink>
-            </li>
+            <!-- Top Priority Queue entry removed for demo simplification.
+                 Page and components kept for future re-enable. -->
             <li>
                 <NavLink class="dashboard-sidebar__nav-item" href="/teams" ActiveClass="dashboard-sidebar__nav-item--active">
                     <span class="material-symbols-outlined dashboard-sidebar__nav-icon">forum</span>
@@ -45,28 +39,10 @@
                 </NavLink>
             </li>
             <li>
-                <NavLink class="dashboard-sidebar__nav-item" href="/health" ActiveClass="dashboard-sidebar__nav-item--active">
-                    <span class="material-symbols-outlined dashboard-sidebar__nav-icon">monitor_heart</span>
-                    Health
-                </NavLink>
-            </li>
-            <li>
                 <NavLink class="dashboard-sidebar__nav-item" href="/triage/decisions" ActiveClass="dashboard-sidebar__nav-item--active">
                     <span class="material-symbols-outlined dashboard-sidebar__nav-icon">history</span>
                     Interruption Log
                 </NavLink>
-            </li>
-            <li>
-                <span class="dashboard-sidebar__nav-item">
-                    <span class="material-symbols-outlined dashboard-sidebar__nav-icon">account_tree</span>
-                    Modules
-                </span>
-            </li>
-            <li>
-                <span class="dashboard-sidebar__nav-item">
-                    <span class="material-symbols-outlined dashboard-sidebar__nav-icon">checklist</span>
-                    Tasks
-                </span>
             </li>
             <li>
                 <span class="dashboard-sidebar__nav-item">
@@ -76,4 +52,5 @@
             </li>
         </ul>
     </nav>
+    <small class="dashboard-sidebar__version">@AppVersion.DisplayVersion</small>
 </aside>

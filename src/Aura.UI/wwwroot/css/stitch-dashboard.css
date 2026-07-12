@@ -489,10 +489,24 @@ a {
     text-transform: uppercase;
     color: var(--aura-on-surface-variant);
     margin: 0;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--aura-border-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    flex-shrink: 0;
+}
+
+.dashboard-sidebar > nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .dashboard-sidebar__nav {
-    flex: 1;
     padding: 1rem;
     list-style: none;
     margin: 0;
@@ -2754,6 +2768,7 @@ a {
 .demo-new-badge {
     display: inline-flex;
     align-items: center;
+    margin-left: 6px;
     background: #ffc832;
     color: #1a1a2e;
     font-size: 0.65rem;
@@ -3188,7 +3203,7 @@ a {
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--aura-on-surface);
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.25rem;
 }
 
 .landing-problems__item-text {

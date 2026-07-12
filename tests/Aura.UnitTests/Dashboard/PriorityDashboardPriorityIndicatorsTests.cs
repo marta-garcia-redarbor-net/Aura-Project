@@ -3,7 +3,6 @@ using Aura.UI.Components.Dashboard;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,7 +94,7 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
     }
 
     [Fact]
-    public void Dashboard_HeaderReplacesLiveSyncWithTopPriorityCounter_AndNavigatesOnClick()
+    public void Dashboard_ShowsPendingAndHighPriorityBadge()
     {
         SetupServices(new DashboardPreviewResponse([], [])
         {
@@ -111,10 +110,5 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         Assert.Contains("9 pending", counter.TextContent);
         Assert.Contains("4 high priority", counter.TextContent);
         Assert.DoesNotContain("Live Sync", cut.Markup);
-
-        counter.Click();
-
-        var navManager = Services.GetRequiredService<NavigationManager>();
-        Assert.EndsWith("/top-priority", navManager.Uri, StringComparison.Ordinal);
     }
 }

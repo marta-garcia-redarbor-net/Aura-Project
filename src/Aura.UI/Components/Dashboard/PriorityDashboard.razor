@@ -4,7 +4,6 @@
 @using Aura.UI.Services
 @using System.Net.Http.Json
 @inject IDashboardPreviewApiClient DashboardPreviewApiClient
-@inject NavigationManager Navigation
 @inject IDashboardEventBus EventBus
 @inject IHttpClientFactory HttpClientFactory
 @implements IDisposable
@@ -41,20 +40,14 @@
                             Reset
                         </button>
                     }
-                    <button class="dashboard-header__nav-active dashboard-header__top-priority-link"
-                            data-testid="priority-dashboard-top-priority-counter"
-                            @onclick="NavigateToTopPriority"
-                            aria-label="Open top priority queue"
-                            title="Open top priority queue">
-                        <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
-                              data-testid="priority-dashboard-pending-badge">
-                            @_previewSummary?.TotalPendingCount pending
-                        </span>
+                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
+                          data-testid="priority-dashboard-top-priority-counter">
+                        @_previewSummary?.TotalPendingCount pending
                         <span class="dashboard-page-header__badge dashboard-page-header__badge--high"
                               data-testid="priority-dashboard-high-badge">
                             @_previewSummary?.HighPriorityCount high priority
                         </span>
-                    </button>
+                    </span>
                 </div>
             </div>
 
@@ -184,6 +177,4 @@
         EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
 
-    private void NavigateToTopPriority()
-        => Navigation.NavigateTo("/top-priority");
 }

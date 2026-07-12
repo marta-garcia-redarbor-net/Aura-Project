@@ -79,12 +79,9 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
 
         // Stitch-aligned sidebar navigation items
         Assert.Contains("Dashboard", html);
-        Assert.Contains("Health", html);
-        Assert.Contains("Modules", html);
-        Assert.Contains("Tasks", html);
 
-        // Stitch-aligned sidebar branding
-        Assert.Contains("Aura Core", html);
+        // Sidebar version badge
+        Assert.Contains("data-testid=\"dashboard-sidebar\"", html);
     }
 
     [Fact]

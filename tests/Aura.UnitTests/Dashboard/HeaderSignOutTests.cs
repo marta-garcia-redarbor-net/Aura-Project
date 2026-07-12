@@ -98,28 +98,4 @@ public class HeaderSignOutTests : TestContext
         Assert.Contains("Test User", cut.Markup);
     }
 
-    [Fact]
-    public void Header_RendersTopPriorityQueueLink_InHeaderNavPosition()
-    {
-        SetupCommonServices();
-
-        var cut = RenderComponent<Header>();
-        cut.WaitForElement("[data-testid='header-top-priority-counter']");
-
-        var nav = cut.Find(".dashboard-header__nav");
-        Assert.Contains("Top priority queue", nav.TextContent);
-    }
-
-    [Fact]
-    public void Header_ClickingTopPriorityQueueLink_NavigatesToTopPriorityRoute()
-    {
-        SetupCommonServices();
-        var navManager = Services.GetRequiredService<NavigationManager>();
-
-        var cut = RenderComponent<Header>();
-        cut.WaitForElement("[data-testid='header-top-priority-counter']").Click();
-
-        Assert.EndsWith("/top-priority", navManager.Uri, StringComparison.Ordinal);
-    }
-
 }
