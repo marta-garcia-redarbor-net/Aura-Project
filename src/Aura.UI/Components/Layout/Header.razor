@@ -19,7 +19,13 @@
         <span class="material-symbols-outlined dashboard-header__icon-btn">settings</span>
         @if (!string.IsNullOrEmpty(UserDisplayName))
         {
-            <span class="dashboard-header__user" data-testid="dashboard-header-user">@UserDisplayName</span>
+            <span class="dashboard-header__user" data-testid="dashboard-header-user">
+                @UserDisplayName
+                @if (!string.IsNullOrEmpty(Email) && !string.Equals(Email, UserDisplayName, StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="dashboard-header__email">@Email</span>
+                }
+            </span>
         }
         <button class="dashboard-header__icon-btn" @onclick="HandleSignOut" data-testid="sign-out-btn" title="Sign out">
             <span class="material-symbols-outlined">logout</span>
@@ -30,6 +36,9 @@
 @code {
     [Parameter]
     public string UserDisplayName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Email { get; set; } = string.Empty;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 

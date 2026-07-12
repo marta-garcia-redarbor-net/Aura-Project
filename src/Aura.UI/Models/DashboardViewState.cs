@@ -14,6 +14,8 @@ public sealed record DashboardViewState(
     IReadOnlyList<DashboardCardResponse> Cards,
     string Message)
 {
+    public string Email { get; init; } = string.Empty;
+
     public static DashboardViewState Loading()
         => new(
             DashboardViewStateKind.Loading,
@@ -34,11 +36,17 @@ public static class DashboardViewStateMapper
                 response.UserDisplayName,
                 [],
                 "No dashboard items are available yet.")
+            {
+                Email = response.Email
+            }
             : new DashboardViewState(
                 DashboardViewStateKind.Populated,
                 response.UserDisplayName,
                 response.Cards,
-                "Your initial dashboard summary is ready.");
+                "Your initial dashboard summary is ready.")
+            {
+                Email = response.Email
+            };
     }
 
     public static DashboardViewState FromError(Exception ex)

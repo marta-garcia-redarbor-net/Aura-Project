@@ -7,7 +7,7 @@
 @inject ILogger<MainLayoutAuthenticated> Logger
 
 <div class="dashboard-shell" data-testid="dashboard-shell">
-    <Header UserDisplayName="@_state.UserDisplayName" />
+    <Header UserDisplayName="@_state.UserDisplayName" Email="@_state.Email" />
     <Sidebar />
 
     <div class="dashboard-shell__content">

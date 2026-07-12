@@ -7,6 +7,9 @@ namespace Aura.Application.Models;
 /// <param name="Cards">Initial summary cards for the dashboard shell.</param>
 public sealed record InitialDashboardDto(string UserDisplayName, IReadOnlyList<DashboardCardDto> Cards)
 {
+    /// <summary>Current user email address.</summary>
+    public string Email { get; init; } = string.Empty;
+
     /// <summary>Total count of pending items.</summary>
     public int TotalPendingCount { get; init; }
 

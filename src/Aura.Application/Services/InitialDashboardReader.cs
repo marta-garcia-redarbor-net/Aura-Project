@@ -26,7 +26,10 @@ public sealed class InitialDashboardReader : IInitialDashboardReader
             userDisplayName = Normalize(currentUser?.Email);
         var cards = BuildCards(currentUser).ToArray();
 
-        return Task.FromResult(new InitialDashboardDto(userDisplayName, cards));
+        return Task.FromResult(new InitialDashboardDto(userDisplayName, cards)
+        {
+            Email = currentUser?.Email ?? ""
+        });
     }
 
     private static IEnumerable<DashboardCardDto> BuildCards(AuraUser? currentUser)
