@@ -53,6 +53,16 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         var previewClient = Substitute.For<IDashboardPreviewApiClient>();
         previewClient.GetPreviewAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(preview));
         Services.AddSingleton(previewClient);
+
+        var statusClient = Substitute.For<ISystemStatusApiClient>();
+        statusClient.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new SystemStatusResponse(
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "API ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "DB ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "MockAuth ok"))));
+        Services.AddSingleton(statusClient);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler

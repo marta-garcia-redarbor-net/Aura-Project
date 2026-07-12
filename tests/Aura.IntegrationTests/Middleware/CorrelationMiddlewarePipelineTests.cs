@@ -168,7 +168,9 @@ public class CorrelationMiddlewarePipelineTests : IClassFixture<WebApplicationFa
             => Task.FromResult(new SystemStatusDto(
                 new SystemIndicatorDto(SystemIndicatorState.Ok, "API OK"),
                 new SystemIndicatorDto(SystemIndicatorState.Ok, "Qdrant OK"),
-                new SystemIndicatorDto(SystemIndicatorState.Ok, "MockAuth OK")));
+                new SystemIndicatorDto(SystemIndicatorState.Ok, "MockAuth OK"),
+                new SystemIndicatorDto(SystemIndicatorState.Ok, "DB OK"),
+                new SystemIndicatorDto(SystemIndicatorState.Ok, "LLM OK")));
     }
 
     private sealed class ThrowingSystemStatusReader : ISystemStatusReader

@@ -1447,6 +1447,117 @@ a {
 }
 
 /* ==========================================================================
+   Status Greeting Card — compact horizontal bar at top of dashboard
+   Shows greeting + indicator dots for Overall, API, DB, Qdrant, LLM
+   ========================================================================== */
+
+.status-greeting-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    max-height: 60px;
+    padding: 0 1rem;
+    margin-bottom: var(--aura-gutter);
+    background: var(--aura-bg-surface);
+    border: 1px solid var(--aura-border-subtle);
+    border-radius: var(--aura-radius-xl);
+}
+
+.status-greeting-card__greeting {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--aura-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.status-greeting-card__badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* === Status Badges — Stitch Design ===
+   Each badge is a capsule with a subtle tinted background (15% opacity),
+   1px border of the status color, and a glowing dot next to the label.
+   ======================================================== */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Healthy — Emerald */
+.status-badge--healthy {
+    color: var(--aura-status-healthy);
+    border-color: var(--aura-status-healthy);
+    background: color-mix(in srgb, var(--aura-status-healthy) 15%, transparent);
+}
+
+/* Warning — Amber */
+.status-badge--warning {
+    color: var(--aura-status-warning);
+    border-color: var(--aura-status-warning);
+    background: color-mix(in srgb, var(--aura-status-warning) 15%, transparent);
+}
+
+/* Error — Red/error */
+.status-badge--error {
+    color: var(--aura-error);
+    border-color: var(--aura-error);
+    background: color-mix(in srgb, var(--aura-error) 15%, transparent);
+}
+
+/* Offline/Pending — Slate */
+.status-badge--offline {
+    color: var(--aura-status-offline);
+    border-color: var(--aura-status-offline);
+    background: color-mix(in srgb, var(--aura-status-offline) 15%, transparent);
+}
+
+/* Glowing dot inside each badge */
+.status-badge__dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-badge__dot--healthy {
+    background: var(--aura-status-healthy);
+    box-shadow: 0 0 6px var(--aura-status-healthy);
+}
+
+.status-badge__dot--warning {
+    background: var(--aura-status-warning);
+    box-shadow: 0 0 6px var(--aura-status-warning);
+}
+
+.status-badge__dot--error {
+    background: var(--aura-error);
+    box-shadow: 0 0 6px var(--aura-error);
+}
+
+.status-badge__dot--offline {
+    background: var(--aura-status-offline);
+}
+
+/* ==========================================================================
    Priority Summary Cards — grouped by priority level (Stitch card pattern)
    Each card: header (level + count), top 3 items, "View all" link
    ========================================================================== */

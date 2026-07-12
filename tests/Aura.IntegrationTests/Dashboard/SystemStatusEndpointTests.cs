@@ -50,7 +50,9 @@ public class SystemStatusEndpointTests : IClassFixture<WebApplicationFactory<Api
         var client = CreateAuthenticatedClient(new SystemStatusDto(
             new SystemIndicatorDto(SystemIndicatorState.Ok, "api ok"),
             new SystemIndicatorDto(SystemIndicatorState.Warning, "qdrant warn"),
-            new SystemIndicatorDto(SystemIndicatorState.Error, "auth err")));
+            new SystemIndicatorDto(SystemIndicatorState.Error, "auth err"),
+            new SystemIndicatorDto(SystemIndicatorState.Ok, "db ok"),
+            new SystemIndicatorDto(SystemIndicatorState.Ok, "llm ok")));
 
         var response = await client.GetAsync("/api/dashboard/system-status");
 
@@ -61,6 +63,10 @@ public class SystemStatusEndpointTests : IClassFixture<WebApplicationFactory<Api
         Assert.Equal("api ok", payload.Api.Microcopy);
         Assert.Equal(SystemIndicatorState.Warning, payload.Qdrant.State);
         Assert.Equal(SystemIndicatorState.Error, payload.MockAuth.State);
+        Assert.Equal(SystemIndicatorState.Ok, payload.Database.State);
+        Assert.Equal("db ok", payload.Database.Microcopy);
+        Assert.Equal(SystemIndicatorState.Ok, payload.Llm.State);
+        Assert.Equal("llm ok", payload.Llm.Microcopy);
     }
 
     [Theory]
@@ -73,7 +79,9 @@ public class SystemStatusEndpointTests : IClassFixture<WebApplicationFactory<Api
         var client = CreateAuthenticatedClient(new SystemStatusDto(
             new SystemIndicatorDto(SystemIndicatorState.Ok, "api ok"),
             new SystemIndicatorDto(SystemIndicatorState.Ok, "qdrant ok"),
-            new SystemIndicatorDto(SystemIndicatorState.Ok, "auth ok")));
+            new SystemIndicatorDto(SystemIndicatorState.Ok, "auth ok"),
+            new SystemIndicatorDto(SystemIndicatorState.Ok, "db ok"),
+            new SystemIndicatorDto(SystemIndicatorState.Ok, "llm ok")));
         var request = new HttpRequestMessage(new HttpMethod(method), "/api/dashboard/system-status");
 
         var response = await client.SendAsync(request);

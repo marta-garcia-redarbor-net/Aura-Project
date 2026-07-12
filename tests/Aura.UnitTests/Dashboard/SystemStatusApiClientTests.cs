@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aura.UI.Models;
 using Aura.UI.Services;
 
@@ -7,7 +8,10 @@ namespace Aura.UnitTests.Dashboard;
 
 public class SystemStatusApiClientTests
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     [Fact]
     public async Task GetStatusAsync_RequestsExpectedPath()
@@ -15,7 +19,9 @@ public class SystemStatusApiClientTests
         var payload = new SystemStatusResponse(
             new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
             new SystemIndicatorResponse(SystemIndicatorStateResponse.Warning, "warn"),
-            new SystemIndicatorResponse(SystemIndicatorStateResponse.Error, "err"));
+            new SystemIndicatorResponse(SystemIndicatorStateResponse.Error, "err"),
+            new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "db"),
+            new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"));
 
         var handler = new StubHandler(HttpStatusCode.OK, payload);
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.aura.test") };

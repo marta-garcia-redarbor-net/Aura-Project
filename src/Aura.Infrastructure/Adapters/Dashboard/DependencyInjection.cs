@@ -20,6 +20,8 @@ internal static class DependencyInjection
         services.AddScoped<IQdrantReadinessProvider, QdrantReadinessAdapter>();
         services.AddScoped<IMockAuthReadinessProvider, MockJwtOptionsReadinessAdapter>();
         services.AddScoped<IModuleProgressProvider, SeededModuleProgressProvider>();
+        services.AddScoped<IDbReadinessProvider, DbReadinessAdapter>();
+        services.AddScoped<ILlmReadinessProvider, LlmReadinessAdapter>();
 
         return services;
     }

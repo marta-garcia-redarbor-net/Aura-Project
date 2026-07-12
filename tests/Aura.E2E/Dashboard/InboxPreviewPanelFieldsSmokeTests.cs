@@ -241,6 +241,8 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
             => Task.FromResult(new SystemStatusResponse(
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
+                new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "ok")));
 
         public Task<List<ErrorEntryDto>> GetRecentErrorsAsync(CancellationToken ct)
