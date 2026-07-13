@@ -1,0 +1,185 @@
+@page "/observability"
+@using Aura.UI.Services
+@using Aura.UI.Components.Auth
+@using Aura.Infrastructure.Observability
+@using Microsoft.AspNetCore.Components.Authorization
+@inject TelemetryClient TelemetryClient
+@implements IAsyncDisposable
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Aura - Observability</PageTitle>
+
+        <div class="dashboard-page-header">
+            <h1 class="dashboard-page-header__title">Observability Dashboard</h1>
+            <p class="dashboard-page-header__subtitle">Real-time telemetry: logs, metrics, and traces</p>
+        </div>
+
+        <div class="observability-grid">
+            <!-- Log Panel -->
+            <section class="dashboard-panel">
+                <h2>Logs</h2>
+                <div class="log-table-container" style="max-height: 400px; overflow-y: auto;">
+                    <table class="decision-log-table">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Timestamp</th>
+                                <th>CorrelationId</th>
+                                <th>Message</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <Virtualize Items="@_logs" Context="log">
+                                <tr class="log-row log-row--@log.Level.ToString().ToLower()">
+                                    <td>@log.Level</td>
+                                    <td>@log.Timestamp.ToLocalTime().ToString("HH:mm:ss.fff")</td>
+                                    <td style="font-family: monospace; font-size: 11px;">@log.CorrelationId</td>
+                                    <td>@log.Message</td>
+                                    <td>@log.Source</td>
+                                </tr>
+                            </Virtualize>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Metrics Panel -->
+            <section class="dashboard-panel">
+                <h2>Metrics</h2>
+                <div class="metrics-grid">
+                    @foreach (var metric in _metrics)
+                    {
+                        <div class="metric-gauge">
+                            <div class="metric-gauge__name">@metric.Name</div>
+                            <div class="metric-gauge__value">@metric.Value.ToString("N0")</div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Trace Panel -->
+            <section class="dashboard-panel">
+                <h2>Traces</h2>
+                <table class="decision-log-table">
+                    <thead>
+                        <tr>
+                            <th>Operation</th>
+                            <th>Duration (ms)</th>
+                            <th>Start Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < _traces.Count; i++)
+                        {
+                            var span = _traces[i];
+                            var spanIndex = i;
+                            <tr class="trace-row" style="cursor: pointer;" @onclick="() => ToggleSpan(spanIndex)">
+                                <td>
+                                    <span class="trace-toggle">@(_expandedSpanIndex == spanIndex ? "▼" : "▶")</span>
+                                    @span.OperationName
+                                </td>
+                                <td>@span.DurationMs.ToString("N2")</td>
+                                <td>@span.StartTime.ToLocalTime().ToString("HH:mm:ss.fff")</td>
+                                <td>
+                                    <span class="status-badge status-badge--@span.Status.ToLower()">
+                                        @span.Status
+                                    </span>
+                                </td>
+                            </tr>
+                            @if (_expandedSpanIndex == spanIndex)
+                            {
+                                <tr class="trace-tags-row">
+                                    <td colspan="4">
+                                        <div class="trace-tags">
+                                            <strong>Tags:</strong>
+                                            @if (span.Tags.Count > 0)
+                                            {
+                                                <table class="trace-tags-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Key</th>
+                                                            <th>Value</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var tag in span.Tags)
+                                                        {
+                                                            <tr>
+                                                                <td style="font-family: monospace;">@tag.Key</td>
+                                                                <td>@tag.Value</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                            else
+                                            {
+                                                <span class="trace-no-tags">No tags</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Aura | Acceso Requerido</PageTitle>
+        <RedirectToLanding />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<LogRecordDto> _logs = [];
+    private IReadOnlyList<MetricSnapshotDto> _metrics = Array.Empty<MetricSnapshotDto>();
+    private IReadOnlyList<SpanDto> _traces = Array.Empty<SpanDto>();
+    private int? _expandedSpanIndex;
+
+    protected override async Task OnInitializedAsync()
+    {
+        TelemetryClient.LogsReceived += OnLogsReceived;
+        TelemetryClient.MetricsReceived += OnMetricsReceived;
+        TelemetryClient.TracesReceived += OnTracesReceived;
+
+        await TelemetryClient.StartAsync();
+    }
+
+    private void OnLogsReceived(IReadOnlyList<LogRecordDto> logs)
+    {
+        _logs = logs.ToList();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMetricsReceived(IReadOnlyList<MetricSnapshotDto> metrics)
+    {
+        _metrics = metrics;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnTracesReceived(IReadOnlyList<SpanDto> traces)
+    {
+        _traces = traces;
+        _expandedSpanIndex = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleSpan(int index)
+    {
+        _expandedSpanIndex = _expandedSpanIndex == index ? null : index;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        TelemetryClient.LogsReceived -= OnLogsReceived;
+        TelemetryClient.MetricsReceived -= OnMetricsReceived;
+        TelemetryClient.TracesReceived -= OnTracesReceived;
+
+        await TelemetryClient.DisposeAsync();
+    }
+}
