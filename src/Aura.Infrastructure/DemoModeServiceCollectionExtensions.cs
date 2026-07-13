@@ -34,7 +34,9 @@ public static class DemoModeServiceCollectionExtensions
             return services;
 
         services.TryAddScoped<ISemanticContextRetriever, QdrantFallbackSemanticContextRetriever>();
-        services.TryAddScoped<IDecisionContextRetriever, DemoDecisionContextRetriever>();
+        // Replaces QdrantDecisionContextAdapter so demo items show realistic
+        // synthetic semantic context without requiring Qdrant to be populated.
+        services.AddScoped<IDecisionContextRetriever, DemoDecisionContextRetriever>();
         services.AddScoped<ISemanticIndexWriter, QdrantFallbackSemanticIndexWriter>();
         services.AddScoped<DemoService>();
 
