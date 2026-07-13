@@ -48,6 +48,7 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         EnsureColumn(connection, "InterruptionDecisions", "LlmRationale", "TEXT");
         EnsureColumn(connection, "InterruptionDecisions", "GuardrailOutcome", "TEXT");
         EnsureColumn(connection, "InterruptionDecisions", "UserOid", "TEXT NULL");
+        EnsureColumn(connection, "InterruptionDecisions", "IsDemo", "TEXT");
     }
 
     public Task RecordAsync(InterruptionDecisionRecord record, CancellationToken cancellationToken = default)
@@ -57,8 +58,8 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid)
-            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState, @RetrievedSemanticContext, @LlmRationale, @GuardrailOutcome, @UserOid)
+            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid, IsDemo)
+            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState, @RetrievedSemanticContext, @LlmRationale, @GuardrailOutcome, @UserOid, @IsDemo)
             """;
         cmd.Parameters.AddWithValue("@Id", Guid.NewGuid().ToString());
         cmd.Parameters.AddWithValue("@WorkItemId", record.WorkItemId.ToString());
@@ -73,6 +74,7 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         cmd.Parameters.AddWithValue("@LlmRationale", (object?)record.LlmRationale ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@GuardrailOutcome", (object?)record.GuardrailOutcome ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@UserOid", (object?)record.UserOid ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@IsDemo", record.IsDemo ? "true" : "false");
         cmd.ExecuteNonQuery();
 
         return Task.CompletedTask;
@@ -101,14 +103,14 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = hasFilter
             ? """
-                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid
+                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid, IsDemo
                 FROM InterruptionDecisions
                 WHERE UserOid = @UserOid
                 ORDER BY Timestamp DESC
                 LIMIT @Limit OFFSET @Offset
                 """
             : """
-                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid
+                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid, IsDemo
                 FROM InterruptionDecisions
                 ORDER BY Timestamp DESC
                 LIMIT @Limit OFFSET @Offset
@@ -152,7 +154,8 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
             RetrievedSemanticContext: DeserializeContext(reader.IsDBNull(8) ? null : reader.GetString(8)),
             LlmRationale: reader.IsDBNull(9) ? null : reader.GetString(9),
             GuardrailOutcome: reader.IsDBNull(10) ? "confirmed" : reader.GetString(10),
-            UserOid: reader.IsDBNull(11) ? null : reader.GetString(11));
+            UserOid: reader.IsDBNull(11) ? null : reader.GetString(11),
+            IsDemo: reader.IsDBNull(12) ? false : reader.GetString(12) == "true");
     }
 
     private static string? SerializeContext(IReadOnlyList<DecisionContextItem>? context)

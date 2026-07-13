@@ -305,8 +305,9 @@ public sealed class DemoService
     }
 
     /// <summary>
-    /// Deletes ALL work items (not just demo-prefixed) and clears all decision records.
-    /// Used by the Reset button to leave the database completely empty for a fresh start.
+    /// Deletes demo-injected work items (OutlookEmail, TeamsMessage, PrReview)
+    /// and clears all decision records. Used by the Reset button.
+    /// Does NOT affect SystemMeeting or other non-demo source types.
     /// </summary>
     public async Task<string> DeleteDemoDataAsync(CancellationToken ct)
     {
@@ -368,6 +369,9 @@ public sealed class DemoService
         AddCanonicalSignal(metadata, WorkItemSignalKeys.TeamsSender, WorkItemSignalKeys.CanonicalSender);
         AddCanonicalSignal(metadata, WorkItemSignalKeys.OutlookSnippet, WorkItemSignalKeys.CanonicalSnippet);
         AddCanonicalSignal(metadata, WorkItemSignalKeys.TeamsSnippet, WorkItemSignalKeys.CanonicalSnippet);
+
+        // Mark as demo so the decision record carries the simulation flag
+        metadata[WorkItemSignalKeys.IsDemo] = "true";
 
         // Set action-needed and time-criticality signals for high/critical items so
         // the scoring engine can produce varied scores (40, 80, 100) instead of 0 or 100.
