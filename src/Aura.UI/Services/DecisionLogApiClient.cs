@@ -19,6 +19,12 @@ public sealed class DecisionLogApiClient : IDecisionLogApiClient
         var url = $"/api/triage/decisions?page={page}&pageSize={pageSize}";
 
         using var response = await _httpClient.GetAsync(url, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedAccessException("Unauthorized when calling /api/triage/decisions");
+        }
+
         response.EnsureSuccessStatusCode();
 
         var payload = await response.Content.ReadFromJsonAsync<DecisionLogResponse>(SerializerOptions, cancellationToken);

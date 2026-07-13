@@ -34,7 +34,7 @@ public static class DemoModeServiceCollectionExtensions
             return services;
 
         services.TryAddScoped<ISemanticContextRetriever, QdrantFallbackSemanticContextRetriever>();
-        services.TryAddScoped<IDecisionContextRetriever, NullDecisionContextRetriever>();
+        services.TryAddScoped<IDecisionContextRetriever, DemoDecisionContextRetriever>();
         services.AddScoped<ISemanticIndexWriter, QdrantFallbackSemanticIndexWriter>();
         services.AddScoped<DemoService>();
 

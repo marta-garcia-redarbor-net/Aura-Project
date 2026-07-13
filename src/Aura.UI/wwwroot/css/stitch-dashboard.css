@@ -860,6 +860,7 @@ a {
 
 .decision-log-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 13px;
 }
@@ -870,6 +871,26 @@ a {
     padding: 0.5rem;
     border-bottom: 1px solid var(--aura-border-subtle);
 }
+
+.decision-log-table th {
+    font-family: var(--aura-font-code);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--aura-on-surface-variant);
+    white-space: nowrap;
+}
+
+.decision-log-table__th--expand { width: 32px; }
+.decision-log-table__th--timestamp { width: 130px; }
+.decision-log-table__th--title { width: auto; }
+.decision-log-table__th--source { width: 100px; }
+.decision-log-table__th--score { width: 75px; }
+.decision-log-table__th--decision { width: 90px; }
+.decision-log-table__th--focus { width: 85px; }
+.decision-log-table__th--explanation { width: auto; }
+.decision-log-table__th--guardrail { width: 100px; }
 
 .decision-log-table__row {
     cursor: default;
@@ -891,17 +912,43 @@ a {
     list-style: none;
     padding: 0.5rem;
     cursor: pointer;
+    font-size: 13px;
 }
 
 .decision-trace__summary::-webkit-details-marker {
     display: none;
 }
 
-.decision-trace__summary-grid {
+.decision-trace__summary:hover {
+    background: var(--aura-surface-container-highest);
+}
+
+details[open] .decision-trace__col--chevron {
+    transform: rotate(90deg);
+}
+
+.decision-trace__grid {
     display: grid;
-    grid-template-columns: 10rem 1.8fr 0.9fr 0.8fr 0.8fr 1fr 2fr 1fr;
+    grid-template-columns: 32px 130px 1fr 100px 75px 90px 85px 1fr 100px;
     gap: 0.5rem;
-    align-items: start;
+    align-items: center;
+}
+
+.decision-trace__grid > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.decision-trace__col--chevron {
+    font-size: 10px;
+    color: var(--aura-on-surface-variant);
+    text-align: center;
+    transition: transform 0.15s;
+}
+
+.decision-trace__col--title {
+    font-weight: 600;
 }
 
 .decision-trace__panel {
@@ -1828,7 +1875,7 @@ a {
     font-size: 10px;
     line-height: 14px;
     letter-spacing: 0.03em;
-    color: var(--aura-on-surface-variant);
+    color: var(--aura-priority-high);
     background: rgba(148, 163, 184, 0.12);
     border: 1px solid rgba(148, 163, 184, 0.28);
     text-transform: lowercase;

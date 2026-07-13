@@ -30,8 +30,8 @@
                 {
                     <li data-testid="upcoming-meeting-item">
                         <strong data-testid="upcoming-meeting-title">@evt.Title</strong>
-                        <span data-testid="upcoming-meeting-start">@evt.StartUtc.ToString("HH:mm")</span>
-                        <span data-testid="upcoming-meeting-end">@evt.EndUtc.ToString("HH:mm")</span>
+                        <span data-testid="upcoming-meeting-start">@evt.StartUtc.ToLocalTime().ToString("hh:mm tt")</span>
+                        <span data-testid="upcoming-meeting-end">@evt.EndUtc.ToLocalTime().ToString("hh:mm tt")</span>
                         <span data-testid="upcoming-meeting-duration">@($"{(evt.EndUtc - evt.StartUtc).TotalMinutes} min")</span>
                         @if (evt.IsOnlineMeeting && evt.JoinUrl is not null)
                         {

@@ -8,6 +8,8 @@
 @inject ILogger<MainLayoutAuthenticated> Logger
 @inject DemoUiState DemoState
 @inject AuthenticationStateProvider AuthState
+@inject SessionExpiredService SessionExpired
+@inject NavigationManager Nav
 
 <div class="dashboard-shell" data-testid="dashboard-shell">
     <Header UserDisplayName="@_state.UserDisplayName" Email="@_state.Email" />
@@ -39,6 +41,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Redirect to landing when session expires (from any page)
+        SessionExpired.OnSessionExpired += () =>
+        {
+            // Must use InvokeAsync because this event can fire from non-UI threads
+            // (ForwardedAccessTokenHandler runs on the HTTP pipeline thread)
+            _ = InvokeAsync(() => Nav.NavigateTo("/logout", forceLoad: true));
+            return Task.CompletedTask;
+        };
+
         // Detect demo user and show wizard
         try
         {

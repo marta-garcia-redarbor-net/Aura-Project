@@ -57,7 +57,7 @@ public class MeetingAlertToastTests : TestContext
         // which triggers HubConnection.InvokeAsync("AcknowledgeAlert", alertId) when connected.
         var alertField = typeof(MeetingAlertToast).GetField("_currentAlert", 
             BindingFlags.NonPublic | BindingFlags.Instance);
-        alertField!.SetValue(cut.Instance, new MeetingAlertToast.MeetingAlertInfo
+        alertField!.SetValue(cut.Instance, new MeetingAlertToast.MeetingAlertPayload
         {
             Id = "alert-1",
             Title = "Team Standup",

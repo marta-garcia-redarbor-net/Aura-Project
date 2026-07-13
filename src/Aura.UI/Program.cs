@@ -196,6 +196,7 @@ public static class Program
         // PR Review connector — v1 mock client for Azure DevOps PRs
         builder.Services.AddScoped<IAzureDevOpsPrClient, AzureDevOpsPrClient>();
         builder.Services.AddScoped<DemoUiState>();
+        builder.Services.AddScoped<SessionExpiredService>();
 
         // Dev access token handler — only in development
         if (builder.Environment.IsDevelopment())

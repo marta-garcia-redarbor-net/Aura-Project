@@ -16,6 +16,20 @@ using System.Threading.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuraApplication();
+
+// Override SystemStatusReader with LLM model name from config
+builder.Services.AddScoped<ISystemStatusReader>(sp =>
+{
+    var modelName = builder.Configuration.GetSection("LlmAdvisor")["ModelId"];
+    return new Aura.Application.Services.SystemStatusReader(
+        sp.GetRequiredService<Aura.Application.Ports.IApiReadinessProvider>(),
+        sp.GetRequiredService<Aura.Application.Ports.IQdrantReadinessProvider>(),
+        sp.GetRequiredService<Aura.Application.Ports.IMockAuthReadinessProvider>(),
+        sp.GetRequiredService<Aura.Application.Ports.IDbReadinessProvider>(),
+        sp.GetRequiredService<Aura.Application.Ports.ILlmReadinessProvider>(),
+        modelName);
+});
+
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
 builder.Services.AddSignalR();

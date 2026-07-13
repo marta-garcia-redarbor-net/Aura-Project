@@ -6,6 +6,7 @@
 
 @inject IWorkItemsApiClient WorkItemsApiClient
 @inject ILogger<PendingMail> Logger
+@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
@@ -105,6 +106,10 @@
         {
             var items = await WorkItemsApiClient.GetBySourceAsync("OutlookEmail", "Pending", CancellationToken.None);
             _items = items.OrderByDescending(i => i.PriorityScore ?? int.MinValue).ThenByDescending(i => i.CapturedAtUtc).ToList();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/logout", forceLoad: true);
         }
         catch (Exception ex)
         {

@@ -14,13 +14,13 @@ public sealed class DemoService
 {
     private static readonly Random _rng = Random.Shared;
 
-    private static readonly string[] EmailSenders = ["finance@contoso.com", "arch-team@contoso.com", "pm@contoso.com", "hr@contoso.com", "devops@contoso.com", "security@contoso.com"];
-    private static readonly string[] TeamsSenders = ["alice@contoso.com", "bob@contoso.com", "carol@contoso.com", "dave@contoso.com", "eve@contoso.com"];
+    private static readonly string[] EmailSenders = ["Finance Team", "Architecture Team", "Project Manager", "HR Department", "DevOps", "Security Team"];
+    private static readonly string[] TeamsSenders = ["Alice Chen", "Bob Martinez", "Carol Silva", "Dave Kim", "Eve Johnson"];
     private static readonly string[] EmailSubjects = ["Q3 Budget Review", "Architecture Decision Record: Event Sourcing", "Weekly Status Update", "Updated onboarding docs", "Sprint retrospective notes", "Performance review feedback", "New feature proposal: dark mode", "Infrastructure cost report", "Client meeting follow-up", "Team building event"];
     private static readonly string[] TeamsSubjects = ["Please review PR #428", "Sprint planning reminder", "Quick question about API contract", "Production incident postmortem", "New library version available", "Code review request: auth module", "API schema change discussion", "Environment cleanup this weekend"];
     private static readonly string[] PrTitles = ["feat: add caching layer", "fix: resolve race condition in worker", "feat: add search endpoint", "refactor: extract auth middleware", "fix: correct date parsing in calendar sync", "chore: update dependencies", "feat: add rate limiting", "docs: update API reference"];
     private static readonly string[] PrRepos = ["aura-api", "aura-workers", "aura-ui", "aura-infra"];
-    private static readonly string[] PrAuthors = ["alice", "bob", "carol", "dave"];
+    private static readonly string[] PrAuthors = ["Alice Chen", "Bob Martinez", "Carol Silva", "Dave Kim"];
     private static readonly string[] BranchNames = ["feat/add-caching-layer", "fix/resolve-race-condition-worker", "feat/add-search-endpoint", "refactor/extract-auth-middleware", "fix/calendar-date-parsing", "chore/update-deps", "feat/rate-limiting", "docs/api-reference"];
     private static readonly string[] MeetingTitles = ["Sprint Planning — Sprint 12", "Architecture Review: Event Sourcing", "1:1 with Manager", "Demo Prep Sync", "Incident Postmortem", "Backlog Grooming", "Design Review: Auth Flow"];
 
@@ -363,6 +363,27 @@ public sealed class DemoService
             _ => "inbox"
         };
 
+        // Map raw signals to canonical keys so the scoring service can evaluate them
+        AddCanonicalSignal(metadata, WorkItemSignalKeys.OutlookSender, WorkItemSignalKeys.CanonicalSender);
+        AddCanonicalSignal(metadata, WorkItemSignalKeys.TeamsSender, WorkItemSignalKeys.CanonicalSender);
+        AddCanonicalSignal(metadata, WorkItemSignalKeys.OutlookSnippet, WorkItemSignalKeys.CanonicalSnippet);
+        AddCanonicalSignal(metadata, WorkItemSignalKeys.TeamsSnippet, WorkItemSignalKeys.CanonicalSnippet);
+
+        // Set action-needed and time-criticality signals for high/critical items so
+        // the scoring engine can produce varied scores (40, 80, 100) instead of 0 or 100.
+        if (priority is WorkItemPriority.Critical or WorkItemPriority.High)
+        {
+            metadata.TryAdd(WorkItemSignalKeys.ActionNeededSignal, bool.TrueString);
+            if (priority == WorkItemPriority.Critical)
+            {
+                metadata.TryAdd(WorkItemSignalKeys.TimeCriticalitySignal, SignalLevel.Critical.ToString());
+            }
+            else
+            {
+                metadata.TryAdd(WorkItemSignalKeys.TimeCriticalitySignal, SignalLevel.High.ToString());
+            }
+        }
+
         return new WorkItem(
             externalId: externalId,
             title: title,
@@ -467,7 +488,7 @@ public sealed class DemoService
             EndUtc: startUtc.AddHours(1),
             IsOnlineMeeting: true,
             JoinUrl: "https://teams.microsoft.com/l/meetup-join/" + id,
-            Organizer: "sistema@contoso.com",
+            Organizer: "Aura Calendar",
             Location: "Teams Virtual",
             OriginalTimeZone: "America/Mexico_City",
             UserId: userId);
@@ -520,10 +541,10 @@ public sealed class DemoService
 
     private static string GetSender(WorkItemPriority priority) => priority switch
     {
-        WorkItemPriority.Critical => "ceo@contoso.com",
-        WorkItemPriority.High => "director@contoso.com",
-        WorkItemPriority.Medium => "manager@contoso.com",
-        _ => "sistema@contoso.com"
+        WorkItemPriority.Critical => "CTO Office",
+        WorkItemPriority.High => "Director Engineering",
+        WorkItemPriority.Medium => "Team Lead",
+        _ => "System Bot"
     };
 
     private static double PriorityToScore(WorkItemPriority priority) => priority switch
@@ -533,4 +554,17 @@ public sealed class DemoService
         WorkItemPriority.Medium => 5.0,
         _ => 2.0
     };
+
+    /// <summary>
+    /// Maps a raw signal key (e.g. outlook.sender) to a canonical key (e.g. triage.sender)
+    /// so the priority scoring service can evaluate demo items with realistic scores.
+    /// Only copies the value if the source key exists and the target key is not already set.
+    /// </summary>
+    private static void AddCanonicalSignal(Dictionary<string, string> metadata, string sourceKey, string targetKey)
+    {
+        if (metadata.TryGetValue(sourceKey, out var value) && !string.IsNullOrWhiteSpace(value) && !metadata.ContainsKey(targetKey))
+        {
+            metadata[targetKey] = value;
+        }
+    }
 }

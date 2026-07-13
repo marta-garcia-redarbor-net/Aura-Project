@@ -18,7 +18,7 @@ public class InterruptionPolicyEngineTraceTests
             return Task.CompletedTask;
         }
 
-        public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new PagedResult<InterruptionDecisionRecord>());
 
         public Task ClearAsync(CancellationToken cancellationToken = default)

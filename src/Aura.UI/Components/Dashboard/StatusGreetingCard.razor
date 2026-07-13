@@ -19,11 +19,11 @@
         <div class="status-greeting-card__badges" data-testid="status-greeting-badges">
             @{
                 var pending = _status is null;
-                @RenderBadge(pending ? "Pending" : _status!.Api.State.ToString(), "API")
-                @RenderBadge(pending ? "Pending" : _status!.Database.State.ToString(), "DB")
-                @RenderBadge(pending ? "Pending" : _status!.MockAuth.State.ToString(), "Auth")
-                @RenderBadge(pending ? "Pending" : _status!.Qdrant.State.ToString(), "Qdrant")
-                @RenderBadge(pending ? "Pending" : _status!.Llm.State.ToString(), "LLM")
+                @RenderBadge(pending ? "Pending" : _status!.Api.State.ToString(), "API", pending ? "" : _status!.Api.Microcopy)
+                @RenderBadge(pending ? "Pending" : _status!.Database.State.ToString(), "DB", pending ? "" : _status!.Database.Microcopy)
+                @RenderBadge(pending ? "Pending" : _status!.MockAuth.State.ToString(), "Auth", pending ? "" : _status!.MockAuth.Microcopy)
+                @RenderBadge(pending ? "Pending" : _status!.Qdrant.State.ToString(), "Qdrant", pending ? "" : _status!.Qdrant.Microcopy)
+                @RenderBadge(pending ? "Pending" : _status!.Llm.State.ToString(), "LLM", pending ? "" : _status!.Llm.Microcopy)
             }
         </div>
     </div>
@@ -134,18 +134,19 @@
         _ => "Error"
     };
 
-    private RenderFragment RenderBadge(string state, string label) => builder =>
+    private RenderFragment RenderBadge(string state, string label, string microcopy = "") => builder =>
     {
         var color = GetBadgeColor(state);
         var statusLabel = GetStatusLabel(state);
         var testId = $"status-badge-{label.ToLowerInvariant()}";
+        var tooltip = string.IsNullOrWhiteSpace(microcopy) ? $"{label}: {statusLabel}" : microcopy;
         var ariaLabel = $"{label}: {statusLabel}";
 
         builder.OpenElement(0, "span");
         builder.AddAttribute(1, "class", $"status-badge status-badge--{color}");
         builder.AddAttribute(2, "data-testid", testId);
         builder.AddAttribute(3, "aria-label", ariaLabel);
-        builder.AddAttribute(4, "title", ariaLabel);
+        builder.AddAttribute(4, "title", tooltip);
 
         builder.OpenElement(5, "span");
         builder.AddAttribute(6, "class", $"status-badge__dot status-badge__dot--{color}");

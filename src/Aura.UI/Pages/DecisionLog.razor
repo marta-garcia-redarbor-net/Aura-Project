@@ -2,6 +2,7 @@
 @using Aura.UI.Components.Auth
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDecisionLogApiClient DecisionLogApiClient
+@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
@@ -50,32 +51,34 @@
                 <table class="decision-log-table" data-testid="decision-log-table">
                     <thead>
                         <tr>
-                            <th>Timestamp</th>
-                            <th>Title</th>
-                            <th>Source</th>
-                            <th>Priority Score</th>
-                            <th>Decision</th>
-                            <th>Focus State</th>
-                            <th>Explanation</th>
-                            <th>Guardrail Outcome</th>
+                            <th class="decision-log-table__th--expand"></th>
+                            <th class="decision-log-table__th--timestamp">Timestamp</th>
+                            <th class="decision-log-table__th--title">Title</th>
+                            <th class="decision-log-table__th--source">Source</th>
+                            <th class="decision-log-table__th--score">Score</th>
+                            <th class="decision-log-table__th--decision">Decision</th>
+                            <th class="decision-log-table__th--focus">Focus</th>
+                            <th class="decision-log-table__th--explanation">Explanation</th>
+                            <th class="decision-log-table__th--guardrail">Guardrail</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in _data.Items)
                         {
                             <tr class="decision-log-table__row" data-testid="decision-log-row">
-                                <td colspan="8" class="decision-log-table__details-cell">
+                                <td colspan="9" class="decision-log-table__details-cell">
                                     <details class="decision-trace" data-testid="decision-trace-details">
                                         <summary class="decision-trace__summary" data-testid="decision-trace-summary">
-                                            <span class="decision-trace__summary-grid">
-                                                <span>@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
-                                                <span>@item.Title</span>
-                                                <span>@item.SourceType</span>
-                                                <span>@(item.PriorityScore?.ToString() ?? "-")</span>
-                                                <span>@item.Decision</span>
-                                                <span>@item.FocusState</span>
-                                                <span>@item.Explanation</span>
-                                                <span>
+                                            <span class="decision-trace__grid">
+                                                <span class="decision-trace__col--chevron">▶</span>
+                                                <span class="decision-trace__col--timestamp">@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                                                <span class="decision-trace__col--title">@item.Title</span>
+                                                <span class="decision-trace__col--source">@item.SourceType</span>
+                                                <span class="decision-trace__col--score">@(item.PriorityScore?.ToString() ?? "-")</span>
+                                                <span class="decision-trace__col--decision">@item.Decision</span>
+                                                <span class="decision-trace__col--focus">@item.FocusState</span>
+                                                <span class="decision-trace__col--explanation">@item.Explanation</span>
+                                                <span class="decision-trace__col--guardrail">
                                                     <span class="decision-trace__guardrail-badge decision-trace__guardrail-badge--@NormalizeGuardrail(item.GuardrailOutcome)">
                                                         @NormalizeGuardrail(item.GuardrailOutcome)
                                                     </span>
@@ -85,9 +88,9 @@
 
                                         <div class="decision-trace__panel" data-testid="decision-trace-panel">
                                             <section class="decision-trace__section" data-testid="decision-trace-section-summary">
-                                                <h4>Summary</h4>
-                                                <p><strong>Final verdict:</strong> @item.Decision</p>
-                                                <p><strong>Guardrail outcome:</strong> @NormalizeGuardrail(item.GuardrailOutcome)</p>
+                                                <h4>Final Verdict</h4>
+                                                <p><strong>Decision:</strong> @item.Decision</p>
+                                                <p><strong>Guardrail:</strong> @NormalizeGuardrail(item.GuardrailOutcome)</p>
                                             </section>
 
                                             <section class="decision-trace__section" data-testid="decision-trace-section-rules">
@@ -116,7 +119,7 @@
                                                             {
                                                                 <li>
                                                                     <div><strong>@contextItem.SourceType</strong> · @contextItem.CanonicalSourceId</div>
-                                                                    <div>@contextItem.ContentSnippet</div>
+                                                    <div>@contextItem.ContentSnippet</div>
                                                                     <div>Score: @contextItem.RelevanceScore.ToString("0.00")</div>
                                                                 </li>
                                                             }
@@ -179,6 +182,10 @@
         try
         {
             _data = await DecisionLogApiClient.GetDecisionsAsync(_page, DefaultPageSize, CancellationToken.None);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/logout", forceLoad: true);
         }
         catch
         {

@@ -10,13 +10,15 @@ public sealed class SystemStatusReader : ISystemStatusReader
     private readonly IMockAuthReadinessProvider _mockAuthReadinessProvider;
     private readonly IDbReadinessProvider _dbReadinessProvider;
     private readonly ILlmReadinessProvider _llmReadinessProvider;
+    private readonly string? _llmModelId;
 
     public SystemStatusReader(
         IApiReadinessProvider apiReadinessProvider,
         IQdrantReadinessProvider qdrantReadinessProvider,
         IMockAuthReadinessProvider mockAuthReadinessProvider,
         IDbReadinessProvider dbReadinessProvider,
-        ILlmReadinessProvider llmReadinessProvider)
+        ILlmReadinessProvider llmReadinessProvider,
+        string? llmModelName = null)
     {
         ArgumentNullException.ThrowIfNull(apiReadinessProvider);
         ArgumentNullException.ThrowIfNull(qdrantReadinessProvider);
@@ -29,6 +31,7 @@ public sealed class SystemStatusReader : ISystemStatusReader
         _mockAuthReadinessProvider = mockAuthReadinessProvider;
         _dbReadinessProvider = dbReadinessProvider;
         _llmReadinessProvider = llmReadinessProvider;
+        _llmModelId = llmModelName;
     }
 
     public async Task<SystemStatusDto> GetStatusAsync(CancellationToken cancellationToken)
@@ -82,11 +85,14 @@ public sealed class SystemStatusReader : ISystemStatusReader
             _ => new SystemIndicatorDto(SystemIndicatorState.Error, "Database is unreachable.")
         };
 
-    private static SystemIndicatorDto DeriveLlmIndicator(ReadinessSignal readiness)
-        => readiness switch
+    private SystemIndicatorDto DeriveLlmIndicator(ReadinessSignal readiness)
+    {
+        var model = string.IsNullOrWhiteSpace(_llmModelId) ? "Ollama" : _llmModelId;
+        return readiness switch
         {
-            ReadinessSignal.Healthy => new SystemIndicatorDto(SystemIndicatorState.Ok, "LLM (Ollama) is reachable."),
-            ReadinessSignal.Degraded => new SystemIndicatorDto(SystemIndicatorState.Warning, "LLM (Ollama) is reachable but reporting degraded health."),
-            _ => new SystemIndicatorDto(SystemIndicatorState.Error, "LLM (Ollama) is unreachable.")
+            ReadinessSignal.Healthy => new SystemIndicatorDto(SystemIndicatorState.Ok, $"LLM ({model}) is reachable."),
+            ReadinessSignal.Degraded => new SystemIndicatorDto(SystemIndicatorState.Warning, $"LLM ({model}) is reachable but reporting degraded health."),
+            _ => new SystemIndicatorDto(SystemIndicatorState.Error, $"LLM ({model}) is unreachable.")
         };
+    }
 }

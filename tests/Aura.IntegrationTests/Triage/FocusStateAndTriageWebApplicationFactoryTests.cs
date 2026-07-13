@@ -109,7 +109,7 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
         public Task RecordAsync(InterruptionDecisionRecord record, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new PagedResult<InterruptionDecisionRecord>
             {
                 Items = records,

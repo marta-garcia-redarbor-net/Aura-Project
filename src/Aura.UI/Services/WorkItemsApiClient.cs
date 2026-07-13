@@ -26,6 +26,12 @@ public sealed class WorkItemsApiClient : IWorkItemsApiClient
         }
 
         using var response = await _httpClient.GetAsync(url, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedAccessException("Unauthorized when calling /api/workitems");
+        }
+
         response.EnsureSuccessStatusCode();
 
         var items = await response.Content.ReadFromJsonAsync<WorkItemDetailResponse[]>(SerializerOptions, cancellationToken);

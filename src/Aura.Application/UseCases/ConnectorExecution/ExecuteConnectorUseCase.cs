@@ -22,6 +22,7 @@ public sealed partial class ExecuteConnectorUseCase
     private readonly IInterruptionPolicyEngine _interruptionEngine;
     private readonly IDashboardRefreshDispatcher _dashboardRefreshDispatcher;
     private readonly INotificationOutboxStore _outboxStore;
+    private readonly ISemanticOutboxRepository _semanticOutboxRepo;
 
     public ExecuteConnectorUseCase(
         IIngestionCheckpointStore checkpointStore,
@@ -36,6 +37,7 @@ public sealed partial class ExecuteConnectorUseCase
             new NoopInterruptionEngine(),
             new NoopDashboardRefreshDispatcher(),
             new NoopNotificationOutboxStore(),
+            new NoopSemanticOutboxRepository(),
             logger,
             utcNow)
     {
@@ -56,6 +58,7 @@ public sealed partial class ExecuteConnectorUseCase
             new NoopInterruptionEngine(),
             new NoopDashboardRefreshDispatcher(),
             new NoopNotificationOutboxStore(),
+            new NoopSemanticOutboxRepository(),
             logger,
             utcNow)
     {
@@ -69,6 +72,7 @@ public sealed partial class ExecuteConnectorUseCase
         IInterruptionPolicyEngine interruptionEngine,
         IDashboardRefreshDispatcher dashboardRefreshDispatcher,
         INotificationOutboxStore outboxStore,
+        ISemanticOutboxRepository semanticOutboxRepo,
         ILogger<ExecuteConnectorUseCase> logger,
         Func<DateTimeOffset>? utcNow = null)
     {
@@ -79,6 +83,7 @@ public sealed partial class ExecuteConnectorUseCase
         ArgumentNullException.ThrowIfNull(interruptionEngine);
         ArgumentNullException.ThrowIfNull(dashboardRefreshDispatcher);
         ArgumentNullException.ThrowIfNull(outboxStore);
+        ArgumentNullException.ThrowIfNull(semanticOutboxRepo);
         ArgumentNullException.ThrowIfNull(logger);
 
         _checkpointStore = checkpointStore;
@@ -88,6 +93,7 @@ public sealed partial class ExecuteConnectorUseCase
         _interruptionEngine = interruptionEngine;
         _dashboardRefreshDispatcher = dashboardRefreshDispatcher;
         _outboxStore = outboxStore;
+        _semanticOutboxRepo = semanticOutboxRepo;
         _logger = logger;
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
     }
@@ -137,6 +143,14 @@ public sealed partial class ExecuteConnectorUseCase
         public Task<IReadOnlyList<NotificationOutboxEntry>> GetPendingAsync(int maxEntries, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<NotificationOutboxEntry>>([]);
         public Task MarkDispatchedAsync(Guid id, CancellationToken ct) => Task.CompletedTask;
+    }
+
+    private sealed class NoopSemanticOutboxRepository : ISemanticOutboxRepository
+    {
+        public Task EnqueueAsync(SemanticOutboxEntry entry, CancellationToken ct) => Task.CompletedTask;
+        public Task<IReadOnlyList<SemanticOutboxEntry>> FetchPendingAsync(int batchSize, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SemanticOutboxEntry>>([]);
+        public Task UpdateAsync(SemanticOutboxEntry entry, CancellationToken ct) => Task.CompletedTask;
     }
 
     public async Task<ConnectorExecutionResult> ExecuteAsync(CheckpointIdentity identity, CancellationToken ct)
@@ -296,6 +310,25 @@ public sealed partial class ExecuteConnectorUseCase
 
                 await _outboxStore.EnqueueAsync(entry, ct);
                 Log.NotificationEnqueued(_logger, entry.Id, verdict.Decision.ToString());
+            }
+
+            // Enqueue work item content for semantic indexing
+            try
+            {
+                var snippet = item.Metadata.TryGetValue(WorkItemSignalKeys.CanonicalSnippet, out var s) && !string.IsNullOrWhiteSpace(s)
+                    ? s
+                    : item.Title;
+                var semanticEntry = new SemanticOutboxEntry(
+                    id: Guid.NewGuid(),
+                    canonicalSourceId: item.ExternalId ?? item.Id.ToString(),
+                    content: snippet,
+                    collection: Aura.Domain.SemanticIndex.Enums.SemanticCollectionType.ActivityMemory,
+                    createdAt: DateTimeOffset.UtcNow);
+                await _semanticOutboxRepo.EnqueueAsync(semanticEntry, ct);
+            }
+            catch (Exception ex)
+            {
+                Log.SemanticEnqueueFailed(_logger, item.ExternalId ?? "unknown", ex);
             }
         }
         catch (Exception ex)
@@ -496,6 +529,15 @@ public sealed partial class ExecuteConnectorUseCase
             Level = LogLevel.Warning,
             Message = "Interruption evaluation failed for WorkItem ExternalId={ExternalId} — swallowing to avoid blocking ingestion")]
         public static partial void EvaluationFailed(
+            ILogger logger,
+            string externalId,
+            Exception exception);
+
+        [LoggerMessage(
+            EventId = 2207,
+            Level = LogLevel.Warning,
+            Message = "Semantic enqueue failed for WorkItem ExternalId={ExternalId}")]
+        public static partial void SemanticEnqueueFailed(
             ILogger logger,
             string externalId,
             Exception exception);
