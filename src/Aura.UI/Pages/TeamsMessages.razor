@@ -3,8 +3,8 @@
 @using Aura.UI.Components.Auth
 @using Aura.UI.Components.Dashboard
 @using Microsoft.AspNetCore.Components.Authorization
-
 @inject IWorkItemsApiClient WorkItemsApiClient
+@inject ILogger<TeamsMessages> Logger
 
 <AuthorizeView>
     <Authorized>
@@ -111,8 +111,9 @@
             var items = await WorkItemsApiClient.GetBySourceAsync("TeamsMessage", "Pending", CancellationToken.None);
             _items = items.OrderByDescending(i => i.PriorityScore ?? int.MinValue).ThenByDescending(i => i.CapturedAtUtc).ToList();
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load Teams messages");
             _loadError = "Teams messages are currently unavailable.";
         }
     }

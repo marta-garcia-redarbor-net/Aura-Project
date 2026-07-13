@@ -1,14 +1,49 @@
 @using Aura.UI.Services
+@inject DemoUiState DemoState
+@implements IDisposable
 
 <header class="dashboard-header" data-testid="dashboard-header">
     <div class="dashboard-header__identity">
         <span class="dashboard-header__brand">Aura</span>
-        <!-- Top priority queue nav entry removed for demo simplification.
-             Keep implementation for future re-enable. -->
     </div>
 
     <div class="dashboard-header__actions">
-        <FocusStateBadge />
+        @if (DemoState.IsDemoUser)
+        {
+            <div class="dashboard-header__demo-group">
+                <button class="dashboard-header__demo-btn"
+                        disabled="@DemoState.SimulationRunning"
+                        @onclick="HandleStartDemo"
+                        title="@DemoState.SimulationMessage">
+                    <span class="material-symbols-outlined">play_arrow</span>
+                    Demo Mode
+                    @if (DemoState.ShowWizard)
+                    {
+                        <div class="demo-wizard" data-testid="demo-wizard-start">
+                            <span class="demo-wizard__text">Click <strong>Demo Mode</strong> to start</span>
+                        </div>
+                    }
+                </button>
+                <button class="dashboard-header__reset-btn"
+                        disabled="@DemoState.SimulationRunning"
+                        @onclick="HandleResetDemo"
+                        title="Delete demo items">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Reset
+                    @if (DemoState.ShowResetHint)
+                    {
+                        <div class="demo-wizard demo-wizard--reset" data-testid="demo-wizard-reset">
+                            <span class="demo-wizard__text">Click <strong>Reset</strong> to clear</span>
+                        </div>
+                    }
+                </button>
+            </div>
+        }
+
+        @if (!DemoState.IsDemoUser)
+        {
+            <FocusStateBadge />
+        }
         <span class="material-symbols-outlined dashboard-header__icon-btn">settings</span>
         @if (!string.IsNullOrEmpty(UserDisplayName))
         {
@@ -33,13 +68,85 @@
     [Parameter]
     public string Email { get; set; } = string.Empty;
 
-    // NavigationManager kept for future re-enable of Top Priority Queue link.
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private IDashboardEventBus EventBus { get; set; } = default!;
+    [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    private bool _wizardDisposable;
+
+    protected override void OnInitialized()
+    {
+        DemoState.OnStateChanged += HandleStateChanged;
+    }
+
+    private async Task HandleStateChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleStartDemo()
+    {
+        try
+        {
+            DemoState.SimulationRunning = true;
+            DemoState.ShowWizard = false;
+
+            var client = HttpClientFactory.CreateClient("AuraApi");
+            var response = await client.PostAsync("api/demo/start-simulation", null);
+            response.EnsureSuccessStatusCode();
+
+            DemoState.DemoDataExists = true;
+            DemoState.ShowResetHint = true;
+            _wizardDisposable = true;
+
+            // Auto-hide reset hint after 5 seconds
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                DemoState.ShowResetHint = false;
+                await DemoState.NotifyStateChangedAsync();
+            });
+        }
+        catch
+        {
+            // Silently handle errors
+        }
+        finally
+        {
+            DemoState.SimulationRunning = false;
+            await DemoState.NotifyStateChangedAsync();
+            await EventBus.RaiseDashboardRefreshAsync();
+        }
+    }
+
+    private async Task HandleResetDemo()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuraApi");
+            await client.PostAsync("api/demo/reset", null);
+            DemoState.DemoDataExists = false;
+            DemoState.ShowResetHint = false;
+            EventBus.ClearTracking();
+        }
+        catch
+        {
+            // Silently handle errors
+        }
+        finally
+        {
+            await DemoState.NotifyStateChangedAsync();
+            await EventBus.RaiseDashboardRefreshAsync();
+        }
+    }
 
     private void HandleSignOut()
     {
-        // Redirect to the /logout endpoint which handles server-side sign-out
-        // for both OIDC and Cookie schemes unconditionally.
         Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        DemoState.OnStateChanged -= HandleStateChanged;
     }
 }

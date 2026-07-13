@@ -4,32 +4,54 @@
 @implements IDisposable
 
 <div class="status-greeting-card" data-testid="status-greeting-card" aria-live="polite">
-    <div class="status-greeting-card__greeting" data-testid="status-greeting-text">
-        @if (_loadError is not null)
-        {
-            <span>System status unavailable</span>
-        }
-        else
-        {
-            <span>@GetGreeting(), @_userDisplayName</span>
-        }
+    <div class="status-greeting-card__top-row">
+        <div class="status-greeting-card__greeting" data-testid="status-greeting-text">
+            @if (_loadError is not null)
+            {
+                <span>System unavailable</span>
+            }
+            else
+            {
+                <span class="status-greeting-card__salutation">@GetGreeting(), @_userDisplayName.</span>
+            }
+        </div>
+
+        <div class="status-greeting-card__badges" data-testid="status-greeting-badges">
+            @{
+                var pending = _status is null;
+                @RenderBadge(pending ? "Pending" : _status!.Api.State.ToString(), "API")
+                @RenderBadge(pending ? "Pending" : _status!.Database.State.ToString(), "DB")
+                @RenderBadge(pending ? "Pending" : _status!.MockAuth.State.ToString(), "Auth")
+                @RenderBadge(pending ? "Pending" : _status!.Qdrant.State.ToString(), "Qdrant")
+                @RenderBadge(pending ? "Pending" : _status!.Llm.State.ToString(), "LLM")
+            }
+        </div>
     </div>
 
-    <div class="status-greeting-card__badges" data-testid="status-greeting-badges">
-        @{
-            var pending = _status is null;
-            @RenderBadge(pending ? "Pending" : _status!.Api.State.ToString(), "API")
-            @RenderBadge(pending ? "Pending" : _status!.Database.State.ToString(), "DB")
-            @RenderBadge(pending ? "Pending" : _status!.MockAuth.State.ToString(), "Auth")
-            @RenderBadge(pending ? "Pending" : _status!.Qdrant.State.ToString(), "Qdrant")
-            @RenderBadge(pending ? "Pending" : _status!.Llm.State.ToString(), "LLM")
-        }
-    </div>
+    @if (PreviewSummary is not null && PreviewSummary.TotalPendingCount > 0)
+    {
+        <div class="status-greeting-card__summary-section" data-testid="status-summary">
+            <span class="status-greeting-card__summary-label">Status:</span>
+            <span class="status-greeting-card__stat status-greeting-card__stat--total">
+                <span class="status-greeting-card__stat-value">@PreviewSummary.TotalPendingCount</span>
+                items to review
+            </span>
+            @if (PreviewSummary.HighPriorityCount > 0)
+            {
+                <span class="status-greeting-card__stat status-greeting-card__stat--high">
+                    <span class="status-greeting-card__stat-value">@PreviewSummary.HighPriorityCount</span>
+                    of high priority
+                </span>
+            }
+        </div>
+    }
 </div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    [Parameter] public DashboardPreviewResponse? PreviewSummary { get; set; }
 
     private SystemStatusResponse? _status;
     private string? _loadError;
@@ -125,12 +147,10 @@
         builder.AddAttribute(3, "aria-label", ariaLabel);
         builder.AddAttribute(4, "title", ariaLabel);
 
-        // Glow dot
         builder.OpenElement(5, "span");
         builder.AddAttribute(6, "class", $"status-badge__dot status-badge__dot--{color}");
         builder.CloseElement();
 
-        // Label text
         builder.AddContent(7, label);
 
         builder.CloseElement();

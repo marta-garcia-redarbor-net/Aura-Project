@@ -7,6 +7,9 @@ namespace Aura.UI.Services;
 /// Development-only handler that obtains a mock JWT from the API on first use
 /// and attaches it to every outgoing request as a fallback when no browser token
 /// is forwarded. Easy to remove — just delete this file and the registration in Program.cs.
+///
+/// The cached token is automatically refreshed when it nears expiration (within 1 minute)
+/// to prevent "Session expired" errors caused by the 15-minute mock JWT lifetime.
 /// </summary>
 public sealed partial class DevAccessTokenHandler : DelegatingHandler
 {
@@ -14,6 +17,7 @@ public sealed partial class DevAccessTokenHandler : DelegatingHandler
     private readonly ILogger<DevAccessTokenHandler> _logger;
     private string? _cachedToken;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private static readonly TimeSpan ExpirationBuffer = TimeSpan.FromMinutes(1);
 
     public DevAccessTokenHandler(
         IHttpClientFactory httpClientFactory,
@@ -56,14 +60,19 @@ public sealed partial class DevAccessTokenHandler : DelegatingHandler
 
     internal async Task<string?> GetOrAcquireTokenAsync(CancellationToken cancellationToken)
     {
-        if (_cachedToken is not null)
+        // Fast path: cached token is still fresh — return it
+        if (_cachedToken is not null && !IsTokenExpiredOrNearExpiry(_cachedToken))
             return _cachedToken;
 
         await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            if (_cachedToken is not null)
+            // Double-check after acquiring the lock
+            if (_cachedToken is not null && !IsTokenExpiredOrNearExpiry(_cachedToken))
                 return _cachedToken;
+
+            if (_cachedToken is not null)
+                Log.TokenExpiredRefreshing(_logger);
 
             _cachedToken = await FetchMockTokenAsync(cancellationToken);
             return _cachedToken;
@@ -71,6 +80,39 @@ public sealed partial class DevAccessTokenHandler : DelegatingHandler
         finally
         {
             _semaphore.Release();
+        }
+    }
+
+    private static bool IsTokenExpiredOrNearExpiry(string token)
+    {
+        try
+        {
+            var parts = token.Split('.');
+            if (parts.Length < 2)
+                return true;
+
+            // Decode JWT payload (second segment)
+            var payload = parts[1];
+            var padded = (payload.Length % 4) switch
+            {
+                2 => payload + "==",
+                3 => payload + "=",
+                _ => payload
+            };
+            var jsonBytes = Convert.FromBase64String(padded);
+            using var doc = JsonDocument.Parse(jsonBytes);
+
+            if (doc.RootElement.TryGetProperty("exp", out var expProp) && expProp.TryGetInt64(out var expUnix))
+            {
+                var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
+                return expTime <= DateTimeOffset.UtcNow + ExpirationBuffer;
+            }
+
+            return false; // no exp claim — assume valid
+        }
+        catch
+        {
+            return false; // can't parse — assume valid rather than breaking
         }
     }
 
@@ -108,5 +150,9 @@ public sealed partial class DevAccessTokenHandler : DelegatingHandler
         [LoggerMessage(EventId = 2002, Level = LogLevel.Warning,
             Message = "Failed to acquire dev mock token — API calls will be unauthenticated")]
         public static partial void MockTokenFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(EventId = 2003, Level = LogLevel.Information,
+            Message = "Dev mock token expired or near expiry — refreshing")]
+        public static partial void TokenExpiredRefreshing(ILogger logger);
     }
 }

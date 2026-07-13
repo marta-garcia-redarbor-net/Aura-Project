@@ -1,5 +1,7 @@
 using Aura.Api.Services;
 using Aura.Application.Demo;
+using Aura.Application.Ports;
+using Aura.Domain.Calendar;
 using Aura.Infrastructure.Adapters.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -93,19 +95,30 @@ public static class DemoEndpoints
         group.MapPost("/all", async (
             HttpContext http,
             DemoService demoService,
+            IMeetingAlertDispatcher meetingAlertDispatcher,
+            IMeetingAlertStore meetingAlertStore,
             IOptions<DemoModeOptions> opts,
             CancellationToken ct) =>
         {
             if (!opts.Value.Enabled) return Results.Problem("Demo mode is disabled", statusCode: 503);
             var userId = GetUserId(http) ?? "demo-user";
             var ownerUserId = GetUserId(http); // null when no auth → items visible to all
-            await demoService.LoadMorningSummaryAsync(userId, ct);
-            await demoService.LoadEmailsAsync(ct, ownerUserId: ownerUserId);
-            await demoService.LoadTeamsMessagesAsync(ct, ownerUserId: ownerUserId);
-            await demoService.LoadCalendarEventsAsync(ct);
-            await demoService.LoadPriorityAlertsAsync(ct, ownerUserId: ownerUserId);
-            await demoService.LoadPullRequestsAsync(ct, ownerUserId: ownerUserId);
-            return Results.Ok(new { message = "Demo data load complete — all seed data persisted" });
+            var result = await demoService.LoadAllAsync(userId, ct);
+
+            // Create and dispatch a meeting alert for the demo calendar event
+            var meetingStart = DateTimeOffset.UtcNow.AddMinutes(50);
+            var alert = new MeetingAlert(
+                EventId: $"demo-cal-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}",
+                Title: "Sprint Planning — Sprint 12",
+                Trigger: MeetingAlertTrigger.SixtyMinutes,
+                StartsAtUtc: meetingStart,
+                JoinUrl: "https://teams.microsoft.com/l/meetup-join/demo-cal",
+                UserId: userId,
+                HasBeenSent: true);
+            await meetingAlertStore.MarkSentAsync(alert, ct);
+            await meetingAlertDispatcher.DispatchAsync(alert, ct);
+
+            return Results.Ok(new { message = result });
         });
 
         group.MapPost("/start-simulation", (

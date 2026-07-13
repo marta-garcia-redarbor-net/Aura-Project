@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Identity.Client;
 
 namespace Aura.UI.Services;
@@ -12,22 +13,27 @@ namespace Aura.UI.Services;
 ///   1. Existing Authorization header (from the browser request)
 ///   2. OIDC session access_token (SaveTokens=true in the OpenIdConnect options)
 ///   3. Cookie identity "token" claim (demo login or OIDC token persistence)
-///   4. Client-credentials fallback via IConfidentialClientApplication
+///   4. Client-credentials fallback via IConfidentialClientApplication (HttpContext path only)
+///   5. Blazor circuit-safe fallback via AuthenticationStateProvider — reads the "token" claim
+///      when HttpContext is null (Blazor Server interactive mode via SignalR)
 /// </summary>
 public sealed class ForwardedAccessTokenHandler : DelegatingHandler
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForwardedAccessTokenHandler> _logger;
+    private readonly AuthenticationStateProvider _authStateProvider;
 
     public ForwardedAccessTokenHandler(
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
-        ILogger<ForwardedAccessTokenHandler> logger)
+        ILogger<ForwardedAccessTokenHandler> logger,
+        AuthenticationStateProvider authStateProvider)
     {
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
         _logger = logger;
+        _authStateProvider = authStateProvider;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
@@ -107,7 +113,32 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
             }
             else
             {
-                _logger.LogWarning("HttpContext is NULL — no token attached for {Uri}", request.RequestUri);
+                _logger.LogWarning("HttpContext is NULL for {Uri} — trying AuthenticationStateProvider fallback", request.RequestUri);
+
+                // 5. Blazor circuit-safe fallback: AuthenticationStateProvider works in
+                //    SignalR circuit context where HttpContext is unavailable
+                try
+                {
+                    var state = await _authStateProvider.GetAuthenticationStateAsync();
+                    var tokenClaim = state.User.FindFirstValue("token");
+                    if (!string.IsNullOrWhiteSpace(tokenClaim))
+                    {
+                        _logger.LogDebug(
+                            "ForwardedAccessTokenHandler: Using AuthenticationStateProvider token claim for {Uri}",
+                            request.RequestUri);
+                        request.Headers.Authorization =
+                            new AuthenticationHeaderValue("Bearer", tokenClaim);
+                        return await base.SendAsync(request, cancellationToken);
+                    }
+
+                    _logger.LogDebug(
+                        "AuthenticationStateProvider had no 'token' claim for {Uri}", request.RequestUri);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "AuthenticationStateProvider fallback failed for {Uri}", request.RequestUri);
+                }
             }
 
             return await base.SendAsync(request, cancellationToken);

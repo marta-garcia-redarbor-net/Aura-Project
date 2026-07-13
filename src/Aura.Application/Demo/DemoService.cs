@@ -12,6 +12,18 @@ namespace Aura.Application.Demo;
 /// </summary>
 public sealed class DemoService
 {
+    private static readonly Random _rng = Random.Shared;
+
+    private static readonly string[] EmailSenders = ["finance@contoso.com", "arch-team@contoso.com", "pm@contoso.com", "hr@contoso.com", "devops@contoso.com", "security@contoso.com"];
+    private static readonly string[] TeamsSenders = ["alice@contoso.com", "bob@contoso.com", "carol@contoso.com", "dave@contoso.com", "eve@contoso.com"];
+    private static readonly string[] EmailSubjects = ["Q3 Budget Review", "Architecture Decision Record: Event Sourcing", "Weekly Status Update", "Updated onboarding docs", "Sprint retrospective notes", "Performance review feedback", "New feature proposal: dark mode", "Infrastructure cost report", "Client meeting follow-up", "Team building event"];
+    private static readonly string[] TeamsSubjects = ["Please review PR #428", "Sprint planning reminder", "Quick question about API contract", "Production incident postmortem", "New library version available", "Code review request: auth module", "API schema change discussion", "Environment cleanup this weekend"];
+    private static readonly string[] PrTitles = ["feat: add caching layer", "fix: resolve race condition in worker", "feat: add search endpoint", "refactor: extract auth middleware", "fix: correct date parsing in calendar sync", "chore: update dependencies", "feat: add rate limiting", "docs: update API reference"];
+    private static readonly string[] PrRepos = ["aura-api", "aura-workers", "aura-ui", "aura-infra"];
+    private static readonly string[] PrAuthors = ["alice", "bob", "carol", "dave"];
+    private static readonly string[] BranchNames = ["feat/add-caching-layer", "fix/resolve-race-condition-worker", "feat/add-search-endpoint", "refactor/extract-auth-middleware", "fix/calendar-date-parsing", "chore/update-deps", "feat/rate-limiting", "docs/api-reference"];
+    private static readonly string[] MeetingTitles = ["Sprint Planning — Sprint 12", "Architecture Review: Event Sourcing", "1:1 with Manager", "Demo Prep Sync", "Incident Postmortem", "Backlog Grooming", "Design Review: Auth Flow"];
+
     private readonly IWorkItemStore _workItemStore;
     private readonly IMeetingAlertStore _meetingAlertStore;
     private readonly IMorningSummaryEmissionStore _morningSummaryEmissionStore;
@@ -51,41 +63,39 @@ public sealed class DemoService
         return $"Morning Summary marked as emitted for {userId} on {today:yyyy-MM-dd}";
     }
 
+    private static string RandomSuffix() => DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmssfff");
+
+    private static T PickRandom<T>(T[] items) => items[_rng.Next(items.Length)];
+
+    private static WorkItemPriority RandomPriority() => (WorkItemPriority)_rng.Next(0, 3);
+
     /// <summary>
     /// Simulates arrival of 3 email work items from Outlook.
     /// </summary>
     public async Task<string> LoadEmailsAsync(CancellationToken ct, string? ownerUserId = null)
     {
-        var emails = new[]
+        var runId = RandomSuffix();
+        var priorities = new[] { WorkItemPriority.High, WorkItemPriority.Medium, WorkItemPriority.Low };
+        var emails = new WorkItem[3];
+
+        for (var i = 0; i < 3; i++)
         {
-            CreateWorkItem("demo-email-001", "Q3 Budget Review — Action Required", WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
+            var idx = i + 1;
+            var sender = PickRandom(EmailSenders);
+            var subject = PickRandom(EmailSubjects);
+            var priority = priorities[i % priorities.Length];
+            var externalId = $"demo-email-{idx:D3}-{runId}";
+
+            emails[i] = CreateWorkItem(externalId, subject, WorkItemSourceType.OutlookEmail, priority,
                 new Dictionary<string, string>
                 {
-                    [WorkItemSignalKeys.OutlookSender] = "finance@contoso.com",
-                    [WorkItemSignalKeys.OutlookSnippet] = "Q3 Budget Review — Action Required",
-                    [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/demo-email-001",
-                    [WorkItemSignalKeys.OutlookConversationId] = "conv-demo-001",
-                    [WorkItemSignalKeys.OutlookImportanceRaw] = "high"
-                }, ownerUserId: ownerUserId),
-            CreateWorkItem("demo-email-002", "Architecture Decision Record: Event Sourcing", WorkItemSourceType.OutlookEmail, WorkItemPriority.Medium,
-                new Dictionary<string, string>
-                {
-                    [WorkItemSignalKeys.OutlookSender] = "arch-team@contoso.com",
-                    [WorkItemSignalKeys.OutlookSnippet] = "Architecture Decision Record: Event Sourcing",
-                    [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/demo-email-002",
-                    [WorkItemSignalKeys.OutlookConversationId] = "conv-demo-002",
-                    [WorkItemSignalKeys.OutlookImportanceRaw] = "normal"
-                }, ownerUserId: ownerUserId),
-            CreateWorkItem("demo-email-003", "Weekly Status Update", WorkItemSourceType.OutlookEmail, WorkItemPriority.Low,
-                new Dictionary<string, string>
-                {
-                    [WorkItemSignalKeys.OutlookSender] = "pm@contoso.com",
-                    [WorkItemSignalKeys.OutlookSnippet] = "Weekly Status Update",
-                    [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/demo-email-003",
-                    [WorkItemSignalKeys.OutlookConversationId] = "conv-demo-003",
-                    [WorkItemSignalKeys.OutlookImportanceRaw] = "normal"
-                }, ownerUserId: ownerUserId),
-        };
+                    [WorkItemSignalKeys.OutlookSender] = sender,
+                    [WorkItemSignalKeys.OutlookSnippet] = subject,
+                    [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/{externalId}",
+                    [WorkItemSignalKeys.OutlookConversationId] = $"conv-{externalId}",
+                    [WorkItemSignalKeys.OutlookImportanceRaw] = priority is WorkItemPriority.Critical or WorkItemPriority.High ? "high" : "normal"
+                }, ownerUserId: ownerUserId);
+        }
 
         foreach (var email in emails)
         {
@@ -103,42 +113,30 @@ public sealed class DemoService
     /// </summary>
     public async Task<string> LoadTeamsMessagesAsync(CancellationToken ct, string? ownerUserId = null)
     {
-        var messages = new[]
+        var runId = RandomSuffix();
+        var priorities = new[] { WorkItemPriority.High, WorkItemPriority.Medium, WorkItemPriority.Low };
+        var messages = new WorkItem[3];
+
+        for (var i = 0; i < 3; i++)
         {
-            CreateWorkItem("demo-teams-001", "@mention: Please review PR #428", WorkItemSourceType.TeamsMessage, WorkItemPriority.High,
+            var idx = i + 1;
+            var sender = PickRandom(TeamsSenders);
+            var subject = PickRandom(TeamsSubjects);
+            var priority = priorities[i % priorities.Length];
+            var externalId = $"demo-teams-{idx:D3}-{runId}";
+
+            messages[i] = CreateWorkItem(externalId, $"@mention: {subject}", WorkItemSourceType.TeamsMessage, priority,
                 new Dictionary<string, string>
                 {
-                    [WorkItemSignalKeys.TeamsSender] = "alice@contoso.com",
-                    [WorkItemSignalKeys.TeamsSnippet] = "@mention: Please review PR #428",
+                    [WorkItemSignalKeys.TeamsSender] = sender,
+                    [WorkItemSignalKeys.TeamsSnippet] = subject,
                     [WorkItemSignalKeys.TeamsTeamId] = "engineering",
                     [WorkItemSignalKeys.TeamsChannelId] = "general",
-                    [WorkItemSignalKeys.TeamsDeepLink] = "https://teams.microsoft.com/l/message/demo-teams-001",
-                    [WorkItemSignalKeys.TeamsPriorityRaw] = "High",
+                    [WorkItemSignalKeys.TeamsDeepLink] = $"https://teams.microsoft.com/l/message/{externalId}",
+                    [WorkItemSignalKeys.TeamsPriorityRaw] = priority.ToString(),
                     [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
-                }, ownerUserId: ownerUserId),
-            CreateWorkItem("demo-teams-002", "Sprint planning reminder", WorkItemSourceType.TeamsMessage, WorkItemPriority.Medium,
-                new Dictionary<string, string>
-                {
-                    [WorkItemSignalKeys.TeamsSender] = "bob@contoso.com",
-                    [WorkItemSignalKeys.TeamsSnippet] = "Sprint planning reminder",
-                    [WorkItemSignalKeys.TeamsTeamId] = "team-standup",
-                    [WorkItemSignalKeys.TeamsChannelId] = "general",
-                    [WorkItemSignalKeys.TeamsDeepLink] = "https://teams.microsoft.com/l/message/demo-teams-002",
-                    [WorkItemSignalKeys.TeamsPriorityRaw] = "Medium",
-                    [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
-                }, ownerUserId: ownerUserId),
-            CreateWorkItem("demo-teams-003", "Quick question about API contract", WorkItemSourceType.TeamsMessage, WorkItemPriority.Low,
-                new Dictionary<string, string>
-                {
-                    [WorkItemSignalKeys.TeamsSender] = "carol@contoso.com",
-                    [WorkItemSignalKeys.TeamsSnippet] = "Quick question about API contract",
-                    [WorkItemSignalKeys.TeamsTeamId] = "backend-dev",
-                    [WorkItemSignalKeys.TeamsChannelId] = "general",
-                    [WorkItemSignalKeys.TeamsDeepLink] = "https://teams.microsoft.com/l/message/demo-teams-003",
-                    [WorkItemSignalKeys.TeamsPriorityRaw] = "Low",
-                    [WorkItemSignalKeys.TeamsPriorityResolution] = "explicit"
-                }, ownerUserId: ownerUserId),
-        };
+                }, ownerUserId: ownerUserId);
+        }
 
         foreach (var msg in messages)
         {
@@ -152,15 +150,36 @@ public sealed class DemoService
     }
 
     /// <summary>
-    /// Simulates calendar events by querying upcoming meeting alerts.
+    /// Creates a demo calendar event starting ~50 minutes from now.
     /// </summary>
     public async Task<string> LoadCalendarEventsAsync(CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var endOfDay = now.Date.AddDays(1);
-        var upcoming = await _meetingAlertStore.GetUpcomingAlertsAsync(now, endOfDay, ct);
+        var runId = RandomSuffix();
+        var meetingStart = DateTimeOffset.UtcNow.AddMinutes(50);
+        var title = PickRandom(MeetingTitles);
+        var eventId = $"demo-cal-{runId}";
 
-        return $"Loaded calendar events — {upcoming.Count} upcoming meeting alerts found";
+        await AddCalendarEventAsync(eventId, title, meetingStart, ct);
+
+        return $"Created demo calendar event '{title}' starting at {meetingStart:HH:mm} UTC";
+    }
+
+    /// <summary>
+    /// Creates and dispatches a demo meeting alert for the given event.
+    /// </summary>
+    public async Task<string> CreateDemoMeetingAlertAsync(string userId, string eventId, string title, DateTimeOffset startUtc, string joinUrl, CancellationToken ct)
+    {
+        var alert = new MeetingAlert(
+            EventId: eventId,
+            Title: title,
+            Trigger: MeetingAlertTrigger.SixtyMinutes,
+            StartsAtUtc: startUtc,
+            JoinUrl: joinUrl,
+            UserId: userId,
+            HasBeenSent: true);
+
+        await _meetingAlertStore.MarkSentAsync(alert, ct);
+        return $"Created demo meeting alert for '{title}' (trigger: SixtyMinutes)";
     }
 
     /// <summary>
@@ -168,23 +187,29 @@ public sealed class DemoService
     /// </summary>
     public async Task<string> LoadPriorityAlertsAsync(CancellationToken ct, string? ownerUserId = null)
     {
-        var criticalItem = CreateWorkItem("demo-priority-001", "PRODUCTION: Deployment pipeline failure", WorkItemSourceType.OutlookEmail, WorkItemPriority.Critical,
+        var runId = RandomSuffix();
+        var criticalTitle = PickRandom(EmailSubjects);
+        var highTitle = PickRandom(EmailSubjects);
+        var criticalSender = PickRandom(EmailSenders);
+        var highSender = PickRandom(EmailSenders);
+
+        var criticalItem = CreateWorkItem($"demo-priority-001-{runId}", $"PRODUCTION: {criticalTitle}", WorkItemSourceType.OutlookEmail, WorkItemPriority.Critical,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookSender] = "ci-bot@contoso.com",
-                [WorkItemSignalKeys.OutlookSnippet] = "PRODUCTION: Deployment pipeline failure",
-                [WorkItemSignalKeys.OutlookDeepLink] = "https://outlook.office.com/mail/demo-priority-001",
-                [WorkItemSignalKeys.OutlookConversationId] = "conv-priority-001",
+                [WorkItemSignalKeys.OutlookSender] = criticalSender,
+                [WorkItemSignalKeys.OutlookSnippet] = $"PRODUCTION: {criticalTitle}",
+                [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/demo-priority-001-{runId}",
+                [WorkItemSignalKeys.OutlookConversationId] = $"conv-priority-001-{runId}",
                 [WorkItemSignalKeys.OutlookImportanceRaw] = "high",
                 ["outlook.scoring.totalScore"] = "10"
             }, ownerUserId: ownerUserId);
-        var highItem = CreateWorkItem("demo-priority-002", "Security vulnerability in dependency", WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
+        var highItem = CreateWorkItem($"demo-priority-002-{runId}", highTitle, WorkItemSourceType.OutlookEmail, WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                [WorkItemSignalKeys.OutlookSender] = "security@contoso.com",
-                [WorkItemSignalKeys.OutlookSnippet] = "Security vulnerability in dependency",
-                [WorkItemSignalKeys.OutlookDeepLink] = "https://outlook.office.com/mail/demo-priority-002",
-                [WorkItemSignalKeys.OutlookConversationId] = "conv-priority-002",
+                [WorkItemSignalKeys.OutlookSender] = highSender,
+                [WorkItemSignalKeys.OutlookSnippet] = highTitle,
+                [WorkItemSignalKeys.OutlookDeepLink] = $"https://outlook.office.com/mail/demo-priority-002-{runId}",
+                [WorkItemSignalKeys.OutlookConversationId] = $"conv-priority-002-{runId}",
                 [WorkItemSignalKeys.OutlookImportanceRaw] = "high",
                 ["outlook.scoring.totalScore"] = "8"
             }, ownerUserId: ownerUserId);
@@ -211,32 +236,46 @@ public sealed class DemoService
     /// </summary>
     public async Task<string> LoadPullRequestsAsync(CancellationToken ct, string? ownerUserId = null)
     {
-        var pr1 = CreateWorkItem("demo-pr-001", "PR #428: feat: add caching layer", WorkItemSourceType.PrReview, WorkItemPriority.Medium,
+        var runId = RandomSuffix();
+        var pr1Num = _rng.Next(400, 999);
+        var pr2Num = _rng.Next(400, 999);
+        var title1 = PickRandom(PrTitles);
+        var title2 = PickRandom(PrTitles);
+        var repo1 = PickRandom(PrRepos);
+        var repo2 = PickRandom(PrRepos);
+        var author1 = PickRandom(PrAuthors);
+        var author2 = PickRandom(PrAuthors);
+        var branch1 = PickRandom(BranchNames);
+        var branch2 = PickRandom(BranchNames);
+
+        var pr1 = CreateWorkItem($"demo-pr-001-{runId}", $"PR #{pr1Num}: {title1}", WorkItemSourceType.PrReview, WorkItemPriority.Medium,
             new Dictionary<string, string>
             {
-                ["pr.pullRequestId"] = "428",
+                ["pr.pullRequestId"] = pr1Num.ToString(),
                 ["pr.status"] = "active",
-                ["pr.repo"] = "aura-api",
-                ["pr.author"] = "alice",
-                ["pr.reviewerCount"] = "2",
-                ["pr.commentCount"] = "3",
-                ["pr.fileCount"] = "8",
+                ["pr.repo"] = repo1,
+                ["pr.author"] = author1,
+                ["pr.branch"] = branch1,
+                ["pr.reviewerCount"] = _rng.Next(1, 4).ToString(),
+                ["pr.commentCount"] = _rng.Next(0, 10).ToString(),
+                ["pr.fileCount"] = _rng.Next(2, 15).ToString(),
                 ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/428",
+                ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/{repo1}/pullrequest/{pr1Num}",
                 [PrMetadataKeys.AttentionScope] = "direct"
             }, ownerUserId: ownerUserId);
-        var pr2 = CreateWorkItem("demo-pr-002", "PR #430: fix: resolve race condition in worker", WorkItemSourceType.PrReview, WorkItemPriority.High,
+        var pr2 = CreateWorkItem($"demo-pr-002-{runId}", $"PR #{pr2Num}: {title2}", WorkItemSourceType.PrReview, WorkItemPriority.High,
             new Dictionary<string, string>
             {
-                ["pr.pullRequestId"] = "430",
+                ["pr.pullRequestId"] = pr2Num.ToString(),
                 ["pr.status"] = "active",
-                ["pr.repo"] = "aura-workers",
-                ["pr.author"] = "bob",
-                ["pr.reviewerCount"] = "1",
-                ["pr.commentCount"] = "5",
-                ["pr.fileCount"] = "3",
+                ["pr.repo"] = repo2,
+                ["pr.author"] = author2,
+                ["pr.branch"] = branch2,
+                ["pr.reviewerCount"] = _rng.Next(1, 4).ToString(),
+                ["pr.commentCount"] = _rng.Next(0, 10).ToString(),
+                ["pr.fileCount"] = _rng.Next(2, 15).ToString(),
                 ["pr.isDraft"] = "false",
-                ["pr.sourceLink"] = "https://dev.azure.com/auraorg/Aura/_git/aura-workers/pullrequest/430",
+                ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/{repo2}/pullrequest/{pr2Num}",
                 [PrMetadataKeys.AttentionScope] = "direct"
             }, ownerUserId: ownerUserId);
 
@@ -251,18 +290,18 @@ public sealed class DemoService
     }
 
     /// <summary>
-    /// Runs all demo data loading methods sequentially.
+    /// Runs all demo data loading methods sequentially, resetting existing data first.
     /// </summary>
     public async Task<string> LoadAllAsync(string userId, CancellationToken ct)
     {
         await LoadMorningSummaryAsync(userId, ct);
+        var calResult = await LoadCalendarEventsAsync(ct);
         await LoadEmailsAsync(ct, ownerUserId: userId);
         await LoadTeamsMessagesAsync(ct, ownerUserId: userId);
-        await LoadCalendarEventsAsync(ct);
         await LoadPriorityAlertsAsync(ct, ownerUserId: userId);
         await LoadPullRequestsAsync(ct, ownerUserId: userId);
 
-        return "Demo data load complete — all seed data persisted";
+        return $"Demo data load complete — all seed data persisted. {calResult}";
     }
 
     /// <summary>
@@ -442,17 +481,23 @@ public sealed class DemoService
     /// </summary>
     public async Task<string> AddPullRequestAsync(string id, string title, WorkItemPriority priority, CancellationToken ct, string? ownerUserId = null, bool actionNeeded = false, SignalLevel? timeCriticality = null)
     {
+        var branch = PickRandom(BranchNames);
+        var repo = PickRandom(PrRepos);
+        var author = PickRandom(PrAuthors);
+        var prNum = _rng.Next(400, 999);
+
         var metadata = new Dictionary<string, string>
         {
-            ["pr.pullRequestId"] = id.Replace("demo-pr-", ""),
+            ["pr.pullRequestId"] = prNum.ToString(),
             ["pr.status"] = "active",
-            ["pr.repo"] = "aura-api",
-            ["pr.author"] = GetSender(priority),
-            ["pr.reviewerCount"] = "2",
-            ["pr.commentCount"] = "2",
-            ["pr.fileCount"] = "5",
+            ["pr.repo"] = repo,
+            ["pr.author"] = author,
+            ["pr.branch"] = branch,
+            ["pr.reviewerCount"] = _rng.Next(1, 4).ToString(),
+            ["pr.commentCount"] = _rng.Next(0, 10).ToString(),
+            ["pr.fileCount"] = _rng.Next(2, 15).ToString(),
             ["pr.isDraft"] = "false",
-            ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/aura-api/pullrequest/{id.Replace("demo-pr-", "")}",
+            ["pr.sourceLink"] = $"https://dev.azure.com/auraorg/Aura/_git/{repo}/pullrequest/{prNum}",
             [PrMetadataKeys.AttentionScope] = "direct"
         };
 

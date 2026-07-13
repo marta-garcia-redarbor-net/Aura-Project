@@ -1,10 +1,13 @@
 @using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Authorization
 @attribute [StreamRendering]
 @implements IDisposable
 @inject IDashboardApiClient DashboardClient
 @inject IJSRuntime JSRuntime
 @inject PersistentComponentState ApplicationState
 @inject ILogger<MainLayoutAuthenticated> Logger
+@inject DemoUiState DemoState
+@inject AuthenticationStateProvider AuthState
 
 <div class="dashboard-shell" data-testid="dashboard-shell">
     <Header UserDisplayName="@_state.UserDisplayName" Email="@_state.Email" />
@@ -15,8 +18,10 @@
             <CascadingValue Value="_state" IsFixed="false">
                 @ChildContent
             </CascadingValue>
-            <MeetingAlertToast />
-            <UrgentWorkItemToast />
+            <div class="toast-container">
+                <MeetingAlertToast />
+                <UrgentWorkItemToast />
+            </div>
             <Aura.UI.Services.DashboardSignalRListener /> <!-- SignalR listener for dashboard refresh events -->
         </main>
     </div>
@@ -34,6 +39,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Detect demo user and show wizard
+        try
+        {
+            var authState = await AuthState.GetAuthenticationStateAsync();
+            DemoState.IsDemoUser = authState.User.HasClaim("aura_demo_mode", "true");
+            DemoState.ShowWizard = DemoState.IsDemoUser;
+        }
+        catch
+        {
+            DemoState.IsDemoUser = false;
+        }
+
         using var activity = ActivitySource.StartActivity("dashboard.layout.initialize");
         activity?.SetTag("ui.component", nameof(MainLayoutAuthenticated));
         activity?.SetTag("dashboard.state_key", DashboardStateKey);

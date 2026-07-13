@@ -145,6 +145,7 @@ internal sealed class EfSchemaInitializer : IHostedService
 {
     private const string BaselineMigrationId = "20260710110000_InitialCreateBaseline";
     private const string TraceColumnsMigrationId = "20260710120000_AddInterruptionDecisionTraceColumns";
+    private const string UserOidMigrationId = "20260710130000_AddUserOidToInterruptionDecisions";
     private const string EfProductVersion = "9.0.6";
 
     private readonly IServiceScopeFactory _scopeFactory;
@@ -211,6 +212,14 @@ CREATE TABLE IF NOT EXISTS ""__EFMigrationsHistory"" (
             {
                 await ExecuteNonQueryAsync(connection,
                     $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ('{TraceColumnsMigrationId}', '{EfProductVersion}');",
+                    ct);
+            }
+
+            var hasUserOid = await ColumnExistsAsync(connection, "InterruptionDecisions", "UserOid", ct);
+            if (hasUserOid)
+            {
+                await ExecuteNonQueryAsync(connection,
+                    $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ('{UserOidMigrationId}', '{EfProductVersion}');",
                     ct);
             }
         }

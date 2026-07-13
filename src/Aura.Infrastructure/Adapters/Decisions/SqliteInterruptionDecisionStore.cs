@@ -47,6 +47,7 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         EnsureColumn(connection, "InterruptionDecisions", "RetrievedSemanticContext", "TEXT");
         EnsureColumn(connection, "InterruptionDecisions", "LlmRationale", "TEXT");
         EnsureColumn(connection, "InterruptionDecisions", "GuardrailOutcome", "TEXT");
+        EnsureColumn(connection, "InterruptionDecisions", "UserOid", "TEXT NULL");
     }
 
     public Task RecordAsync(InterruptionDecisionRecord record, CancellationToken cancellationToken = default)
@@ -56,8 +57,8 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
 
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome)
-            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState, @RetrievedSemanticContext, @LlmRationale, @GuardrailOutcome)
+            INSERT INTO InterruptionDecisions (Id, WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid)
+            VALUES (@Id, @WorkItemId, @Title, @SourceType, @Decision, @PriorityScore, @Explanation, @Timestamp, @FocusState, @RetrievedSemanticContext, @LlmRationale, @GuardrailOutcome, @UserOid)
             """;
         cmd.Parameters.AddWithValue("@Id", Guid.NewGuid().ToString());
         cmd.Parameters.AddWithValue("@WorkItemId", record.WorkItemId.ToString());
@@ -71,12 +72,13 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         cmd.Parameters.AddWithValue("@RetrievedSemanticContext", SerializeContext(record.RetrievedSemanticContext) ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@LlmRationale", (object?)record.LlmRationale ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@GuardrailOutcome", (object?)record.GuardrailOutcome ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@UserOid", (object?)record.UserOid ?? DBNull.Value);
         cmd.ExecuteNonQuery();
 
         return Task.CompletedTask;
     }
 
-    public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -84,18 +86,37 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
         if (pageSize < 1) pageSize = 20;
 
         var offset = (page - 1) * pageSize;
+        var hasFilter = !string.IsNullOrEmpty(userOid);
 
         using var countCmd = _connection.CreateCommand();
-        countCmd.CommandText = "SELECT COUNT(*) FROM InterruptionDecisions";
+        countCmd.CommandText = hasFilter
+            ? "SELECT COUNT(*) FROM InterruptionDecisions WHERE UserOid = @UserOid"
+            : "SELECT COUNT(*) FROM InterruptionDecisions";
+        if (hasFilter)
+        {
+            countCmd.Parameters.AddWithValue("@UserOid", userOid);
+        }
         var totalCount = Convert.ToInt32(countCmd.ExecuteScalar());
 
         using var cmd = _connection.CreateCommand();
-        cmd.CommandText = """
-            SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome
-            FROM InterruptionDecisions
-            ORDER BY Timestamp DESC
-            LIMIT @Limit OFFSET @Offset
-            """;
+        cmd.CommandText = hasFilter
+            ? """
+                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid
+                FROM InterruptionDecisions
+                WHERE UserOid = @UserOid
+                ORDER BY Timestamp DESC
+                LIMIT @Limit OFFSET @Offset
+                """
+            : """
+                SELECT WorkItemId, Title, SourceType, Decision, PriorityScore, Explanation, Timestamp, FocusState, RetrievedSemanticContext, LlmRationale, GuardrailOutcome, UserOid
+                FROM InterruptionDecisions
+                ORDER BY Timestamp DESC
+                LIMIT @Limit OFFSET @Offset
+                """;
+        if (hasFilter)
+        {
+            cmd.Parameters.AddWithValue("@UserOid", userOid);
+        }
         cmd.Parameters.AddWithValue("@Limit", pageSize);
         cmd.Parameters.AddWithValue("@Offset", offset);
 
@@ -130,7 +151,8 @@ internal sealed class SqliteInterruptionDecisionStore : IInterruptionDecisionSto
             FocusState: reader.GetString(7),
             RetrievedSemanticContext: DeserializeContext(reader.IsDBNull(8) ? null : reader.GetString(8)),
             LlmRationale: reader.IsDBNull(9) ? null : reader.GetString(9),
-            GuardrailOutcome: reader.IsDBNull(10) ? "confirmed" : reader.GetString(10));
+            GuardrailOutcome: reader.IsDBNull(10) ? "confirmed" : reader.GetString(10),
+            UserOid: reader.IsDBNull(11) ? null : reader.GetString(11));
     }
 
     private static string? SerializeContext(IReadOnlyList<DecisionContextItem>? context)

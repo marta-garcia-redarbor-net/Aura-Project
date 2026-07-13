@@ -1,36 +1,48 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.JSInterop
+@using System.Text.Json.Serialization
 @inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
 @inject ITokenAcquisitionService TokenService
 @implements IAsyncDisposable
 
-<div class="meeting-alert-toast" data-testid="meeting-alert-toast">
-    @if (_currentAlert is not null)
+@if (_alerts.Count > 0)
+{
+    foreach (var alert in _alerts.ToArray())
     {
-        <div class="meeting-alert-toast__content" data-testid="meeting-alert-toast-content">
-            <div class="meeting-alert-toast__header">
-                <h3 data-testid="meeting-alert-title">@_currentAlert.Title</h3>
-                <button class="meeting-alert-toast__dismiss" 
-                        data-testid="meeting-alert-dismiss"
-                        @onclick="DismissAlert"
-                        aria-label="Dismiss alert">
-                    &times;
-                </button>
+        var relativeTime = ComputeRelativeTime(alert.StartsAtUtc);
+        <div class="toast toast--low" data-testid="meeting-alert-toast-content">
+            <div class="toast__icon">
+                <span class="material-symbols-outlined">calendar_month</span>
             </div>
-            <p data-testid="meeting-alert-time">@_currentAlert.Time</p>
-            <button class="meeting-alert-toast__acknowledge" 
-                    data-testid="meeting-alert-acknowledge"
-                    @onclick="AcknowledgeAlert">
-                Acknowledge
-            </button>
+            <div class="toast__body">
+                <div class="toast__header">
+                    <span class="toast__badge">Meeting</span>
+                    <h3 class="toast__title" data-testid="meeting-alert-title">@alert.Title</h3>
+                    <button class="toast__dismiss"
+                            data-testid="meeting-alert-dismiss"
+                            @onclick="() => DismissAlert(alert)"
+                            aria-label="Dismiss alert">
+                        &times;
+                    </button>
+                </div>
+                <p class="toast__source" data-testid="meeting-alert-time">@relativeTime</p>
+                <div class="toast__actions">
+                    <button class="toast__acknowledge"
+                            data-testid="meeting-alert-acknowledge"
+                            @onclick="() => AcknowledgeAlert(alert)">
+                        Acknowledge
+                    </button>
+                </div>
+            </div>
         </div>
     }
-</div>
+}
 
 @code {
     private HubConnection? _hubConnection;
-    private MeetingAlertInfo? _currentAlert;
+    private readonly List<MeetingAlertPayload> _alerts = [];
+    private readonly object _lock = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,7 +56,7 @@
             try
             {
                 var token = await TokenService.AcquireTokenAsync();
-                
+
                 if (string.IsNullOrEmpty(token))
                 {
                     Console.WriteLine($"SignalR: Token not available for meeting toast (attempt {attempt}/{maxRetries})");
@@ -67,9 +79,12 @@
                     .WithAutomaticReconnect()
                     .Build();
 
-                _hubConnection.On<MeetingAlertInfo>("MeetingAlert", alert =>
+                _hubConnection.On<MeetingAlertPayload>("MeetingAlert", alert =>
                 {
-                    _currentAlert = alert;
+                    lock (_lock)
+                    {
+                        _alerts.Add(alert);
+                    }
                     InvokeAsync(async () =>
                     {
                         StateHasChanged();
@@ -89,16 +104,38 @@
                     await Task.Delay(delayMs);
             }
         }
-        
+
         Console.WriteLine("SignalR: Failed to establish meeting toast connection after all retries - meeting alerts will not be shown");
     }
 
-    private async Task ShowBrowserNotification(MeetingAlertInfo alert)
+    private static string ComputeRelativeTime(DateTimeOffset startsAtUtc)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (startsAtUtc <= now)
+            return "Starting now";
+
+        var diff = startsAtUtc - now;
+        if (diff.TotalHours >= 1)
+        {
+            var hours = (int)diff.TotalHours;
+            var minutes = diff.Minutes;
+            return minutes > 0
+                ? $"Starts in {hours}h {minutes}m"
+                : $"Starts in {hours}h";
+        }
+
+        if (diff.TotalMinutes >= 1)
+            return $"Starts in {(int)diff.TotalMinutes}m";
+
+        return "Starting soon";
+    }
+
+    private async Task ShowBrowserNotification(MeetingAlertPayload alert)
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("meetingAlert.showNotification", 
-                alert.Title, alert.Time);
+            var time = ComputeRelativeTime(alert.StartsAtUtc);
+            await JSRuntime.InvokeVoidAsync("meetingAlert.showNotification", alert.Title, time);
         }
         catch (JSException)
         {
@@ -118,13 +155,13 @@
         }
     }
 
-    private async Task AcknowledgeAlert()
+    private async Task AcknowledgeAlert(MeetingAlertPayload alert)
     {
-        if (_hubConnection is not null && _currentAlert is not null)
+        if (_hubConnection is not null)
         {
             try
             {
-                await _hubConnection.InvokeAsync("AcknowledgeAlert", _currentAlert.Id);
+                await _hubConnection.InvokeAsync("AcknowledgeAlert", alert.EventId);
             }
             catch (Exception ex)
             {
@@ -132,13 +169,19 @@
             }
         }
 
-        _currentAlert = null;
+        lock (_lock)
+        {
+            _alerts.Remove(alert);
+        }
         StateHasChanged();
     }
 
-    private void DismissAlert()
+    private void DismissAlert(MeetingAlertPayload alert)
     {
-        _currentAlert = null;
+        lock (_lock)
+        {
+            _alerts.Remove(alert);
+        }
         StateHasChanged();
     }
 
@@ -150,10 +193,21 @@
         }
     }
 
-    public class MeetingAlertInfo
+    /// <summary>
+    /// Maps the SignalR MeetingAlert payload sent by SignalRMeetingAlertDispatcher.
+    /// </summary>
+    public class MeetingAlertPayload
     {
-        public string Id { get; set; } = string.Empty;
+        [JsonPropertyName("eventId")]
+        public string EventId { get; set; } = string.Empty;
+
+        [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
-        public string Time { get; set; } = string.Empty;
+
+        [JsonPropertyName("startsAtUtc")]
+        public DateTimeOffset StartsAtUtc { get; set; }
+
+        [JsonPropertyName("joinUrl")]
+        public string? JoinUrl { get; set; }
     }
 }

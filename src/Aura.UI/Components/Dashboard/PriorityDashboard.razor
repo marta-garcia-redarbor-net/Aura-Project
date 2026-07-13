@@ -9,6 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject DemoUiState DemoState
 @implements IDisposable
 
 <AuthorizeView>
@@ -23,40 +24,7 @@
         }
         else
         {
-            <div class="dashboard-page-header">
-                <div>
-                    <h1 class="dashboard-page-header__title">Priority Dashboard</h1>
-                </div>
-                <div style="display:flex;align-items:center;gap:0.75rem;">
-                    @if (_demoAvailable)
-                    {
-                        <button class="dashboard-header__demo-btn"
-                                disabled="@_simulationRunning"
-                                @onclick="StartSimulationAsync"
-                                title="@_simulationMessage">
-                            <span class="material-symbols-outlined">play_circle</span>
-                            Demo Mode
-                        </button>
-                        <button class="dashboard-header__reset-btn"
-                                disabled="@_simulationRunning"
-                                @onclick="ResetDemoAsync"
-                                title="Delete demo items">
-                            <span class="material-symbols-outlined">delete</span>
-                            Reset
-                        </button>
-                    }
-                    <span class="dashboard-page-header__badge dashboard-page-header__badge--live"
-                          data-testid="priority-dashboard-top-priority-counter">
-                        @_previewSummary?.TotalPendingCount pending
-                        <span class="dashboard-page-header__badge dashboard-page-header__badge--high"
-                              data-testid="priority-dashboard-high-badge">
-                            @_previewSummary?.HighPriorityCount high priority
-                        </span>
-                    </span>
-                </div>
-            </div>
-
-            <StatusGreetingCard />
+            <StatusGreetingCard PreviewSummary="_previewSummary" />
             <PrioritySummaryCards />
         }
     </Authorized>
@@ -72,85 +40,20 @@
 
     private DashboardPreviewResponse? _previewSummary;
     private bool _redirecting;
-    private bool _demoAvailable;
-    private bool _simulationRunning;
-    private string? _simulationMessage;
-    private bool _demoDataExists;
 
     protected override async Task OnInitializedAsync()
     {
         EventBus.OnDashboardRefresh += HandleDashboardRefresh;
-        await CheckDemoStatusAsync();
         await RefreshDataAsync();
-    }
 
-    private async Task CheckDemoStatusAsync()
-    {
+        // Keep DemoState in sync with preview data
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _demoAvailable = authState.User.HasClaim("aura_demo_mode", "true");
-        }
-    }
-
-    private async Task StartSimulationAsync()
-    {
-        _simulationRunning = true;
-        _simulationMessage = null;
-        try
-        {
-            var beforePending = _previewSummary?.TotalPendingCount ?? 0;
-            var client = HttpClientFactory.CreateClient("AuraApi");
-            var response = await client.PostAsync("api/demo/start-simulation", null);
-            response.EnsureSuccessStatusCode();
-            await EventBus.RaiseDashboardRefreshAsync();
-            await RefreshDataAsync();
-            for (var attempt = 0; attempt < 6; attempt++)
+            if (authState.User.HasClaim("aura_demo_mode", "true"))
             {
-                await Task.Delay(3000);
-                await RefreshDataAsync();
-                if ((_previewSummary?.TotalPendingCount ?? 0) > beforePending)
-                {
-                    await EventBus.RaiseDashboardRefreshAsync();
-                    await RefreshDataAsync();
-                    break;
-                }
+                DemoState.IsDemoUser = true;
             }
-            await InvokeAsync(StateHasChanged);
-            _simulationMessage = $"✅ Simulation started ({_previewSummary?.TotalPendingCount ?? 0} pending)";
-            _demoDataExists = true;
-        }
-        catch
-        {
-            _simulationMessage = "❌ Error starting simulation";
-        }
-        finally
-        {
-            _simulationRunning = false;
-        }
-    }
-
-    private async Task ResetDemoAsync()
-    {
-        _simulationRunning = true;
-        try
-        {
-            var client = HttpClientFactory.CreateClient("AuraApi");
-            var response = await client.PostAsync("api/demo/reset", null);
-            response.EnsureSuccessStatusCode();
-            _demoDataExists = false;
-            _simulationMessage = null;
-            EventBus.ClearTracking();
-            await EventBus.RaiseDashboardRefreshAsync();
-            await RefreshDataAsync();
-        }
-        catch
-        {
-            _simulationMessage = "❌ Error resetting demo";
-        }
-        finally
-        {
-            _simulationRunning = false;
         }
     }
 
@@ -184,5 +87,4 @@
     {
         EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
-
 }

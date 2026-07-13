@@ -10,7 +10,7 @@ namespace Aura.Infrastructure.Adapters.LlmAdvisor;
 /// <summary>
 /// LLM decision advisor adapter using Microsoft.Extensions.AI IChatClient.
 /// </summary>
-internal sealed class MeaiLlmDecisionAdvisorAdapter : ILlmDecisionAdvisor
+internal sealed partial class MeaiLlmDecisionAdvisorAdapter : ILlmDecisionAdvisor
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -53,22 +53,10 @@ internal sealed class MeaiLlmDecisionAdvisorAdapter : ILlmDecisionAdvisor
                     FailureReason: "empty-response");
             }
 
-            AdvisorJsonResponse? parsed;
-            try
-            {
-                parsed = JsonSerializer.Deserialize<AdvisorJsonResponse>(response.Text, JsonOptions);
-            }
-            catch (JsonException)
-            {
-                return new AdvisoryResponse(
-                    SuggestedVerdict: null,
-                    Rationale: "LLM response could not be parsed as advisory JSON.",
-                    GuardrailOutcome: "llm-unavailable",
-                    FailureReason: "json-parse-failed");
-            }
-
+            var parsed = TryParseJsonResponse(response.Text);
             if (parsed is null || string.IsNullOrWhiteSpace(parsed.Rationale))
             {
+                Log.ParseFailed(_logger, TruncateForLog(response.Text));
                 return new AdvisoryResponse(
                     SuggestedVerdict: null,
                     Rationale: "LLM response could not be parsed as advisory JSON.",
@@ -117,6 +105,59 @@ internal sealed class MeaiLlmDecisionAdvisorAdapter : ILlmDecisionAdvisor
         }
     }
 
+    /// <summary>
+    /// Attempts to parse the LLM response as JSON using multiple strategies:
+    /// 1. Direct parse of the full text
+    /// 2. Extract JSON from ```json ... ``` markdown blocks
+    /// 3. Find the outermost { ... } object in the text
+    /// </summary>
+    private static AdvisorJsonResponse? TryParseJsonResponse(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        // Strategy 1: direct parse
+        var result = TryDeserialize(text);
+        if (result is not null) return result;
+
+        // Strategy 2: extract from markdown code block
+        var markdownMatch = System.Text.RegularExpressions.Regex.Match(text, @"```(?:json)?\s*(\{.*?\})\s*```", System.Text.RegularExpressions.RegexOptions.Singleline);
+        if (markdownMatch.Success)
+        {
+            result = TryDeserialize(markdownMatch.Groups[1].Value);
+            if (result is not null) return result;
+        }
+
+        // Strategy 3: find outermost { ... } object
+        var firstBrace = text.IndexOf('{');
+        var lastBrace = text.LastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace)
+        {
+            var candidate = text.Substring(firstBrace, lastBrace - firstBrace + 1);
+            result = TryDeserialize(candidate);
+            if (result is not null) return result;
+        }
+
+        return null;
+    }
+
+    private static AdvisorJsonResponse? TryDeserialize(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<AdvisorJsonResponse>(json, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static string TruncateForLog(string text, int maxLength = 200)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Length <= maxLength ? text : text[..maxLength] + "...";
+    }
+
     private static string BuildPrompt(AdvisoryRequest request)
     {
         var contextSummary = request.Context.Count == 0
@@ -143,6 +184,13 @@ internal sealed class MeaiLlmDecisionAdvisorAdapter : ILlmDecisionAdvisor
 
         var normalized = verdict.Trim().ToUpperInvariant();
         return normalized is "INTERRUPT" or "QUEUE" or "DEFER" ? normalized : null;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 8001, Level = LogLevel.Warning,
+            Message = "Failed to parse LLM response as advisory JSON. Raw: {RawText}")]
+        public static partial void ParseFailed(ILogger logger, string? rawText);
     }
 
     private sealed record AdvisorJsonResponse(string? SuggestedVerdict, string Rationale, double? Confidence);

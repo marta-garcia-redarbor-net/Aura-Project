@@ -30,6 +30,7 @@ public static partial class TriageEndpoints
 
     private static async Task<IResult> GetDecisionsAsync(
         IInterruptionDecisionStore decisionStore,
+        ICurrentUserService currentUserService,
         ILoggerFactory loggerFactory,
         int page = 1,
         int pageSize = 20,
@@ -44,7 +45,10 @@ public static partial class TriageEndpoints
 
         try
         {
-            var result = await decisionStore.QueryAsync(page, pageSize, cancellationToken);
+            var currentUser = currentUserService.GetCurrentUser();
+            var oid = currentUser?.Oid;
+
+            var result = await decisionStore.QueryAsync(page, pageSize, oid, cancellationToken);
             var mapped = new PagedResult<DecisionLogItemResponse>
             {
                 Items = result.Items.Select(MapToResponse).ToList(),

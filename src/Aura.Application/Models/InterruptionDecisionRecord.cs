@@ -15,4 +15,5 @@ public sealed record InterruptionDecisionRecord(
     string FocusState,
     IReadOnlyList<DecisionContextItem>? RetrievedSemanticContext = null,
     string? LlmRationale = null,
-    string GuardrailOutcome = "confirmed");
+    string GuardrailOutcome = "confirmed",
+    string? UserOid = null);

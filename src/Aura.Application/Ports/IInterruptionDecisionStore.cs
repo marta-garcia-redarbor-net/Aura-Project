@@ -22,7 +22,7 @@ public interface IInterruptionDecisionStore
     /// <param name="pageSize">The number of records per page.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paginated result set of decision records.</returns>
-    Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes all persisted decision records. Used by demo reset to leave the database empty.

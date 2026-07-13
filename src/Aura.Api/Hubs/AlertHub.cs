@@ -30,7 +30,8 @@ public sealed class AlertHub : Hub
     public override async Task OnConnectedAsync()
     {
         var userId = Context.User?.FindFirst(EntraIdClaims.ObjectId)?.Value
-            ?? Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            ?? Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? Context.User?.FindFirst("oid")?.Value;
         if (!string.IsNullOrEmpty(userId))
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, userId);

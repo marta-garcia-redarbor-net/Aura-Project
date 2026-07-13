@@ -26,6 +26,7 @@ public sealed class InterruptionDecisionConfiguration : IEntityTypeConfiguration
         builder.Property(e => e.RetrievedSemanticContext).HasColumnName("RetrievedSemanticContext").HasColumnType("TEXT");
         builder.Property(e => e.LlmRationale).HasColumnName("LlmRationale").HasColumnType("TEXT");
         builder.Property(e => e.GuardrailOutcome).HasColumnName("GuardrailOutcome").HasColumnType("TEXT");
+        builder.Property(e => e.UserOid).HasColumnName("UserOid").HasColumnType("TEXT");
 
         builder.HasIndex(e => e.Timestamp).IsDescending().HasDatabaseName("IX_InterruptionDecisions_Timestamp");
     }

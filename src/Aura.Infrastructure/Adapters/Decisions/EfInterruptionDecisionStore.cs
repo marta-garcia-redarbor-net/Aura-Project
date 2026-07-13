@@ -39,23 +39,30 @@ internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
             FocusState = record.FocusState,
             RetrievedSemanticContext = SerializeContext(record.RetrievedSemanticContext),
             LlmRationale = record.LlmRationale,
-            GuardrailOutcome = record.GuardrailOutcome
+            GuardrailOutcome = record.GuardrailOutcome,
+            UserOid = record.UserOid
         });
 
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 20;
 
-        var totalCount = await _db.InterruptionDecisions.CountAsync(cancellationToken);
+        var query = _db.InterruptionDecisions.AsNoTracking();
 
-        var entities = await _db.InterruptionDecisions
-            .AsNoTracking()
+        if (!string.IsNullOrEmpty(userOid))
+        {
+            query = query.Where(e => e.UserOid == userOid);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var entities = await query
             .OrderByDescending(e => e.Timestamp)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -72,7 +79,8 @@ internal sealed class EfInterruptionDecisionStore : IInterruptionDecisionStore
                 e.FocusState,
                 DeserializeContext(e.RetrievedSemanticContext),
                 e.LlmRationale,
-                string.IsNullOrWhiteSpace(e.GuardrailOutcome) ? "confirmed" : e.GuardrailOutcome))
+                string.IsNullOrWhiteSpace(e.GuardrailOutcome) ? "confirmed" : e.GuardrailOutcome,
+                e.UserOid))
             .ToList();
 
         return new PagedResult<InterruptionDecisionRecord>

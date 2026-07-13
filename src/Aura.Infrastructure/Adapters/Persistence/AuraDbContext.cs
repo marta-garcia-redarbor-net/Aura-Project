@@ -79,6 +79,7 @@ public class InterruptionDecision
     public string? RetrievedSemanticContext { get; set; }
     public string? LlmRationale { get; set; }
     public string? GuardrailOutcome { get; set; }
+    public string? UserOid { get; set; }
 }
 
 /// <summary>EF Core entity for the AlertRules (VipSenders + AlertKeywords) tables.

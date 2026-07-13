@@ -11,6 +11,8 @@ public static class PrMetadataKeys
     public const string SourceLink = "pr.sourceLink";
     public const string IsDraft = "pr.isDraft";
     public const string UpdatedAt = "pr.updatedAt";
+    public const string Branch = "pr.branch";
+    public const string SourceBranch = "pr.sourceBranch";
 
     public const string AttentionScope = "pr.attentionScope";
     public const string AttentionScopeFallback = "pr.attentionScope.fallback";

@@ -1,9 +1,10 @@
 @using Aura.Application.UseCases.Calendar
 @using Aura.Application.Models
-@using Microsoft.AspNetCore.Http
-@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @inject GetUpcomingMeetingsUseCase UseCase
-@inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDashboardEventBus EventBus
+@implements IDisposable
 
 <section class="dashboard-panel" data-testid="upcoming-meetings-panel" aria-live="polite">
     <h2>Upcoming meetings</h2>
@@ -46,27 +47,39 @@
 @code {
     private IReadOnlyList<UpcomingMeetingDto>? _events;
     private string? _loadError;
-    private Timer? _refreshTimer;
-
-    private string? CurrentUserId => HttpContextAccessor.HttpContext?.User.FindFirstValue("oid");
+    private string? _currentUserId;
 
     protected override async Task OnInitializedAsync()
     {
+        EventBus.OnDashboardRefresh += HandleDashboardRefresh;
+        await ResolveUserIdAsync();
         await LoadEventsAsync();
+    }
 
-        _refreshTimer = new Timer(async _ => await InvokeAsync(async () =>
+    private async Task ResolveUserIdAsync()
+    {
+        try
         {
-            await LoadEventsAsync();
-            StateHasChanged();
-        }), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            _currentUserId = state.User.FindFirst("oid")?.Value;
+        }
+        catch
+        {
+            _currentUserId = null;
+        }
+    }
+
+    private async Task HandleDashboardRefresh()
+    {
+        await LoadEventsAsync();
+        StateHasChanged();
     }
 
     private async Task LoadEventsAsync()
     {
         try
         {
-            var userId = CurrentUserId;
-            if (string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrWhiteSpace(_currentUserId))
             {
                 _events = [];
                 _loadError = null;
@@ -75,7 +88,7 @@
 
             var now = DateTimeOffset.UtcNow;
             var windowEnd = now.AddHours(8);
-            _events = await UseCase.ExecuteAsync(userId, now, windowEnd, CancellationToken.None);
+            _events = await UseCase.ExecuteAsync(_currentUserId, now, windowEnd, CancellationToken.None);
             _loadError = null;
         }
         catch
@@ -86,6 +99,6 @@
 
     public void Dispose()
     {
-        _refreshTimer?.Dispose();
+        EventBus.OnDashboardRefresh -= HandleDashboardRefresh;
     }
 }

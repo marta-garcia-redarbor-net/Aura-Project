@@ -79,7 +79,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 focusState?.CurrentState.ToString() ?? "None",
                 RetrievedSemanticContext: [],
                 LlmRationale: "Explicit override applied before advisory.",
-                GuardrailOutcome: "confirmed");
+                GuardrailOutcome: "confirmed",
+                UserOid: targetUserId);
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -104,7 +105,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 "None",
                 RetrievedSemanticContext: [],
                 LlmRationale: "No target user resolved; deterministic queue retained.",
-                GuardrailOutcome: "confirmed");
+                GuardrailOutcome: "confirmed",
+                UserOid: targetUserId);
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -227,7 +229,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             focusState?.CurrentState.ToString() ?? "None",
             RetrievedSemanticContext: retrievedContext,
             LlmRationale: advisory.Rationale,
-            GuardrailOutcome: guardrailOutcome);
+            GuardrailOutcome: guardrailOutcome,
+            UserOid: targetUserId);
 
         await _decisionStore.RecordAsync(finalRecord, ct);
 
