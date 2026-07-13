@@ -3,7 +3,9 @@ using Aura.Application.UseCases.Calendar;
 using Aura.Application.Models;
 using Aura.Domain.Calendar;
 using Aura.UI.Components.Dashboard;
+using Aura.UI.Services;
 using Bunit;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -18,6 +20,15 @@ public class UpcomingMeetingsPanelTests : TestContext
     public UpcomingMeetingsPanelTests()
     {
         Services.AddHttpContextAccessor();
+        Services.AddCascadingAuthenticationState();
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
+        
+        // Register a mock AuthenticationStateProvider
+        var authStateProvider = Substitute.For<AuthenticationStateProvider>();
+        var principal = new ClaimsPrincipal(new ClaimsIdentity([new Claim("oid", UserId)], "TestAuth"));
+        authStateProvider.GetAuthenticationStateAsync()
+            .Returns(Task.FromResult(new AuthenticationState(principal)));
+        Services.AddSingleton(authStateProvider);
     }
 
     private void SetAuthenticatedUser(string userId = UserId)

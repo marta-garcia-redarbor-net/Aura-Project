@@ -105,7 +105,8 @@ public class PullRequestsPageTests : TestContext
                 BuildStatus: "passing",
                 ReviewApprovals: 1,
                 ReviewRequired: 2,
-                ReviewChangesRequested: 0
+                ReviewChangesRequested: 0,
+                AttentionScope: "direct"
             ),
             new(
                 Id: 145,
@@ -126,7 +127,8 @@ public class PullRequestsPageTests : TestContext
                 BuildStatus: "running",
                 ReviewApprovals: 1,
                 ReviewRequired: 1,
-                ReviewChangesRequested: 0
+                ReviewChangesRequested: 0,
+                AttentionScope: "group"
             )
         };
         prClient.GetPendingPullRequestsAsync(Arg.Any<CancellationToken>())
@@ -183,10 +185,11 @@ public class PullRequestsPageTests : TestContext
                     BranchName: "main",
                     SourceBranchName: "hotfix/payment-crash",
                     BuildStatus: "passing",
-                    ReviewApprovals: 1,
-                    ReviewRequired: 2,
-                    ReviewChangesRequested: 0
-                )
+                ReviewApprovals: 1,
+                ReviewRequired: 2,
+                ReviewChangesRequested: 0,
+                AttentionScope: "direct"
+            )
             }));
         Services.AddSingleton(prClient);
 
@@ -235,11 +238,11 @@ public class PullRequestsPageTests : TestContext
                 new(142, "PR 1", "Aura", "Alice",
                     DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow,
                     "active", 1, 0, 1, "https://dev.azure.com/pr/142", false, "high",
-                    "main", "feature/foo", "passing", 1, 1, 0),
+                    "main", "feature/foo", "passing", 1, 1, 0, "direct"),
                 new(143, "PR 2", "Aura", "Bob",
                     DateTimeOffset.UtcNow.AddHours(-2), DateTimeOffset.UtcNow,
                     "active", 2, 3, 5, "https://dev.azure.com/pr/143", false, "medium",
-                    "develop", "fix/bar", "running", 0, 2, 1)
+                    "develop", "fix/bar", "running", 0, 2, 1, "group")
             }));
         Services.AddSingleton(prClient);
 
@@ -251,7 +254,7 @@ public class PullRequestsPageTests : TestContext
 
         // Assert
         cut.WaitForElement("[data-testid='pr-pending-count']", TimeSpan.FromSeconds(3));
-        Assert.Contains("2 pending", cut.Find("[data-testid='pr-pending-count']").TextContent);
+        Assert.Contains("2 requiring your attention", cut.Find("[data-testid='pr-pending-count']").TextContent);
     }
 
     [Fact]

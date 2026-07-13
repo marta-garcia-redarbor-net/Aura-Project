@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Claims;
 using Aura.UI.Components.Dashboard;
+using Aura.UI.Components.Layout;
 using Aura.UI.Models;
 using Aura.UI.Services;
 using Bunit;
@@ -41,6 +42,7 @@ public class PriorityDashboardDemoClaimTests : TestContext
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
         Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+        Services.AddSingleton(new DemoUiState());
 
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
         var httpClient = new HttpClient(new StubHttpMessageHandler())
@@ -68,6 +70,11 @@ public class PriorityDashboardDemoClaimTests : TestContext
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "MockAuth ok"))));
         Services.AddSingleton(statusClient);
+
+        var focusStateApi = Substitute.For<IFocusStateApiClient>();
+        focusStateApi.GetCurrentAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new FocusStateResponse("WindowOfOpportunity", false, "user-123")));
+        Services.AddSingleton(focusStateApi);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
@@ -84,13 +91,16 @@ public class PriorityDashboardDemoClaimTests : TestContext
     {
         // Arrange — user has aura_demo_mode=true claim
         SetupServices();
+        var demoState = new DemoUiState { IsDemoUser = true };
+        Services.AddSingleton(demoState);
+        
         var authState = CreateAuthState(
             new Claim(ClaimTypes.Name, "Demo User"),
             new Claim("aura_demo_mode", "true"));
         Task<AuthenticationState> authStateTask = Task.FromResult(authState);
 
-        // Act
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        // Act — render Header component which shows demo controls
+        var cut = RenderComponent<Aura.UI.Components.Layout.Header>(p => p.AddCascadingValue(authStateTask));
 
         // Assert — demo buttons are visible
         cut.WaitForAssertion(() =>
@@ -104,12 +114,15 @@ public class PriorityDashboardDemoClaimTests : TestContext
     {
         // Arrange — user has NO aura_demo_mode claim (real Entra ID auth)
         SetupServices();
+        var demoState = new DemoUiState { IsDemoUser = false };
+        Services.AddSingleton(demoState);
+        
         var authState = CreateAuthState(
             new Claim(ClaimTypes.Name, "Real User"));
         Task<AuthenticationState> authStateTask = Task.FromResult(authState);
 
-        // Act
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        // Act — render Header component
+        var cut = RenderComponent<Aura.UI.Components.Layout.Header>(p => p.AddCascadingValue(authStateTask));
 
         // Assert — demo buttons are NOT rendered
         cut.WaitForAssertion(() =>
@@ -124,13 +137,16 @@ public class PriorityDashboardDemoClaimTests : TestContext
     {
         // Arrange — user has aura_demo_mode=false (not "true")
         SetupServices();
+        var demoState = new DemoUiState { IsDemoUser = false };
+        Services.AddSingleton(demoState);
+        
         var authState = CreateAuthState(
             new Claim(ClaimTypes.Name, "Some User"),
             new Claim("aura_demo_mode", "false"));
         Task<AuthenticationState> authStateTask = Task.FromResult(authState);
 
-        // Act
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        // Act — render Header component
+        var cut = RenderComponent<Aura.UI.Components.Layout.Header>(p => p.AddCascadingValue(authStateTask));
 
         // Assert — demo buttons are NOT rendered
         cut.WaitForAssertion(() =>
@@ -145,13 +161,16 @@ public class PriorityDashboardDemoClaimTests : TestContext
     {
         // Arrange — user has aura_demo_mode=true claim
         SetupServices();
+        var demoState = new DemoUiState { IsDemoUser = true };
+        Services.AddSingleton(demoState);
+        
         var authState = CreateAuthState(
             new Claim(ClaimTypes.Name, "Demo User"),
             new Claim("aura_demo_mode", "true"));
         Task<AuthenticationState> authStateTask = Task.FromResult(authState);
 
-        // Act
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        // Act — render Header component
+        var cut = RenderComponent<Aura.UI.Components.Layout.Header>(p => p.AddCascadingValue(authStateTask));
 
         // Assert — reset button is visible
         cut.WaitForAssertion(() =>

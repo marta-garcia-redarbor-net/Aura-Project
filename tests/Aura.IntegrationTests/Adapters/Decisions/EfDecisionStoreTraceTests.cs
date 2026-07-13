@@ -36,7 +36,7 @@ public class EfDecisionStoreTraceTests
             GuardrailOutcome: "confirmed");
 
         await store.RecordAsync(record, CancellationToken.None);
-        var result = await store.QueryAsync(1, 10, CancellationToken.None);
+        var result = await store.QueryAsync(1, 10, cancellationToken: CancellationToken.None);
 
         Assert.Single(result.Items);
         var persisted = result.Items[0];

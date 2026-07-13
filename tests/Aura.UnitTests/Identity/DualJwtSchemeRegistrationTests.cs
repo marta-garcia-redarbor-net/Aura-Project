@@ -68,16 +68,18 @@ public class DualJwtSchemeRegistrationTests
 
         // Act
         var schemeProvider = provider.GetRequiredService<IAuthenticationSchemeProvider>();
+        var smartBearerScheme = schemeProvider.GetSchemeAsync("SmartBearer").GetAwaiter().GetResult();
         var entraScheme = schemeProvider.GetSchemeAsync("EntraId").GetAwaiter().GetResult();
         var mockScheme = schemeProvider.GetSchemeAsync("MockJwt").GetAwaiter().GetResult();
 
-        // Assert — both schemes MUST be registered simultaneously
+        // Assert — SmartBearer (policy scheme), EntraId, and MockJwt MUST all be registered
+        Assert.NotNull(smartBearerScheme);
         Assert.NotNull(entraScheme);
         Assert.NotNull(mockScheme);
     }
 
     [Fact]
-    public void AddIdentityAdapter_EntraIdIsDefaultScheme()
+    public void AddIdentityAdapter_SmartBearerIsDefaultScheme()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -89,13 +91,13 @@ public class DualJwtSchemeRegistrationTests
         var defaultScheme = schemeProvider.GetDefaultAuthenticateSchemeAsync()
             .GetAwaiter().GetResult();
 
-        // Assert — EntraId MUST be the default scheme
+        // Assert — SmartBearer MUST be the default scheme (policy scheme that routes to EntraId or MockJwt)
         Assert.NotNull(defaultScheme);
-        Assert.Equal("EntraId", defaultScheme.Name);
+        Assert.Equal("SmartBearer", defaultScheme.Name);
     }
 
     [Fact]
-    public void AddIdentityAdapter_DefaultPolicyAcceptsBothSchemes()
+    public void AddIdentityAdapter_DefaultPolicyUsesSmartBearerScheme()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -106,10 +108,9 @@ public class DualJwtSchemeRegistrationTests
         var options = provider.GetRequiredService<IOptions<AuthorizationOptions>>();
         var defaultPolicy = options.Value.DefaultPolicy;
 
-        // Assert — default policy must list both schemes
+        // Assert — default policy must use SmartBearer (which routes to EntraId or MockJwt)
         Assert.NotNull(defaultPolicy);
-        Assert.Contains("EntraId", defaultPolicy.AuthenticationSchemes);
-        Assert.Contains("MockJwt", defaultPolicy.AuthenticationSchemes);
+        Assert.Contains("SmartBearer", defaultPolicy.AuthenticationSchemes);
     }
 
     [Fact]
@@ -130,7 +131,7 @@ public class DualJwtSchemeRegistrationTests
     }
 
     [Fact]
-    public async Task AddIdentityAdapter_RequireEntraOrDemoPolicyAcceptsBothSchemes()
+    public async Task AddIdentityAdapter_RequireEntraOrDemoPolicyUsesSmartBearerScheme()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -141,10 +142,9 @@ public class DualJwtSchemeRegistrationTests
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
         var policy = await policyProvider.GetPolicyAsync("RequireEntraOrDemo");
 
-        // Assert
+        // Assert — RequireEntraOrDemo uses SmartBearer (which routes to EntraId or MockJwt based on token)
         Assert.NotNull(policy);
-        Assert.Contains("EntraId", policy.AuthenticationSchemes);
-        Assert.Contains("MockJwt", policy.AuthenticationSchemes);
+        Assert.Contains("SmartBearer", policy.AuthenticationSchemes);
     }
 
     [Fact]

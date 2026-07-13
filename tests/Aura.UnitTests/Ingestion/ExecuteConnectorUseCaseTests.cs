@@ -653,6 +653,7 @@ public class ExecuteConnectorUseCaseTests
                 new InterruptionVerdict(InterruptionDecision.Queue, new EvaluationReport([]), explanation: "queue"),
                 new InterruptionVerdict(InterruptionDecision.Defer, new EvaluationReport([]), explanation: "defer"));
 
+        var semanticOutboxRepo = Substitute.For<ISemanticOutboxRepository>();
         var useCase = new ExecuteConnectorUseCase(
             checkpointStore,
             [adapter],
@@ -661,6 +662,7 @@ public class ExecuteConnectorUseCaseTests
             engine,
             dashboardRefresh,
             outbox,
+            semanticOutboxRepo,
             new RecordingLogger<ExecuteConnectorUseCase>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);
@@ -698,6 +700,7 @@ public class ExecuteConnectorUseCaseTests
                 explanation: "override matched",
                 targetUserId: "reviewer-1"));
 
+        var semanticOutboxRepo = Substitute.For<ISemanticOutboxRepository>();
         var useCase = new ExecuteConnectorUseCase(
             checkpointStore,
             [adapter],
@@ -706,6 +709,7 @@ public class ExecuteConnectorUseCaseTests
             engine,
             dashboardRefresh,
             outbox,
+            semanticOutboxRepo,
             new RecordingLogger<ExecuteConnectorUseCase>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);

@@ -34,6 +34,7 @@ public class PriorityDashboardRenderOrderTests : TestContext
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
         Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+        Services.AddSingleton(new DemoUiState());
 
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
         var httpClient = new HttpClient(new StubHttpMessageHandler())

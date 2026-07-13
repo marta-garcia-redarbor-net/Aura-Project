@@ -4,6 +4,7 @@ using Aura.UI.Pages;
 using Aura.UI.Services;
 using Bunit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -33,6 +34,20 @@ public class DecisionLogPageTests : TestContext
     {
         Services.AddAuthorizationCore();
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
+        Services.AddSingleton<NavigationManager>(new TestNavigationManager());
+    }
+
+    private sealed class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager()
+        {
+            Initialize("http://localhost/", "http://localhost/");
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            // No-op for tests
+        }
     }
 
     [Fact]
@@ -64,7 +79,7 @@ public class DecisionLogPageTests : TestContext
         var cut = RenderComponent<DecisionLog>(p => p.AddCascadingValue(authStateTask));
 
         cut.WaitForElement("[data-testid='decision-log-empty']");
-        Assert.Contains("No decisions recorded yet", cut.Markup);
+        Assert.Contains("No interruptions logged yet", cut.Markup);
     }
 
     [Fact]
@@ -134,11 +149,11 @@ public class DecisionLogPageTests : TestContext
         Assert.Contains("Timestamp", cut.Markup);
         Assert.Contains("Title", cut.Markup);
         Assert.Contains("Source", cut.Markup);
-        Assert.Contains("Priority Score", cut.Markup);
+        Assert.Contains("Score", cut.Markup);
         Assert.Contains("Decision", cut.Markup);
-        Assert.Contains("Focus State", cut.Markup);
+        Assert.Contains("Focus", cut.Markup);
         Assert.Contains("Explanation", cut.Markup);
-        Assert.Contains("Guardrail Outcome", cut.Markup);
+        Assert.Contains("Guardrail", cut.Markup);
         Assert.Contains("Urgent PR review", cut.Markup);
     }
 

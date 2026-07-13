@@ -42,7 +42,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
         var record = CreateRecord("INTERRUPT");
 
         await _store.RecordAsync(record, CancellationToken.None);
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Equal(1, result.TotalCount);
         Assert.Single(result.Items);
@@ -57,7 +57,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
     [Fact]
     public async Task QueryAsync_WhenEmpty_ReturnsEmptyResult()
     {
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Empty(result.Items);
         Assert.Equal(0, result.TotalCount);
@@ -77,7 +77,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
         await _store.RecordAsync(late with { Timestamp = DateTimeOffset.UtcNow }, CancellationToken.None);
         await _store.RecordAsync(early with { Timestamp = DateTimeOffset.UtcNow.AddMinutes(-10) }, CancellationToken.None);
 
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Equal(3, result.TotalCount);
         Assert.Equal("INTERRUPT", result.Items[0].Decision);
@@ -94,8 +94,8 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
                 CancellationToken.None);
         }
 
-        var page1 = await _store.QueryAsync(1, 2, CancellationToken.None);
-        var page2 = await _store.QueryAsync(2, 2, CancellationToken.None);
+        var page1 = await _store.QueryAsync(1, 2, cancellationToken: CancellationToken.None);
+        var page2 = await _store.QueryAsync(2, 2, cancellationToken: CancellationToken.None);
 
         Assert.Equal(2, page1.Items.Count);
         Assert.Equal(2, page2.Items.Count);
@@ -115,7 +115,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
                 CancellationToken.None);
         }
 
-        var result = await _store.QueryAsync(0, 2, CancellationToken.None);
+        var result = await _store.QueryAsync(0, 2, cancellationToken: CancellationToken.None);
 
         Assert.Equal(1, result.Page);
         Assert.Equal(2, result.PageSize);
@@ -128,7 +128,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
     {
         await _store.RecordAsync(CreateRecord("INTERRUPT"), CancellationToken.None);
 
-        var result = await _store.QueryAsync(1, 0, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 0, cancellationToken: CancellationToken.None);
 
         Assert.Equal(20, result.PageSize);
         Assert.Equal(1, result.TotalCount);
@@ -145,7 +145,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
                 CancellationToken.None);
         }
 
-        var result = await _store.QueryAsync(3, 2, CancellationToken.None);
+        var result = await _store.QueryAsync(3, 2, cancellationToken: CancellationToken.None);
 
         Assert.Equal(3, result.Page);
         Assert.Equal(2, result.PageSize);
@@ -160,7 +160,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
         var record = CreateRecord("DEFER", score: null);
 
         await _store.RecordAsync(record, CancellationToken.None);
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Null(result.Items[0].PriorityScore);
     }
@@ -172,7 +172,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
         await _store.RecordAsync(CreateRecord("QUEUE"), CancellationToken.None);
         await _store.RecordAsync(CreateRecord("DEFER"), CancellationToken.None);
 
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Equal(3, result.TotalCount);
     }
@@ -199,7 +199,7 @@ public class SqliteInterruptionDecisionStoreTests : IDisposable
             GuardrailOutcome: "adjusted");
 
         await _store.RecordAsync(record, CancellationToken.None);
-        var result = await _store.QueryAsync(1, 20, CancellationToken.None);
+        var result = await _store.QueryAsync(1, 20, cancellationToken: CancellationToken.None);
 
         Assert.Single(result.Items);
         var persisted = result.Items[0];

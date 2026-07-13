@@ -109,8 +109,9 @@ public class ExecuteConnectorUseCaseWorkItemTests
             .Returns(Task.CompletedTask)
             .AndDoes(callInfo => captured = callInfo.Arg<NotificationOutboxEntry>());
 
+        var semanticOutboxRepo = Substitute.For<ISemanticOutboxRepository>();
         var useCase = new ExecuteConnectorUseCase(
-            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox,
+            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox, semanticOutboxRepo,
             Substitute.For<ILogger<ExecuteConnectorUseCase>>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);
@@ -158,8 +159,9 @@ public class ExecuteConnectorUseCaseWorkItemTests
             .Returns(Task.CompletedTask)
             .AndDoes(callInfo => captured = callInfo.Arg<NotificationOutboxEntry>());
 
+        var semanticOutboxRepo = Substitute.For<ISemanticOutboxRepository>();
         var useCase = new ExecuteConnectorUseCase(
-            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox,
+            checkpointStore, [adapter], buffer, store, engine, dashboardRefresh, outbox, semanticOutboxRepo,
             Substitute.For<ILogger<ExecuteConnectorUseCase>>());
 
         await useCase.ExecuteAsync(identity, CancellationToken.None);

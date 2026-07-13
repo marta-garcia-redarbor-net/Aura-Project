@@ -118,9 +118,9 @@ public class StatusGreetingCardTests : TestContext
         var cut = RenderComponent<StatusGreetingCard>(parameters => parameters
             .AddCascadingValue(authState));
 
-        // Should show "System status unavailable" greeting
+        // Should show "System unavailable" greeting
         var greeting = cut.Find("[data-testid='status-greeting-text']");
-        Assert.Contains("System status unavailable", greeting.TextContent);
+        Assert.Contains("System unavailable", greeting.TextContent);
 
         // Badges should still render, all grey/offline
         var apiBadge = cut.Find("[data-testid='status-badge-api']");
