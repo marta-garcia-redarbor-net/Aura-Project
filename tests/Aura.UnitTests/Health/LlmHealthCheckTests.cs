@@ -1,4 +1,4 @@
-using Aura.Infrastructure.HealthChecks;
+using Aura.Infrastructure.Adapters.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Aura.UnitTests.Health;
