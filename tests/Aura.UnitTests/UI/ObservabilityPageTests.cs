@@ -34,8 +34,10 @@ public class ObservabilityPageTests : TestContext
             })
             .Build();
 
+        var tokenService = Substitute.For<ITokenAcquisitionService>();
+        tokenService.AcquireTokenAsync(Arg.Any<CancellationToken>()).Returns("test-token");
         var loggerFactory = LoggerFactory.Create(b => b.AddDebug());
-        _telemetryClient = new TelemetryClient(config, loggerFactory.CreateLogger<TelemetryClient>());
+        _telemetryClient = new TelemetryClient(tokenService, config, loggerFactory.CreateLogger<TelemetryClient>());
 
         Services.AddSingleton(_telemetryClient);
 
