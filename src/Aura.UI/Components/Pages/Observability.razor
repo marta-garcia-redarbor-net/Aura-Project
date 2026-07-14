@@ -3,7 +3,9 @@
 @using Aura.UI.Components.Auth
 @using Aura.Infrastructure.Observability
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
 @inject TelemetryClient TelemetryClient
+@inject IJSRuntime JsRuntime
 @implements IAsyncDisposable
 
 <AuthorizeView>
@@ -19,7 +21,45 @@
             <!-- Log Panel -->
             <section class="dashboard-panel">
                 <h2>Logs</h2>
-                <div class="log-table-container" style="max-height: 400px; overflow-y: auto;">
+
+                <div class="log-toolbar">
+                    <input type="text"
+                           class="log-search"
+                           placeholder="Search by message or correlation ID..."
+                           @bind="_searchText"
+                           @bind:event="oninput" />
+
+                    <div class="level-filters">
+                        <button class="level-filter level-filter--error @(_activeLevels.HasFlag(LogLevel.Error) ? "active" : "")"
+                                @onclick="() => ToggleLevel(LogLevel.Error)"
+                                title="Toggle Error logs">
+                            Error
+                        </button>
+                        <button class="level-filter level-filter--warning @(_activeLevels.HasFlag(LogLevel.Warning) ? "active" : "")"
+                                @onclick="() => ToggleLevel(LogLevel.Warning)"
+                                title="Toggle Warning logs">
+                            Warning
+                        </button>
+                        <button class="level-filter level-filter--info @(_activeLevels.HasFlag(LogLevel.Information) ? "active" : "")"
+                                @onclick="() => ToggleLevel(LogLevel.Information)"
+                                title="Toggle Info logs">
+                            Info
+                        </button>
+                        <button class="level-filter level-filter--debug @(_activeLevels.HasFlag(LogLevel.Debug) ? "active" : "")"
+                                @onclick="() => ToggleLevel(LogLevel.Debug)"
+                                title="Toggle Debug logs">
+                            Debug
+                        </button>
+                    </div>
+
+                    <button class="auto-scroll-toggle @(_autoScroll ? "active" : "")"
+                            @onclick="ToggleAutoScroll"
+                            title="Toggle auto-scroll to latest logs">
+                        @(_autoScroll ? "📌 Auto-scroll ON" : "📌 Auto-scroll OFF")
+                    </button>
+                </div>
+
+                <div class="log-table-container @(_autoScroll ? "log-table-container--autoscroll" : "")" style="max-height: 400px; overflow-y: auto;" @ref="_logContainer">
                     <table class="decision-log-table">
                         <thead>
                             <tr>
@@ -31,101 +71,125 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize Items="@_logs" Context="log">
-                                <tr class="log-row log-row--@log.Level.ToString().ToLower()">
-                                    <td>@log.Level</td>
-                                    <td>@log.Timestamp.ToLocalTime().ToString("HH:mm:ss.fff")</td>
-                                    <td style="font-family: monospace; font-size: 11px;">@log.CorrelationId</td>
-                                    <td>@log.Message</td>
-                                    <td>@log.Source</td>
+                            @if (FilteredLogs.Any())
+                            {
+                                @foreach (var log in FilteredLogs)
+                                {
+                                    var logKey = $"{log.Timestamp.Ticks}-{log.CorrelationId}-{log.Message}";
+                                    var isExpanded = _expandedLogKey == logKey;
+                                    <tr class="log-row log-row--@log.Level.ToString().ToLower() @(isExpanded ? "log-row--expanded" : "")"
+                                        @onclick="() => ToggleLogMessage(logKey)"
+                                        title="Click to expand full message">
+                                        <td><span class="log-level-badge log-level-badge--@log.Level.ToString().ToLower()">@log.Level</span></td>
+                                        <td class="log-timestamp">@log.Timestamp.ToLocalTime().ToString("HH:mm:ss.fff")</td>
+                                        <td class="log-correlation-id">@log.CorrelationId</td>
+                                        <td class="log-message" title="@log.Message">@TruncateMessage(log.Message, 120)</td>
+                                        <td class="log-source">@log.Source</td>
+                                    </tr>
+                                    @if (isExpanded)
+                                    {
+                                        <tr class="log-expanded-row">
+                                            <td colspan="5">
+                                                <pre class="log-expanded-message">@log.Message</pre>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="log-empty-state">
+                                        @if (_logs.Count == 0)
+                                        {
+                                            <span>Waiting for log data...</span>
+                                        }
+                                        else
+                                        {
+                                            <span>No logs match the current filters.</span>
+                                        }
+                                    </td>
                                 </tr>
-                            </Virtualize>
+                            }
                         </tbody>
                     </table>
-                </div>
-            </section>
-
-            <!-- Metrics Panel -->
-            <section class="dashboard-panel">
-                <h2>Metrics</h2>
-                <div class="metrics-grid">
-                    @foreach (var metric in _metrics)
-                    {
-                        <div class="metric-gauge">
-                            <div class="metric-gauge__name">@metric.Name</div>
-                            <div class="metric-gauge__value">@metric.Value.ToString("N0")</div>
-                        </div>
-                    }
                 </div>
             </section>
 
             <!-- Trace Panel -->
             <section class="dashboard-panel">
                 <h2>Traces</h2>
-                <table class="decision-log-table">
-                    <thead>
-                        <tr>
-                            <th>Operation</th>
-                            <th>Duration (ms)</th>
-                            <th>Start Time</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < _traces.Count; i++)
-                        {
-                            var span = _traces[i];
-                            var spanIndex = i;
-                            <tr class="trace-row" style="cursor: pointer;" @onclick="() => ToggleSpan(spanIndex)">
-                                <td>
-                                    <span class="trace-toggle">@(_expandedSpanIndex == spanIndex ? "▼" : "▶")</span>
-                                    @span.OperationName
-                                </td>
-                                <td>@span.DurationMs.ToString("N2")</td>
-                                <td>@span.StartTime.ToLocalTime().ToString("HH:mm:ss.fff")</td>
-                                <td>
-                                    <span class="status-badge status-badge--@span.Status.ToLower()">
-                                        @span.Status
-                                    </span>
-                                </td>
+                @if (_traces.Count > 0)
+                {
+                    <table class="decision-log-table">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>Duration (ms)</th>
+                                <th>Start Time</th>
+                                <th>Status</th>
                             </tr>
-                            @if (_expandedSpanIndex == spanIndex)
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < _traces.Count; i++)
                             {
-                                <tr class="trace-tags-row">
-                                    <td colspan="4">
-                                        <div class="trace-tags">
-                                            <strong>Tags:</strong>
-                                            @if (span.Tags.Count > 0)
-                                            {
-                                                <table class="trace-tags-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Key</th>
-                                                            <th>Value</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var tag in span.Tags)
-                                                        {
-                                                            <tr>
-                                                                <td style="font-family: monospace;">@tag.Key</td>
-                                                                <td>@tag.Value</td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            }
-                                            else
-                                            {
-                                                <span class="trace-no-tags">No tags</span>
-                                            }
-                                        </div>
+                                var span = _traces[i];
+                                var spanIndex = i;
+                                <tr class="trace-row" style="cursor: pointer;" @onclick="() => ToggleSpan(spanIndex)">
+                                    <td>
+                                        <span class="trace-toggle">@(_expandedSpanIndex == spanIndex ? "▼" : "▶")</span>
+                                        @span.OperationName
+                                    </td>
+                                    <td>@span.DurationMs.ToString("N2")</td>
+                                    <td>@span.StartTime.ToLocalTime().ToString("HH:mm:ss.fff")</td>
+                                    <td>
+                                        <span class="status-badge status-badge--@span.Status.ToLower()">
+                                            @span.Status
+                                        </span>
                                     </td>
                                 </tr>
+                                @if (_expandedSpanIndex == spanIndex)
+                                {
+                                    <tr class="trace-tags-row">
+                                        <td colspan="4">
+                                            <div class="trace-tags">
+                                                <strong>Tags:</strong>
+                                                @if (span.Tags.Count > 0)
+                                                {
+                                                    <table class="trace-tags-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Key</th>
+                                                                <th>Value</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var tag in span.Tags)
+                                                            {
+                                                                <tr>
+                                                                    <td style="font-family: monospace;">@tag.Key</td>
+                                                                    <td>@tag.Value</td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                }
+                                                else
+                                                {
+                                                    <span class="trace-no-tags">No tags</span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             }
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="traces-empty">No traces captured yet. Traces appear when API endpoints or workers perform operations.</div>
+                }
             </section>
         </div>
     </Authorized>
@@ -137,14 +201,29 @@
 
 @code {
     private List<LogRecordDto> _logs = [];
-    private IReadOnlyList<MetricSnapshotDto> _metrics = Array.Empty<MetricSnapshotDto>();
     private IReadOnlyList<SpanDto> _traces = Array.Empty<SpanDto>();
     private int? _expandedSpanIndex;
+
+    private string _searchText = string.Empty;
+    private LogLevel _activeLevels = LogLevel.Error;
+    private bool _autoScroll = true;
+    private string? _expandedLogKey;
+    private ElementReference _logContainer;
+
+    /// <summary>
+    /// Returns logs in reverse chronological order (newest first),
+    /// filtered by active level filters and search text.
+    /// </summary>
+    private IEnumerable<LogRecordDto> FilteredLogs =>
+        _logs
+            .Where(log => _activeLevels.HasFlag(log.Level))
+            .Where(log => string.IsNullOrEmpty(_searchText) ||
+                (log.Message?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (log.CorrelationId?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
 
     protected override async Task OnInitializedAsync()
     {
         TelemetryClient.LogsReceived += OnLogsReceived;
-        TelemetryClient.MetricsReceived += OnMetricsReceived;
         TelemetryClient.TracesReceived += OnTracesReceived;
 
         await TelemetryClient.StartAsync();
@@ -152,21 +231,59 @@
 
     private void OnLogsReceived(IReadOnlyList<LogRecordDto> logs)
     {
-        _logs = logs.ToList();
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void OnMetricsReceived(IReadOnlyList<MetricSnapshotDto> metrics)
-    {
-        _metrics = metrics;
+        // Reverse so newest logs appear first
+        _logs = logs.Reverse().ToList();
         InvokeAsync(StateHasChanged);
     }
 
     private void OnTracesReceived(IReadOnlyList<SpanDto> traces)
     {
         _traces = traces;
-        _expandedSpanIndex = null;
+        // Only reset expansion if the expanded span is no longer in the list
+        if (_expandedSpanIndex.HasValue && _expandedSpanIndex.Value >= _traces.Count)
+        {
+            _expandedSpanIndex = null;
+        }
         InvokeAsync(StateHasChanged);
+    }
+
+    private static string TruncateMessage(string? message, int maxLength)
+    {
+        if (string.IsNullOrEmpty(message)) return string.Empty;
+        return message.Length <= maxLength ? message : message[..maxLength] + "...";
+    }
+
+    private void ToggleLogMessage(string key)
+    {
+        _expandedLogKey = _expandedLogKey == key ? null : key;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_autoScroll && _logs.Count > 0)
+        {
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("window.__auraObservabilityScrollToTop", _logContainer);
+            }
+            catch
+            {
+                // JS interop may fail during prerendering — safe to ignore
+            }
+        }
+    }
+
+    private void ToggleLevel(LogLevel level)
+    {
+        _activeLevels ^= level;
+        StateHasChanged();
+    }
+
+    private void ToggleAutoScroll()
+    {
+        _autoScroll = !_autoScroll;
+        StateHasChanged();
     }
 
     private void ToggleSpan(int index)
@@ -177,9 +294,246 @@
     public async ValueTask DisposeAsync()
     {
         TelemetryClient.LogsReceived -= OnLogsReceived;
-        TelemetryClient.MetricsReceived -= OnMetricsReceived;
         TelemetryClient.TracesReceived -= OnTracesReceived;
 
         await TelemetryClient.DisposeAsync();
     }
 }
+
+<style>
+    /* Log toolbar */
+    .log-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 8px;
+        background: var(--color-surface, #1e1e2e);
+        border-radius: 8px;
+        border: 1px solid var(--color-border, #313244);
+    }
+
+    .log-search {
+        flex: 1 1 200px;
+        min-width: 160px;
+        padding: 6px 12px;
+        border: 1px solid var(--color-border, #313244);
+        border-radius: 6px;
+        background: var(--color-bg, #11111b);
+        color: var(--color-text, #cdd6f4);
+        font-size: 13px;
+        outline: none;
+    }
+
+    .log-search:focus {
+        border-color: var(--color-primary, #89b4fa);
+    }
+
+    .log-search::placeholder {
+        color: var(--color-text-muted, #6c7086);
+    }
+
+    /* Level filter buttons */
+    .level-filters {
+        display: flex;
+        gap: 4px;
+    }
+
+    .level-filter {
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid var(--color-border, #313244);
+        background: transparent;
+        color: var(--color-text, #cdd6f4);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        opacity: 0.5;
+    }
+
+    .level-filter.active {
+        opacity: 1;
+    }
+
+    .level-filter--error.active {
+        background: rgba(243, 139, 168, 0.2);
+        border-color: #f38ba8;
+        color: #f38ba8;
+    }
+
+    .level-filter--warning.active {
+        background: rgba(249, 226, 175, 0.2);
+        border-color: #f9e2af;
+        color: #f9e2af;
+    }
+
+    .level-filter--info.active {
+        background: rgba(137, 180, 250, 0.2);
+        border-color: #89b4fa;
+        color: #89b4fa;
+    }
+
+    .level-filter--debug.active {
+        background: rgba(166, 218, 149, 0.15);
+        border-color: #a6da95;
+        color: #a6da95;
+    }
+
+    /* Auto-scroll toggle */
+    .auto-scroll-toggle {
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid var(--color-border, #313244);
+        background: transparent;
+        color: var(--color-text, #cdd6f4);
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .auto-scroll-toggle.active {
+        border-color: var(--color-primary, #89b4fa);
+        color: var(--color-primary, #89b4fa);
+    }
+
+    /* Log row styling by level */
+    .log-row {
+        transition: background 0.1s ease;
+    }
+
+    .log-row--error {
+        background: rgba(243, 139, 168, 0.08);
+    }
+
+    .log-row--error:hover {
+        background: rgba(243, 139, 168, 0.15);
+    }
+
+    .log-row--warning {
+        background: rgba(249, 226, 175, 0.06);
+    }
+
+    .log-row--warning:hover {
+        background: rgba(249, 226, 175, 0.12);
+    }
+
+    .log-row--information {
+        background: transparent;
+    }
+
+    .log-row--information:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .log-row--debug {
+        opacity: 0.6;
+    }
+
+    .log-row--debug:hover {
+        opacity: 0.8;
+    }
+
+    /* Log level badge */
+    .log-level-badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .log-level-badge--error {
+        background: rgba(243, 139, 168, 0.2);
+        color: #f38ba8;
+    }
+
+    .log-level-badge--warning {
+        background: rgba(249, 226, 175, 0.2);
+        color: #f9e2af;
+    }
+
+    .log-level-badge--information {
+        background: rgba(137, 180, 250, 0.15);
+        color: #89b4fa;
+    }
+
+    .log-level-badge--debug {
+        background: rgba(166, 218, 149, 0.12);
+        color: #a6da95;
+    }
+
+    /* Log columns */
+    .log-timestamp {
+        font-family: monospace;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .log-correlation-id {
+        font-family: monospace;
+        font-size: 11px;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log-message {
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log-source {
+        font-size: 12px;
+        color: var(--color-text-muted, #6c7086);
+    }
+
+    .log-row {
+        cursor: pointer;
+    }
+
+    .log-row--expanded {
+        border-bottom: none;
+    }
+
+    .log-expanded-row td {
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--color-border, #313244);
+    }
+
+    .log-expanded-message {
+        margin: 0;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 300px;
+        overflow-y: auto;
+        color: var(--color-text, #cdd6f4);
+    }
+
+    .log-empty-state {
+        padding: 20px;
+        text-align: center;
+        color: var(--color-text-muted, #6c7086);
+        font-style: italic;
+    }
+
+    /* Empty states */
+    .metrics-empty,
+    .traces-empty {
+        padding: 24px;
+        text-align: center;
+        color: var(--color-text-muted, #6c7086);
+        font-style: italic;
+        border: 1px dashed var(--color-border, #313244);
+        border-radius: 8px;
+    }
+</style>

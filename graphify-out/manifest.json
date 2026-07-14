@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/Program.cs": {
-    "mtime": 1783955590.4224374,
-    "ast_hash": "21ebfde1aa427e45aadb4b298abc48a1",
+    "mtime": 1783964825.5532558,
+    "ast_hash": "391f53448a49d92007a0ff6d35be079c",
     "semantic_hash": ""
   },
   "src/Aura.Api/Properties/launchSettings.json": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Aura.UI.csproj": {
-    "mtime": 1783889535.7101114,
-    "ast_hash": "dbbdfd31f799a0c3da154b99d51a7d34",
+    "mtime": 1783964939.3627698,
+    "ast_hash": "5d2d3051af84ae2d08c51cb66513f2a2",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/App.razor": {
@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Layout/Sidebar.razor": {
-    "mtime": 1783889535.7451203,
-    "ast_hash": "09b05bf283cdf758132f79c9655f0f4f",
+    "mtime": 1783964912.549325,
+    "ast_hash": "ad2796f4c500a09fd08ee08800c76ef3",
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Routes.razor": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Program.cs": {
-    "mtime": 1783955590.5551958,
-    "ast_hash": "e6965dfda312dbdbf8b16a7f008a860c",
+    "mtime": 1783964899.7046685,
+    "ast_hash": "a2ab18a3f81b21ecac27e4de5c7e019d",
     "semantic_hash": ""
   },
   "src/Aura.UI/Properties/launchSettings.json": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/_Imports.razor": {
-    "mtime": 1783955590.5712044,
-    "ast_hash": "ec58ae24f31d71c2096139f0c5bdc469",
+    "mtime": 1783970019.3518176,
+    "ast_hash": "03f82927a6df4a236df506a1452a625d",
     "semantic_hash": ""
   },
   "src/Aura.UI/appsettings.json": {
@@ -5005,8 +5005,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/structured-logging/spec.md": {
-    "mtime": 1783366510.3359084,
-    "ast_hash": "102d72a754b132ea91971cc9ccc0d7af",
+    "mtime": 1783972046.9578536,
+    "ast_hash": "0b97f1d97fb72036af82bf748bf1a080",
     "semantic_hash": ""
   },
   "openspec/specs/vulnerability-scanning/spec.md": {
@@ -5125,8 +5125,8 @@
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/DemoModeServiceCollectionExtensions.cs": {
-    "mtime": 1783955590.522588,
-    "ast_hash": "edeb6f67ff9c54acb77889ed09c66294",
+    "mtime": 1783962102.815136,
+    "ast_hash": "d5f3b9e056ecc43d44e4e8d9bf451df2",
     "semantic_hash": ""
   },
   "src/Aura.Infrastructure/IConnectionStringProvider.cs": {
@@ -5205,8 +5205,8 @@
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Demo/DemoModeRegistrationTests.cs": {
-    "mtime": 1783758391.9243693,
-    "ast_hash": "77b422a4b62b05f168fc41a25d0fc64a",
+    "mtime": 1783962193.8388698,
+    "ast_hash": "b7a471b74db994a1ee8a73d24b4cb2d9",
     "semantic_hash": ""
   },
   "tests/Aura.UnitTests/Demo/DemoServiceTests.cs": {
@@ -6082,6 +6082,136 @@
   "src/Aura.Infrastructure/Adapters/HealthChecks/LlmHealthCheck.cs": {
     "mtime": 1783960624.2834716,
     "ast_hash": "fc196852ee6ae0ffdeec1b7c664c9240",
+    "semantic_hash": ""
+  },
+  "src/Aura.Api/Hubs/TelemetryHub.cs": {
+    "mtime": 1783964786.7837887,
+    "ast_hash": "6ef509b42537566df2a357807dbee3d2",
+    "semantic_hash": ""
+  },
+  "src/Aura.Api/Services/TelemetryStreamService.cs": {
+    "mtime": 1783964786.7857876,
+    "ast_hash": "fa6188a62a55fa1e6a50e14865ce8063",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/Dtos.cs": {
+    "mtime": 1783963996.3939424,
+    "ast_hash": "e752f249399d257b05a837b41a2081ca",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/LogRecordBuffer.cs": {
+    "mtime": 1783963996.3949442,
+    "ast_hash": "39b8516428665ce66664fb4006433d9e",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/MetricSnapshotBuffer.cs": {
+    "mtime": 1783963996.3969874,
+    "ast_hash": "1da98708bb60fb4c112c1ab2a4325a78",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/ObservabilityExtensions.cs": {
+    "mtime": 1783964383.834244,
+    "ast_hash": "de19541bf33fa7a6a4e2a639512633b7",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/SpanBuffer.cs": {
+    "mtime": 1783963996.3964553,
+    "ast_hash": "a3b780f5bc816fe1513e30ac4c89e236",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/TelemetryActivityListener.cs": {
+    "mtime": 1783969787.9140093,
+    "ast_hash": "b5e673a63d2dd569209c3d62e10d4455",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/TelemetryBuffer.cs": {
+    "mtime": 1783964042.530496,
+    "ast_hash": "17d3319331c13f7eb19f581c53acd571",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/TelemetryLoggerProvider.cs": {
+    "mtime": 1783964643.4191284,
+    "ast_hash": "196cdbfc0bdfa815b82c70795492b0c8",
+    "semantic_hash": ""
+  },
+  "src/Aura.Infrastructure/Adapters/Observability/TelemetryMeterListener.cs": {
+    "mtime": 1783964323.2605937,
+    "ast_hash": "26a11bc2e4648e7e9223cd954ca913ea",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Components/Pages/Observability.razor": {
+    "mtime": 1783970063.0183108,
+    "ast_hash": "9787f9b25981d350728e19cec43f9df8",
+    "semantic_hash": ""
+  },
+  "src/Aura.UI/Services/TelemetryClient.cs": {
+    "mtime": 1783964860.8662946,
+    "ast_hash": "f34f2079c4503dc2a56d264ef2370265",
+    "semantic_hash": ""
+  },
+  "tests/Aura.IntegrationTests/Observability/TelemetryHubStreamingTests.cs": {
+    "mtime": 1783971464.125625,
+    "ast_hash": "1eb14f919f4dc3058067a573aa042675",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Adapters/Observability/TelemetryActivityListenerTests.cs": {
+    "mtime": 1783969814.0821755,
+    "ast_hash": "3018cb0110b07c4245c29c3bf040221e",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Adapters/Observability/TelemetryBufferTests.cs": {
+    "mtime": 1783965180.2293136,
+    "ast_hash": "0f2f8102145a8551fcc0849d516a4744",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Adapters/Observability/TelemetryLoggerProviderTests.cs": {
+    "mtime": 1783965180.2298446,
+    "ast_hash": "264be6e5c27c5b133f872d029a3f8ecf",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/Adapters/Observability/TelemetryMeterListenerTests.cs": {
+    "mtime": 1783965166.249264,
+    "ast_hash": "bc8716f7e9d0e7a2b5b9886e8c997166",
+    "semantic_hash": ""
+  },
+  "tests/Aura.UnitTests/UI/ObservabilityPageTests.cs": {
+    "mtime": 1783971328.5465994,
+    "ast_hash": "f1d17576c4c8c63da8c4bd5c8b489193",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/archive-report.md": {
+    "mtime": 1783972099.8918698,
+    "ast_hash": "3582615a4029d5ac8d0b46ca5104ee3f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/design.md": {
+    "mtime": 1783963664.1701498,
+    "ast_hash": "c9946426d7c73ef6ddadff9f9ec369b7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/proposal.md": {
+    "mtime": 1783963275.1880171,
+    "ast_hash": "c27f321151a2b6526d23c9fa03a45ade",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/spec.md": {
+    "mtime": 1783963370.2914143,
+    "ast_hash": "deb0b5966b6c3c277567bfe24ec58fd1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/tasks.md": {
+    "mtime": 1783972074.8597715,
+    "ast_hash": "63d2e961b2d6301e6dd147b4de61137d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-13-observability-dashboard/verify-report.md": {
+    "mtime": 1783971940.6843176,
+    "ast_hash": "6545dcb7dd807c82f0132166fa076795",
+    "semantic_hash": ""
+  },
+  "openspec/specs/observability-dashboard/spec.md": {
+    "mtime": 1783972066.0772576,
+    "ast_hash": "19ca8566d48993753f4da49f59081998",
     "semantic_hash": ""
   }
 }

@@ -23,13 +23,20 @@ public sealed class TelemetryStreamService : BackgroundService
         LogRecordBuffer logBuffer,
         SpanBuffer spanBuffer,
         MetricSnapshotBuffer metricBuffer,
-        ILogger<TelemetryStreamService> logger)
+        ILogger<TelemetryStreamService> logger,
+        // Force instantiation of listeners so they start capturing telemetry.
+        // They are not directly used here, but must be activated for their constructors to register
+        // with the .NET diagnostics system (ActivityListener, MeterListener).
+        TelemetryActivityListener activityListener,
+        TelemetryMeterListener meterListener)
     {
         ArgumentNullException.ThrowIfNull(hubContext);
         ArgumentNullException.ThrowIfNull(logBuffer);
         ArgumentNullException.ThrowIfNull(spanBuffer);
         ArgumentNullException.ThrowIfNull(metricBuffer);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(activityListener);
+        ArgumentNullException.ThrowIfNull(meterListener);
 
         _hubContext = hubContext;
         _logBuffer = logBuffer;
