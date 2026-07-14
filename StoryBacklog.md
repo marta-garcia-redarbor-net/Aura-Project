@@ -512,15 +512,23 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W4-H4 — Documentar TFM y operación técnica
 
-- [ ] **W4-H4-T1** Documentar arquitectura final y decisiones clave.  
+> **Estado:** ✅ Completada. Se ha generado la documentación requerida para el tribunal, consolidando la arquitectura final, la justificación de las decisiones técnicas y las instrucciones para la evaluación del proyecto.
+
+- [x] **W4-H4-T1** Documentar arquitectura final y decisiones clave.  
   **DoD:** documento base del TFM actualizado.  
   **Riesgo:** perder racional técnico.
-- [ ] **W4-H4-T2** Documentar estrategia TDD y cobertura E2E.  
+- [x] **W4-H4-T2** Documentar estrategia TDD y cobertura E2E.  
   **DoD:** Playwright y tests quedan explicados.  
   **Riesgo:** evaluador sin trazabilidad metodológica.
-- [ ] **W4-H4-T3** Crear checklist de arranque y demo.  
+- [x] **W4-H4-T3** Crear checklist de arranque y demo.  
   **DoD:** cualquier persona puede reproducir la entrega.  
   **Riesgo:** conocimiento encerrado en una sola cabeza.
+
+**Implementación real:**
+- ✅ Se reescribió el `README.md` principal para coincidir uno-a-uno con los requisitos (a-f) de la rúbrica del TFM.
+- ✅ Creado `FINAL-ARCHITECTURE.md` para explicar el *Monolito Modular*, *Dual Auth Mode* y LLM Advisor.
+- ✅ Actualizada toda la carpeta `docs/architecture/quality/` (00, 01, 02, 05) detallando la pirámide de más de 1.500 tests, la decisión de virar a HTTP-only E2E por SignalR y el uso de ArchUnitNET.
+- ✅ Generado `docs/TFM-EVALUATION-CHECKLIST.md` como guía paso a paso para el jurado.
 
 ---
 
