@@ -24,6 +24,12 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
     private readonly ILogger<ForwardedAccessTokenHandler> _logger;
     private readonly AuthenticationStateProvider _authStateProvider;
 
+    // Cached from the HTTP request path (steps 1–3) where HttpContext is available.
+    // Reused in the Blazor circuit path (step 5) where HttpContext is null and the
+    // AuthenticationStateProvider is resolved from IHttpClientFactory's internal scope
+    // (not the circuit scope), so it never receives SetCircuitUser() and cannot return claims.
+    private string? _cachedToken;
+
     public ForwardedAccessTokenHandler(
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
@@ -60,6 +66,7 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 _logger.LogDebug("ForwardedAccessTokenHandler: Using OIDC session token for {Uri}", request.RequestUri);
+                _cachedToken = accessToken;
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue("Bearer", accessToken);
                 return await base.SendAsync(request, cancellationToken);
@@ -70,6 +77,7 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
             if (!string.IsNullOrWhiteSpace(tokenClaim))
             {
                 _logger.LogDebug("ForwardedAccessTokenHandler: Using cookie token claim for {Uri}", request.RequestUri);
+                _cachedToken = tokenClaim;
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue("Bearer", tokenClaim);
                 return await base.SendAsync(request, cancellationToken);
@@ -113,10 +121,24 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
             }
             else
             {
-                _logger.LogWarning("HttpContext is NULL for {Uri} — trying AuthenticationStateProvider fallback", request.RequestUri);
+                // 5. Blazor circuit path: HttpContext is null (SignalR circuit).
+                //    First try the token cached from the last HTTP request (steps 2-3).
+                //    The AuthenticationStateProvider fallback below uses IHttpClientFactory's
+                //    internal DI scope which never receives SetCircuitUser(), so it cannot
+                //    return claims reliably — the cache is the correct primary source here.
+                if (!string.IsNullOrWhiteSpace(_cachedToken))
+                {
+                    _logger.LogDebug(
+                        "ForwardedAccessTokenHandler: Using cached token for {Uri}",
+                        request.RequestUri);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", _cachedToken);
+                    return await base.SendAsync(request, cancellationToken);
+                }
 
-                // 5. Blazor circuit-safe fallback: AuthenticationStateProvider works in
-                //    SignalR circuit context where HttpContext is unavailable
+                _logger.LogWarning("HttpContext is NULL and no cached token for {Uri} — trying AuthenticationStateProvider fallback", request.RequestUri);
+
+                // 5b. Last-resort: AuthenticationStateProvider (may not work due to DI scope isolation)
                 try
                 {
                     var state = await _authStateProvider.GetAuthenticationStateAsync();
@@ -126,6 +148,7 @@ public sealed class ForwardedAccessTokenHandler : DelegatingHandler
                         _logger.LogDebug(
                             "ForwardedAccessTokenHandler: Using AuthenticationStateProvider token claim for {Uri}",
                             request.RequestUri);
+                        _cachedToken = tokenClaim;
                         request.Headers.Authorization =
                             new AuthenticationHeaderValue("Bearer", tokenClaim);
                         return await base.SendAsync(request, cancellationToken);
