@@ -37,7 +37,12 @@ builder.Services.AddAuraObservability();
 
 // OpenTelemetry: sends traces, metrics, and logs to Azure Application Insights
 // Configure APPLICATIONSINSIGHTS_CONNECTION_STRING env var in ACA for production
-builder.Services.AddOpenTelemetry().UseAzureMonitor();
+var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    ?? Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
+if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+{
+    builder.Services.AddOpenTelemetry().UseAzureMonitor();
+}
 builder.Services.AddSignalR();
 
 // Demo simulation — singleton service for gradual data injection
