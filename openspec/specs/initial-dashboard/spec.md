@@ -68,3 +68,25 @@ The change MUST include automated smoke verification that fits the repository's 
 - WHEN verification requirements are evaluated
 - THEN the capability SHALL remain compliant through non-Playwright automated smoke coverage
 - AND it SHALL NOT claim mandatory Playwright coverage for this slice
+
+---
+
+### Requirement: Layout Shell Responsive Adaptation
+
+The dashboard shell (header + sidebar + main content) MUST adapt at 900/768/480px breakpoints. At ≤900px the sidebar becomes a hamburger drawer overlay. At ≤768px the header compresses non-critical controls into an overflow area. The Sign out button and Settings icon MUST remain visible at all breakpoints.
+
+(Previously: Shell had a single 900px breakpoint that collapsed sidebar to full-width inline and hid header nav.)
+
+#### Scenario: Header at ≤768px shows hamburger + essential controls
+
+- GIVEN viewport ≤768px
+- WHEN the header renders
+- THEN the hamburger icon is visible on the left
+- AND Sign out + Settings remain visible on the right
+- AND Demo Mode / FocusState badge are accessible via overflow or remain visible if space permits
+
+#### Scenario: Status greeting card badges wrap at ≤480px
+
+- GIVEN viewport ≤480px and StatusGreetingCard has 5 status badges
+- WHEN the card renders
+- THEN badges wrap to a second row without horizontal overflow

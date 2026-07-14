@@ -1,9 +1,16 @@
 @using Aura.UI.Services
+@using Microsoft.JSInterop
 @inject DemoUiState DemoState
 @implements IDisposable
 
 <header class="dashboard-header" data-testid="dashboard-header">
     <div class="dashboard-header__identity">
+        <button class="dashboard-header__hamburger"
+                @onclick="ToggleSidebar"
+                aria-label="Toggle navigation menu"
+                data-testid="hamburger-btn">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
         <span class="dashboard-header__brand">Aura</span>
     </div>
 
@@ -44,6 +51,7 @@
         {
             <FocusStateBadge />
         }
+
         <span class="material-symbols-outlined dashboard-header__icon-btn">settings</span>
         @if (!string.IsNullOrEmpty(UserDisplayName))
         {
@@ -71,6 +79,7 @@
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IDashboardEventBus EventBus { get; set; } = default!;
     [Inject] private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     private bool _wizardDisposable;
 
@@ -143,6 +152,18 @@
     private void HandleSignOut()
     {
         Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+
+    private async Task ToggleSidebar()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sidebarDrawer.toggleDrawer");
+        }
+        catch (JSException)
+        {
+            // JS interop not available
+        }
     }
 
     public void Dispose()

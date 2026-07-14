@@ -14,6 +14,7 @@
 <div class="dashboard-shell" data-testid="dashboard-shell">
     <Header UserDisplayName="@_state.UserDisplayName" Email="@_state.Email" />
     <Sidebar />
+    <div class="backdrop" @onclick="CloseDrawer"></div>
 
     <div class="dashboard-shell__content">
         <main class="dashboard-shell__main" data-testid="dashboard-main">
@@ -105,6 +106,14 @@
         if (firstRender)
         {
             await PrimeAlertAudio();
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("sidebarDrawer.init");
+            }
+            catch (JSException)
+            {
+                // JS interop not available (e.g., during prerendering)
+            }
         }
     }
 
@@ -132,5 +141,18 @@
         _initialLoadCancellation.Cancel();
         _initialLoadCancellation.Dispose();
         _persistingSubscription?.Dispose();
+        _ = JSRuntime.InvokeVoidAsync("sidebarDrawer.dispose");
+    }
+
+    private async Task CloseDrawer()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sidebarDrawer.closeDrawer");
+        }
+        catch (JSException)
+        {
+            // JS interop not available
+        }
     }
 }

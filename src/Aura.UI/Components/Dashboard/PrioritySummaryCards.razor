@@ -86,78 +86,117 @@
                 }
                 else if (card.IsPrCard)
                 {
-                    <div class="pr-mini-table-container">
-                        <table class="pr-mini-table" data-testid="pr-mini-table">
-                            <thead>
-                                <tr>
-                                    <th>PR Name</th>
-                                    <th>Branch</th>
-                                    <th>CI Status</th>
-                                    <th>Reviews</th>
-                                    <th>Last Activity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in card.PrItems!.Take(3))
-                                {
-                                    var prId = $"pr-{item.PrDisplayName}";
-                                    var prIsNew = EventBus.IsNewItem(prId);
-                                    if (prIsNew) _newItemIds.Add(prId);
-                                    <tr class="@(prIsNew ? "demo-new-item" : "")">
-                                        <td class="pr-mini-table__cell-name">
-                                            <div class="pr-mini-table__badges">
-                                                @if (prIsNew)
-                                                {
-                                                    <span class="demo-new-badge">NEW</span>
-                                                }
-                                                @if (item.AttentionScope is "direct" or "group" or "both")
-                                                {
-                                                    var badgeLabel = item.AttentionScope switch
-                                                    {
-                                                        "direct" => "You",
-                                                        "group" => "Group",
-                                                        "both" => "Both",
-                                                        _ => ""
-                                                    };
-                                                    <span class="attention-badge attention-badge--@item.AttentionScope">@badgeLabel</span>
-                                                }
-                                                <PriorityBadge Level="@item.Priority" />
-                                            </div>
-                                            <div class="pr-mini-table__title">
-                                                <span class="pr-mini-table__name">@item.PrDisplayName</span>
-                                                <span class="pr-mini-table__author">@@@item.Author</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="pr-mini-table__branch">@item.BranchName</span>
-                                        </td>
-                                        <td>
-                                            <span class="ci-status ci-status--@item.BuildStatus" data-testid="pr-ci-status">@item.BuildStatus</span>
-                                        </td>
-                                        <td>
-                                            <div class="pr-mini-table__reviews">
-                                                <span class="pr-mini-table__reviews-approved">@item.ReviewApprovals/@item.ReviewRequired Approved</span>
-                                                @if (item.ReviewChangesRequested > 0)
-                                                {
-                                                    <span class="pr-mini-table__reviews-changes">@item.ReviewChangesRequested changes requested</span>
-                                                }
-                                                else if (item.ReviewApprovals < item.ReviewRequired && item.ReviewRequired > 0)
-                                                {
-                                                    <span class="pr-mini-table__reviews-needed">@(item.ReviewRequired - item.ReviewApprovals) needed</span>
-                                                }
-                                                @if (item.ReviewApprovals >= item.ReviewRequired && item.ReviewChangesRequested == 0)
-                                                {
-                                                    <span class="pr-mini-table__reviews-approved">✓ Approved</span>
-                                                }
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="pr-mini-table__time">@item.RelativeTimestamp</span>
-                                        </td>
+                    @* Desktop: full table *@
+                    <div class="pr-desktop-table">
+                        <div class="pr-mini-table-container table-scroll-wrapper">
+                            <table class="pr-mini-table" data-testid="pr-mini-table">
+                                <thead>
+                                    <tr>
+                                        <th>PR Name</th>
+                                        <th>Branch</th>
+                                        <th>CI Status</th>
+                                        <th>Reviews</th>
+                                        <th>Last Activity</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in card.PrItems!.Take(3))
+                                    {
+                                        var prId = $"pr-{item.PrDisplayName}";
+                                        var prIsNew = EventBus.IsNewItem(prId);
+                                        if (prIsNew) _newItemIds.Add(prId);
+                                        <tr class="@(prIsNew ? "demo-new-item" : "")">
+                                            <td class="pr-mini-table__cell-name">
+                                                <div class="pr-mini-table__badges">
+                                                    @if (prIsNew)
+                                                    {
+                                                        <span class="demo-new-badge">NEW</span>
+                                                    }
+                                                    @if (item.AttentionScope is "direct" or "group" or "both")
+                                                    {
+                                                        var badgeLabel = item.AttentionScope switch
+                                                        {
+                                                            "direct" => "You",
+                                                            "group" => "Group",
+                                                            "both" => "Both",
+                                                            _ => ""
+                                                        };
+                                                        <span class="attention-badge attention-badge--@item.AttentionScope">@badgeLabel</span>
+                                                    }
+                                                    <PriorityBadge Level="@item.Priority" />
+                                                </div>
+                                                <div class="pr-mini-table__title">
+                                                    <span class="pr-mini-table__name">@item.PrDisplayName</span>
+                                                    <span class="pr-mini-table__author">@@@item.Author</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="pr-mini-table__branch">@item.BranchName</span>
+                                            </td>
+                                            <td>
+                                                <span class="ci-status ci-status--@item.BuildStatus" data-testid="pr-ci-status">@item.BuildStatus</span>
+                                            </td>
+                                            <td>
+                                                <div class="pr-mini-table__reviews">
+                                                    <span class="pr-mini-table__reviews-approved">@item.ReviewApprovals/@item.ReviewRequired Approved</span>
+                                                    @if (item.ReviewChangesRequested > 0)
+                                                    {
+                                                        <span class="pr-mini-table__reviews-changes">@item.ReviewChangesRequested changes requested</span>
+                                                    }
+                                                    else if (item.ReviewApprovals < item.ReviewRequired && item.ReviewRequired > 0)
+                                                    {
+                                                        <span class="pr-mini-table__reviews-needed">@(item.ReviewRequired - item.ReviewApprovals) needed</span>
+                                                    }
+                                                    @if (item.ReviewApprovals >= item.ReviewRequired && item.ReviewChangesRequested == 0)
+                                                    {
+                                                        <span class="pr-mini-table__reviews-approved">✓ Approved</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="pr-mini-table__time">@item.RelativeTimestamp</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    @* Mobile: compact list items (matching Stitch mobile design) *@
+                    <div class="pr-mobile-list" data-testid="pr-mobile-list">
+                        @foreach (var item in card.PrItems!.Take(3))
+                        {
+                            var prId = $"pr-{item.PrDisplayName}";
+                            var prIsNew = EventBus.IsNewItem(prId);
+                            if (prIsNew) _newItemIds.Add(prId);
+
+                            var (statusLabel, statusColor) = GetPrStatus(item);
+                            var icon = item.BuildStatus?.ToLower() is "failing" or "failed" ? "bug_report" : "account_tree";
+                            var iconBg = item.BuildStatus?.ToLower() is "failing" or "failed" ? "var(--aura-priority-critical)" : "var(--aura-dotnet-purple)";
+
+                            <div class="pr-mobile-item @(prIsNew ? "demo-new-item" : "")" data-testid="pr-mobile-item">
+                                <div class="pr-mobile-item__icon" style="color: @iconBg; background: color-mix(in srgb, @iconBg 10%, transparent);">
+                                    <span class="material-symbols-outlined">@icon</span>
+                                </div>
+                                <div class="pr-mobile-item__content">
+                                    <div class="pr-mobile-item__header">
+                                        <span class="pr-mobile-item__title">@item.PrDisplayName</span>
+                                        @if (prIsNew)
+                                        {
+                                            <span class="demo-new-badge">NEW</span>
+                                        }
+                                    </div>
+                                    <div class="pr-mobile-item__meta">
+                                        <span class="pr-mobile-item__badge pr-mobile-item__badge--@statusColor">@statusLabel</span>
+                                        <span class="pr-mobile-item__time">@item.RelativeTimestamp</span>
+                                    </div>
+                                </div>
+                                <button class="pr-mobile-item__arrow">
+                                    <span class="material-symbols-outlined">arrow_forward_ios</span>
+                                </button>
+                            </div>
+                        }
                     </div>
                 }
                 else
@@ -280,6 +319,19 @@
     {
         await LoadCardsAsync();
         StateHasChanged();
+    }
+
+    private static (string label, string color) GetPrStatus(PrPreviewItemResponse item)
+    {
+        if (item.ReviewChangesRequested > 0)
+            return ("Changes Requested", "error");
+        if (item.ReviewApprovals >= item.ReviewRequired && item.ReviewRequired > 0)
+            return ("Approved", "healthy");
+        if (item.AttentionScope is "direct" or "group" or "both")
+            return ("Review Required", "warning");
+        if (item.BuildStatus?.ToLower() is "failing" or "failed")
+            return ("Failing", "error");
+        return ("Pending", "offline");
     }
 
     private async Task LoadCardsAsync()

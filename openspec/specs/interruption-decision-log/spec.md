@@ -83,3 +83,31 @@ The decision history page MUST include pagination controls when the result set e
 - GIVEN fewer than 20 decisions exist
 - WHEN the page loads
 - THEN no pagination controls are shown
+
+---
+
+### Requirement: Decision Log Stacked Card Layout at ≤768px
+
+At viewport ≤768px, the 9-column decision log table MUST convert to a stacked card layout. Each row becomes a card with `label: value` pairs for all 9 fields (chevron, timestamp, title, source, score, decision, focus, explanation, guardrail). The `<details>` expand/collapse MUST still function. Pagination controls MUST have 44px touch targets.
+
+(Previously: Decision log rendered as a fixed 9-column `<table>` at all viewports.)
+
+#### Scenario: Decision Log renders as cards on mobile
+
+- GIVEN viewport ≤768px and 5 decision items exist
+- WHEN the page renders
+- THEN 5 stacked cards are visible (not a table)
+- AND each card shows all 9 fields as label:value pairs
+- AND no horizontal scroll is needed
+
+#### Scenario: Card expand/collapse works on mobile
+
+- GIVEN viewport ≤768px
+- WHEN the user taps a decision card's expand control
+- THEN the detail panel (Final Verdict, Rules Fired, LLM Rationale, Semantic Context) is revealed
+
+#### Scenario: Desktop table layout preserved
+
+- GIVEN viewport ≥769px
+- WHEN the Decision Log page renders
+- THEN the 9-column table layout is used (unchanged from current behavior)

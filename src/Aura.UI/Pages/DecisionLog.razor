@@ -71,14 +71,14 @@
                                         <summary class="decision-trace__summary" data-testid="decision-trace-summary">
                                             <span class="decision-trace__grid">
                                                 <span class="decision-trace__col--chevron">▶</span>
-                                                <span class="decision-trace__col--timestamp">@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
-                                                <span class="decision-trace__col--title">@item.Title</span>
-                                                <span class="decision-trace__col--source">@item.SourceType</span>
-                                                <span class="decision-trace__col--score">@(item.PriorityScore?.ToString() ?? "-")</span>
-                                                <span class="decision-trace__col--decision">@item.Decision</span>
-                                                <span class="decision-trace__col--focus">@item.FocusState</span>
-                                                <span class="decision-trace__col--explanation">@item.Explanation</span>
-                                                <span class="decision-trace__col--guardrail">
+                                                <span class="decision-trace__col--timestamp" data-label="Timestamp">@item.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                                                <span class="decision-trace__col--title" data-label="Title">@item.Title</span>
+                                                <span class="decision-trace__col--source" data-label="Source">@item.SourceType</span>
+                                                <span class="decision-trace__col--score" data-label="Score">@(item.PriorityScore?.ToString() ?? "-")</span>
+                                                <span class="decision-trace__col--decision" data-label="Decision">@item.Decision</span>
+                                                <span class="decision-trace__col--focus" data-label="Focus">@item.FocusState</span>
+                                                <span class="decision-trace__col--explanation" data-label="Explanation">@item.Explanation</span>
+                                                <span class="decision-trace__col--guardrail" data-label="Guardrail">
                                                     <span class="decision-trace__guardrail-badge decision-trace__guardrail-badge--@NormalizeGuardrail(item.GuardrailOutcome)">
                                                         @NormalizeGuardrail(item.GuardrailOutcome)
                                                     </span>
