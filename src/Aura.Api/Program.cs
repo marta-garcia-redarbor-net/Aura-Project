@@ -12,6 +12,7 @@ using Aura.Infrastructure;
 using FluentValidation;
 using System.Diagnostics;
 using System.Threading.RateLimiting;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,10 @@ builder.Services.AddScoped<ISystemStatusReader>(sp =>
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
 builder.Services.AddAuraObservability();
+
+// OpenTelemetry: sends traces, metrics, and logs to Azure Application Insights
+// Configure APPLICATIONSINSIGHTS_CONNECTION_STRING env var in ACA for production
+builder.Services.AddOpenTelemetry().UseAzureMonitor();
 builder.Services.AddSignalR();
 
 // Demo simulation — singleton service for gradual data injection

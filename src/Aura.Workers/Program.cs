@@ -1,6 +1,7 @@
 using Aura.Application;
 using Aura.Infrastructure;
 using Aura.Workers;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
@@ -24,6 +25,10 @@ else
     builder.Services.AddHostedService<Worker>();
     builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
     builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
+
+    // OpenTelemetry: sends traces, metrics, and logs to Azure Application Insights
+    builder.Services.AddOpenTelemetry().UseAzureMonitor();
+
     builder.Services.AddHostedService<SemanticIndexSyncWorker>();
     builder.Services.AddHostedService<ConnectorExecutionWorker>();
     builder.Services.AddHostedService<MorningSummarySchedulingWorker>();
