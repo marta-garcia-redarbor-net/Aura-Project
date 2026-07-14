@@ -253,14 +253,19 @@ internal static class DependencyInjection
 
                     var sessionStore = context.HttpContext.RequestServices.GetRequiredService<IDemoSessionStore>();
                     var nowUtc = DateTimeOffset.UtcNow;
-                    if (!sessionStore.IsActive(sid, userId, nowUtc))
+                    if (sessionStore.IsActive(sid, userId, nowUtc))
                     {
-                        logger.LogWarning("MockJwt: Session not active for sid={SessionId}, userId={UserId}", sid, userId);
-                        context.Fail("MockJwt session is not active.");
+                        logger.LogDebug("MockJwt: Session active for sid={SessionId}, userId={UserId}", sid, userId);
                     }
                     else
                     {
-                        logger.LogDebug("MockJwt: Session active for sid={SessionId}, userId={UserId}", sid, userId);
+                        // Session store miss: the InMemoryDemoSessionStore is per-process, so in
+                        // multi-replica ACA or after a deployment/restart the session may not exist here.
+                        // The JWT itself is still valid (signed, not expired) — trust the token.
+                        logger.LogWarning(
+                            "MockJwt: Session store miss for sid={SessionId}, userId={UserId} — " +
+                            "JWT is valid, allowing request (potential multi-replica or restart)",
+                            sid, userId);
                     }
 
                     return Task.CompletedTask;
