@@ -211,3 +211,18 @@ Given identical signals (calendars, time, preferences), `FocusStateResolver` MUS
 - GIVEN a blackout with start >= end
 - WHEN constructed
 - THEN validation throws
+
+---
+
+### Requirement: FocusState Badge Dropdown Repositioning at ≤768px
+
+The FocusState dropdown MUST reposition from `right: 0` to `left: 0` at ≤768px to prevent viewport overflow when the badge is near the right edge of the header.
+
+(Previously: Dropdown was always `position: absolute; right: 0`.)
+
+#### Scenario: Dropdown opens within viewport on mobile
+
+- GIVEN viewport ≤768px and FocusStateBadge is in the header
+- WHEN the user taps the badge to open the dropdown
+- THEN the dropdown is fully visible within the viewport
+- AND no horizontal clipping occurs

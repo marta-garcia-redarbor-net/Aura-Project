@@ -196,3 +196,24 @@ When the Pull Requests card has zero items, it MUST render its card-specific pos
 - WHEN `PrioritySummaryCards.razor` renders
 - THEN the card displays icon `verified`, title "Queue Empty", subtitle "No pending reviews. Your workspace is clear."
 - AND a footer link "View All Repositories" is visible
+
+---
+
+### Requirement: PR Mini-Table Horizontal Scroll at ≤600px
+
+The PR mini-table in PrioritySummaryCards and the full PR table on PullRequests.razor MUST be wrapped in a container with `overflow-x: auto` at ≤600px, allowing horizontal scroll to prevent column cutoff.
+
+(Previously: PR tables had no scroll wrapper and could overflow at narrow viewports.)
+
+#### Scenario: PR mini-table scrolls horizontally on small phones
+
+- GIVEN viewport ≤600px and the dashboard PR card has 3 items
+- WHEN the PR mini-table renders
+- THEN the table is wrapped in a horizontally scrollable container
+- AND no columns are clipped or hidden
+
+#### Scenario: Full PR table scrolls on small phones
+
+- GIVEN viewport ≤600px and PullRequests page has 5 rows
+- WHEN the page renders
+- THEN the table scrolls horizontally without content loss

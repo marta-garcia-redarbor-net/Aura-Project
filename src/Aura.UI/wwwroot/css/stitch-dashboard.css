@@ -1129,31 +1129,6 @@ details[open] .decision-trace__col--chevron {
 }
 
 /* ==========================================================================
-   Responsive
-   ========================================================================== */
-
-@media (max-width: 900px) {
-    .dashboard-sidebar {
-        width: 100%;
-        position: relative;
-        height: auto;
-        padding-top: 0;
-    }
-
-    .dashboard-shell__content {
-        padding-left: 0;
-    }
-
-    .dashboard-header__nav {
-        display: none;
-    }
-
-    .dashboard-shell__main {
-        padding: var(--aura-margin-mobile);
-    }
-}
-
-/* ==========================================================================
    Restricted Access View — Login overlay for unauthenticated users
    ========================================================================== */
 
@@ -1739,12 +1714,6 @@ details[open] .decision-trace__col--chevron {
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: var(--aura-gutter);
-}
-
-@media (max-width: 900px) {
-    .priority-summary-cards {
-        grid-template-columns: 1fr;
-    }
 }
 
 .priority-card {
