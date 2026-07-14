@@ -144,7 +144,18 @@ Invoke-RestMethod http://localhost:5190/health
 Con `"SeedData": { "Enabled": true }` en `appsettings.Development.json`, al arrancar
 los workers se cargan datos semilla en los conectores de Teams, Outlook, Calendar y PRs.
 
-> **URL de despliegue (ACA):** [https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io](https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io)
+## Entregables del Proyecto
+
+### Despliegue en la nube
+> **URL de acceso (ACA):** [https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io](https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io)
+
+*(Nota: Al estar desplegado en un entorno Serverless de Azure Container Apps, si no ha recibido tráfico reciente puede tardar entre 15-30 segundos en inicializar los contenedores la primera vez que se accede).*
+
+### Presentación (Slides)
+> **Google Slides:** [Ver presentación de Aura](https://docs.google.com/presentation/d/1IEmdA8vuYvKjR7un0RLn9d1EoCalMYIdIvW8OJWY3GI/edit?usp=sharing)
+
+### Vídeo Demo
+> **Explicación del proyecto:** [Pendiente de grabación]
 
 ---
 
@@ -276,18 +287,6 @@ En producción, todas las peticiones HTTP se redirigen a HTTPS (307). En desarro
 
 - **Dependabot**: monitoreo semanal de dependencias NuGet.
 - **CI audit**: `dotnet list package --vulnerable` en cada PR — falla solo en vulnerabilidades críticas o altas.
-
----
-
-## Slides
-
-> _Pendiente — enlace a presentación._
-
----
-
-## Vídeo
-
-> _Pendiente — enlace a vídeo explicativo._
 
 ---
 
