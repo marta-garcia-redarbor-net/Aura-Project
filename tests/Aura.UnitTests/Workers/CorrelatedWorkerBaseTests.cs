@@ -34,16 +34,18 @@ public class CorrelatedWorkerBaseTests
     [Fact]
     public async Task ExecuteCorrelatedAsync_ReceivesNonEmptyCorrelationId()
     {
+        var executedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         string? capturedCorrelationId = null;
         var worker = new TestCorrelatedWorker(NullLogger<CorrelatedWorkerBase>.Instance, (corrId, _) =>
         {
             capturedCorrelationId = corrId;
+            executedTcs.TrySetResult();
             return Task.CompletedTask;
         });
 
         var cts = new CancellationTokenSource();
         await worker.StartAsync(cts.Token);
-        await Task.Delay(200);
+        await executedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         cts.Cancel();
         await worker.StopAsync(CancellationToken.None);
 
@@ -56,15 +58,22 @@ public class CorrelatedWorkerBaseTests
     public async Task ExecuteCorrelatedAsync_ReceivesDifferentIdEachCycle()
     {
         var ids = new List<string>();
+        var firstCycleTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         var worker = new TestCorrelatedWorker(NullLogger<CorrelatedWorkerBase>.Instance, (corrId, _) =>
         {
             ids.Add(corrId);
+            if (ids.Count == 1) firstCycleTcs.TrySetResult();
             return Task.CompletedTask;
         });
 
         var cts = new CancellationTokenSource();
         await worker.StartAsync(cts.Token);
-        await Task.Delay(500);
+
+        // Wait for the first cycle to complete, then allow time for a second
+        await firstCycleTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Task.Delay(100);
+
         cts.Cancel();
         await worker.StopAsync(CancellationToken.None);
 
@@ -77,17 +86,19 @@ public class CorrelatedWorkerBaseTests
     {
         var logger = new ScopeAwareTestLogger<CorrelatedWorkerBase>();
         var correlationIds = new List<string>();
+        var executedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var worker = new TestCorrelatedWorker(logger, (corrId, _) =>
         {
             correlationIds.Add(corrId);
             logger.LogInformation("Worker cycle executed");
+            executedTcs.TrySetResult();
             return Task.CompletedTask;
         });
 
         var cts = new CancellationTokenSource();
         await worker.StartAsync(cts.Token);
-        await Task.Delay(200);
+        await executedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         cts.Cancel();
         await worker.StopAsync(CancellationToken.None);
 
