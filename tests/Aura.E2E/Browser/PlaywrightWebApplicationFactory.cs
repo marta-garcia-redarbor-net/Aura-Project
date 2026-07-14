@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using System.Net;
@@ -115,17 +114,6 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
         builder.Services.AddScoped<ITokenAcquisitionService, DevTokenAcquisitionService>();
 
-        // Additional services required by the UI components
-        builder.Services.AddScoped<SessionExpiredService>();
-        builder.Services.AddScoped<DemoUiState>();
-        builder.Services.AddScoped<IPrioritySummaryService, StubPrioritySummaryService>();
-        builder.Services.AddScoped<IDecisionLogApiClient>(_ => new StubDecisionLogApiClient());
-        builder.Services.AddScoped<IPullRequestsApiClient>(_ => new StubPullRequestsApiClient());
-        builder.Services.AddScoped<IAzureDevOpsPrClient>(_ => new StubAzureDevOpsPrClient());
-        builder.Services.AddSingleton<AppVersionService>();
-        builder.Services.AddScoped<IAuthPopupService, StubAuthPopupService>();
-        builder.Services.AddScoped<TelemetryClient>();
-
         // Calendar use case — dashboard display only
         builder.Services.AddSingleton<ICalendarEventStore, InMemoryCalendarEventStore>();
         builder.Services.AddScoped<GetUpcomingMeetingsUseCase>();
@@ -135,9 +123,6 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
             .ConfigurePrimaryHttpMessageHandler(() => new StubAuraApiMessageHandler());
 
         _app = builder.Build();
-
-        // Health check endpoint for test reachability (must be before Razor components)
-        _app.MapGet("/test-health", () => Results.Ok("Healthy"));
 
         // Mirror Program.cs middleware pipeline (skip HTTPS redirect in test)
         _app.UseStaticFiles();
@@ -278,40 +263,6 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
         }
     }
 
-    private sealed class StubPrioritySummaryService : IPrioritySummaryService
-    {
-        public Task<List<PrioritySummaryCard>> GetCardsAsync(CancellationToken ct)
-            => Task.FromResult(new List<PrioritySummaryCard>());
-        public string FormatTimeRange(UpcomingMeetingResponse ev) => string.Empty;
-        public string GetEventStatus(UpcomingMeetingResponse ev) => string.Empty;
-    }
-
-    private sealed class StubDecisionLogApiClient : IDecisionLogApiClient
-    {
-        public Task<DecisionLogResponse> GetDecisionsAsync(int page, int pageSize, CancellationToken cancellationToken)
-            => Task.FromResult(new DecisionLogResponse([], 0, 1, 20));
-    }
-
-    private sealed class StubPullRequestsApiClient : IPullRequestsApiClient
-    {
-        public Task<IReadOnlyList<PullRequestResponse>> GetPendingPullRequestsAsync(CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<PullRequestResponse>>(new List<PullRequestResponse>());
-    }
-
-    private sealed class StubAzureDevOpsPrClient : IAzureDevOpsPrClient
-    {
-        public Task<List<PullRequestResponse>> GetPendingPullRequestsAsync(CancellationToken ct)
-            => Task.FromResult(new List<PullRequestResponse>());
-    }
-
-    private sealed class StubAuthPopupService : IAuthPopupService
-    {
-        public Task OpenMicrosoftLoginPopupAsync(string authUrl) => Task.CompletedTask;
-        public Task<AuthResult?> WaitForPopupResultAsync(CancellationToken ct) => Task.FromResult<AuthResult?>(null);
-        public ValueTask InitializeAsync(Microsoft.JSInterop.IJSRuntime js) => ValueTask.CompletedTask;
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-    }
-
     internal static Task EnsureHostReachableAsync(string baseUrl, HttpMessageHandler? httpMessageHandler = null)
     {
         return EnsureHostReachableCoreAsync(baseUrl, httpMessageHandler);
@@ -319,7 +270,7 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
     private static async Task EnsureHostReachableCoreAsync(string baseUrl, HttpMessageHandler? httpMessageHandler)
     {
-        var healthUrl = $"{baseUrl}/test-health";
+        var healthUrl = $"{baseUrl}/health";
 
         try
         {
@@ -330,9 +281,7 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
             probeClient.Timeout = TimeSpan.FromSeconds(5);
 
             var response = await probeClient.GetAsync(healthUrl);
-            // Accept any response that's not a server error (5xx) as "reachable"
-            // 401/403 are OK because the UI requires authentication
-            if (response.StatusCode >= HttpStatusCode.InternalServerError)
+            if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(

@@ -31,7 +31,7 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
     }
 
     [Fact]
-    public async Task AuthenticatedClient_UsingWebApplicationFactory_FocusStateAndTriageBothAllowDemo()
+    public async Task AuthenticatedClient_UsingWebApplicationFactory_FocusStateIsEntraOnlyAndTriageAllowsDemo()
     {
         var focusStateResolver = new StubFocusStateResolver(FocusStateType.DeepWork);
         var overrideStore = new StubOverrideStore(FocusStateType.DeepWork);
@@ -66,7 +66,7 @@ public class FocusStateAndTriageWebApplicationFactoryTests : IClassFixture<WebAp
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var focusResponse = await client.GetAsync("/api/focus-state");
-        Assert.Equal(HttpStatusCode.OK, focusResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, focusResponse.StatusCode);
 
         var triageResponse = await client.GetAsync("/api/triage/decisions?page=1&pageSize=20");
         Assert.Equal(HttpStatusCode.OK, triageResponse.StatusCode);

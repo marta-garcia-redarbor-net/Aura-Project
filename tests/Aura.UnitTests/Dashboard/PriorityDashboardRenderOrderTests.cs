@@ -79,26 +79,7 @@ public class PriorityDashboardRenderOrderTests : TestContext
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "MockAuth ok"))));
-        statusClient.GetRecentErrorsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new List<ErrorEntryDto>()));
         Services.AddSingleton(statusClient);
-
-        var moduleProgressClient = Substitute.For<IModuleProgressApiClient>();
-        moduleProgressClient.GetAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new ModuleProgressResponse([], IsSeeded: true)));
-        Services.AddSingleton(moduleProgressClient);
-
-        var syncClient = Substitute.For<ISyncApiClient>();
-        syncClient.GetSyncStatusAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new List<SourceSyncStateDto>()));
-        syncClient.TriggerSyncAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-        Services.AddSingleton(syncClient);
-
-        var graphConnectorClient = Substitute.For<IGraphConnectorApiClient>();
-        graphConnectorClient.GetStatusAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new GraphConnectorStatusResponse("Disabled")));
-        Services.AddSingleton(graphConnectorClient);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
@@ -128,14 +109,8 @@ public class PriorityDashboardRenderOrderTests : TestContext
     {
         SetupCommonServices();
 
-        var cards = new List<DashboardCardResponse>
-        {
-            new("Teams", "5 mentions", "info"),
-            new("Outlook", "3 emails", "warning"),
-            new("Schedule", "2 meetings", "info")
-        };
         var state = new DashboardViewState(
-            DashboardViewStateKind.Populated, "Test User", cards, "Ready");
+            DashboardViewStateKind.Populated, "Test User", [], "Ready");
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
 
@@ -150,21 +125,24 @@ public class PriorityDashboardRenderOrderTests : TestContext
     public void PriorityDashboard_RendersPrioritySummaryCards()
     {
         RenderPriorityDashboard(out var markup);
-        Assert.Contains("class=\"dashboard-cards\"", markup);
+        Assert.Contains("priority-summary-cards", markup);
     }
 
     [Fact]
     public void PriorityDashboard_RendersThreeSourceCards()
     {
         RenderPriorityDashboard(out var markup);
-        Assert.Contains("data-testid=\"dashboard-card\"", markup);
+        Assert.Contains("data-source=\"teams\"", markup);
+        Assert.Contains("data-source=\"outlook\"", markup);
+        Assert.Contains("data-source=\"schedule\"", markup);
     }
 
     [Fact]
-    public void PriorityDashboard_DoesNotRenderLegacyTopPriorityPanel()
+    public void PriorityDashboard_DoesNotRenderHealthPanels()
     {
         RenderPriorityDashboard(out var markup);
-        // The old TopPrioritySummaryPanel is no longer rendered
-        Assert.DoesNotContain("top-priority-summary", markup);
+        Assert.DoesNotContain("graph-connector-panel", markup);
+        Assert.DoesNotContain("system-status-panel", markup);
+        Assert.DoesNotContain("module-progress-panel", markup);
     }
 }

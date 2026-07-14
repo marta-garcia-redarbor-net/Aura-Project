@@ -388,18 +388,18 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **DoD:** tests verdes.  
   **Riesgo:** olvidar actualizar test de integración.
 
-#### Historia W3-H9 — Conectar outbox semántica al flujo de ingestión
+#### Historia W3-H9 — [Backlog] Conectar outbox semántica al flujo de ingestión
 
-- [x] **W3-H9-T1** Inyectar `ISemanticOutboxRepository` en `ExecuteConnectorUseCase`.  
+- [ ] **W3-H9-T1** Inyectar `ISemanticOutboxRepository` en `ExecuteConnectorUseCase`.  
   **DoD:** dependencia registrada y construida.  
   **Riesgo:** no inyectar en el contenedor.
-- [x] **W3-H9-T2** Encolar `SemanticOutboxEntry` tras persistir cada `WorkItem` (Title + CanonicalSnippet).  
+- [ ] **W3-H9-T2** Encolar `SemanticOutboxEntry` tras persistir cada `WorkItem` (Title + CanonicalSnippet).  
   **DoD:** `EnqueueSemanticIndexingAsync` llamada tras `EvaluateAndEnqueueAsync`. Fallos no bloquean ingestión.  
   **Riesgo:** duplicidad si el worker y el encolado se solapan.
-- [x] **W3-H9-T3** Mapear `WorkItemSourceType` → `SemanticCollectionType` (PrReview → ProjectKnowledge, resto → ActivityMemory).  
+- [ ] **W3-H9-T3** Mapear `WorkItemSourceType` → `SemanticCollectionType` (PrReview → ProjectKnowledge, resto → ActivityMemory).  
   **DoD:** mapping explícito y testeado.  
   **Riesgo:** colección incorrecta para el tipo de item.
-- [x] **W3-H9-T4** Tests de integración del encolado.  
+- [ ] **W3-H9-T4** Tests de integración del encolado.  
   **DoD:** el `SemanticIndexSyncWorker` procesa lo encolado.  
   **Riesgo:** flaky por timing.
 
@@ -458,96 +458,47 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W4-H2 — Consolidar suite Playwright
 
-> **Estado:** ✅ Completada. Los tests E2E HTTP-only (45 tests) pasan correctamente. Los tests de navegador Playwright (3 tests) están skippeados con justificación clara — requieren infraestructura de navegador real que causa timeouts en el entorno de test. La cobertura E2E está cubierta por los tests de integración con `WebApplicationFactory` que validan el renderizado HTML.
-
-- [x] **W4-H2-T1** Configurar Playwright para Aura y crear el proyecto base de smoke del dashboard.  
+- [ ] **W4-H2-T1** Configurar Playwright para Aura y crear el proyecto base de smoke del dashboard.  
   **DoD:** existe proyecto/configuración Playwright ejecutable en local contra la UI con un caso smoke mínimo.  
   **Riesgo:** seguir posponiendo E2E browser real y descubrir tarde problemas de integración visual.
-- [x] **W4-H2-T2** Crear fixtures de demo para journeys completos.  
+- [ ] **W4-H2-T2** Crear fixtures de demo para journeys completos.  
   **DoD:** dataset reproducible para E2E.  
   **Riesgo:** tests flaky.
-- [x] **W4-H2-T3** Cubrir flujo dashboard → ingestión → summary → focus → reviewer.  
+- [ ] **W4-H2-T3** Cubrir flujo dashboard → ingestión → summary → focus → reviewer.  
   **DoD:** journey principal automatizado.  
   **Riesgo:** integración final no validada.
-- [x] **W4-H2-T4** Guardar screenshots, traces y artifacts.  
+- [ ] **W4-H2-T4** Guardar screenshots, traces y artifacts.  
   **DoD:** evidencia diagnóstica accesible.  
   **Riesgo:** errores difíciles de reproducir.
 
-**Implementación real:**
-- ✅ 45 tests E2E HTTP-only pasando (InitialDashboardSmokeTests, SyncStatusPanelSmokeTests, InboxPreviewPanelFieldsSmokeTests, GraphConnectorStatusSmokeTests, PullRequestsPageSmokeTests, DecisionLogTracePanelTests, PlaywrightBootstrapTests)
-- ✅ Añadidos atributos `data-testid` a componentes Blazor para selectores estables
-- ✅ Creados componentes InboxPreviewPanel y MorningSummaryPreviewPanel
-- ✅ PlaywrightWebApplicationFactory actualizado con todas las dependencias necesarias
-- ✅ Añadido endpoint `/test-health` para health check sin conflicto con página Razor
-- ✅ Añadido FocusStatePanel a PriorityDashboard para cobertura completa
-- ⏭️ 3 tests de navegador Playwright skippeados (timeout en conexión SignalR de Blazor Server)
-
 #### Historia W4-H3 — Preparar Demo Mode
 
-**Estado:** ✅ Completada con scope expandido más allá del plan original.
-
-- [x] **W4-H3-T1** Diseñar escenario demo reproducible.  
+- [ ] **W4-H3-T1** Diseñar escenario demo reproducible.  
   **DoD:** narrativa funcional definida.  
   **Riesgo:** demo improvisada.
-- [x] **W4-H3-T2** Implementar carga de datos semilla end-to-end.  
+- [ ] **W4-H3-T2** Implementar carga de datos semilla end-to-end.  
   **DoD:** un comando deja el entorno listo para demo.  
   **Riesgo:** dependencia de pasos manuales frágiles.
-- [x] **W4-H3-T3** Añadir selector o bandera de Demo Mode.  
+- [ ] **W4-H3-T3** Añadir selector o bandera de Demo Mode.  
   **DoD:** activación simple y visible.  
   **Riesgo:** activar demo con configuración insegura.
-
-**Implementación adicional (no planificada originalmente):**
-- ✅ Dual authentication mode (Entra ID + Demo simultáneos) con SmartBearer routing
-- ✅ Demo session store con validación de sesión activa
-- ✅ LLM decision advisor con Ollama integration
-- ✅ Interruption decision log con trazas completas (reglas + LLM + contexto semántico)
-- ✅ Demo simulation pipeline que evalúa decisiones reales (no random)
-- ✅ IsDemo flag en decision records para visibilidad del jury
-- ✅ DemoDecisionContextRetriever que reemplaza Qdrant en modo demo
-- ✅ Curated demo scenarios con datos coherentes de Teams, Outlook, Calendar, PRs
-- ✅ Landing page rework con Stitch design y claim-based demo mode
-- ✅ Session expiration redirect y auto-login en demo mode
 
 ### Épica W4-E4 — Cierre documental
 
 #### Historia W4-H4 — Documentar TFM y operación técnica
 
-> **Estado:** ✅ Completada. Se ha generado la documentación requerida para el tribunal, consolidando la arquitectura final, la justificación de las decisiones técnicas y las instrucciones para la evaluación del proyecto.
-
-- [x] **W4-H4-T1** Documentar arquitectura final y decisiones clave.  
+- [ ] **W4-H4-T1** Documentar arquitectura final y decisiones clave.  
   **DoD:** documento base del TFM actualizado.  
   **Riesgo:** perder racional técnico.
-- [x] **W4-H4-T2** Documentar estrategia TDD y cobertura E2E.  
+- [ ] **W4-H4-T2** Documentar estrategia TDD y cobertura E2E.  
   **DoD:** Playwright y tests quedan explicados.  
   **Riesgo:** evaluador sin trazabilidad metodológica.
-- [x] **W4-H4-T3** Crear checklist de arranque y demo.  
+- [ ] **W4-H4-T3** Crear checklist de arranque y demo.  
   **DoD:** cualquier persona puede reproducir la entrega.  
   **Riesgo:** conocimiento encerrado en una sola cabeza.
-
-**Implementación real:**
-- ✅ Se reescribió el `README.md` principal para coincidir uno-a-uno con los requisitos (a-f) de la rúbrica del TFM.
-- ✅ Creado `FINAL-ARCHITECTURE.md` para explicar el *Monolito Modular*, *Dual Auth Mode* y LLM Advisor.
-- ✅ Actualizada toda la carpeta `docs/architecture/quality/` (00, 01, 02, 05) detallando la pirámide de más de 1.500 tests, la decisión de virar a HTTP-only E2E por SignalR y el uso de ArchUnitNET.
-- ✅ Generado `docs/TFM-EVALUATION-CHECKLIST.md` como guía paso a paso para el jurado.
 
 ---
 
 ## Siguiente paso recomendado
 
-**Semana 4 completada.** Todos los tests pasan: 1524 passed, 0 failed, 5 skipped.
-
-**Estado final de tests:**
-- UnitTests: 1225 passed, 1 skipped
-- IntegrationTests: 170 passed, 1 skipped  
-- ArchitectureTests: 84 passed
-- E2E: 45 passed, 3 skipped (Playwright browser tests con timeout en SignalR)
-
-**Tests skippeados con justificación:**
-- 3 tests E2E Playwright: timeout en conexión SignalR de Blazor Server (requieren navegador real)
-- 1 test UnitTests: TelemetryLoggerProviderTests (correlación en scope asíncrono)
-- 1 test IntegrationTests: QdrantHealthCheckRealInstanceTests (requiere Docker/Testcontainers)
-
-**Próximos pasos para entrega TFM:**
-1. **W4-H4: Documentación TFM** — generar documentación general para entrega
-2. **Azure Container Apps** — Fase 2 de despliegue (infraestructura ya existe)
-3. **Refactor E2E browser tests** — opcional, migrar a tests de integración si el tiempo lo permite
+**Semana 3 completada.** El siguiente hito es **Fase 2: Azure Container Apps** para tener el despliegue visible para el evaluador del TFM.

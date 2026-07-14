@@ -48,7 +48,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "Mock User",
                 [new DashboardCardResponse("Inbox", "7 pending", "info")])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -66,7 +66,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new InitialDashboardResponse("Mock User",
                 [new DashboardCardResponse("Inbox", "7 pending", "info")])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -89,7 +89,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     {
         var client = CreateClient(new StubDashboardApiClient(new InitialDashboardResponse("Mock User", [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -103,7 +103,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     {
         var client = CreateClient(new ThrowingDashboardApiClient());
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -123,7 +123,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                     new DashboardCardResponse("PR Review", "2 due", "warning")
                 ])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -145,7 +145,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "Header User",
                 [new DashboardCardResponse("Inbox", "5 pending", "info")])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -190,7 +190,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             AllowAutoRedirect = false
         });
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -215,7 +215,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "Transition User",
                 [new DashboardCardResponse("Inbox", "3 pending", "info")])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -243,7 +243,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM healthy"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -267,7 +267,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new ThrowingSystemStatusApiClient(),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -295,7 +295,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 ],
                 IsSeeded: true)));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -321,7 +321,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -342,7 +342,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "llm"))),
             new ThrowingModuleProgressApiClient());
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -367,7 +367,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 TimeSpan.FromMilliseconds(120),
                 new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -391,7 +391,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new StubDashboardPreviewApiClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -415,7 +415,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new ThrowingDashboardPreviewApiClient());
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -451,7 +451,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
             new StubModuleProgressApiClient(new ModuleProgressResponse([], IsSeeded: true)),
             new StubDashboardPreviewApiClient(preview));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

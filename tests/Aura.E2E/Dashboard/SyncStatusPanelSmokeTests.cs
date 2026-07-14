@@ -40,7 +40,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         _output.WriteLine(html);
@@ -59,7 +59,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -76,7 +76,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
             new StubModuleProgressClient(),
             new StubPreviewClient(new DashboardPreviewResponse([], [])));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -9,9 +9,9 @@ public sealed class PlaywrightHostReachabilityGateTests
     public async Task EnsureHostReachableAsync_WhenHealthProbeReturnsNonSuccess_ThrowsHostNotReachableWithUrlAndPort()
     {
         var baseUrl = "http://127.0.0.1:5099";
-        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
         {
-            Content = new StringContent("internal server error")
+            Content = new StringContent("service unavailable")
         });
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -19,8 +19,8 @@ public sealed class PlaywrightHostReachabilityGateTests
 
         Assert.Contains("HostNotReachable:", exception.Message, StringComparison.Ordinal);
         Assert.Contains(baseUrl, exception.Message, StringComparison.Ordinal);
-        Assert.Contains($"{baseUrl}/test-health", exception.Message, StringComparison.Ordinal);
-        Assert.Contains("500", exception.Message, StringComparison.Ordinal);
+        Assert.Contains($"{baseUrl}/health", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("503", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

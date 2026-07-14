@@ -54,7 +54,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         // Debug: output HTML for diagnosis
@@ -89,7 +89,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -110,7 +110,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -124,7 +124,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
     {
         var client = CreateClient(new ThrowingPreviewClient());
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -164,7 +164,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
 
         var client = CreateClient(new StubPreviewClient(preview));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

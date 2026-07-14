@@ -113,8 +113,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "passing",
                 1,
                 2,
-                0,
-                "direct"),
+                0),
             new PullRequestResponse(
                 145,
                 "Feature: reporting dashboard v2",
@@ -134,8 +133,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "running",
                 1,
                 1,
-                0,
-                "direct")
+                0)
         };
 
         return CreateClient(new StubPrClient(prs));

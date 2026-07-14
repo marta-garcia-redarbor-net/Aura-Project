@@ -11,11 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/stitch-dashboard.css" />
     <link rel="stylesheet" href="css/stitch-dashboard-responsive.css" />
-    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: true)" />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 <body>
     <CascadingAuthenticationState>
-        <Routes @rendermode="new InteractiveServerRenderMode(prerender: true)" />
+        <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     </CascadingAuthenticationState>
     <script src="js/sidebarDrawer.js"></script>
     <script src="app.js"></script>

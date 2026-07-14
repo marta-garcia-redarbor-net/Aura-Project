@@ -14,7 +14,7 @@ public static partial class GraphConnectorEndpoints
     public static IEndpointRouteBuilder MapGraphConnectorEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/connectors/graph")
-            .RequireAuthorization("RequireEntraOrDemo");
+            .RequireAuthorization("RequireEntraId");
 
         group.MapGet("/status", GetStatusAsync);
 

@@ -33,7 +33,7 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
     {
         var client = CreateClient(new StubGraphConnectorApiClient(new GraphConnectorStatusResponse(state)));
 
-        var response = await client.GetAsync("/dashboard");
+        var response = await client.GetAsync("/test-dashboard");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

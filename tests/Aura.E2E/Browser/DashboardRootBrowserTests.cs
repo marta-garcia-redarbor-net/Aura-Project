@@ -131,7 +131,7 @@ public class DashboardRootBrowserTests : IAsyncLifetime
     /// 4. Loading transitions to populated state after stub response
     /// 5. No console errors during the entire flow
     /// </summary>
-    [Fact(Skip = "Playwright browser tests timeout waiting for Blazor Server SignalR connection. HTTP-only E2E tests provide equivalent coverage for dashboard rendering.")]
+    [Fact]
     public async Task DashboardRoot_ShellVisibleAndStateTransition()
     {
         Assert.NotNull(_page);
@@ -147,8 +147,8 @@ public class DashboardRootBrowserTests : IAsyncLifetime
             };
 
             // Navigate to the real Kestrel endpoint
-            _output.WriteLine($"Navigating to {_factory.BaseUrl}/dashboard...");
-            var response = await _page.GotoAsync($"{_factory.BaseUrl}/dashboard", new PageGotoOptions
+            _output.WriteLine($"Navigating to {_factory.BaseUrl}/test-dashboard...");
+            var response = await _page.GotoAsync($"{_factory.BaseUrl}/test-dashboard", new PageGotoOptions
             {
                 WaitUntil = WaitUntilState.NetworkIdle
             });
