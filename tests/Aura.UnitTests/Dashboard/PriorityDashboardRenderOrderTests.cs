@@ -34,6 +34,10 @@ public class PriorityDashboardRenderOrderTests : TestContext
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
         Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+        Services.AddSingleton<IFocusStateRefreshScheduler>(
+            Substitute.For<IFocusStateRefreshScheduler>());
+        Services.AddSingleton<IFocusStateApiClient>(
+            Substitute.For<IFocusStateApiClient>());
         Services.AddSingleton(new DemoUiState());
 
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
