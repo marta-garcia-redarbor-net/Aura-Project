@@ -47,8 +47,9 @@ El proyecto nace como Trabajo de Fin de Máster, aplicando Clean Architecture, T
 ### Observabilidad
 - Logs estructurados con `[LoggerMessage]` y correlation ID.
 - Middleware de correlación con trazabilidad request → response.
-- Spans de actividad (ActivitySource) en API, workers y adaptadores.
-- Panel de errores recientes con visualización en dashboard.
+- Spans de actividad (`ActivitySource`) en API, workers y adaptadores.
+- Métricas con `Meter` + `Counter<T>` en conectores y Graph API.
+- Exportación a **Azure Application Insights** vía OpenTelemetry (`Azure.Monitor.OpenTelemetry.AspNetCore`).
 
 ### Demo mode
 - Simulación de datos semilla precargados (Teams, Outlook, Calendar, PRs).
@@ -144,6 +145,47 @@ Con `"SeedData": { "Enabled": true }` en `appsettings.Development.json`, al arra
 los workers se cargan datos semilla en los conectores de Teams, Outlook, Calendar y PRs.
 
 > **URL de despliegue (ACA):** [https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io](https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io)
+
+---
+
+## Observabilidad en Azure
+
+Aura envía telemetría (trazas, logs y métricas) a **Azure Application Insights** mediante OpenTelemetry.
+
+### Requisitos
+
+El recurso `Application Insights` debe existir en Azure con la connection string configurada como secreto en el Container Apps Environment con el nombre `app-insights-connection-string`.
+
+### Variables de entorno
+
+Cada contenedor (`aura-api-dev`, `aura-workers-dev`) debe tener:
+
+| Variable | Origen |
+|----------|--------|
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Secreto: `app-insights-connection-string` |
+
+### Ver telemetría en vivo
+
+1. Azure Portal → **Application Insights** → `aura-appinsights-dev`
+2. En el menú izquierdo:
+   - **Buscar** → logs individuales con correlation ID
+   - **Rendimiento** → latencia por endpoint con percentiles
+   - **Errores** → excepciones y fallos con stack trace
+   - **Métricas** → contadores de negocio (conectores, Graph)
+3. Para ver la traza completa de una operación: **Rendimiento** → clic en un endpoint → **Detalles de la transacción completa**
+
+### Stack tecnológico
+
+| Componente | Tecnología |
+|------------|-----------|
+| **Instrumentación** | `ActivitySource`, `Meter`, `ILogger` + `[LoggerMessage]` |
+| **Exportación** | `Azure.Monitor.OpenTelemetry.AspNetCore` (OTLP) |
+| **Backend** | Azure Application Insights |
+| **Dashboard local** | (Opcional) Aspire Dashboard o Prometheus + Grafana |
+
+### Nota para el tribunal
+
+La telemetría que se ve en Application Insights es **real**: cada navegación por el dashboard, cada llamada a la API y cada operación de los workers genera trazas y logs. No hay datos simulados ni de demostración.
 
 ---
 
