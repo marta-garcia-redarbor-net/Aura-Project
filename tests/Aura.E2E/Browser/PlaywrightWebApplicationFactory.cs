@@ -136,6 +136,9 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
         _app = builder.Build();
 
+        // Health check endpoint for test reachability (must be before Razor components)
+        _app.MapGet("/test-health", () => Results.Ok("Healthy"));
+
         // Mirror Program.cs middleware pipeline (skip HTTPS redirect in test)
         _app.UseStaticFiles();
         _app.UseAntiforgery();
@@ -316,7 +319,7 @@ public sealed class PlaywrightWebApplicationFactory : IAsyncDisposable
 
     private static async Task EnsureHostReachableCoreAsync(string baseUrl, HttpMessageHandler? httpMessageHandler)
     {
-        var healthUrl = $"{baseUrl}/";
+        var healthUrl = $"{baseUrl}/test-health";
 
         try
         {

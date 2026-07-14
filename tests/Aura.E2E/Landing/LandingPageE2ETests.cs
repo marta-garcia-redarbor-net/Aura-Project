@@ -52,7 +52,7 @@ public class LandingPageE2ETests : IAsyncLifetime
         await _factory.DisposeAsync();
     }
 
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact(Skip = "Playwright browser tests timeout waiting for Blazor Server SignalR connection. HTTP-only E2E tests provide equivalent coverage for landing page rendering.")]
     public async Task AnonymousUser_SeesLandingPageAtRoot()
     {
         Assert.NotNull(_page);
@@ -61,14 +61,17 @@ public class LandingPageE2ETests : IAsyncLifetime
         {
             var response = await _page.GotoAsync($"{_factory.BaseUrl}/", new PageGotoOptions
             {
-                WaitUntil = WaitUntilState.NetworkIdle
+                WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
             Assert.NotNull(response);
             Assert.True(response.Ok, $"Navigation failed with status {response.Status}");
 
             // Assert — landing page sections are visible
-            await _page.WaitForSelectorAsync("[data-testid='landing-hero']");
+            await _page.WaitForSelectorAsync("[data-testid='landing-hero']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
             var hero = await _page.QuerySelectorAsync("[data-testid='landing-hero']");
             Assert.NotNull(hero);
 
@@ -88,7 +91,7 @@ public class LandingPageE2ETests : IAsyncLifetime
         }
     }
 
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact(Skip = "Playwright browser tests timeout waiting for Blazor Server SignalR connection. HTTP-only E2E tests provide equivalent coverage for landing page rendering.")]
     public async Task LandingPage_HasAllSections()
     {
         Assert.NotNull(_page);
@@ -97,16 +100,34 @@ public class LandingPageE2ETests : IAsyncLifetime
         {
             await _page.GotoAsync($"{_factory.BaseUrl}/", new PageGotoOptions
             {
-                WaitUntil = WaitUntilState.NetworkIdle
+                WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
             // Assert — all major sections exist
-            await _page.WaitForSelectorAsync("[data-testid='landing-header']");
-            await _page.WaitForSelectorAsync("[data-testid='landing-hero']");
-            await _page.WaitForSelectorAsync("[data-testid='landing-problems']");
-            await _page.WaitForSelectorAsync("[data-testid='landing-features']");
-            await _page.WaitForSelectorAsync("[data-testid='landing-cta']");
-            await _page.WaitForSelectorAsync("[data-testid='landing-footer']");
+            await _page.WaitForSelectorAsync("[data-testid='landing-header']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
+            await _page.WaitForSelectorAsync("[data-testid='landing-hero']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
+            await _page.WaitForSelectorAsync("[data-testid='landing-problems']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
+            await _page.WaitForSelectorAsync("[data-testid='landing-features']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
+            await _page.WaitForSelectorAsync("[data-testid='landing-cta']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
+            await _page.WaitForSelectorAsync("[data-testid='landing-footer']", new PageWaitForSelectorOptions
+            {
+                Timeout = 30000
+            });
 
             _output.WriteLine("TEST PASSED: All landing page sections render");
         }

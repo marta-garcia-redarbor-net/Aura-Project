@@ -19,7 +19,7 @@ public sealed class PlaywrightHostReachabilityGateTests
 
         Assert.Contains("HostNotReachable:", exception.Message, StringComparison.Ordinal);
         Assert.Contains(baseUrl, exception.Message, StringComparison.Ordinal);
-        Assert.Contains($"{baseUrl}/", exception.Message, StringComparison.Ordinal);
+        Assert.Contains($"{baseUrl}/test-health", exception.Message, StringComparison.Ordinal);
         Assert.Contains("500", exception.Message, StringComparison.Ordinal);
     }
 

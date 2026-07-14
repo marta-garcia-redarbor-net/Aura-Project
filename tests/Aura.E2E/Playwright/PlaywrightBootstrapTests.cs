@@ -49,7 +49,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// Verifies Playwright can launch and navigate to the Aura UI dashboard shell.
     /// This is the minimal smoke test proving the Playwright infrastructure works.
     /// </summary>
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact]
     public async Task DashboardShell_RendersWithExpectedMarkers()
     {
         var context = await _browser!.NewContextAsync();
@@ -74,7 +74,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// Verifies the inbox preview panel renders on the dashboard.
     /// This test will be extended to verify real data after sync integration.
     /// </summary>
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact]
     public async Task InboxPreviewPanel_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();
@@ -93,7 +93,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// <summary>
     /// Verifies the sync status panel renders on the dashboard.
     /// </summary>
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact]
     public async Task SyncStatusPanel_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();
@@ -109,7 +109,7 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         await context.CloseAsync();
     }
 
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact]
     public async Task FocusStateBadge_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();

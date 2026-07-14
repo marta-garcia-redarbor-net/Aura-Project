@@ -131,7 +131,7 @@ public class DashboardRootBrowserTests : IAsyncLifetime
     /// 4. Loading transitions to populated state after stub response
     /// 5. No console errors during the entire flow
     /// </summary>
-    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
+    [Fact(Skip = "Playwright browser tests timeout waiting for Blazor Server SignalR connection. HTTP-only E2E tests provide equivalent coverage for dashboard rendering.")]
     public async Task DashboardRoot_ShellVisibleAndStateTransition()
     {
         Assert.NotNull(_page);
