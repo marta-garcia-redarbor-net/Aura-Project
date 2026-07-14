@@ -458,7 +458,7 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 #### Historia W4-H2 — Consolidar suite Playwright
 
-> **Estado:** ✅ Completada. Los tests E2E HTTP-only (41 tests) pasan correctamente. Los tests de navegador Playwright (7 tests) están skippeados con justificación clara — requieren infraestructura de navegador real que causa timeouts en el entorno de test. La cobertura E2E está cubierta por los tests de integración con `WebApplicationFactory` que validan el renderizado HTML.
+> **Estado:** ✅ Completada. Los tests E2E HTTP-only (45 tests) pasan correctamente. Los tests de navegador Playwright (3 tests) están skippeados con justificación clara — requieren infraestructura de navegador real que causa timeouts en el entorno de test. La cobertura E2E está cubierta por los tests de integración con `WebApplicationFactory` que validan el renderizado HTML.
 
 - [x] **W4-H2-T1** Configurar Playwright para Aura y crear el proyecto base de smoke del dashboard.  
   **DoD:** existe proyecto/configuración Playwright ejecutable en local contra la UI con un caso smoke mínimo.  
@@ -474,11 +474,13 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
   **Riesgo:** errores difíciles de reproducir.
 
 **Implementación real:**
-- ✅ 41 tests E2E HTTP-only pasando (InitialDashboardSmokeTests, SyncStatusPanelSmokeTests, InboxPreviewPanelFieldsSmokeTests, GraphConnectorStatusSmokeTests, PullRequestsPageSmokeTests, DecisionLogTracePanelTests)
+- ✅ 45 tests E2E HTTP-only pasando (InitialDashboardSmokeTests, SyncStatusPanelSmokeTests, InboxPreviewPanelFieldsSmokeTests, GraphConnectorStatusSmokeTests, PullRequestsPageSmokeTests, DecisionLogTracePanelTests, PlaywrightBootstrapTests)
 - ✅ Añadidos atributos `data-testid` a componentes Blazor para selectores estables
 - ✅ Creados componentes InboxPreviewPanel y MorningSummaryPreviewPanel
 - ✅ PlaywrightWebApplicationFactory actualizado con todas las dependencias necesarias
-- ⏭️ 7 tests de navegador Playwright skippeados (requieren Chromium real + SignalR completo)
+- ✅ Añadido endpoint `/test-health` para health check sin conflicto con página Razor
+- ✅ Añadido FocusStatePanel a PriorityDashboard para cobertura completa
+- ⏭️ 3 tests de navegador Playwright skippeados (timeout en conexión SignalR de Blazor Server)
 
 #### Historia W4-H3 — Preparar Demo Mode
 
@@ -524,16 +526,16 @@ Este backlog convierte el `StoryPlan.md` en trabajo ejecutable, guiable y verifi
 
 ## Siguiente paso recomendado
 
-**Semana 4 completada.** Todos los tests pasan: 1520 passed, 0 failed, 9 skipped.
+**Semana 4 completada.** Todos los tests pasan: 1524 passed, 0 failed, 5 skipped.
 
 **Estado final de tests:**
 - UnitTests: 1225 passed, 1 skipped
 - IntegrationTests: 170 passed, 1 skipped  
 - ArchitectureTests: 84 passed
-- E2E: 41 passed, 7 skipped (Playwright browser tests requieren infraestructura real)
+- E2E: 45 passed, 3 skipped (Playwright browser tests con timeout en SignalR)
 
 **Tests skippeados con justificación:**
-- 7 tests E2E Playwright: requieren navegador real + SignalR completo (causa timeouts)
+- 3 tests E2E Playwright: timeout en conexión SignalR de Blazor Server (requieren navegador real)
 - 1 test UnitTests: TelemetryLoggerProviderTests (correlación en scope asíncrono)
 - 1 test IntegrationTests: QdrantHealthCheckRealInstanceTests (requiere Docker/Testcontainers)
 
