@@ -111,7 +111,12 @@ builder.Services.AddRateLimiter(options =>
             return RateLimitPartition.GetNoLimiter("signalr");
         }
 
-        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        // X-Forwarded-For gives the real client IP behind ACA/load balancer.
+        // Without it, all users share RemoteIpAddress (the proxy IP) and hit the limit together.
+        var clientIp = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+            ?.Split(',')[0].Trim()
+            ?? httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? "anonymous";
         return RateLimitPartition.GetSlidingWindowLimiter(clientIp,
             _ => new SlidingWindowRateLimiterOptions
             {
@@ -125,7 +130,10 @@ builder.Services.AddRateLimiter(options =>
     // Named policy for auth endpoints — stricter limits
     options.AddPolicy("auth", context =>
     {
-        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        var clientIp = context.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+            ?.Split(',')[0].Trim()
+            ?? context.Connection.RemoteIpAddress?.ToString()
+            ?? "anonymous";
         return RateLimitPartition.GetSlidingWindowLimiter(clientIp,
             _ => new SlidingWindowRateLimiterOptions
             {
