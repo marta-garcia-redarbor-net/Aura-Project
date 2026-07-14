@@ -326,6 +326,7 @@ public sealed class DemoService
         }
 
         await _decisionStore.ClearAsync(ct);
+        await _calendarEventStore.ClearDemoEventsAsync(ct);
 
         await _dashboardRefreshDispatcher.DispatchAsync(null, ct);
         return $"Deleted {totalRemoved} work items and all decision records";

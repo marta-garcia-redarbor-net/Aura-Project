@@ -15,7 +15,8 @@ public sealed class DemoSimulationService
     private static readonly Random _rng = Random.Shared;
 
     private static readonly string[] OutlookTitles = ["Q3 Budget Review — Action Required", "Architecture Decision Record: Event Sourcing", "Infrastructure cost report", "Client meeting follow-up", "Performance review feedback"];
-    private static readonly string[] TeamsTitles = ["URGENTE: Production pipeline caído — responder YA", "Please review PR #428 — blocking release", "Quick question about API contract", "Sprint planning reminder", "Code review request: auth module"];
+    private static readonly string[] TeamsCriticalTitles = ["URGENTE: Production pipeline caído — responder YA", "Please review PR #428 — blocking release", "CRITICAL: Auth service down in prod", "Outage alert: payment gateway failing"];
+    private static readonly string[] TeamsMediumTitles = ["Sprint planning reminder", "Code review request: auth module", "Quick question about API contract", "Team lunch this Friday?", "Docs update needed for onboarding"];
     private static readonly string[] PrTitles = ["PR #428: feat: add caching layer", "PR #430: fix: resolve race condition", "PR #435: feat: add search endpoint", "PR #440: refactor: extract auth middleware"];
     private static readonly string[] MeetingTitles = ["Sprint Planning — Sprint 12", "UI Review — Design System Alignment", "Architecture Sync — Event Sourcing", "1:1 with Manager — Performance Review", "Demo Rehearsal — Client Presentation", "Backlog Refinement — Sprint 13", "Retrospective — Sprint 12"];
 
@@ -72,7 +73,7 @@ public sealed class DemoSimulationService
             await Task.Delay(3000, ct);
 
             // t=3s — Teams CRÍTICO with action needed + critical urgency → INTERRUPT.
-            var teamsTitle1 = TeamsTitles[_rng.Next(TeamsTitles.Length)];
+            var teamsTitle1 = TeamsCriticalTitles[_rng.Next(TeamsCriticalTitles.Length)];
             _logger.LogInformation("[3s] 🔴🔴🔴 Teams CRITICAL: {Title}", teamsTitle1);
             await AddAndEvaluateAsync($"demo-teams-001-{run}",
                 d => d.AddTeamsItemAsync($"demo-teams-001-{run}", teamsTitle1, WorkItemPriority.Critical, true, ct, ownerUserId: userId, actionNeeded: true, timeCriticality: SignalLevel.Critical),
@@ -113,7 +114,7 @@ public sealed class DemoSimulationService
             await Task.Delay(3000, ct);
 
             // t=15s — Teams mensaje normal → QUEUE.
-            var teamsTitle2 = TeamsTitles[_rng.Next(TeamsTitles.Length)];
+            var teamsTitle2 = TeamsMediumTitles[_rng.Next(TeamsMediumTitles.Length)];
             _logger.LogInformation("[15s] 💬 Teams: {Title}...", teamsTitle2);
             await AddAndEvaluateAsync($"demo-teams-002-{run}",
                 d => d.AddTeamsItemAsync($"demo-teams-002-{run}", teamsTitle2, WorkItemPriority.Medium, false, ct, ownerUserId: userId),
