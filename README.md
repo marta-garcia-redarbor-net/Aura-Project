@@ -82,7 +82,7 @@ Si se desea modificar el código, depurar el sistema o ejecutar los tests (más 
    dotnet run --project src/Aura.Workers
    dotnet run --project src/Aura.UI
    ```
-4. Navegar a la interfaz de usuario en `http://localhost:5180`. La API estará disponible en `http://localhost:5190` (donde se puede consultar `http://localhost:5190/health`).
+4. Navegar a la interfaz de usuario en `http://localhost:5190`. La API estará disponible en `http://localhost:5180` (donde se puede consultar `http://localhost:5180/health`).
 
 Para ejecutar la batería completa de validación (tests unitarios, de integración y arquitectura):
 ```bash
@@ -119,5 +119,5 @@ El código está estructurado siguiendo estrictamente Clean Architecture y separ
 Dado que las políticas corporativas pueden dificultar la prueba de integraciones reales en directo, la plataforma incluye un entorno Dual-Auth.
 
 Para la corrección del TFM:
-* **Entorno Desplegado (ACA) / Entorno Local en Modo Demo:** Al entrar a la web, simplemente se debe hacer clic en el botón **"Demo Mode"**. El sistema asignará automáticamente una sesión de evaluación (usuario mock) sin requerir usuario ni contraseña real, permitiendo navegar por la interfaz y ver los datos de demostración precargados por el simulador interno.
+* **Entorno Desplegado (ACA) / Entorno Local en Modo Demo:** Al entrar a la web, simplemente se debe hacer clic en el botón **"Explore Demo Mode"**. El sistema asignará automáticamente una sesión de evaluación (usuario mock) sin requerir usuario ni contraseña real, permitiendo navegar por la interfaz y ver los datos de demostración precargados por el simulador interno.
 * *Nota:* Las credenciales administrativas o corporativas de Azure, de ser requeridas específicamente para revisión de infraestructura, se proporcionarán mediante el formulario de entrega oficial del TFM.
