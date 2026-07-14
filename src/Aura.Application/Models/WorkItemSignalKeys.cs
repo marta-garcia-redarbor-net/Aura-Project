@@ -18,6 +18,12 @@ public static class WorkItemSignalKeys
     public const string TargetResponsibleUserId = "triage.target.responsibleUserId";
 
     /// <summary>
+    /// Marker for work items injected by the demo/simulation mode.
+    /// Value is a boolean string ("true"/"false"). Added by DemoService when creating seed data.
+    /// </summary>
+    public const string IsDemo = "is_demo";
+
+    /// <summary>
     /// Current normalized risk score key used by deterministic ranking policy.
     /// </summary>
     public const string RiskScore = "triage.risk.score";

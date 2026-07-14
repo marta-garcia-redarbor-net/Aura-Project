@@ -62,7 +62,9 @@ All `_logger.Log*()` calls MUST be replaced with `[LoggerMessage]` source-genera
 
 ### Requirement: Dashboard Error Correlation
 
-The API MUST expose `GET /api/dashboard/recent-errors` returning the last N errors with correlation ID, timestamp, and message. The dashboard panel MUST display these errors with their correlation ID for troubleshooting.
+The API MUST expose `GET /api/dashboard/recent-errors` returning the last N errors with correlation ID, timestamp, and message. The dashboard panel MUST display these errors with their correlation ID for troubleshooting. Errors logged MUST ALSO be captured by the in-process log ring buffer for real-time streaming to the observability page.
+
+(Previously: errors were only available via the REST endpoint; now they also feed the real-time log buffer.)
 
 #### Scenario: Recent errors returned with correlation
 
@@ -75,3 +77,9 @@ The API MUST expose `GET /api/dashboard/recent-errors` returning the last N erro
 - GIVEN no errors have occurred recently
 - WHEN the dashboard error endpoint is called
 - THEN HTTP 200 is returned with an empty list
+
+#### Scenario: Error appears in both endpoint and log stream
+
+- GIVEN the observability page is open and streaming logs
+- WHEN an error is logged with a correlation ID
+- THEN the error appears in the real-time log panel AND is available via `/api/dashboard/recent-errors`

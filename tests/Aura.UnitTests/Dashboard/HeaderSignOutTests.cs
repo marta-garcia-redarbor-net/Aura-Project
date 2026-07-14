@@ -34,11 +34,32 @@ public class HeaderSignOutTests : TestContext
         Services.AddSingleton(CreateConfig(useEntraId));
         Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         Services.AddSingleton<IHttpContextAccessor>(new HttpContextAccessor());
+        Services.AddSingleton(new DemoUiState());
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
+
+        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        var httpClient = new HttpClient(new StubHttpMessageHandler())
+        {
+            BaseAddress = new Uri("http://localhost:5180/")
+        };
+        httpClientFactory.CreateClient("AuraApi").Returns(httpClient);
+        Services.AddSingleton(httpClientFactory);
 
         var focusStateApi = Substitute.For<IFocusStateApiClient>();
         focusStateApi.GetCurrentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new FocusStateResponse("WindowOfOpportunity", false, "user-123")));
         Services.AddSingleton(focusStateApi);
+    }
+
+    private sealed class StubHttpMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            });
+        }
     }
 
     [Fact]

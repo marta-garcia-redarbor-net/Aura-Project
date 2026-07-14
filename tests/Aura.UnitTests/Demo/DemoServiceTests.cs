@@ -87,10 +87,10 @@ public class DemoServiceTests
         var result = await sut.LoadCalendarEventsAsync(CancellationToken.None);
 
         Assert.True(result.Contains("calendar"));
-        // Verify meeting alerts were queried (upcoming alerts check)
-        await _meetingAlertStore
+        // Verify calendar event was saved
+        await _calendarEventStore
             .Received(1)
-            .GetUpcomingAlertsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+            .SaveAsync(Arg.Any<CalendarEvent>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -3,7 +3,7 @@ using Aura.Application.UseCases.IngestionSync;
 using Aura.Infrastructure.Adapters.Identity;
 using Aura.Infrastructure.Adapters.Ingestion;
 using Aura.Infrastructure.Adapters.Ingestion.SemanticIndex;
-using Aura.Infrastructure.HealthChecks;
+using Aura.Infrastructure.Adapters.HealthChecks;
 using Aura.Infrastructure.Adapters.Connectors;
 using Aura.Infrastructure.Adapters.Connectors.Graph;
 using Aura.Infrastructure.Adapters.GraphConnector;

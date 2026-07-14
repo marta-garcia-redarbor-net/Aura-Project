@@ -27,3 +27,10 @@ window.showToast = function (message, duration) {
         }, 300);
     }, duration);
 };
+
+// Scrolls the log container to the top (newest logs)
+window.__auraObservabilityScrollToTop = function (element) {
+    if (element) {
+        element.scrollTop = 0;
+    }
+};

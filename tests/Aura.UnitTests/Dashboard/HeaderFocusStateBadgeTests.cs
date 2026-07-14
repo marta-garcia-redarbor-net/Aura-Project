@@ -21,6 +21,32 @@ public class HeaderFocusStateBadgeTests : TestContext
             .Build();
     }
 
+    private void SetupCommonServices()
+    {
+        Services.AddSingleton(CreateConfig());
+        Services.AddSingleton(new DemoUiState());
+        Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
+
+        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        var httpClient = new HttpClient(new StubHttpMessageHandler())
+        {
+            BaseAddress = new Uri("http://localhost:5180/")
+        };
+        httpClientFactory.CreateClient("AuraApi").Returns(httpClient);
+        Services.AddSingleton(httpClientFactory);
+    }
+
+    private sealed class StubHttpMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            });
+        }
+    }
+
     [Fact]
     public void Header_RendersFocusStateBadge_WithCurrentState()
     {
@@ -28,7 +54,7 @@ public class HeaderFocusStateBadgeTests : TestContext
         api.GetCurrentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new FocusStateResponse("WindowOfOpportunity", false, "user-123")));
 
-        Services.AddSingleton(CreateConfig());
+        SetupCommonServices();
         Services.AddSingleton(api);
 
         var previewApi = Substitute.For<IDashboardPreviewApiClient>();
@@ -54,7 +80,7 @@ public class HeaderFocusStateBadgeTests : TestContext
         api.GetCurrentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new FocusStateResponse("Recovery", false, "user-123")));
 
-        Services.AddSingleton(CreateConfig());
+        SetupCommonServices();
         Services.AddSingleton(api);
 
         var previewApi = Substitute.For<IDashboardPreviewApiClient>();

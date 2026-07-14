@@ -53,6 +53,10 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
         ArgumentNullException.ThrowIfNull(item);
         ct.ThrowIfCancellationRequested();
 
+        var isDemo = item.Metadata.TryGetValue(WorkItemSignalKeys.IsDemo, out var demoRaw)
+            && bool.TryParse(demoRaw, out var demoVal)
+            && demoVal;
+
         var targetUserId = ResolveTargetUserId(item);
         var focusState = targetUserId is null
             ? null
@@ -80,7 +84,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 RetrievedSemanticContext: [],
                 LlmRationale: "Explicit override applied before advisory.",
                 GuardrailOutcome: "confirmed",
-                UserOid: targetUserId);
+                UserOid: targetUserId,
+                IsDemo: isDemo);
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -106,7 +111,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
                 RetrievedSemanticContext: [],
                 LlmRationale: "No target user resolved; deterministic queue retained.",
                 GuardrailOutcome: "confirmed",
-                UserOid: targetUserId);
+                UserOid: targetUserId,
+                IsDemo: isDemo);
 
             await _decisionStore.RecordAsync(record, ct);
 
@@ -230,7 +236,8 @@ public sealed partial class InterruptionPolicyEngine : IInterruptionPolicyEngine
             RetrievedSemanticContext: retrievedContext,
             LlmRationale: advisory.Rationale,
             GuardrailOutcome: guardrailOutcome,
-            UserOid: targetUserId);
+            UserOid: targetUserId,
+            IsDemo: isDemo);
 
         await _decisionStore.RecordAsync(finalRecord, ct);
 

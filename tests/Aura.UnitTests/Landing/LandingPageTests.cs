@@ -31,6 +31,7 @@ public class LandingPageTests : TestContext
     {
         Services.AddSingleton(Substitute.For<IAuthPopupService>());
         Services.AddSingleton(Substitute.For<IJSRuntime>());
+        Services.AddSingleton(new AppVersionService());
     }
 
     [Fact]

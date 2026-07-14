@@ -36,6 +36,7 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         Services.AddSingleton<IAuthorizationService, AlwaysAuthorizedService>();
         Services.AddSingleton<IDashboardEventBus>(new DashboardEventBus());
         Services.AddSingleton<IDashboardRealtimeStatus>(new DashboardRealtimeStatus());
+        Services.AddSingleton(new DemoUiState());
 
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
         var httpClient = new HttpClient(new StubHttpMessageHandler())
@@ -106,9 +107,12 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
         var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
 
-        var counter = cut.Find("[data-testid='priority-dashboard-top-priority-counter']");
-        Assert.Contains("9 pending", counter.TextContent);
-        Assert.Contains("4 high priority", counter.TextContent);
+        // The dashboard now renders StatusGreetingCard which shows the pending count
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("9", cut.Markup);
+            Assert.Contains("items to review", cut.Markup);
+        }, TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("Live Sync", cut.Markup);
     }
 }

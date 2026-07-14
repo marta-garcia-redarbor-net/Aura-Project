@@ -32,6 +32,7 @@ builder.Services.AddScoped<ISystemStatusReader>(sp =>
 
 builder.Services.AddAuraInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddAuraEntityFrameworkCore(builder.Configuration);
+builder.Services.AddAuraObservability();
 builder.Services.AddSignalR();
 
 // Demo simulation — singleton service for gradual data injection
@@ -54,6 +55,7 @@ builder.Services.AddSingleton<IDashboardRefreshDispatcher, SignalRDashboardRefre
 // Background workers
 builder.Services.AddHostedService<WorkItemNotificationWorker>();
 builder.Services.AddHostedService<MeetingAlertWorker>();
+builder.Services.AddHostedService<TelemetryStreamService>();
 
 builder.Services.AddCors(options =>
 {
@@ -235,6 +237,7 @@ app.MapTriageEndpoints();
 app.MapWorkItemsEndpoints();
 app.MapPullRequestsEndpoints();
 app.MapHub<AlertHub>("/hubs/alerts");
+app.MapHub<TelemetryHub>("/hubs/telemetry");
 
 if (app.Environment.IsDevelopment())
 {

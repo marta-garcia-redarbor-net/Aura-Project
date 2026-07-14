@@ -106,7 +106,7 @@ public class DemoModeRegistrationTests
     }
 
     [Fact]
-    public void AddDemoMode_WhenEnabled_DoesNotOverrideExistingDecisionContextRetriever()
+    public void AddDemoMode_WhenEnabled_ReplacesDecisionContextRetrieverWithDemoImplementation()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -127,6 +127,6 @@ public class DemoModeRegistrationTests
         using var scope = provider.CreateScope();
         var retriever = scope.ServiceProvider.GetRequiredService<IDecisionContextRetriever>();
 
-        Assert.IsType<QdrantDecisionContextAdapter>(retriever);
+        Assert.IsType<DemoDecisionContextRetriever>(retriever);
     }
 }

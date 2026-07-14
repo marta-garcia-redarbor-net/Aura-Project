@@ -204,12 +204,16 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
             => Task.CompletedTask;
 
         public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(
-            int page, int pageSize, CancellationToken cancellationToken = default)
+            int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
         {
+            var filtered = string.IsNullOrEmpty(userOid)
+                ? _records
+                : _records.Where(r => string.Equals(r.UserOid, userOid, StringComparison.Ordinal)).ToList();
+
             return Task.FromResult(new PagedResult<InterruptionDecisionRecord>
             {
-                Items = _records,
-                TotalCount = _records.Count,
+                Items = filtered,
+                TotalCount = filtered.Count,
                 Page = page,
                 PageSize = pageSize
             });
@@ -229,7 +233,7 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
             => throw _exception;
 
         public Task<PagedResult<InterruptionDecisionRecord>> QueryAsync(
-            int page, int pageSize, CancellationToken cancellationToken = default)
+            int page, int pageSize, string? userOid = null, CancellationToken cancellationToken = default)
             => Task.FromException<PagedResult<InterruptionDecisionRecord>>(_exception);
 
         public Task ClearAsync(CancellationToken cancellationToken = default)

@@ -197,6 +197,7 @@ public static class Program
         builder.Services.AddScoped<IAzureDevOpsPrClient, AzureDevOpsPrClient>();
         builder.Services.AddScoped<DemoUiState>();
         builder.Services.AddScoped<SessionExpiredService>();
+        builder.Services.AddScoped<TelemetryClient>();
 
         // Dev access token handler — only in development
         if (builder.Environment.IsDevelopment())

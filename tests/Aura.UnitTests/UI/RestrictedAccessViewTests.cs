@@ -1,55 +1,50 @@
 using Aura.UI.Components.Auth;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
+using NSubstitute;
 
 namespace Aura.UnitTests.UI;
 
 /// <summary>
 /// Tests for the simplified RestrictedAccessView.
-/// After the landing page rework, this view is a simple overlay with a link to the landing page.
-/// The full login experience (Microsoft sign-in, demo mode) is now on the landing page.
+/// After the landing page rework, this view redirects to the landing page with a toast notification.
+/// It no longer shows a full-screen overlay.
 /// </summary>
 public class RestrictedAccessViewTests : TestContext
 {
-    [Fact]
-    public void UnauthenticatedUser_ShouldSeeRestrictedAccessView()
-    {
-        // Act
-        var cut = RenderComponent<RestrictedAccessView>();
+    private readonly TestNavigationManager _navManager;
 
-        // Assert
-        Assert.NotNull(cut.Find("[data-testid='restricted-access-view']"));
+    public RestrictedAccessViewTests()
+    {
+        _navManager = new TestNavigationManager();
+        Services.AddSingleton<NavigationManager>(_navManager);
+        Services.AddSingleton(Substitute.For<IJSRuntime>());
     }
 
     [Fact]
-    public void RestrictedView_ShowsLinkToLandingPage()
+    public void UnauthenticatedUser_ShouldRedirectToLogout()
     {
         // Act
         var cut = RenderComponent<RestrictedAccessView>();
 
-        // Assert — has a link/button to the landing page
-        Assert.NotNull(cut.Find("[data-testid='restricted-go-login-btn']"));
+        // Assert — component triggers navigation to /logout
+        cut.WaitForAssertion(() =>
+        {
+            Assert.True(_navManager.NavigateToCalled, "NavigateTo should be called");
+            Assert.Equal("/logout", _navManager.LastUri);
+        }, TimeSpan.FromSeconds(3));
     }
 
     [Fact]
-    public void RestrictedView_LinkPointsToRoot()
+    public void RestrictedView_DoesNotRenderAnyVisibleContent()
     {
         // Act
         var cut = RenderComponent<RestrictedAccessView>();
 
-        // Assert — the go-to-login button links to /
-        var link = cut.Find("[data-testid='restricted-go-login-btn']");
-        Assert.Equal("/", link.GetAttribute("href"));
-    }
-
-    [Fact]
-    public void RestrictedView_ShowsAuthRequiredMessage()
-    {
-        // Act
-        var cut = RenderComponent<RestrictedAccessView>();
-
-        // Assert — shows a message about authentication being required
-        Assert.Contains("Authentication required", cut.Markup);
+        // Assert — component no longer renders visible UI (just redirects)
+        Assert.Empty(cut.Markup.Trim());
     }
 
     [Fact]
@@ -74,24 +69,23 @@ public class RestrictedAccessViewTests : TestContext
         Assert.Empty(devButtons);
     }
 
-    [Fact]
-    public void RestrictedView_RendersBlurredDashboardShell()
+    /// <summary>
+    /// NavigationManager that tracks NavigateTo calls for assertion.
+    /// </summary>
+    private sealed class TestNavigationManager : NavigationManager
     {
-        // Act
-        var cut = RenderComponent<RestrictedAccessView>();
+        public bool NavigateToCalled { get; private set; }
+        public string? LastUri { get; private set; }
 
-        // Assert — blurred sidebar and header are present
-        Assert.NotNull(cut.Find("[data-testid='blurred-sidebar']"));
-        Assert.NotNull(cut.Find("[data-testid='blurred-header']"));
-    }
+        public TestNavigationManager()
+        {
+            Initialize("http://localhost/", "http://localhost/");
+        }
 
-    [Fact]
-    public void RestrictedView_RendersLoginCard()
-    {
-        // Act
-        var cut = RenderComponent<RestrictedAccessView>();
-
-        // Assert — login card overlay is present
-        Assert.NotNull(cut.Find("[data-testid='login-card']"));
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            NavigateToCalled = true;
+            LastUri = uri;
+        }
     }
 }

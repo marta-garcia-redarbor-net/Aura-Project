@@ -108,8 +108,9 @@ public class ForwardedAccessTokenHandlerTests
             .Build();
 
         var logger = Substitute.For<ILogger<ForwardedAccessTokenHandler>>();
+        var authStateProvider = Substitute.For<AuthenticationStateProvider>();
 
-        var handler = new ForwardedAccessTokenHandler(httpContextAccessor, configuration, logger)
+        var handler = new ForwardedAccessTokenHandler(httpContextAccessor, configuration, logger, authStateProvider)
         {
             InnerHandler = innerHandler
         };

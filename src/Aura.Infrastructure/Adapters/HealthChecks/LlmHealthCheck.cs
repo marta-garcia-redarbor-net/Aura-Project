@@ -2,7 +2,7 @@ using Aura.Infrastructure.Adapters.LlmAdvisor;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
-namespace Aura.Infrastructure.HealthChecks;
+namespace Aura.Infrastructure.Adapters.HealthChecks;
 
 /// <summary>
 /// ASP.NET Core health check that verifies LLM (Ollama) connectivity
