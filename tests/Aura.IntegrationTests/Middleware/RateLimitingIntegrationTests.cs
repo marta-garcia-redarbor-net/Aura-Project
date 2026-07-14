@@ -13,13 +13,15 @@ public class RateLimitingIntegrationTests : IClassFixture<WebApplicationFactory<
     {
         _factory = factory.WithWebHostBuilder(builder =>
         {
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment("Production");
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
             builder.UseSetting("UseEntraId", "false");
             builder.UseSetting("MockJwt:Key",
                 "aura-test-key-for-integration-tests-minimum-32-characters!");
+            builder.UseSetting("MockJwt:Issuer", "aura-dev");
+            builder.UseSetting("MockJwt:Audience", "aura-api");
             // Low limits for testing — 5 requests per 60s window
             builder.UseSetting("RateLimiting:Default:PermitLimit", "5");
             builder.UseSetting("RateLimiting:Default:WindowSeconds", "60");

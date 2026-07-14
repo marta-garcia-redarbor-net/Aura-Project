@@ -47,7 +47,7 @@ public class DemoToDashboardPreviewTests : IClassFixture<WebApplicationFactory<A
         Assert.Equal(0, before.TotalPendingCount);
         Assert.Empty(before.InboxGroups);
 
-        var loadResponse = await anonymousClient.PostAsync("/api/demo/all", null);
+        var loadResponse = await authenticatedClient.PostAsync("/api/demo/all", null);
         Assert.Equal(HttpStatusCode.OK, loadResponse.StatusCode);
 
         var after = await GetPreviewAsync(authenticatedClient);

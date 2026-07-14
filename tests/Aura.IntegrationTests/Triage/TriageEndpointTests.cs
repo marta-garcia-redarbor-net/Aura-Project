@@ -77,9 +77,9 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
         {
             new(Guid.NewGuid(), "PR Review", "github", "INTERRUPT", 85, "Urgent fix", now, "WindowOfOpportunity",
                 [new DecisionContextItem("ctx-1", "Outage context", "ActivityMemory", 0.95)],
-                "LLM confirmed urgency", "confirmed"),
+                "LLM confirmed urgency", "confirmed", "mock-user-001"),
             new(Guid.NewGuid(), "Email thread", "outlook", "QUEUE", 50, "Can wait", now.AddMinutes(-5), "DeepWork",
-                [], null, "llm-unavailable"),
+                [], null, "llm-unavailable", "mock-user-001"),
         };
 
         var store = new StubDecisionStore(records);
@@ -107,7 +107,8 @@ public class TriageEndpointTests : IClassFixture<WebApplicationFactory<ApiMarker
         var now = DateTimeOffset.UtcNow;
         var records = Enumerable.Range(0, 5).Select(i =>
             new InterruptionDecisionRecord(
-                Guid.NewGuid(), $"Item {i}", "github", "QUEUE", null, "", now.AddMinutes(-i), "WindowOfOpportunity")
+                Guid.NewGuid(), $"Item {i}", "github", "QUEUE", null, "", now.AddMinutes(-i), "WindowOfOpportunity",
+                UserOid: "mock-user-001")
         ).ToList();
 
         var store = new StubDecisionStore(records);

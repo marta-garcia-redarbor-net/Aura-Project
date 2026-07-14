@@ -18,7 +18,7 @@ public static partial class SyncEndpoints
     public static IEndpointRouteBuilder MapSyncEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/sync")
-            .RequireAuthorization("RequireEntraId");
+            .RequireAuthorization("RequireEntraOrDemo");
 
         group.MapPost("/now", PostSyncNowAsync);
         group.MapGet("/status", GetSyncStatusAsync);

@@ -23,7 +23,7 @@ public static partial class FocusStateEndpoints
     public static IEndpointRouteBuilder MapFocusStateEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/focus-state")
-            .RequireAuthorization("RequireEntraId");
+            .RequireAuthorization("RequireEntraOrDemo");
 
         group.MapGet("/", GetFocusStateAsync);
         group.MapPut("/", SetFocusStateAsync)
