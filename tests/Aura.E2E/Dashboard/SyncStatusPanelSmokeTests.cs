@@ -31,7 +31,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
         _output = output;
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_RendersSyncStatusPanelWithTestId()
     {
         var client = CreateClient(
@@ -50,7 +50,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
         Assert.Contains("data-testid=\"sync-now-button\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_RendersSyncSourceProgressElements()
     {
         var client = CreateClient(
@@ -67,7 +67,7 @@ public class SyncStatusPanelSmokeTests : IClassFixture<WebApplicationFactory<UiM
         Assert.Contains("data-testid=\"sync-source-progress-outlook\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_RendersLastSyncTimestampElement()
     {
         var client = CreateClient(

@@ -33,7 +33,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         testOutput = output;
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_PopulatedPreview_RendersSenderSnippetDeepLinkAndSyncState()
     {
         var preview = new DashboardPreviewResponse(
@@ -73,7 +73,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         Assert.Contains("synced", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_PopulatedPreview_NullFields_OmitsEmptySpans()
     {
         // Items without optional fields should NOT render empty spans
@@ -103,7 +103,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         // The component should conditionally render only when values are present
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_EmptyPreview_RendersExplicitEmptyState_NoDemoData()
     {
         var preview = new DashboardPreviewResponse([], []);
@@ -119,7 +119,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         Assert.DoesNotContain("demo", html, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_ErrorPreview_RendersErrorState()
     {
         var client = CreateClient(new ThrowingPreviewClient());
@@ -132,7 +132,7 @@ public class InboxPreviewPanelFieldsSmokeTests : IClassFixture<WebApplicationFac
         Assert.Contains("Inbox preview is currently unavailable.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRoot_MultipleSources_RendersAllItemsWithFields()
     {
         var preview = new DashboardPreviewResponse(

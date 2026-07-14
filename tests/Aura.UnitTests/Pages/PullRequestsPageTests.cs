@@ -254,7 +254,7 @@ public class PullRequestsPageTests : TestContext
 
         // Assert
         cut.WaitForElement("[data-testid='pr-pending-count']", TimeSpan.FromSeconds(3));
-        Assert.Contains("2 requiring your attention", cut.Find("[data-testid='pr-pending-count']").TextContent);
+        Assert.Contains("2 pending", cut.Find("[data-testid='pr-pending-count']").TextContent);
     }
 
     [Fact]

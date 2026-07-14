@@ -49,13 +49,13 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// Verifies Playwright can launch and navigate to the Aura UI dashboard shell.
     /// This is the minimal smoke test proving the Playwright infrastructure works.
     /// </summary>
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task DashboardShell_RendersWithExpectedMarkers()
     {
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
+        await page.GotoAsync($"{_factory!.BaseUrl}/dashboard");
 
         // Verify the dashboard shell renders (matches existing E2E data-testid convention)
         var shell = page.Locator("[data-testid='dashboard-shell']");
@@ -74,13 +74,13 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// Verifies the inbox preview panel renders on the dashboard.
     /// This test will be extended to verify real data after sync integration.
     /// </summary>
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task InboxPreviewPanel_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
+        await page.GotoAsync($"{_factory!.BaseUrl}/dashboard");
 
         var inboxPanel = page.Locator("[data-testid='inbox-preview-panel']");
         await inboxPanel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
@@ -93,13 +93,13 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
     /// <summary>
     /// Verifies the sync status panel renders on the dashboard.
     /// </summary>
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task SyncStatusPanel_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
+        await page.GotoAsync($"{_factory!.BaseUrl}/dashboard");
 
         var syncPanel = page.Locator("[data-testid='sync-status-panel']");
         await syncPanel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
@@ -109,13 +109,13 @@ public class PlaywrightBootstrapTests : IAsyncLifetime
         await context.CloseAsync();
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task FocusStateBadge_RendersOnDashboard()
     {
         var context = await _browser!.NewContextAsync();
         var page = await context.NewPageAsync();
 
-        await page.GotoAsync($"{_factory!.BaseUrl}/test-dashboard");
+        await page.GotoAsync($"{_factory!.BaseUrl}/dashboard");
 
         var panel = page.Locator("[data-testid='focus-state-panel']");
         await panel.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });

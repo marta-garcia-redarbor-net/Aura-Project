@@ -39,7 +39,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         });
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithSlowDashboardResponseRendersShellAndLoadingMarker()
     {
         var client = CreateClient(new DelayedDashboardApiClient(
@@ -59,7 +59,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"dashboard-state-loading\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootRendersStitchAlignedDarkThemeShell()
     {
         var client = CreateClient(new StubDashboardApiClient(
@@ -84,7 +84,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"dashboard-sidebar\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithEmptyDashboardRendersExplicitEmptyState()
     {
         var client = CreateClient(new StubDashboardApiClient(new InitialDashboardResponse("Mock User", [])));
@@ -98,7 +98,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("No dashboard items are available yet.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenDashboardRequestFailsRendersErrorStateWithoutBypassingApiBoundary()
     {
         var client = CreateClient(new ThrowingDashboardApiClient());
@@ -112,7 +112,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.DoesNotContain("Mock User", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithDashboardCardsRendersPopulatedState()
     {
         var client = CreateClient(new StubDashboardApiClient(
@@ -137,7 +137,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"dashboard-card-status\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithPopulatedDashboardRendersUserSummaryInHeader()
     {
         var client = CreateClient(new StubDashboardApiClient(
@@ -160,7 +160,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     /// return a canned API response. This exercises the host rendering path against the
     /// real dashboard HTTP client without requiring a live Aura.Api instance.
     /// </summary>
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithRealDashboardApiClientRendersPopulatedStateFromApiResponse()
     {
         var apiPayload = new InitialDashboardResponse(
@@ -206,7 +206,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
     /// state marker, and the streaming update appends the populated state once the async
     /// data request completes. Both markers must appear in the same HTTP response body.
     /// </summary>
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithDelayedResponseShowsLoadingThenPopulatedInSameFlow()
     {
         var client = CreateClient(new DelayedDashboardApiClient(
@@ -230,7 +230,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("3 pending", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithSystemStatusDto_RendersIndicatorsAndMicrocopy()
     {
         var client = CreateClient(
@@ -259,7 +259,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.DoesNotContain("data-testid=\"system-status-submit\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenSystemStatusFails_RendersPanelErrorState()
     {
         var client = CreateClient(
@@ -276,7 +276,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("System status is currently unavailable.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithThreeModuleStates_RendersDistinctProgressStates()
     {
         var client = CreateClient(
@@ -308,7 +308,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.DoesNotContain("data-testid=\"module-progress-submit\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWithEmptyModuleProgress_RendersExplicitEmptyState()
     {
         var client = CreateClient(
@@ -329,7 +329,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("No module progress entries are available yet.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenModuleProgressFails_RendersPanelErrorState()
     {
         var client = CreateClient(
@@ -351,7 +351,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("Module progress is currently unavailable.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenDashboardPreviewIsLoading_RendersBothPanelLoadingStates()
     {
         var client = CreateClient(
@@ -377,7 +377,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"morning-summary-preview-loading\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenDashboardPreviewIsEmpty_RendersBothPanelEmptyStates()
     {
         var client = CreateClient(
@@ -401,7 +401,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("No morning summary entries are available yet.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenDashboardPreviewFails_RendersBothPanelErrorStates()
     {
         var client = CreateClient(
@@ -425,7 +425,7 @@ public class InitialDashboardSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("Morning summary preview is currently unavailable.", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetRootWhenDashboardPreviewIsPopulated_RendersInboxAndSummaryFields()
     {
         var preview = new DashboardPreviewResponse(

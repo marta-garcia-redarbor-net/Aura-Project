@@ -35,7 +35,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
         });
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetPullRequestsPage_RendersPRList()
     {
         var client = CreateClientWithPrData();
@@ -51,7 +51,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("data-testid=\"pr-ci-status\"", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetPullRequestsPage_RendersPendingCount()
     {
         var client = CreateClientWithPrData();
@@ -64,7 +64,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("2 pending", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetPullRequestsPage_EmptyState_RendersNoPRsMessage()
     {
         var client = CreateClientWithEmptyPrData();
@@ -77,7 +77,7 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
         Assert.Contains("No pending PRs", html);
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact]
     public async Task GetPullRequestsPage_ErrorState_RendersRetryButton()
     {
         var client = CreateClientWithFailingPrData();
@@ -113,7 +113,8 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "passing",
                 1,
                 2,
-                0),
+                0,
+                "direct"),
             new PullRequestResponse(
                 145,
                 "Feature: reporting dashboard v2",
@@ -133,7 +134,8 @@ public class PullRequestsPageSmokeTests : IClassFixture<WebApplicationFactory<Ui
                 "running",
                 1,
                 1,
-                0)
+                0,
+                "direct")
         };
 
         return CreateClient(new StubPrClient(prs));

@@ -24,7 +24,7 @@ public class GraphConnectorStatusSmokeTests : IClassFixture<WebApplicationFactor
         });
     }
 
-    [Theory(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Theory]
     [InlineData("Disabled", "graph-connector-state-disabled")]
     [InlineData("MissingConfig", "graph-connector-state-missing")]
     [InlineData("PartialConfig", "graph-connector-state-partial")]

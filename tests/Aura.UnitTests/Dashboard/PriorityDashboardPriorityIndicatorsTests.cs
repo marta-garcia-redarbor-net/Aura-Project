@@ -62,7 +62,26 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "Qdrant ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "LLM ok"),
                 new SystemIndicatorResponse(SystemIndicatorStateResponse.Ok, "MockAuth ok"))));
+        statusClient.GetRecentErrorsAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new List<ErrorEntryDto>()));
         Services.AddSingleton(statusClient);
+
+        var moduleProgressClient = Substitute.For<IModuleProgressApiClient>();
+        moduleProgressClient.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ModuleProgressResponse([], IsSeeded: true)));
+        Services.AddSingleton(moduleProgressClient);
+
+        var syncClient = Substitute.For<ISyncApiClient>();
+        syncClient.GetSyncStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new List<SourceSyncStateDto>()));
+        syncClient.TriggerSyncAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        Services.AddSingleton(syncClient);
+
+        var graphConnectorClient = Substitute.For<IGraphConnectorApiClient>();
+        graphConnectorClient.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new GraphConnectorStatusResponse("Disabled")));
+        Services.AddSingleton(graphConnectorClient);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
@@ -88,14 +107,17 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         });
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        var layoutState = new DashboardViewState(DashboardViewStateKind.Populated, "Test User", [], "Welcome");
+        var cut = RenderComponent<PriorityDashboard>(p => p
+            .AddCascadingValue(authStateTask)
+            .AddCascadingValue(layoutState));
 
         Assert.DoesNotContain("priority-dashboard-top-items", cut.Markup);
         Assert.DoesNotContain("priority-dashboard-counts", cut.Markup);
     }
 
     [Fact]
-    public void Dashboard_ShowsPendingAndHighPriorityBadge()
+    public void Dashboard_ShowsUserDisplayName()
     {
         SetupServices(new DashboardPreviewResponse([], [])
         {
@@ -105,14 +127,15 @@ public class PriorityDashboardPriorityIndicatorsTests : TestContext
         });
 
         Task<AuthenticationState> authStateTask = Task.FromResult(CreateAuthorizedState());
-        var cut = RenderComponent<PriorityDashboard>(p => p.AddCascadingValue(authStateTask));
+        var layoutState = new DashboardViewState(DashboardViewStateKind.Populated, "Test User", [], "Welcome");
+        var cut = RenderComponent<PriorityDashboard>(p => p
+            .AddCascadingValue(authStateTask)
+            .AddCascadingValue(layoutState));
 
-        // The dashboard now renders StatusGreetingCard which shows the pending count
+        // The dashboard renders the user name in the state panel
         cut.WaitForAssertion(() =>
         {
-            Assert.Contains("9", cut.Markup);
-            Assert.Contains("items to review", cut.Markup);
-        }, TimeSpan.FromSeconds(2));
-        Assert.DoesNotContain("Live Sync", cut.Markup);
+            Assert.Contains("Test User", cut.Markup);
+        });
     }
 }

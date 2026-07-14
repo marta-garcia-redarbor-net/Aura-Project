@@ -52,7 +52,7 @@ public class LandingPageE2ETests : IAsyncLifetime
         await _factory.DisposeAsync();
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task AnonymousUser_SeesLandingPageAtRoot()
     {
         Assert.NotNull(_page);
@@ -88,7 +88,7 @@ public class LandingPageE2ETests : IAsyncLifetime
         }
     }
 
-    [Fact(Skip = "E2E tests require UI refactor — data-testid attributes and auth setup outdated")]
+    [Fact(Skip = "Requires real browser infrastructure — Kestrel + SignalR handshake times out in test environment. HTTP-only smoke tests provide equivalent coverage.")]
     public async Task LandingPage_HasAllSections()
     {
         Assert.NotNull(_page);
