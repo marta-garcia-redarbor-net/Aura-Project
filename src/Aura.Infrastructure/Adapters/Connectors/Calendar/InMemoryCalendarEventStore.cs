@@ -42,4 +42,15 @@ internal sealed class InMemoryCalendarEventStore : ICalendarEventStore
 
         return Task.FromResult<IReadOnlyList<CalendarEvent>>(upcoming);
     }
+
+    public Task ClearDemoEventsAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var demoIds = _events.Keys
+            .Where(id => id.StartsWith("demo-", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var id in demoIds)
+            _events.Remove(id);
+        return Task.CompletedTask;
+    }
 }
