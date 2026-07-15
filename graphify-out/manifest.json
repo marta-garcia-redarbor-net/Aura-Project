@@ -470,7 +470,7 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Layout/Header.razor": {
-    "mtime": 1784126203.4571297,
+    "mtime": 1784126620.8871102,
     "ast_hash": "cee0d92f11b27bcb4e4bead5589ea11c",
     "semantic_hash": ""
   },
@@ -5575,8 +5575,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Pages/LandingPage.razor": {
-    "mtime": 1784126196.094528,
-    "ast_hash": "0cfc544a8816c53860d8ed7d4eff6846",
+    "mtime": 1784131367.2382915,
+    "ast_hash": "c7016d6393b50628aeb8e7409fea21a8",
     "semantic_hash": ""
   },
   "tests/Aura.ArchitectureTests/LandingPageArchitectureTests.cs": {
