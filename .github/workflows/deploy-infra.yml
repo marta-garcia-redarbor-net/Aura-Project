@@ -69,4 +69,5 @@ jobs:
                 environment=${{ github.event.inputs.environment || 'dev' }} \
                 entraTenantId=${{ secrets.ENTRA_TENANT_ID }} \
                 entraClientId=${{ secrets.ENTRA_CLIENT_ID }} \
+                entraClientSecret=${{ secrets.ENTRA_CLIENT_SECRET }} \
               --name aura-deploy-${{ github.run_number }}
