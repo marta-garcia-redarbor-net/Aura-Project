@@ -7,7 +7,7 @@ Trabajo de Fin de Máster (TFM) - Máster en Arquitectura de Software
 * **URL de Despliegue (Azure Container Apps):** [Acceder a Aura](https://aura-ui-dev.bluesea-6c67d090.francecentral.azurecontainerapps.io)
   *(Nota: Al estar alojado en un entorno Serverless, el primer acceso puede tardar unos segundos en "despertar" los contenedores).*
 * **Presentación (Slides):** [Ver Google Slides](https://docs.google.com/presentation/d/1IEmdA8vuYvKjR7un0RLn9d1EoCalMYIdIvW8OJWY3GI/edit?usp=sharing)
-* **Vídeo Explicativo:** [Enlace pendiente de grabación - Se incluirá en el formulario]
+* **Vídeo Explicativo:** [Ver video](https://drive.google.com/file/d/1uWpzTZBQNTWHaK18FtdL_270IjKmI_Go/view?usp=sharing)
 
 ---
 

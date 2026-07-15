@@ -65,7 +65,7 @@
     "semantic_hash": ""
   },
   "src/Aura.Api/appsettings.json": {
-    "mtime": 1784065174.3892863,
+    "mtime": 1784134346.923381,
     "ast_hash": "600cd908aa4813db3ead329b92e07f32",
     "semantic_hash": ""
   },
@@ -4820,7 +4820,7 @@
     "semantic_hash": ""
   },
   "tests/Aura.IntegrationTests/Middleware/RateLimitingIntegrationTests.cs": {
-    "mtime": 1784065174.4811192,
+    "mtime": 1784134346.9253793,
     "ast_hash": "04d0fb642ba8be2515c6637fbfbae3ff",
     "semantic_hash": ""
   },
@@ -4895,8 +4895,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-infra.yml": {
-    "mtime": 1783841852.69339,
-    "ast_hash": "bb5844a39451a5a75b45f0965b5a9d0b",
+    "mtime": 1784135711.7068222,
+    "ast_hash": "25cfb46e84f3bf164f4a2600f6444429",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-07-06-w4-h1-structured-logging/apply-progress.md": {
@@ -5575,8 +5575,8 @@
     "semantic_hash": ""
   },
   "src/Aura.UI/Components/Pages/LandingPage.razor": {
-    "mtime": 1784131367.2382915,
-    "ast_hash": "c7016d6393b50628aeb8e7409fea21a8",
+    "mtime": 1784131528.6431725,
+    "ast_hash": "9015a9eccad548a07a61c33ffa14b697",
     "semantic_hash": ""
   },
   "tests/Aura.ArchitectureTests/LandingPageArchitectureTests.cs": {
