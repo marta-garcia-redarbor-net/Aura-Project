@@ -288,9 +288,6 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 8080
         transport: 'http'
         allowInsecure: false
-        stickySessions: {
-          affinity: 'sticky'
-        }
         traffic: [
           {
             latestRevision: true
@@ -485,9 +482,6 @@ resource uiApp 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 8080
         transport: 'http'
         allowInsecure: false
-        stickySessions: {
-          affinity: 'sticky'
-        }
         traffic: [
           {
             latestRevision: true
