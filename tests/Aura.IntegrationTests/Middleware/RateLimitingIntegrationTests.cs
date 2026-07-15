@@ -13,7 +13,7 @@ public class RateLimitingIntegrationTests : IClassFixture<WebApplicationFactory<
     {
         _factory = factory.WithWebHostBuilder(builder =>
         {
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment("IntegrationTesting");
             builder.UseSetting("EmbeddingProvider:Endpoint", "https://test.openai.azure.com");
             builder.UseSetting("EmbeddingProvider:DeploymentName", "test-model");
             builder.UseSetting("EmbeddingProvider:ApiKey", "fake-key");
