@@ -3009,11 +3009,8 @@ details[open] .decision-trace__col--chevron {
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    background: rgba(81, 43, 212, 0.2);
-    color: var(--aura-dotnet-purple);
+    color: var(--aura-on-surface-variant);
     padding: 2px 8px;
-    border-radius: 2px;
-    border: 1px solid rgba(81, 43, 212, 0.3);
 }
 
 .landing-header__cta {
